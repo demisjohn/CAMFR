@@ -1,6 +1,17 @@
+-quick test camfr_matlab (flipud?)
+-cvs add gifmaker, pil.pth, del plotutils, camfr_vis.py
+
+
+
 CAMFR 3D:
 
+-define Sections from a single expression + correct left/right PML
+-refine estimates using true dispersion relation
 
+-clean up RefSectionMode::field (not used, but still)
+-left/right PML not passed to stack correctly when using 2 expressions
+-optimise ref section overlap
+-experiment with ref index, eigenvalues_x
 -Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D, kz=0
 -free slabmatrixcache?
 -generalise cache to work with different M in each section.
@@ -15,8 +26,6 @@ CAMFR 3D:
 
 
 MEDIUM TERM:
-
--export Stack::forward_backward_at to Python
 
 -speed up M - U1, where U1 is unit matrix
 -short cut check_error in Bessel functions
@@ -56,10 +65,7 @@ MEDIUM TERM:
 -related: test sign of beta in backward modes in circ (using power flux)
 
 -use asymptotic expansions for circular structures
--more general interactive visualisation of mode profiles (phase, components)
 -write a GUI for defining complicated structures
--integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy,
- PyQtw  (http://gerard.vermeulen.free.fr) ?
 -add Python docbook comments
 
 -making stripping of executable dependent on debug switches
@@ -85,6 +91,7 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-Numeric is imported automatically. Remove from docs and examples.
 -move to uBLAS? (www.genesys-e.org/ublas)
 -build: eliminate as many makefiles as possible
 -remove set_precision_enhancement and friends
@@ -92,8 +99,9 @@ SOURCE MAINTENANCE
 -make the C++ naming convention more uniform and in sync with Python names
  (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)
 -use BaseMaterial where appropriate
--completely redesign / rework Expression and its link to stack
+-completely redesign / rework Expression and its link to Stack
 -make state of inc_field_bw consistent when calling set_interface_field
+
 
 
 LOW PRIORITY
@@ -121,4 +129,3 @@ THEORY:
 -analytic solution uniform TBC
 -degeneracy for increasing PML in Slab AlOx(1) + AlGas(1) + AlOx(1)
 -check Lahart P-parameter with EH/HE distinction
--model coupled cavity VCSEL, DFB laser
