@@ -94,10 +94,12 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
 Complex SectionDisp::operator()(const Complex& kt)
 {
   counter++;
-  
+
   global.lambda = lambda;
-  global.orthogonal = false;
   global.polarisation = TE_TM;
+
+  bool old_orthogonal = global.orthogonal;
+  global.orthogonal = false;
 
   Complex old_beta = global.slab_ky;
 
@@ -120,6 +122,7 @@ Complex SectionDisp::operator()(const Complex& kt)
 
   global.N = old_N;
   global.slab_ky = old_beta;
+  global.orthogonal = old_orthogonal;
 
   return res;
 }

@@ -29,6 +29,7 @@
 
 class SectionMode;
 class SectionCache;
+class OverlapMatrices;
 
 class SectionImpl : public MultiWaveguide
 { 
@@ -41,6 +42,7 @@ class SectionImpl : public MultiWaveguide
     virtual Complex c1_size()    const {return get_width();}
 
     int get_M() const {return M;}
+    std::vector<Complex> get_disc() const {return discontinuities;}
 
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
@@ -63,7 +65,8 @@ class SectionImpl : public MultiWaveguide
 
     friend Complex overlap_slice(SectionMode*, SectionMode*,
                                  const Complex&, const Complex&,
-                                 FieldExpansion*, FieldExpansion*);
+                                 FieldExpansion*, FieldExpansion*, 
+                                 OverlapMatrices*, int, int);
 };
 
 

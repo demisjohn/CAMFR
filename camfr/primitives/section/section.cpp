@@ -15,12 +15,15 @@
 #include "sectiondisp.h"
 #include "sectionmode.h"
 #include "sectionoverlap.h"
+#include "../slab/slabmatrixcache.h"
+#include "../slab/isoslab/slaboverlap.h"
 
 using std::vector;
 using std::cout;
 using std::endl;
 
 #include "../../util/vectorutil.h"
+#include "../../util/index.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,6 +99,29 @@ void SectionImpl::calc_overlap_matrices
       field_II.push_back(FieldExpansion(NULL, fw_II, bw_II));
     }
 
+    // Create overlap cache.
+
+    if (medium_I->get_M() != medium_II->get_M())
+    {
+      std::cerr 
+        << "Error: cache not yet general enough to deal with different M."
+        << std::endl;
+      exit (-1);
+    }
+
+    SlabImpl* slab_I = medium_I->
+      slabs[index_lookup(disc[k],Plus,medium_I ->discontinuities)]->get_impl();
+
+    SlabImpl* slab_II = medium_II->
+      slabs[index_lookup(disc[k],Plus,medium_II->discontinuities)]->get_impl();
+    
+    vector<Complex> disc_slab = slab_I->disc_intersect(slab_II);
+    
+    SlabCache cache(medium_I->get_M(), disc_slab.size()-1);
+    slab_I->fill_field_cache(&cache, slab_II, disc_slab);
+
+    OverlapMatrices m(slab_I, slab_II, &cache, &disc_slab, false);
+
     // Calc overlap slice.
 
     for (int i=1; i<=int(global.N); i++)   
@@ -104,16 +130,13 @@ void SectionImpl::calc_overlap_matrices
         (*O_I_II)(i,j) += overlap_slice
           (dynamic_cast<SectionMode*>(medium_I ->get_mode(i)),
            dynamic_cast<SectionMode*>(medium_II->get_mode(j)),
-           disc[k], disc[k+1], &field_I[i-1], &field_II[j-1]);
-
-        std::cout << i << " " << j << " " << k <<  " " << (*O_I_II)(i,j)
-                  << std::endl;
+           disc[k], disc[k+1], &field_I[i-1], &field_II[j-1], &m, 1, 2);
 
         (*O_II_I)(i,j) += overlap_slice
           (dynamic_cast<SectionMode*>(medium_II->get_mode(i)),
            dynamic_cast<SectionMode*>(medium_I ->get_mode(j)),
-           disc[k], disc[k+1], &field_II[i-1], &field_I[j-1]);
-      
+           disc[k], disc[k+1], &field_II[i-1], &field_I[j-1], &m, 2, 1);
+
         if (O_I_I) (*O_I_I)(i,j) += overlap_slice
           (dynamic_cast<SectionMode*>(medium_I ->get_mode(i)),
            dynamic_cast<SectionMode*>(medium_I ->get_mode(j)),
@@ -125,9 +148,6 @@ void SectionImpl::calc_overlap_matrices
           disc[k], disc[k+1], &field_II[i-1], &field_II[j-1]);
       }
   }
-
-  std::cout << *O_I_II << *O_II_I << std::endl;
-  
 }
 
 
@@ -546,23 +566,7 @@ void Section2D::find_modes_from_scratch_by_ADR()
 #include "sectionoverlap.h"
 
 void Section2D::find_modes_from_scratch_by_track()
-{  
-
-  Complex min_eps_mu = materials[0]->eps_mu();
-  
-  for (unsigned int i=1; i<materials.size(); i++)
-  {
-    Complex eps_mu = materials[i]->eps_mu();
-    
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
-  }
-
-
-  vector<Complex> kt;
-  for (int i=0; i<global.N; i++)
-    kt.push_back(Complex(i));
-
+{
   // Set constants.
   
   const Real eps        = 1e-13;
@@ -653,8 +657,6 @@ void Section2D::find_modes_from_scratch_by_track()
     max_eps_eff = max_eps_mu_lossless;
 
   Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
-
-#if 0
   
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
@@ -911,13 +913,13 @@ void Section2D::find_modes_from_scratch_by_track()
   //                                     && (abs(R_right - 1.0) < 1e-10) ) )
   //    kt.insert(kt.begin(), 0);
 
-#endif
-
   // Create modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
+
+  disp.set_params(params);
   
   for (unsigned int i=0; i<kt.size(); i++)
   { 
@@ -933,13 +935,13 @@ void Section2D::find_modes_from_scratch_by_track()
     if (real(kt[i]) < -1e-6) // Backward mode.
       kz = -kz;
 
-    disp.set_params(params);
     cout << "n_eff" << kz/2./pi*global.lambda << "kt: " << kt[i] 
          << " f(kt) " << disp(kt[i]) << endl;
     
     Section2D_Mode *newmode = new Section2D_Mode(global.polarisation,kz,this);
     
-    newmode->normalise();    modeset.push_back(newmode);
+    newmode->normalise();   
+    modeset.push_back(newmode);
   }
 
   sort_modes();

@@ -34,6 +34,9 @@ Section2D_Mode::Section2D_Mode
   int M = geom->M;
   global.N = geom->M;
 
+  int old_orthogonal = global.orthogonal;
+  global.orthogonal = false;
+
   Complex old_beta = global.slab_ky;
   global.slab_ky = kz;
 
@@ -75,6 +78,7 @@ Section2D_Mode::Section2D_Mode
 
   global.N = old_N;
   global.slab_ky = old_beta;
+  global.orthogonal = old_orthogonal;
 }
 
 
@@ -92,7 +96,10 @@ Field Section2D_Mode::field(const Coord& coord) const
   Section2D* section = dynamic_cast<Section2D*>(geom);
 
   int old_N = global.N;
-  global.N = section->M;
+  global.N = section->M;  
+
+  int old_orthogonal = global.orthogonal;
+  global.orthogonal = false;
 
   Complex old_beta = global.slab_ky;
   global.slab_ky = kz;
@@ -139,6 +146,7 @@ Field Section2D_Mode::field(const Coord& coord) const
 
   global.N = old_N;
   global.slab_ky = old_beta;
+  global.orthogonal = old_orthogonal;
 
   // Transform fields from Stack to Section coordinates.
 
@@ -168,6 +176,9 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
   int old_N = global.N;
   global.N = section->M;
+
+  int old_orthogonal = global.orthogonal;
+  global.orthogonal = false;
 
   Complex old_beta = global.slab_ky;
   global.slab_ky = kz;
@@ -200,7 +211,8 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
   }
 
   global.N = old_N;
-  global.slab_ky = old_beta;
+  global.slab_ky = old_beta;  
+  global.orthogonal = old_orthogonal;
 }
 
 
@@ -213,11 +225,15 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
 void Section2D_Mode::normalise() 
 {
-  //Complex norm = sqrt(overlap(this, this));
+  vector<Complex> disc(geom->get_disc());
+  disc.insert(disc.begin(), 0.0);
+  
+  Complex norm = 0.0;
 
-  // TMP:
-
-  Complex norm = 1.0;
+  for (unsigned int k=0; k<disc.size()-1; k++)
+    norm += overlap_slice(this, this, disc[k], disc[k+1]);
+  
+  norm = sqrt(norm);
   
   if (abs(norm) < 1e-10)
   {
@@ -225,13 +241,13 @@ void Section2D_Mode::normalise()
     norm = 1.0;
   }
 
-  for(unsigned int i=0; i<left_interface_field.size(); i++)
+  for (unsigned int i=0; i<left_interface_field.size(); i++)
   {
     left_interface_field[i].fw /= norm;
     left_interface_field[i].bw /= norm;
   }
   
-  for(unsigned int i=0; i<right_interface_field.size(); i++)
+  for (unsigned int i=0; i<right_interface_field.size(); i++)
   {
     right_interface_field[i].fw /= norm;
     right_interface_field[i].bw /= norm;
