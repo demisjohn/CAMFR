@@ -27,6 +27,16 @@ using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// SectionGlobal
+//
+/////////////////////////////////////////////////////////////////////////////
+
+SectionGlobal global_section = {0.0, 0.0, E_wall, E_wall, false};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // SectionImpl::calc_overlap_matrices()
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -158,14 +168,16 @@ void SectionImpl::calc_overlap_matrices
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section::Section(const Expression& expression, int M)
+Section::Section(Expression& expression, int M)
+  : leftwall_sc(NULL), rightwall_sc(NULL)
 {
   // 1D section?
 
   if (expression.get_size() == 1)
   {
     Slab* slab = dynamic_cast<Slab*>(expression.get_term(0)->get_wg());
-    Complex d = expression.get_term(0)->get_d();
+    Complex d = expression.get_term(0)->get_d() 
+      + I*global_section.left_PML + I*global_section.right_PML;
 
     if (slab)
       s = new Section1D(*slab, d);
@@ -195,9 +207,34 @@ Section::Section(const Expression& expression, int M)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section::Section(const Expression& left_ex, const Expression& right_ex, int M)
+Section::Section(Expression& left_ex, Expression& right_ex, int M)
 {
-  s = new Section2D(left_ex, right_ex, M);
+  bool symmetric = (&left_ex == &right_ex);
+
+  // Add walls.
+
+  if (global_section.leftwall == E_wall)
+    leftwall_sc = new E_Wall(*left_ex.get_ext());
+  if (global_section.leftwall == H_wall)
+    leftwall_sc = new H_Wall(*left_ex.get_ext());  
+  left_ex.add_term(Term(*leftwall_sc));
+
+  if (!symmetric)
+  {
+    if (global_section.rightwall == E_wall)
+      rightwall_sc = new E_Wall(*right_ex.get_ext());
+    if (global_section.rightwall == H_wall)
+      rightwall_sc = new H_Wall(*right_ex.get_ext());  
+    right_ex.add_term(Term(*rightwall_sc));
+  }
+  else
+    rightwall_sc = 0;
+
+  // Create Section2D
+
+  s = symmetric ? new Section2D(left_ex, left_ex,  M) 
+                : new Section2D(left_ex, right_ex, M);
+
   uniform = s->is_uniform();
   core = s->get_core();
 }
@@ -210,8 +247,7 @@ Section::Section(const Expression& left_ex, const Expression& right_ex, int M)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
-                     int M_)
+Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
   : left(left_ex), right(right_ex)
 {
   // Check values.
@@ -221,12 +257,13 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
     py_error("Error: left and right part have different incidence media.");
     exit (-1);
   }
-  
+
   uniform = false;
 
-  symmetric = (&left_ex == &right_ex);
-
   M = M_;
+
+  symmetric =     (&left_ex == &right_ex) 
+              && (global_section.leftwall == global_section.rightwall);
 
   // Determine core.
 
@@ -253,12 +290,14 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
       continue;
     
     z += t->get_d();
+
+    if (i == left_flat.get_size()-1)
+      z += I*global_section.left_PML;
+
     discontinuities.push_back(z);
     slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
-    
-    std::cout << z << " " << *slabs.back()->get_core();
   }
-
+  
   Expression right_flat = right_ex.flatten();
   for (unsigned int i=0; i<right_flat.get_size(); i++)
   {
@@ -267,10 +306,12 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
       continue;    
 
     z += t->get_d();
+
+    if (i == right_flat.get_size()-1)
+      z += I*global_section.right_PML;
+
     discontinuities.push_back(z);
     slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
-
-    std::cout << z << " " << *slabs.back()->get_core();
   }
 }
 
@@ -418,139 +459,13 @@ void Section2D::find_modes()
   if (global.sweep_from_previous && (modeset.size() == global.N))
     find_modes_by_sweep();
   else
-    if (global.solver == ADR)
-      find_modes_from_scratch_by_ADR();
-    else
-      find_modes_from_scratch_by_track();
+    find_modes_from_scratch_by_track();
 
   // Remember wavelength and gain these modes were calculated for.
 
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Section2D::find_modes_from_scratch_by_ADR
-//
-/////////////////////////////////////////////////////////////////////////////
-
-void Section2D::find_modes_from_scratch_by_ADR()
-{
-
-  cout << "Section2D.find_modes_from_scratch_by_ADR() not yet implemented." 
-       << endl;
-  
-  exit (-1);
-
-#if 0
-
-  // Determine reflection coefficients of walls.
-
-  //SectionWall* l_wall =  leftwall ?  leftwall : global_section. leftwall;
-  //SectionWall* r_wall = rightwall ? rightwall : global_section.rightwall;
-
-  //Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  //Complex R_right = r_wall ? r_wall->get_R12() : -1;
-
-  // Find min and max refractive index of structure.
-
-  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
-  Complex max_eps_mu = materials[0]->eps()*materials[0]->mu();
-  
-  for (unsigned int i=1; i<materials.size(); i++)
-  {
-    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
-    
-    if (abs(eps_mu) < abs(min_eps_mu))
-      min_eps_mu = eps_mu;
-
-    if (abs(eps_mu) > abs(min_eps_mu))
-      max_eps_mu = eps_mu;
-  }
-
-  // Locate zeros starting from initial contour.
-
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
-  
-  Real max_beta = abs(sqrt(C*max_eps_mu))+1;
-
-  Real Re=real(global.C_upperright);
-  Real Im=imag(global.C_upperright);
-
-  Complex lowerleft (-0.1,      -0.1);
-  Complex upperright( Re*max_beta, Im*max_beta);
-
-  SectionDisp disp(left, right, global.lambda, M, symmetric);
-  unsigned int zeros = global.N + 2 + materials.size();
-  vector<Complex> beta = N_roots(disp, zeros, lowerleft, upperright);
-  
-  cout << "Calls to slab dispersion relation : "<< disp.times_called() << endl;
-  
-  // Eliminate false zeros.
-
-  const Real eps_copies = 1e-6;
-  
-  for (unsigned int i=0; i<n_lossless.size(); i++)
-  {
-    Complex beta_i = k0*materials[i]->n();
-    
-    remove_elems(&beta,     beta_i,    eps_copies);
-    remove_elems(&beta,    -beta_i,    eps_copies);
-    remove_elems(&beta,  Complex(0.0), eps_copies);
-  }
-  
-  // In case of a homogeneous medium, add a TEM mode if appropriate.
-  
-  //if (materials.size() == 1)
-  //  if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-  //                                     && (abs(R_right + 1.0) < 1e-10) )
-  //    || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-  //                                     && (abs(R_right - 1.0) < 1e-10) ) )
-  //    beta.insert(beta.begin(), 0);
-  
-  // Check if enough modes are found.
-
-  if (beta.size() < global.N)
-  {
-    cout << "Error: didn't find enough modes ("
-         << beta.size() << "/" << global.N << "). " << endl;
-    exit (-1);
-  }
-  
-  // Create modeset.
-
-  for (unsigned int i=0; i<modeset.size(); i++)
-    delete modeset[i];
-  modeset.clear();
-  
-  for (unsigned int i=0; i<beta.size(); i++)
-  { 
-    Complex kz = beta[i];
-    
-    if (real(kz) < 0) 
-      kz = -kz;
-
-    if (abs(real(kz)) < 1e-12)
-      if (imag(kz) > 0)
-        kz = -kz;
-    
-    Section2D_Mode *newmode 
-      = new Section2D_Mode(global.polarisation, kz, this);
-    
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
-  }
-  
-  sort_modes();
-  truncate_N_modes();
-
-#endif
-
 }
 
 
@@ -741,7 +656,7 @@ void Section2D::find_modes_from_scratch_by_track()
   // II: Find evanescent modes of lossless structure.
   //
 
-  if (!(branchcut || TBC))
+  if (!(branchcut || TBC || global_section.guided_only))
   {
     Wrap_real_to_abs evan_wrap(disp);
     
@@ -946,6 +861,8 @@ void Section2D::find_modes_from_scratch_by_track()
 
   sort_modes();
   truncate_N_modes();
+
+  // TODO: check if N modes are found.
 
   // Test orthogonality.
 /*
