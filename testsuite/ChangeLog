@@ -1,3 +1,7 @@
+2004-06-03  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* planar_VCSEL.py: New test.
+
 2004-04-16  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* backward.py: New test.
