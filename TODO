@@ -1,6 +1,12 @@
--check W and H in overlap
--stabilise PML in series solver
+-document set_backward, make test for test suite
+-plot doesn't work for Circ waveguide
+-free_temps: slab_cache = []
 
+-circ: tracking solver in eps rather than in n
+
+-plot n section doesn't work
+
+-stabilise PML in series solver
 -series solver for degenerate waveguides: double_prism, zipper (relax mueller),
  dircoup (PML)
 
@@ -11,6 +17,8 @@
 -Trent's algorithm to invert Toeplitz
 -always take minimum number of modes in series solver
 -stability tips for infstacks
+
+-planar set_kt
 
 -band calculation with fixed k_t
 
@@ -23,8 +31,6 @@ CAMFR 3D:
 
 -implement Ez, Hz in plane wave modes
 -use blas for overlap calculations
--same mode sorter as 1d?
--windows memory leak
 -revisit calc_global in combination with arnoldi eigensolver.
 -calc_band --> calc_overlap: need normalisation for calc_global?
 -check if creation of extra interface in middle of core is needed
@@ -83,7 +89,6 @@ MEDIUM TERM:
 -speed up Bloch for symmetric structures?
 
 -investigate worse convergence for TM modes
--generalise: make lambda complex
 
 -investigate throwing exceptions to Python
 
