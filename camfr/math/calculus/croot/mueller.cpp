@@ -208,6 +208,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     
     Complex W = (z1 - z2)*dz123 + dz12;
     Complex w = sqrt(W*W - 4.*f1*dz123);
+    
     Complex corr = (abs(W+w) > abs(W-w)) ? 2.*f1/(W+w) : 2.*f1/(W-w);
 
     z3 = z2; z2 = z1; z1 = z1 - corr;
@@ -390,7 +391,7 @@ std::vector<Complex> mueller
     bool error = false;
     
     Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
-                               &deflate, maxiter, &error); 
+                               &deflate, maxiter, &error, true); 
 
     if (error)
       py_error("Mueller solver failed to converge.");
