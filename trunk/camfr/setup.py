@@ -53,13 +53,13 @@ class camfr_install_data(install_data):
 
 # Set up the module.
 
-setup(name         = "camfr_work",
+setup(name         = "camfr",
       version      =  camfr_version,
       description  = "CAvity Modelling FRamework",
       author       = "Peter Bienstman",
       author_email = "Peter.Bienstman@rug.ac.be",
       url          = "http://camfr.sourceforge.net",
-      extra_path   = "camfr_work",
+      extra_path   = "camfr",
       packages     = ["examples.tutorial", "examples.other",
                       "examples.contrib",
                       "visualisation.examples", "testsuite"],

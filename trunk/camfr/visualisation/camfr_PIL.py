@@ -1,4 +1,4 @@
-from camfr_work import *
+from camfr import *
 from Numeric import *
 
 # Colormap codes.
