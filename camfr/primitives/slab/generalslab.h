@@ -77,7 +77,7 @@ class SlabImpl : public MultiWaveguide
 
     cVector expand_field(ComplexFunction* f, Real eps);
 
-    std::vector<Complex> disc_intersect(SlabImpl* medium_II);
+    std::vector<Complex> disc_intersect(const SlabImpl* medium_II) const;
 
     void fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
                           const std::vector<Complex>& disc);

@@ -1,3 +1,8 @@
+2002-01-17 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.h: Make disc_intersect const.
+	* generalslab.cpp: Ditto.
+
 2002-12-20 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.cpp: Break out signed_sqrt to slabmode.
