@@ -24,7 +24,7 @@ END-INFO-DIR-ENTRY
 @sp 10
 @title {CAMFR manual}
 @subtitle {version 1.2}
-@subtitle {October, 2003}
+@subtitle {November, 2003}
 @author Peter Bienstman
 
 @page
@@ -90,6 +90,7 @@ Reference guide
 * set_orthogonal::              
 * set_solver::                  
 * set_mode_surplus::            
+* set_unstable_exp_threshold::  
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -2052,6 +2053,8 @@ If the field profiles seem to be calculated incorrectly, try
 This will cause CAMFR to treat modes which are not exactly orthogonal due to rounding errors as non-orthogonal.
 @item 
 If you are dealing with very lossy materials, using a different solver might help: @code{set_solver(series)} and @code{set_mode_surplus(n)}. This will first construct an initial estimate of the modes based on a plane wave expansion. The number of plane waves used in this expansion is @code{n} times @code{get_N()}. These estimates are subsequently refined using the full dispersion relation.
+@item
+For trouble with uncoupled waveguides, try experimenting with @code{set_unstable_exp_threshold}. E.g. setting it to 1e-6 will mean waveguides will be treated sooner as decoupled than when the parameter was 1e-12.
 @end itemize
 
 If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
@@ -2326,6 +2329,7 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_orthogonal::              
 * set_solver::                  
 * set_mode_surplus::            
+* set_unstable_exp_threshold::  
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -2544,7 +2548,7 @@ convergence. Note: a Python bool is 1 for true, and 0 for false.
 @xref{set_mode_surplus}.
 
 
-@node set_mode_surplus, set_circ_order, set_solver, Reference guide
+@node set_mode_surplus, set_unstable_exp_threshold, set_solver, Reference guide
 @unnumberedsec @code{set_mode_surplus}
 @cindex @code{set_mode_surplus}
 
@@ -2553,7 +2557,15 @@ convergence. Note: a Python bool is 1 for true, and 0 for false.
 @xref{set_solver}.
 
 
-@node set_circ_order, set_circ_field_type, set_mode_surplus, Reference guide
+@node set_unstable_exp_threshold, set_circ_order, set_mode_surplus, Reference guide
+@unnumberedsec @code{set_unstable_exp_threshold}
+@cindex @code{set_unstable_exp_threshold}
+
+@noindent
+@code{set_unstable_exp_threshold(eps)}: sets numerical parameter dealing with how soon waveguides will be treated as uncoupled. Setting this parameter to 1e-6 will result in a quicker decoupling as compared to e.g. 1e-12.
+
+
+@node set_circ_order, set_circ_field_type, set_unstable_exp_threshold, Reference guide
 @unnumberedsec @code{set_circ_order}
 @cindex @code{set_circ_order}
 
