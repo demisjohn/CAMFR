@@ -429,7 +429,7 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
   }
   
   //for (unsigned int i=0; i<left.size(); i++)
-  //  std::cout << i << left[i] << right[i] << std::endl;
+  //  std::cout << i << kx[i] << left[i] << right[i] << std::endl;
   //std::cout << std::endl;
 }
 

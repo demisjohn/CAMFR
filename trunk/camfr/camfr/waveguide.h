@@ -90,6 +90,8 @@ class Waveguide
     
     const Waveguide_length operator()(const Complex& d=0.0) const;
 
+    virtual Real get_imag_start_thickness() const {return 0.0;}
+
     virtual bool operator!=(const Waveguide& w) const
       {return !(*this == w);}
 

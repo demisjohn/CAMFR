@@ -190,6 +190,8 @@ inline Mode* waveguide_get_fw_mode(const Waveguide& w, int i)
 inline Mode* waveguide_get_bw_mode(const Waveguide& w, int i)
   {check_index(i); return w.get_bw_mode(i+1);}
 
+
+
 inline BlochMode* blochstack_get_mode(BlochStack& b, int i)
   {check_bloch_index(i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
 
@@ -764,6 +766,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("bw_mode",  waveguide_get_bw_mode,
          return_value_policy<reference_existing_object>())
     .def("calc",     &Waveguide::find_modes)
+    .def("get_imag_start_thickness", &Waveguide::get_imag_start_thickness)
     .def("__repr__", &Waveguide::repr)
     .def("__call__", waveguide_to_term)
     );
