@@ -513,7 +513,7 @@ void Section2D::find_modes()
   if (global.sweep_from_previous && (modeset.size() == global.N))
     find_modes_by_sweep();
   else
-    find_modes_from_series();
+    find_modes_from_estimates();
 
   // Remember wavelength and gain these modes were calculated for.
 
@@ -566,11 +566,11 @@ struct kt_to_neff : ComplexFunction
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Section2D::estimate_kz2
+// Section2D::estimate_kz2_omar_schuenemann
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Section2D::estimate_kz2()
+cVector Section2D::estimate_kz2_omar_schuenemann()
 {
   int n = M1/2;
 
@@ -639,8 +639,6 @@ cVector Section2D::estimate_kz2()
   }
 
   // Solve eigenvalue problem.
-
-  std::cout << "very old: eigenproblem size: " << M1 << std::endl;
 
   cMatrix E(M1,M1,fortranArray);
   
@@ -936,11 +934,11 @@ struct IndexConvertor
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Section2D::estimate_kz2_li
+// Section2D::estimate_kz2_fourier
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Section2D::estimate_kz2_li()
+cVector Section2D::estimate_kz2_fourier()
 {
 #if 0
   vector<Complex> disc;  
@@ -1048,9 +1046,13 @@ cVector Section2D::estimate_kz2_li()
   int n_ = 2*N+1;
 
   const int MN = m_*n_;
+  const bool Li = (global.section_solver == L);
   
-  cMatrix     eps(MN,MN,fortranArray);
-  cMatrix inv_eps(MN,MN,fortranArray); // 'Non li' formulation.
+  cMatrix eps(MN,MN,fortranArray);
+
+  cMatrix inv_eps(fortranArray);
+  if (!Li)
+    inv_eps.resize(MN,MN);
 
   for (int m=-M; m<=M; m++)
     for (int n=-N; n<=N; n++)
@@ -1062,17 +1064,20 @@ cVector Section2D::estimate_kz2_li()
         {
           int i2 = (j+M+1) + (l+N)*(2*M+1);
 
-              eps(i1,i2) =     eps_(m-j + 2*M+1, n-l + 2*N+1);          
-          inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
+              eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1);
+
+              if (!Li)
+                inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
         }
     }
 
-  bool old = (global.bloch_calc == T); // Hijacked switch.
+  cMatrix inv_eps_2(fortranArray);
 
-  cMatrix inv_eps_2(MN,MN,fortranArray); // 'Li' formulation.
-
-  if (!old)
+  if (Li) // Li formulation.
+  {
+    inv_eps_2.resize(MN,MN);
     inv_eps_2.reference(invert(eps));
+  }
 
   // Calculate fourier_eps_2D_y_x.
 
@@ -1082,7 +1087,7 @@ cVector Section2D::estimate_kz2_li()
   vector<Slab*> slabs_rot;
   vector<Complex> disc_rot;
 
-  if (!old)
+  if (Li)
   {
     eps_y_x.reference(fourier_eps_2D_y_x(slabs, disc, M, N, extend));
     rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
@@ -1103,100 +1108,94 @@ cVector Section2D::estimate_kz2_li()
        beta(i) =  beta0 + n*2.*pi/get_height()/2.;     
     }
 
-
   //
-  // New formulation.
+  // Li formulation.
   //
 
   cMatrix F(2*MN,2*MN,fortranArray);
   cMatrix G(2*MN,2*MN,fortranArray);
 
-  if (!old)
+  if (Li)
   {
-
-  // Constuct F matrix.
+    // Constuct F matrix.
   
-  for (int i1=1; i1<=MN; i1++)
-    for (int i2=1; i2<=MN; i2++)
-    {
-      F(i1,   i2)    =  alpha(i1) * inv_eps_2(i1,i2) *  beta(i2);      
-      F(i1,   i2+MN) = -alpha(i1) * inv_eps_2(i1,i2) * alpha(i2);        
-      F(i1+MN,i2)    =   beta(i1) * inv_eps_2(i1,i2) *  beta(i2);
-      F(i1+MN,i2+MN) =  -beta(i1) * inv_eps_2(i1,i2) * alpha(i2);      
-
-      if (i1==i2)   
+    for (int i1=1; i1<=MN; i1++)
+      for (int i2=1; i2<=MN; i2++)
       {
-        F(i1,   i2+MN) += k0*k0;
-        F(i1+MN,i2)    -= k0*k0;
-      }
-    }
-  
-  // Construct G matrix.
-  
-  for (int i1=1; i1<=MN; i1++)
-    for (int i2=1; i2<=MN; i2++)
-    {
-      G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
-      G(i1,   i2+MN) = -k0*k0 * eps_y_x(i1,i2);        
-      G(i1+MN,i2)    =  k0*k0 * eps_x_y(i1,i2);
-      G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+        F(i1,   i2)    =  alpha(i1) * inv_eps_2(i1,i2) *  beta(i2);      
+        F(i1,   i2+MN) = -alpha(i1) * inv_eps_2(i1,i2) * alpha(i2);        
+        F(i1+MN,i2)    =   beta(i1) * inv_eps_2(i1,i2) *  beta(i2);
+        F(i1+MN,i2+MN) =  -beta(i1) * inv_eps_2(i1,i2) * alpha(i2);      
 
-      if (i1==i2) 
-      {     
-        G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
-        G(i1+MN,i2)    -=  beta(i2)*beta(i2);
+        if (i1==i2)   
+        {
+          F(i1,   i2+MN) += k0*k0;
+          F(i1+MN,i2)    -= k0*k0;
+        }
       }
+  
+    // Construct G matrix.
+  
+    for (int i1=1; i1<=MN; i1++)
+      for (int i2=1; i2<=MN; i2++)
+      {
+        G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+        G(i1,   i2+MN) = -k0*k0 * eps_y_x(i1,i2);        
+        G(i1+MN,i2)    =  k0*k0 * eps_x_y(i1,i2);
+        G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+
+        if (i1==i2) 
+        {     
+          G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
+          G(i1+MN,i2)    -=  beta(i2)*beta(i2);
+        }
       
-    }
+      }
 
-  std::cout << "Done new" << std::endl;
-  
+    std::cout << "Done Li" << std::endl;
   }
 
   //
-  // Old formulation.
+  // Noponen/Turunen formulation.
   //
 
   else
   {
-    
-
-  // Constuct F matrix.
+    // Constuct F matrix.
   
-  for (int i1=1; i1<=MN; i1++)
-    for (int i2=1; i2<=MN; i2++)
-    {
-      F(i1,   i2)    =  alpha(i1) * inv_eps(i1,i2) *  beta(i2);      
-      F(i1,   i2+MN) = -alpha(i1) * inv_eps(i1,i2) * alpha(i2);        
-      F(i1+MN,i2)    =   beta(i1) * inv_eps(i1,i2) *  beta(i2);
-      F(i1+MN,i2+MN) =  -beta(i1) * inv_eps(i1,i2) * alpha(i2);      
-
-      if (i1==i2)   
+    for (int i1=1; i1<=MN; i1++)
+      for (int i2=1; i2<=MN; i2++)
       {
-        F(i1,   i2+MN) += k0*k0;
-        F(i1+MN,i2)    -= k0*k0;
+        F(i1,   i2)    =  alpha(i1) * inv_eps(i1,i2) *  beta(i2);      
+        F(i1,   i2+MN) = -alpha(i1) * inv_eps(i1,i2) * alpha(i2);        
+        F(i1+MN,i2)    =   beta(i1) * inv_eps(i1,i2) *  beta(i2);
+        F(i1+MN,i2+MN) =  -beta(i1) * inv_eps(i1,i2) * alpha(i2);      
+
+        if (i1==i2)   
+        {
+          F(i1,   i2+MN) += k0*k0;
+          F(i1+MN,i2)    -= k0*k0;
+        }
       }
-    }
   
-  // Construct G matrix.
+    // Construct G matrix.
   
-  for (int i1=1; i1<=MN; i1++)
-    for (int i2=1; i2<=MN; i2++)
-    {
-      G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
-      G(i1,   i2+MN) = -k0*k0 * eps(i1,i2);        
-      G(i1+MN,i2)    =  k0*k0 * eps(i1,i2);
-      G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+    for (int i1=1; i1<=MN; i1++)
+      for (int i2=1; i2<=MN; i2++)
+      {
+        G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+        G(i1,   i2+MN) = -k0*k0 * eps(i1,i2);        
+        G(i1+MN,i2)    =  k0*k0 * eps(i1,i2);
+        G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
 
-      if (i1==i2) 
-      {     
-        G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
-        G(i1+MN,i2)    -=  beta(i2)*beta(i2);
-      }    
-    }
+        if (i1==i2) 
+        {     
+          G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
+          G(i1+MN,i2)    -=  beta(i2)*beta(i2);
+        }    
+      }
 
-
-  std::cout << "Done old" << std::endl;
+    std::cout << "Done Noponen/Turunen" << std::endl;
   }
 
   // Free rotated slabs.
@@ -1204,7 +1203,7 @@ cVector Section2D::estimate_kz2_li()
   for (int i=0; i<slabs_rot.size(); i++)
     delete slabs_rot[i];
   
-  // Solve eigenproblem.
+  // Large eigenproblem.
 
   cMatrix FG(2*MN,2*MN,fortranArray); 
   FG.reference(multiply(F,G));
@@ -1362,7 +1361,7 @@ cVector Section2D::estimate_kz2_li()
     }
   }
 
-  // Solce reduced eigenvalue problem.
+  // Solve reduced eigenvalue problem.
 
   cVector E_(2*M_*N_,fortranArray);
   cMatrix eig_(2*M_*N_,2*M_*N_,fortranArray); 
@@ -1417,11 +1416,11 @@ cVector Section2D::estimate_kz2_li()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Section2D::find_modes_from_series()
+// Section2D::find_modes_from_estimates()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Section2D::find_modes_from_series()
+void Section2D::find_modes_from_estimates()
 {
   // Check M1.
 
@@ -1474,18 +1473,17 @@ void Section2D::find_modes_from_series()
     
     cVector kz2(fortranArray);
 
-    if (global.eigen_calc == arnoldi)
-    {  
+    if (global.section_solver == OS)
+    {      
+      kz2.resize(M1);
+      kz2 = estimate_kz2_omar_schuenemann();
+    }    
+    else
+    {      
       int M = int(sqrt(Real(M1)));      
       int N = int(sqrt(Real(M1)));
       kz2.resize(2*(2*M+1)*(2*N+1));
-      kz2 = estimate_kz2_li();
-    }
-    
-    else
-    {
-      kz2.resize(M1);
-      kz2 = estimate_kz2();
+      kz2 = estimate_kz2_fourier();
     }
 
     //for (unsigned int i=1; i<=kz2.size(); i++)
@@ -1496,18 +1494,7 @@ void Section2D::find_modes_from_series()
       if (real(sqrt(kz2(i))) < 1.01*max_kz)
         kz2_coarse.push_back(kz2(i));
   }
-  user_estimates.clear();  
-
-  if (global.eigen_calc == arnoldi)
-  {    
-    std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
-
-    for (unsigned int i=0; i<kz2_coarse.size(); i++)
-      std::cout << i << " " << sqrt(kz2_coarse[i])/2./pi*global.lambda
-                << std::endl;
-
-    //exit (-1);
-  }
+  user_estimates.clear();
 
   // Refine estimates.
 
@@ -1517,6 +1504,8 @@ void Section2D::find_modes_from_series()
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), index_sorter());
   else
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
+
+  //std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
 
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());

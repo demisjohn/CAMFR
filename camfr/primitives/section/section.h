@@ -185,6 +185,29 @@ inline std::ostream& operator<<(std::ostream& s, const Section& section)
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// STRUCT: ModeEstimate
+//
+//   Estimate of a mode's propagation constant (squared) and optionally 
+//   fourier expansions of its fields.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+struct ModeEstimate
+{
+    ModeEstimate(const Complex& kz2_, 
+                 cVector* Ex_=0, cVector* Ey_=0, 
+                 cVector* Hx_=0, cVector* Hy_=0)
+      : kz2(kz2_), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
+
+    Complex kz2;
+    cVector *Ex, *Ey, *Hx, *Hy;  
+};
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: Section2D
@@ -239,12 +262,12 @@ class Section2D : public SectionImpl
 
     Sort_type sort;
 
-    void find_modes_from_series();
+    void find_modes_from_estimates();
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
-    cVector estimate_kz2();
-    cVector estimate_kz2_li();
+    cVector estimate_kz2_omar_schuenemann();
+    cVector estimate_kz2_fourier();
 
     std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.
