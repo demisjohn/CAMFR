@@ -1,5 +1,9 @@
 2003-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* slabmode.cpp: Reduce zero threshold.
+
+2003-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* slab.cpp: Fix memory management bug.
 
 2003-04-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
