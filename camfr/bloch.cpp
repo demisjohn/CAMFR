@@ -204,8 +204,8 @@ void BlochStack::find_modes_diag()
 
     if (abs(T21) < 1e-10)
     {
-      cout << "Error: mode near cut-off. Impossible to calculate "
-           << "bloch modes" << endl;
+      //cout << "Error: mode near cut-off. Impossible to calculate "
+      //     << "bloch modes" << endl;
       E = 0;
     }
     
