@@ -241,6 +241,9 @@ struct Global
     // The number of modes used in the auxialiary series expansion solver 
     // will be global.N * global.mode_surplus.
     Real mode_surplus;
+
+    // Tmp switch to enable backward modes.
+    bool backward_modes;
 };
 
 extern Global global;
