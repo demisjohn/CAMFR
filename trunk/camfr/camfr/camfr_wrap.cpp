@@ -28,6 +28,7 @@
 #include "stack.h"
 #include "cavity.h"
 #include "bloch.h"
+#include "infstack.h"
 #include "math/calculus/function.h"
 #include "primitives/planar/planar.h"
 #include "primitives/circ/circ.h"
@@ -756,6 +757,14 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     BlochMode_.def(&BlochMode::fw_field, "fw_field");
     BlochMode_.def(&BlochMode::bw_field, "bw_field");
     BlochMode_.def(&BlochMode::S_flux,   "S_flux");
+
+    // Wrap InfStack.
+
+    class_builder<InfStack> InfStack_(camfr, "InfStack");
+    InfStack_.declare_base(DenseScatterer_);
+
+    InfStack_.def(constructor<const Expression&>());
+    InfStack_.def(constructor<const Expression&,const Complex&>()); // tmp
 
     // Wrap RealFunction.
 
