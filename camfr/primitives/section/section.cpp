@@ -759,8 +759,8 @@ void Section2D::find_modes_from_series()
   else
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
 
-  if (kz2_coarse.size() > global.N)
-    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+  if (kz2_coarse.size() > global.N+5)
+    kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
