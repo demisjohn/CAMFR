@@ -18,22 +18,20 @@
 // Default arguments
 
 #define BOOST_PYTHON_V2
-#define BOOST_PYTHON_SOURCE
 
 #include <boost/python/module.hpp>
 #include <boost/python/class.hpp>
-#include <boost/python/type_from_python.hpp>
+#include <boost/python/operators.hpp>
 #include <boost/python/object/value_holder.hpp>
 #include <boost/python/object/pointer_holder.hpp>
 #include <boost/python/object/class.hpp>
+#include <boost/python/converter/rvalue_from_python_data.hpp>
 #include <boost/python/reference_existing_object.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
-#include <boost/python/to_python_converter.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/errors.hpp>
 #include <boost/python/call.hpp>
-#include <libs/python/src/converter/builtin_converters.cpp>
 
 #include "Numeric/arrayobject.h"
 
@@ -404,9 +402,7 @@ inline void stack_set_inc_field_plane_wave
 //
 /////////////////////////////////////////////////////////////////////////////
 
-using boost::python::to_python_converter;
-
-struct cVector_to_python : to_python_converter<cVector, cVector_to_python>
+struct cVector_to_python
 {
   static PyObject* convert(const cVector& c)
   {
@@ -423,35 +419,55 @@ struct cVector_to_python : to_python_converter<cVector, cVector_to_python>
 };
 
 
-namespace boost { namespace python { namespace converter { namespace {
 
-struct cVector_from_python
+struct register_cVector_from_python
 {
-  static unaryfunc* get_slot(PyObject* o)
+
+  register_cVector_from_python()
   {
-    return &py_object_identity;
+    boost::python::converter::registry::insert
+      (&convertible, &construct, boost::python::type_id<cVector>());
+  }
+
+  static void* convertible(PyObject* o)
+  {
+    if (!PyArray_Check(o))
+      return NULL;
+
+    PyArrayObject* a = (PyArrayObject*)(o);
+    if ( (a->nd != 1) || (a->dimensions[0] != int(global.N)) )
+      return NULL;
+
+    return o;
   }
     
-  static cVector extract(PyObject* o)
+    
+  static void construct
+    (PyObject* o, boost::python::converter::rvalue_from_python_stage1_data* 
+     data)
   {
     PyArrayObject* a 
       = (PyArrayObject*) PyArray_Cast((PyArrayObject*)o, PyArray_CDOUBLE);
 
-    if ( (a->nd != 1) || (a->dimensions[0] != int(global.N)) )
-    {
-      PyErr_SetString(PyExc_ValueError, "array has wrong dimensions.");
-      throw boost::python::argument_error();
-    }
-  
-    return cVector((Complex*) a->data,global.N,
-                   blitz::neverDeleteData,fortranArray);
+    cVector c((Complex*) a->data,global.N,blitz::duplicateData,fortranArray);
+
+    void* storage = ((
+      boost::python::converter::rvalue_from_python_storage<cVector>*)data)
+        ->storage.bytes;
+
+    new (storage) cVector((Complex*) a->data, global.N, 
+                          blitz::duplicateData, fortranArray);
+
+    data->convertible = storage;
+
+    delete a;
   }
+
 };
 
-}}}} // namespace boost::python::converter
 
 
-struct cMatrix_to_python : to_python_converter<cMatrix, cMatrix_to_python>
+struct cMatrix_to_python
 {
   static PyObject* convert(const cMatrix& c)
   {
@@ -476,11 +492,7 @@ struct cMatrix_to_python : to_python_converter<cMatrix, cMatrix_to_python>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// These functions compensate for the lack of implicit type conversion
-// in Python, mainly when converting to Term in expressions like
-//
-//   const Expression  operator+(const Term& L,       const Term& R);
-//   const Expression& operator+(const Expression& L, const Term& R);
+// Wrapper functions warning about deprecated features.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -505,37 +517,6 @@ Term waveguide_to_term(Waveguide& w, const Complex& d)
   
   return Term(w(d));
 }
-
-#define TERM_PLUS_TERM(t1, t2) inline const Expression \
- operator+(t1& L, t2& R) {return Term(L) + Term(R);}
-
-#define TERM_PLUS_TERM_F(t1, t2) (const Expression (*) (t1&, t2&)) &operator+
-
-TERM_PLUS_TERM(Stack,      Stack)
-TERM_PLUS_TERM(Stack,      InfStack)
-TERM_PLUS_TERM(Stack,      const Expression)
-TERM_PLUS_TERM(Stack,      const Term)
-TERM_PLUS_TERM(Stack,      Scatterer)
-TERM_PLUS_TERM(const Term, Stack)
-TERM_PLUS_TERM(const Term, InfStack)
-TERM_PLUS_TERM(const Term, const Expression)
-TERM_PLUS_TERM(const Term, Scatterer)
-TERM_PLUS_TERM(Scatterer,  Stack)
-TERM_PLUS_TERM(Scatterer,  InfStack)
-TERM_PLUS_TERM(Scatterer,  const Expression)
-TERM_PLUS_TERM(Scatterer,  const Term)
-TERM_PLUS_TERM(Scatterer,  Scatterer)
-  
-#define EX_PLUS_TERM(t) const Expression \
- operator+(const Expression& L, t& R) {return L + Term(R);}
-
-#define EX_PLUS_TERM_F(t) (const Expression (*) (const Expression&, t&)) \
-      &operator+
-  
-EX_PLUS_TERM(Stack)
-EX_PLUS_TERM(InfStack)
-EX_PLUS_TERM(const Expression)
-EX_PLUS_TERM(Scatterer)
 
 
   
@@ -607,12 +588,15 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   using boost::python::return_value_policy;
   using boost::python::reference_existing_object;
 
+  implicitly_convertible<Scatterer,Term>();
+  implicitly_convertible<Stack,Term>();
+
   import_array();
 
-  cVector_to_python();
-  cMatrix_to_python();
+  to_python_converter<cVector, cVector_to_python>();
+  to_python_converter<cMatrix, cMatrix_to_python>();  
 
-  slot_rvalue_from_python<cVector, cVector_from_python>();
+  register_cVector_from_python();
 
   module camfr("_camfr");
 
@@ -852,11 +836,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
          return_value_policy<reference_existing_object>())
     .def("ext",  &Scatterer::get_ext,
          return_value_policy<reference_existing_object>())
-    .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Term))
-    .def("__add__", TERM_PLUS_TERM_F(Scatterer, Stack))
-    .def("__add__", TERM_PLUS_TERM_F(Scatterer, InfStack))
-    .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Expression))
-    .def("__add__", TERM_PLUS_TERM_F(Scatterer, Scatterer))
+    .def(self + Expression())
+    .def(self + Term())
     );
 
   // Wrap MultiScatterer.
@@ -922,16 +903,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
          return_value_policy<reference_existing_object>())
     .def("__repr__", &Expression::repr)
     .def("add",      &Expression::operator+=)
-    .def("__iadd__", &Expression::operator+=)
-    .def("__add__",  EX_PLUS_TERM_F(const Term))
-    .def("__add__",  EX_PLUS_TERM_F(Stack))
-    .def("__add__",  EX_PLUS_TERM_F(InfStack))
-    .def("__add__",  EX_PLUS_TERM_F(const Expression))
-    .def("__add__",  EX_PLUS_TERM_F(Scatterer))
-    .def("__rmul__",
-         (const Term (*) (const Expression&, unsigned int)) &operator*)
-    .def("__mul__",
-         (const Term (*) (const Expression&, unsigned int)) &operator*)
+    .def(self += self)
+    .def(self + self)
+    .def(self + Term())
+    .def(self * int())
+    .def(int() * self)
     );
 
   // Wrap Term.
@@ -946,13 +922,10 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("ext",  &Term::get_inc,
          return_value_policy<reference_existing_object>())
     .def("__repr__", &Term::repr)
-    .def("__add__",  TERM_PLUS_TERM_F(const Term, const Term))
-    .def("__add__",  TERM_PLUS_TERM_F(const Term, Stack))
-    .def("__add__",  TERM_PLUS_TERM_F(const Term, InfStack))
-    .def("__add__",  TERM_PLUS_TERM_F(const Term, const Expression))
-    .def("__add__",  TERM_PLUS_TERM_F(const Term, Scatterer))
-    .def("__rmul__", (const Term (*) (const Term&, unsigned int)) &operator*)
-    .def("__mul__",  (const Term (*) (const Term&, unsigned int)) &operator*)
+    .def(self + self)
+    .def(self + Expression())
+    .def(self * int())
+    .def(int() * self)
     );
 
   // Wrap Stack.
@@ -992,11 +965,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("R21",                      stack_R21)
     .def("T12",                      stack_T12)
     .def("T21",                      stack_T21)
-    .def("__add__", TERM_PLUS_TERM_F(Stack, const Term))
-    .def("__add__", TERM_PLUS_TERM_F(Stack, Stack))
-    .def("__add__", TERM_PLUS_TERM_F(Stack, InfStack))
-    .def("__add__", TERM_PLUS_TERM_F(Stack, const Expression))
-    .def("__add__", TERM_PLUS_TERM_F(Stack, Scatterer))
+    .def(self + Expression())
+    .def(self + Term())
     );
 
   // Wrap Cavity.
