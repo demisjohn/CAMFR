@@ -6,10 +6,10 @@ Default("camfr")
 
 env = Environment(CPPPATH = include_dirs,
  		  LIBPATH = library_dirs,
-	          CC  = cc,  CCFLAGS  = flags,
-		  CXX = cxx, CXXFLAGS = flags,
-	          F77 = f77, F77FLAGS = fflags,
-		  LINKFLAGS = link_flags,
+	          CC   = cc,   CCFLAGS   = flags,
+		  CXX  = cxx,  CXXFLAGS  = flags,
+	          F77  = f77,  F77FLAGS  = fflags,
+		  LINK = link, LINKFLAGS = link_flags,
 		  LIBS = libs, SHLIBPREFIX = "")
 
 env_noopt = env.Copy(CCFLAGS = flags_noopt, CXXFLAGS = flags_noopt)

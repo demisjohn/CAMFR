@@ -7,6 +7,9 @@ cc  = "/home/pbienst/local/bin/gcc"
 cxx = "/home/pbienst/local/bin/g++"
 f77 = "/home/pbienst/local/bin/g77"
 
+link = cxx
+link_flags = ""
+
 # Compiler flags.
 #
 # Note: for the Fortran name definition you can define one of the following
@@ -16,7 +19,7 @@ f77 = "/home/pbienst/local/bin/g77"
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 \
+base_flags = "-ftemplate-depth-60 -O3 -march=pentiumpro \
 	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
