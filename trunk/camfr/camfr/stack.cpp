@@ -911,7 +911,7 @@ Field Stack::field(const Coord& coord)
 
   for (int i=1; i<=wg->N(); i++)
   {
-    const Complex kz = wg->get_mode(i)->kz;
+    const Complex kz = wg->get_mode(i)->get_kz();
     
     if (imag(kz) < 0) // Propagate forwards.
     {
@@ -1018,8 +1018,8 @@ Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k=NULL)
         const Complex B_i = interface_field[2*k+1].bw(i);
         const Complex B_j = interface_field[2*k+1].bw(j);
 
-        const Complex k_i = wg->get_mode(i)->kz;
-        const Complex k_j = wg->get_mode(j)->kz;        
+        const Complex k_i = wg->get_mode(i)->get_kz();
+        const Complex k_j = wg->get_mode(j)->get_kz();        
 
         const Complex fw_fw =     A_i*f[i-1].E2  *   conj(A_j*f[j-1].Hz)
                               -   A_i*f[i-1].Ez  *   conj(A_j*f[j-1].H2);

@@ -49,6 +49,9 @@ class Mode
      virtual Field bw_field(const Coord& coord) const {return field(coord);}
      // Tmp: will be corrected when dealing with non-reciproque media.
 
+     virtual Complex get_kz()    const {return kz;}
+     virtual Complex get_kz_bw() const {return kz_bw;}
+
      Complex n_eff()    const {return kz   /2.0/pi*global.lambda;}
      Complex n_eff_bw() const {return kz_bw/2.0/pi*global.lambda;}
           
@@ -60,13 +63,16 @@ class Mode
      string repr() const;
 
      Polarisation pol;
-     Complex      kz;
-     Complex      kz_bw;
      
   protected:
 
+     Complex kz;
+     Complex kz_bw;
+
      Complex A; // proportionality constant in Ez
      Complex B; // proportionality constant in Hz
+
+     friend class Planar;
 };
 
 inline ostream& operator<<(ostream& s, const Mode& mode)
@@ -93,12 +99,18 @@ struct modesorter
 {
     bool operator()(const Mode& a, const Mode& b)
     {
-      return ( real(a.kz * a.kz) > real(b.kz * b.kz) );
+      const Complex kz_a = a.get_kz();
+      const Complex kz_b = b.get_kz();
+      
+      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
     }
 
     bool operator()(const Mode* a, const Mode* b)
     {
-      return ( real(a->kz * a->kz) > real(b->kz * b->kz) );
+      const Complex kz_a = a->get_kz();
+      const Complex kz_b = b->get_kz();
+
+      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
     }
 };
 
@@ -125,8 +137,8 @@ struct modesorter_BDM
       if ( (a->pol == TM) && (b->pol != TM) )
         return false;
 
-      const double ra2 = real(a->kz * a->kz);
-      const double rb2 = real(b->kz * b->kz);
+      const double ra2 = real(a->get_kz() * a->get_kz());
+      const double rb2 = real(b->get_kz() * b->get_kz());
       
       if ( (ra2 < 0) && (rb2 < 0) )
         if ( (a->pol != TE) && (a->pol != TM) )

@@ -229,8 +229,8 @@ void SlabImpl::calc_overlap_matrices
 
   for (int i=1; i<=int(N); i++)
   {
-    sin_I (i) = global_slab.beta / medium_I ->get_mode(i)->kz;
-    sin_II(i) = global_slab.beta / medium_II->get_mode(i)->kz; 
+    sin_I (i) = global_slab.beta / medium_I ->get_mode(i)->get_kz();
+    sin_II(i) = global_slab.beta / medium_II->get_mode(i)->get_kz(); 
 
     cos_I (i) = sqrt(1.0 - sin_I (i) * sin_I (i));
     cos_II(i) = sqrt(1.0 - sin_II(i) * sin_II(i));    

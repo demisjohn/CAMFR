@@ -1,0 +1,4 @@
+2001-10-29  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* circoverlap.cpp: Virtualise kz.
+	

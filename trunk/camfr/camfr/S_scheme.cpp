@@ -39,7 +39,7 @@ void calc_tilde(const Chunk& chunk,
 
   cVector prop(global.N,fortranArray);
   for (int i=1; i<=global.N; i++)
-    prop(i) = exp( -I * s->get_ext()->get_mode(i)->kz * chunk.d );
+    prop(i) = exp( -I * s->get_ext()->get_mode(i)->get_kz() * chunk.d );
 
   // Transparent scatterer?
 
@@ -167,7 +167,7 @@ void calc_tilde(const Chunk& chunk,
 
   cVector prop(global.N,fortranArray);
   for (int i=1; i<=global.N; i++)
-    prop(i) = exp( -I * s->get_ext()->get_mode(i)->kz * chunk.d );
+    prop(i) = exp( -I * s->get_ext()->get_mode(i)->get_kz() * chunk.d );
 
   // Transparent scatterer?
 
@@ -276,7 +276,7 @@ void calc_tilde(const Chunk& chunk,
 
   // Propagation needed.
   
-  Complex kz = s->get_ext()->get_mode(1)->kz;
+  Complex kz = s->get_ext()->get_mode(1)->get_kz();
 
   Complex M;
   if ( imag(kz) > 1000 )

@@ -148,10 +148,10 @@ void T_calc_fields
 
     // Find exponent to be factored out in propagation.
 
-    Complex kz_f = wg->get_mode(1)->kz;
+    Complex kz_f = wg->get_mode(1)->get_kz();
     for (unsigned int i=2; i<=N; i++)
     {
-      const Complex kz = wg->get_mode(i)->kz;
+      const Complex kz = wg->get_mode(i)->get_kz();
       
       if (imag(kz) < imag(kz_f))
         kz_f = kz;
@@ -163,7 +163,7 @@ void T_calc_fields
 
     for (int i=1; i<=N; i++)
     {
-      const Complex kz = wg->get_mode(i)->kz;
+      const Complex kz = wg->get_mode(i)->get_kz();
     
       fw_scaled(i) *= exp(-I * (kz+kz_f) * chunks[k].d);
       bw_scaled(i) *= exp( I * (kz-kz_f) * chunks[k].d);

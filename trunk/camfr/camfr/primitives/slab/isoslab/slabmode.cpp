@@ -20,6 +20,33 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+Complex SlabMode::get_kz() const 
+{
+  if (abs(global_slab.beta) < 1e-10)
+    return kz;
+
+  // Rotate kz for off-axis incidence.
+
+  Complex kz_new = sqrt(kz*kz - pow(global_slab.beta, 2));
+
+  if (real(kz_new) < 0) 
+      kz_new = -kz_new;
+
+  if (abs(real(kz_new)) < 1e-12)
+    if (imag(kz_new) > 0)
+      kz_new = -kz_new;
+
+  return kz_new;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabMode::field
+//
+/////////////////////////////////////////////////////////////////////////////
+
 Field SlabMode::field(const Coord& coord_) const
 {
   // Check and coerce input.

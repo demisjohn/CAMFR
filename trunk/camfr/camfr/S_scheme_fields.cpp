@@ -287,7 +287,8 @@ void calc_S_S(const vector<Chunk>& chunks,
 
     cVector fw_prop(N,fortranArray);
     for (int i=1; i<=N; i++)    
-      fw_prop(i) = fw_int(i) * exp(-I * wg->get_mode(i)->kz * chunks[k].d);
+      fw_prop(i) = fw_int(i) 
+        * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
     // Calculate bw field after propagation.
     
@@ -316,7 +317,8 @@ void calc_S_S(const vector<Chunk>& chunks,
 
     cVector bw_int(N,fortranArray);
     for (int i=1; i<=N; i++)
-      bw_int(i) = bw_prop(i) * exp(-I * wg->get_mode(i)->kz * chunks[k].d);
+      bw_int(i) = bw_prop(i) 
+        * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
     // Update field vector.
 
@@ -369,7 +371,8 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
 
     cVector fw_prop(N,fortranArray);
     for (int i=1; i<=N; i++)    
-      fw_prop(i) = fw_int(i) * exp(-I * wg->get_mode(i)->kz * chunks[k].d);
+      fw_prop(i) = fw_int(i) 
+        * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
     // Calculate bw field after propagation.
     
@@ -398,7 +401,8 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
 
     cVector bw_int(N,fortranArray);
     for (int i=1; i<=N; i++)
-      bw_int(i) = bw_prop(i) * exp(-I * wg->get_mode(i)->kz * chunks[k].d);
+      bw_int(i) = bw_prop(i) 
+        * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
     // Update field vector.
 
@@ -448,7 +452,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
     Waveguide* wg = chunks[k].sc->get_ext();
 
     cVector fw_prop(1,fortranArray);
-    fw_prop(1) = fw_int(1) * exp(-I * wg->get_mode(1)->kz * chunks[k].d);
+    fw_prop(1) = fw_int(1) * exp(-I * wg->get_mode(1)->get_kz() * chunks[k].d);
 
     // Calculate bw field after propagation.
     
@@ -476,7 +480,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
     // Calculate bw field after interface.
 
     cVector bw_int(1,fortranArray);
-    bw_int(1) = bw_prop(1) * exp(-I * wg->get_mode(1)->kz * chunks[k].d);
+    bw_int(1) = bw_prop(1) * exp(-I * wg->get_mode(1)->get_kz() * chunks[k].d);
 
     // Update field vector.
 

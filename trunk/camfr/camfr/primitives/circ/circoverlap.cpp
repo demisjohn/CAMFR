@@ -251,9 +251,12 @@ Complex overlap(const Circ_M_Mode* mode_I,
 
   const Real ang_integral = (n == 0) ? 2*pi : pi;
   const Real sign = (global_circ.fieldtype == cos_type) ? 1 : -1;
+
+  const Complex kz_I  = mode_I ->get_kz();
+  const Complex kz_II = mode_II->get_kz();  
   
-  return -ang_integral * (   term1 * mode_I ->kz * mode_II->kz * n *  sign
-                           + term2 * mode_I ->kz * omega
-                           + term3 * mode_II->kz * omega
-                           - term4 * omega       * omega       * n * -sign );
+  return -ang_integral * (   term1 * kz_I  * kz_II * n *  sign
+                           + term2 * kz_I  * omega
+                           + term3 * kz_II * omega
+                           - term4 * omega * omega * n * -sign );
 }

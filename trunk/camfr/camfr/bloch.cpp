@@ -149,8 +149,8 @@ void BlochStack::brillouin_eliminate_modes()
   
   for (unsigned int i=0; i<old_set.size(); i++)
   { 
-    Real a(real(old_set[i]->kz));
-    Real b(imag(old_set[i]->kz));
+    Real a(real(old_set[i]->get_kz()));
+    Real b(imag(old_set[i]->get_kz()));
     
     if (abs(abs(a) - pi/stack.get_total_thickness()) < 1e-8)
     {
@@ -265,7 +265,7 @@ cVector BlochStack::get_beta_vector() const
   cVector beta(N(), fortranArray);
 
   for (int i=1; i<=N(); i++)
-    beta(i) = get_mode(i)->kz;
+    beta(i) = get_mode(i)->get_kz();
 
   return beta;
 }
