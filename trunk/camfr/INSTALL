@@ -1,27 +1,26 @@
-INSTALLATION
+COMPILING AND INSTALLING
 
 For the compilation of CAMFR, a C++ compiler is needed that supports
 many features from the latest C++ standard. Use e.g. a recent version
 (3.0.4 or later) of the gcc compiler from http://gcc.gnu.org.
 
 CAMFR also requires the following external programs or libraries, 
-which must be installed first. The use of the lastest versions is 
-recommended.
+which must be installed first and built with the same version of gcc used
+to compile CAMFR:.
 
 - Python 2.2 or later from http://www.python.org
-- The Scons builing tool from http://www.scons.org
+- The Scons building tool from http://www.scons.org
 - Numerical Python from http://sourceforge.net/projects/numpy
-- The Boost Python Library from http://www.boost.org. A CVS version is
-  needed, for instructions on how to get it, see 
-  http://mail.python.org/pipermail/c++-sig/2002-February/000815.html
-  For builing it, use a command like e.g. 
-      jam -sTOOLS="intel-win32" -sBUILD=release 
-      -sBOOST_ROOT=D:/boost_cvs/boost/ 
-      -sPYTHON_VERSION=2.2 -sPYTHON_ROOT=C:/progra~1/python22
-- a recent snapshot of Blitz++ from http://oonumerics.org/blitz
+- The Boost Python Library from http://www.boost.org. At least version 1.29
+  is needed. For building it, use a comand like e.g. 
+    bjam -sBUILD=release -sPYTHON_VERSION=2.2 -sPYTHON_ROOT=/usr
+- Blitz++ from http://oonumerics.org/blitz. Use version 20001213, later
+  versions still have troubles compiling.
 - the Fortran linear algebra libraries BLAS and LAPACK, which you can get from 
   http://www.netlib.org. If possible however, use a vendor-supplied version 
-  for maximum performance.
+  (like Intel MKL) for maximum performance.
+- for visualisation, the Python Image Library from 
+  www.pythonware.com/products/pil/.
 
 Now edit machine_cfg.py to adjust the location of these libraries, as well
 as other machine-dependent parameters and compiler flags. There are some 

@@ -32,18 +32,17 @@ fflags = flags
 # Include directories.
 
 include_dirs = ["/home/pbienst/blitz-20001213",
-	        "/home/pbienst/boost_cvs/boost",
+	        "/home/pbienst/boost_1_29_0",
 	        "/usr/include/python2.2"]
 
 # Library directories.
 
 library_dirs = ["/home/pbienst/blitz-20001213/lib",
-                "/opt/intel/mkl/lib/32",
-                "/home/pbienst/local/lib"]
+                "/opt/intel/mkl/lib/32"]
 
 # Library names.
 
-libs = ["bpl", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
+libs = ["boost_python", "blitz", "mkl_lapack", "mkl_def", "guide", "g2c"]
 
 # Command to strip library of excess symbols:
 
@@ -53,4 +52,4 @@ strip_command = ""
 
 # Extra files to copy into installation directory.
 
-extra_files = []
+extra_files = [("doc", ["docs/camfr.pdf"])]
