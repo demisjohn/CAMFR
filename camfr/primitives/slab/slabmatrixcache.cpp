@@ -102,7 +102,7 @@ OverlapMatrices* SlabMatrixCache::get_matrices(SlabImpl* wg1, SlabImpl* wg2,
 
   if (found)
     return m;
-
+  
   // Calculate matrices and cache them.
 
   m = new OverlapMatrices(wg1, wg2, slabcache, disc);
