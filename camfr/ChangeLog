@@ -1,5 +1,9 @@
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* geometry.py: Improve to_expression.
+
+2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* defs.h: Add field_calc_heuristic.
 	* defs.cpp: Ditto.
 	* camfr_wrap.cpp: Ditto.
