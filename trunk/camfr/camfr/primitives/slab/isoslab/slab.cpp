@@ -85,7 +85,14 @@ Slab_M::Slab_M(const Expression& expression)
       core_index = i;
 
   core = materials[core_index];
-  uniform = false;  
+
+  // Check if waveguide is uniform.
+
+  uniform = true;
+  for (unsigned int i=0; i<materials.size(); i++)
+    if (    (abs(materials[i]->n()   - core->n())   > 1e-6)
+         || (abs(materials[i]->mur() - core->mur()) > 1e-6) )
+      uniform = false;
 }
 
 
@@ -405,7 +412,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   
   // In case of a homogeneous medium, add a TEM mode if appropriate.
   
-  if (materials.size() == 1)
+  if (uniform)
     if ( ( (global.polarisation == TM) && (abs(R_lower + 1.0) < 1e-10)
                                        && (abs(R_upper + 1.0) < 1e-10) )
       || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
@@ -728,7 +735,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   // In case of a homogeneous medium, add a TEM mode if appropriate.
   
-  if (materials.size() == 1)
+  if (uniform)
     if ( ( (global.polarisation == TM) && (abs(R_lower + 1.0) < 1e-10)
                                        && (abs(R_upper + 1.0) < 1e-10) )
       || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
