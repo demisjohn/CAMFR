@@ -363,7 +363,7 @@ class Geometry:
                 if ys1 > y1:
                     ys1 = y1
 
-                def same(y0,y1): return abs(y0-y1) < 1e-5
+                def same(y0,y1): return abs(y0-y1) < 1e-6
 
                 new_slab = []      
                 j = 0
@@ -401,7 +401,7 @@ class Geometry:
                 
                 new_slab.append([slab[i][0], slab[i_end-1][1], slab[i][2]])
                 i = i_end
-                
+            
             # Go to next x position.
             
             slabs.append(new_slab)

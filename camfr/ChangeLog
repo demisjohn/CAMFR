@@ -1,4 +1,8 @@
-2003-12-04  Peter Bienstman  <Peter.Bienstman@ugent.be>
+2004-02-12  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* geometry.py: Relax tolerance.
+
+2003-12-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* camfr_wrap.cpp: Wrap mode_correction enum.
 
