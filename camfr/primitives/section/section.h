@@ -124,8 +124,6 @@ class Section : public MultiWaveguide
     Section(const Term& t);
     Section(Expression& ex, 
             int M1=int(global.N*global.mode_surplus), int M2=global.N);
-    Section(Expression& left_ex, Expression& right_ex, 
-            int M1=int(global.N*global.mode_surplus), int M2=global.N);
     ~Section() {delete s; delete leftwall_sc; delete rightwall_sc;}
 
     bool operator==(const Waveguide& w)    const {return this == &w;}

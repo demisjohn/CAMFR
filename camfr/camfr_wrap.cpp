@@ -1069,8 +1069,6 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<Section, bases<MultiWaveguide> >
   ("Section", init<Expression&, optional<int, int> >())
     .def(init<const Term&>())
-    .def(init<Expression&, Expression&>())
-    .def(init<Expression&, Expression&, int, int>())
     .def("mode",   section_get_mode,
          return_value_policy<reference_existing_object>())
     .def("disp",   &Section::get_disp)
