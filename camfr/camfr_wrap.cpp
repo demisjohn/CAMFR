@@ -107,8 +107,8 @@ inline void set_chunk_tracing(bool b)
 inline void set_unstable_exp_threshold(Real d)
   {global.unstable_exp_threshold = d;} 
 
-inline void set_field_calc(Field_calc f)
-  {global.field_calc = f;} 
+inline void set_field_calc_heuristic(Field_calc_heuristic f)
+  {global.field_calc_heuristic = f;} 
 
 inline void set_bloch_calc(Bloch_calc s)
   {global.bloch_calc = s;}
@@ -647,17 +647,15 @@ BOOST_PYTHON_MODULE(_camfr)
   scope().attr("extra")  = extra;
   scope().attr("SVD")    = SVD;
 
-  // Wrap Field_calc enum.
+  // Wrap Field_calc_heuristic enum.
 
-  enum_<Field_calc>("Field_calc")
-    .value("T_T", T_T)
-    .value("S_T", S_T)
-    .value("S_S", S_S)
+  enum_<Field_calc_heuristic>("Field_calc_heuristic")
+    .value("identical", identical)
+    .value("symmetric", symmetric)
     ;
 
-  scope().attr("T_T") = T_T;
-  scope().attr("S_T") = S_T;
-  scope().attr("S_S") = S_S;
+  scope().attr("identical") = identical;
+  scope().attr("symmetric") = symmetric;
 
   // Wrap Bloch_calc enum.
 
@@ -750,7 +748,7 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_eps_trace_coarse",       set_eps_trace_coarse);
   def("set_chunk_tracing",          set_chunk_tracing);
   def("set_unstable_exp_threshold", set_unstable_exp_threshold);
-  def("set_field_calc",             set_field_calc);
+  def("set_field_calc_heuristic",   set_field_calc_heuristic);
   def("set_bloch_calc",             set_bloch_calc);
   def("set_eigen_calc",             set_eigen_calc);
   def("set_orthogonal",             set_orthogonal);

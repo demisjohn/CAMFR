@@ -1,5 +1,11 @@
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* defs.h: Add field_calc_heuristic.
+	* defs.cpp: Ditto.
+	* camfr_wrap.cpp: Ditto.
+
+2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* S_scheme_fields.cpp: Better check for DiagScatterer.
 
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
