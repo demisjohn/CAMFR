@@ -98,6 +98,10 @@ class RefSectionMode : public Mode
 
     Field field(const Coord& coord) const;
 
+    // TMP.
+    
+    RefSection* get_geom() const {return geom;}
+
   protected:
 
     Complex kx, kx0;

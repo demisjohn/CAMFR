@@ -17,6 +17,107 @@
 using std::vector;
 using std::sort;
 
+#include "../../math/calculus/quadrature/patterson_quad.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Overlap function for a given x. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Overlap_x_ : public ComplexFunction
+{
+  public:
+
+    Overlap_x_(const RefSectionMode* m1_,
+              const RefSectionMode* m2_,
+              const Complex& x_)
+      : m1(m1_), m2(m2_), x(x_) {}
+
+    Complex operator()(const Complex& y)
+    {
+      counter++;
+
+      Field f1 = m1->field(Coord(x,y,0));
+      Field f2 = m2->field(Coord(x,y,0));
+
+      return f1.E1 * f2.H2 - f1.E2 * f2.H1;
+    }
+
+  protected:
+
+    const RefSectionMode* m1;
+    const RefSectionMode* m2;
+    Complex x;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Overlap function integrated out over y. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Overlap_ : public ComplexFunction
+{
+  public:
+
+    Overlap_(const RefSectionMode* m1_, const RefSectionMode* m2_) 
+      : m1(m1_), m2(m2_) {}
+
+    Complex operator()(const Complex& x)
+    {
+      counter++;
+
+      Overlap_x_ f(m1, m2, x);
+
+      Wrap_real_to_real f_r(f);
+      Wrap_real_to_imag f_i(f);
+
+      Real y_stop = real(m1->get_geom()->get_height());
+      
+      return patterson_quad(f_r, 0, y_stop, 1e-2, 4)
+         + I*patterson_quad(f_i, 0, y_stop, 1e-2, 4);
+    }
+
+  protected:
+
+    const RefSectionMode* m1;
+    const RefSectionMode* m2;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_numeric
+//
+//   Verification function which calculates the overlap integrals 
+//   numerically. Slower and less acurate.
+//   TODO: check PML in z direction.
+//   To be removed after the analytical overlap calculation matures.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex overlap_numeric_(const RefSectionMode* mode_I,
+                         const RefSectionMode* mode_II)
+{
+  Overlap_ f(mode_I, mode_II);
+
+  Wrap_real_to_real f_r(f);
+  Wrap_real_to_imag f_i(f);
+
+  Real x_stop = real(mode_I->get_geom()->get_width());
+
+  Complex numeric = patterson_quad(f_r, 0, x_stop, 1e-2, 4)
+     + I*patterson_quad(f_i, 0, x_stop, 1e-2, 4);
+
+  return numeric;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // RefSection::find_modes
@@ -63,6 +164,8 @@ void RefSection::find_modes()
   for (int ix=0; ix<n; ix++)
     for (int iy=0; iy<n; iy++)
     {
+      // Calc beta.
+
       Complex kx = (x_offset - kx0 + ix*pi)/a;
       Complex ky = (y_offset - ky0 + iy*pi)/b;
 
@@ -79,16 +182,45 @@ void RefSection::find_modes()
         if (imag(kz) > 0)
           kz = -kz;
 
-      //std::cout << ix << " " << iy << " " << kz/2./pi*global.lambda
-      //          << " " << kx << " " << ky << std::endl;
+      // Add TE mode?
 
-      if (abs(kt2) > 1e-8)
+      bool add_TE = true;
+      
+      if ( (abs(kx) < 1e-6) && (abs(ky) < 1e-6))
+        add_TE = false;
+
+      if ( (abs(kx) < 1e-6) && (abs(ky) > 1e-6))
+        if (abs(cos(kx0)) < 1e-6)
+          add_TE = false;
+
+      if ( (abs(kx) > 1e-6) && (abs(ky) < 1e-6))
+        if (abs(cos(ky0)) < 1e-6)
+          add_TE = false;
+
+      // Add TM mode?
+
+      bool add_TM = true;
+      
+      if ( (abs(kx) < 1e-6) && (abs(ky) < 1e-6))
+        add_TM = false;      
+
+      if ( (abs(kx) < 1e-6) && (abs(ky) > 1e-6))
+        if (abs(sin(kx0)) < 1e-6)
+          add_TM = false;
+
+      if ( (abs(kx) > 1e-6) && (abs(ky) < 1e-6))
+        if (abs(sin(ky0)) < 1e-6)
+          add_TM = false;
+
+      // Add modes.
+
+      if (add_TE)
       {
         RefSectionMode* mode = new RefSectionMode(TE,kz,kx,kx0,ky,ky0,this);
         TE_modes.push_back(mode);
       }
 
-      if ( (abs(kx) > 1e-8) && (abs(ky) > 1e-8) )
+      if (add_TM)
       {
         RefSectionMode* mode = new RefSectionMode(TM,kz,kx,kx0,ky,ky0,this);
         TM_modes.push_back(mode);
@@ -112,6 +244,12 @@ void RefSection::find_modes()
     modeset.push_back(TE_modes[i]);
   for (unsigned int i=0; i<TM_modes.size(); i++)
     modeset.push_back(TM_modes[i]);
+
+  //for (unsigned int i=0; i<modeset.size(); i++)
+  //  std::cout << i 
+  //            << overlap_numeric_(dynamic_cast<RefSectionMode*>(modeset[i]),
+  //                                dynamic_cast<RefSectionMode*>(modeset[i])) 
+  //            << std::endl;
 
   // Restore globals.
 
@@ -215,10 +353,19 @@ RefSectionMode::RefSectionMode(Polarisation pol,   const Complex& kz,
 
   const Complex area = geom->get_width() * geom->get_height();
 
-  Complex norm = (pol == TE) ? 0.25 * C_TE * kt2 / area
-                             : 0.25 * C_TM * kt2 / area;
+  Complex norm = (pol == TE) ? 0.25 * C_TE * kt2 * area
+                             : 0.25 * C_TM * kt2 * area;
+
+  if (abs(kx) < 1e-6)
+    norm *= 2.0;
   
-  A = sqrt(norm);
+  if (abs(ky) < 1e-6)
+    norm *= 2.0;
+
+  if ((abs(kz) < 1e-6) || (abs(norm) < 1e-6))
+    py_print("WARNING: reference mode close to cutoff!");
+
+  A = 1.0/sqrt(norm);
 }
 
 
