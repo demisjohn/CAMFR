@@ -74,12 +74,21 @@ void SectionImpl::calc_overlap_matrices
     return;
   }
 
+  if (abs(medium_I->N() - medium_II->N()) > eps)
+  {
+    std::ostringstream s;
+    s << "Error: diffent number of modes in sections: "
+      << medium_I->N() << " and " << medium_II->N();
+    py_error(s.str());
+    return;
+  }
+ 
   // Overlap for partial mode correction case.
 
   if (global_section.mode_correction != full)
   {
     *O_I_II = 0.0;  
-    *O_II_I = 0.0;
+    *O_II_I = 0.0;    
 
     if (O_I_I) 
       *O_I_I = 0.0;
@@ -281,7 +290,7 @@ Section::Section(Expression& expression, int M1, int M2)
 
   Expression ex = expression.flatten();
 
-  Complex max_eps = 0.0;
+  Complex max_eps = -1e9;
   unsigned int max_eps_i = 0;
   for (unsigned int i=1; i<ex.get_size(); i++)
   {
@@ -289,7 +298,7 @@ Section::Section(Expression& expression, int M1, int M2)
     if (s)
     {
       Complex eps_i = s->eps_avg();
-
+      std::cout << i  << " " << eps_i/eps0 << std::endl;
       if (real(eps_i) > real(max_eps))
       {
         max_eps = eps_i;
@@ -394,7 +403,7 @@ Section2D::Section2D
     : left(left_ex), right(right_ex)
 {
   // Check values.
-
+  std::cout << "HI" << std::flush;
   if (left.get_inc() != right.get_inc())
   {
     py_error("Error: left and right part have different incidence media.");
@@ -817,8 +826,6 @@ cVector fourier(const vector<Complex>& f, const vector<Complex>& disc, int M,
 //  at the x=0 and y=0 planes.
 //
 /////////////////////////////////////////////////////////////////////////////
-
-#include <fstream>
 
 cMatrix fourier_eps_2D(const vector<Slab*>& slabs, 
                        const vector<Complex>& disc, int M, int N, 
@@ -1907,13 +1914,19 @@ void Section2D::find_modes_from_estimates()
       estimates_0 = estimate_kz2_fourier();
 
     for (unsigned int i=0; i<estimates_0.size(); i++)
-      if (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz)
-        estimates.push_back(estimates_0[i]);
+      if (    (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz) 
+           || (global_section.keep_all_estimates == true))
+          estimates.push_back(estimates_0[i]);
   }
 
   if (global_section.keep_all_estimates == true)
+  {    
     global.N = estimates.size();
-
+    std::ostringstream s;
+    s << "Setting N to " << estimates.size() << ".";
+    py_print(s.str());
+  }
+  
   while (estimates.size() > global.N)
   {
     delete estimates.back();
