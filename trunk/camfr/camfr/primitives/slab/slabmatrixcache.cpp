@@ -108,6 +108,9 @@ OverlapMatrices* SlabMatrixCache::get_matrices(SlabImpl* wg1, SlabImpl* wg2,
 
   if (found)
     return m;
+
+  if (!slabcache || !disc)
+    py_error("SlabMatrixCache: no field cache provided.");
   
   // Calculate matrices and cache them.
 
