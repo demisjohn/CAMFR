@@ -3470,7 +3470,7 @@ is dependent on which visualisation backend is loaded.
 @cindex @code{animate_field}
 
 @noindent
-@@code{animate_field(stack, component, r_x, r_z)}: animates the 2D field 
+@code{animate_field(stack, component, r_x, r_z)}: animates the 2D field 
 profile in a Cartesian stack. @code{component} is a function operating on a 
 @code{Field} object specifying which (complex) field component to plot, e.g. 
 @code{lambda f : f.E2()}. @code{r_x} and @code{r_z} are range objects 
