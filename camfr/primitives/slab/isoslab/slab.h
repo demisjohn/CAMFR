@@ -70,9 +70,12 @@ class Slab_M : public SlabImpl
 
   protected:
 
-    void find_modes_from_scratch_by_ADR();
-    void find_modes_from_scratch_by_track();
-    void find_modes_by_sweep();
+    vector<Complex> find_kt(vector<Complex>& old_kt);
+    vector<Complex> find_kt_from_scratch_by_ADR();
+    vector<Complex> find_kt_from_scratch_by_track();
+    vector<Complex> find_kt_by_sweep(vector<Complex>& old_kt);
+
+    void build_modeset(const vector<Complex>& kt);
 
     vector<Complex> params; // Last parameters of dispersion relation.
     
@@ -80,6 +83,7 @@ class Slab_M : public SlabImpl
     vector<Complex>   thicknesses;
 
     friend class Slab_M_Mode;
+    friend class UniformSlab;
 };
 
 
@@ -130,7 +134,8 @@ class UniformSlab : public SlabImpl
 
   protected:
 
-    void find_modes_single_pol();
+    vector<Complex> find_kt();
+    void build_modeset(vector<Complex>& kt);
 };
 
 

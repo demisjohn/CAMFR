@@ -173,70 +173,112 @@ void Slab_M::find_modes()
   if (!recalc_needed())
     return;
 
+
+  // Only TE or TM modes needed.
+
+  if ((global.polarisation == TE) || (global.polarisation == TM))
+  {
+    vector<Complex> old_kt;
+    for (unsigned int i=0; i<modeset.size(); i++)
+      old_kt.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
+
+    vector<Complex> kt(find_kt(old_kt));
+
+    build_modeset(kt);  
+  }
+
+  // Both TE and TM modes needed.
+
   if (global.polarisation == TE_TM)
   {
-    const int n = int(global.N/2);
+    // Cheat on global variables.
 
+    const int n = int(global.N/2);
     if (2*n != global.N)
       cout << "Warning: changing N to even number." << endl;
+    global.N = n;
 
     const Complex old_beta = global_slab.beta;
-
-    global.N = n;
     global_slab.beta = 0.0;
-    global.polarisation = TE;
-    find_modes();
 
-    vector<Mode*> TE_modeset;
-    for (unsigned int i=0; i<modeset.size(); i++)
-    {
-      Slab_M_Mode* mode = new Slab_M_Mode(TE, modeset[i]->get_kz(), this);
-      mode->normalise();
-      TE_modeset.push_back(mode);
-    }
+    vector<Complex> old_params = params;
+
+    // Find TE modes.
+
+    global.polarisation = TE;
+
+    vector<Complex> old_kt_TE;
+    if (modeset.size())
+      for (unsigned int i=0; i<n; i++)
+        old_kt_TE.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt()); 
+
+    vector<Complex> kt(find_kt(old_kt_TE));
+
+    // Find TM modes
+
+    params = old_params;
 
     last_lambda = 0.0; // Force a recalc.
 
     global.polarisation = TM;
-    find_modes();
 
-    modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
+    vector<Complex> old_kt_TM;
+    if (modeset.size())
+      for (unsigned int i=n; i<2*n; i++)
+        old_kt_TM.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
+
+    vector<Complex> kt_TM(find_kt(old_kt_TM));
+
+    // Restore global variables and build modeset.
 
     global.N = 2*n;
     global_slab.beta = old_beta;
     global.polarisation = TE_TM;
 
-    return;
+    kt.insert(kt.end(), kt_TM.begin(), kt_TM.end());
+    build_modeset(kt);
   }
-
-  // If we already calculated modes for a different wavelength/gain
-  // combination, use these as an initial estimate, else find them
-  // from scratch.
-
-  if (global.sweep_from_previous && (modeset.size() == global.N))
-    find_modes_by_sweep();
-  else
-    if (global.solver == ADR)
-      find_modes_from_scratch_by_ADR();
-    else
-      find_modes_from_scratch_by_track();
-
-  // Remember wavelength and gain these modes were calculated for.
-
-  last_lambda = global.lambda;
-  if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::find_modes_from_scratch_by_ADR
+// Slab_M::find_kt
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M::find_modes_from_scratch_by_ADR()
+vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
+{
+  // If we already calculated modes for a different wavelength/gain
+  // combination, use these as an initial estimate, else find them
+  // from scratch.
+
+  vector<Complex> kt;
+
+  if (global.sweep_from_previous && (modeset.size() >= global.N))
+      kt = find_kt_by_sweep(old_kt);
+  else
+    if (global.solver == ADR)
+      kt = find_kt_from_scratch_by_ADR();
+    else
+      kt = find_kt_from_scratch_by_track();
+
+  if (kt.size() > global.N)
+    kt.erase(kt.begin()+global.N, kt.end());
+
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::find_kt_from_scratch_by_ADR
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
 {
   // Determine reflection coefficients of walls.
 
@@ -302,55 +344,21 @@ void Slab_M::find_modes_from_scratch_by_ADR()
       || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
                                        && (abs(R_right - 1.0) < 1e-10) ) )
       kt.insert(kt.begin(), 0);
-  
-  // Check if enough modes are found.
 
-  if (kt.size() < global.N)
-  {
-    cout << "Error: didn't find enough modes ("
-         << kt.size() << "/" << global.N << "). " << endl;
-    exit (-1);
-  }
-  
-  // Create modeset.
-
-  for (unsigned int i=0; i<modeset.size(); i++)
-    delete modeset[i];
-  modeset.clear();
-  
-  for (unsigned int i=0; i<kt.size(); i++)
-  { 
-    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
-    
-    if (real(kz) < 0) 
-      kz = -kz;
-
-    if (abs(real(kz)) < 1e-12)
-      if (imag(kz) > 0)
-        kz = -kz;
-    
-    Slab_M_Mode *newmode = new Slab_M_Mode(global.polarisation, kz, this);
-    
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
-  }
-  
-  sort_modes();
-  truncate_N_modes();
+  return kt;
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::find_modes_from_scratch_by_track
+// Slab_M::find_kt_from_scratch_by_track
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M::find_modes_from_scratch_by_track()
-{
-  // Set constants
+vector<Complex> Slab_M::find_kt_from_scratch_by_track()
+{  
+  // Set constants.
   
   const Real eps        = 1e-13;
   const Real eps_zero   = 1e-10;
@@ -572,13 +580,14 @@ void Slab_M::find_modes_from_scratch_by_track()
   if (global.precision_enhancement == 1)
     remove_copies(&kt_lossless, eps_copies);
 
+  remove_elems(&kt_lossless, Complex(0.0), eps_copies);
+
   for (unsigned int i=0; i<n_lossless.size(); i++)
   {
     Complex kt_i = k0*sqrt(n_lossless[i]*n_lossless[i] - min_n*min_n);
 
-    remove_elems(&kt_lossless,     kt_i,     eps_copies);
-    remove_elems(&kt_lossless,    -kt_i,     eps_copies);   
-    remove_elems(&kt_lossless, Complex(0.0), eps_copies);
+    remove_elems(&kt_lossless,  kt_i, eps_copies);
+    remove_elems(&kt_lossless, -kt_i, eps_copies);
   }
 
   vector<Complex> kt, forbidden;
@@ -645,7 +654,49 @@ void Slab_M::find_modes_from_scratch_by_track()
       || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
                                        && (abs(R_right - 1.0) < 1e-10) ) )
       kt.insert(kt.begin(), 0);
+
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::find_kt_by_sweep
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
+{ 
+  // Set constants.
+
+  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
+  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+    
+  // Trace modes from old configuration to new one.
   
+  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
+  vector<Complex> params_new = disp.get_params();
+    
+  vector<Complex> forbidden;
+  vector<Complex> kt =
+    traceroot(old_kt, disp, params, params_new, forbidden, global.sweep_steps);
+
+  params = params_new;
+
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::build_modeset
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Slab_M::build_modeset(const vector<Complex>& kt)
+{
   // Check if enough modes are found.
 
   if (kt.size() < global.N)
@@ -655,11 +706,13 @@ void Slab_M::find_modes_from_scratch_by_track()
     exit (-1);
   }
   
-  // Create modeset.
+  // Clear old modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
+
+  // Find minimum eps mu.
 
   Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
   
@@ -671,10 +724,12 @@ void Slab_M::find_modes_from_scratch_by_track()
       min_eps_mu = eps_mu;
   }
   
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+  const Real C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
 
+  // Create new modeset.
+  
   for (unsigned int i=0; i<kt.size(); i++)
-  {
+  { 
     Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
@@ -683,8 +738,12 @@ void Slab_M::find_modes_from_scratch_by_track()
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
+
+    Polarisation pol = global.polarisation;
+    if (global.polarisation == TE_TM)
+      pol = ( i < int(kt.size()/2) ) ? TE : TM;
     
-    Slab_M_Mode *newmode = new Slab_M_Mode(global.polarisation, kz, this);
+    Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this);
     
     newmode->normalise();
     
@@ -693,90 +752,12 @@ void Slab_M::find_modes_from_scratch_by_track()
   
   sort_modes();
   truncate_N_modes();
-}
 
+  // Remember wavelength and gain these modes were calculated for.
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Slab_M::find_modes_by_sweep
-//
-/////////////////////////////////////////////////////////////////////////////
-
-void Slab_M::find_modes_by_sweep()
-{
-  // Set constants.
-  
-  const Real k0 = 2*pi/global.lambda;
-
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
-    
-  // Trace modes from old configuration to new one.
-  
-  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
-  vector<Complex> params_new = disp.get_params();
-
-  disp.set_params(params);
-  Complex min_n = sqrt(disp.get_min_eps_mu()/eps0/mu0);
-  Complex k0_old = 2*pi/last_lambda;
-  
-  vector<Complex> kt_old;
-  for (unsigned int i=0; i<modeset.size(); i++)
-    kt_old.push_back(sqrt(pow(k0_old*min_n, 2)-pow(modeset[i]->get_kz(), 2)));
-  
-  vector<Complex> forbidden;
-  vector<Complex> kt =
-    traceroot(kt_old, disp, params, params_new, forbidden, global.sweep_steps);
-
-  params = params_new;
-
-  // Check if modes were lost during tracing.
-  
-  if (kt.size() < global.N)
-  {
-    cout << "Error: didn't find enough modes ("
-         << kt.size() << "/" << global.N << "). " << endl;
-    exit (-1);
-  }
-
-  // Create modeset.
-
-  for (unsigned int i=0; i<modeset.size(); i++)
-    delete modeset[i];
-  modeset.clear();
-
-  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
-  
-  for (unsigned int i=1; i<materials.size(); i++)
-  {
-    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
-    
-    if (abs(eps_mu) < abs(min_eps_mu))
-      min_eps_mu = eps_mu;
-  }
-
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
-  
-  for (unsigned int i=0; i<kt.size(); i++)
-  {
-    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
-    
-    if (real(kz) < 0) 
-      kz = -kz;
-
-    if (abs(real(kz)) < 1e-12)
-      if (imag(kz) > 0)
-        kz = -kz;
-    
-    Slab_M_Mode *newmode = new Slab_M_Mode(global.polarisation, kz, this);
-      
-    newmode->normalise();
-
-    modeset.push_back(newmode);
-  }
-  
-  sort_modes();
+  last_lambda = global.lambda;
+  if (global.gain_mat)
+    last_gain_mat = *global.gain_mat; 
 }
 
 
@@ -848,56 +829,75 @@ void Slab_M::set_params(const vector<Complex>& params)
 
 void UniformSlab::find_modes()
 {
+  // Check values.
+
+  if (global.lambda == 0)
+  {
+    cout << "Error: wavelength not set." << endl;
+    return;
+  }
+  
+  if (global.N == 0)
+  {
+    cout << "Error: number of modes not set." << endl;
+    return;
+  }
+
+  // Only TE or TM modes needed.
+
+  if ((global.polarisation == TE) || (global.polarisation == TM))
+  {
+    vector<Complex> kt(find_kt());
+    build_modeset(kt);  
+  }
+
+  // Both TE and TM modes needed.
+
   if (global.polarisation == TE_TM)
   {
-    const int n = int(global.N/2);
+    // Cheat on global variables.
 
+    const int n = int(global.N/2);
     if (2*n != global.N)
       cout << "Warning: changing N to even number." << endl;
+    global.N = n;
 
     const Complex old_beta = global_slab.beta;
-
-    global.N = n;
     global_slab.beta = 0.0;
+
+    // Find TE modes.
+
     global.polarisation = TE;
-    find_modes_single_pol();
+    vector<Complex> kt(find_kt());
 
-    vector<Mode*> TE_modeset;
-    for (unsigned int i=0; i<modeset.size(); i++)
-    {
-      UniformSlabMode* mode 
-        = new UniformSlabMode(TE, modeset[i]->get_kz(), this);
-      mode->normalise();
-      TE_modeset.push_back(mode);
-    }
-
-    last_lambda = 0.0; // Force a recalc.
+    // Find TM modes
 
     global.polarisation = TM;
-    find_modes_single_pol();
+    vector<Complex> kt_TM(find_kt());
 
-    modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
+    // Restore global variables and build modeset.
 
     global.N = 2*n;
     global_slab.beta = old_beta;
     global.polarisation = TE_TM;
 
-    return;
+    kt.insert(kt.end(), kt_TM.begin(), kt_TM.end());
+    build_modeset(kt);
   }
-
-  find_modes_single_pol();
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// UniformSlab::find_modes_single_pol
+// UniformSlab::find_kt
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void UniformSlab::find_modes_single_pol()
+vector<Complex> UniformSlab::find_kt()
 {
+  vector<Complex> kt;
+
   // Determine reflection coefficients of walls.
 
   SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
@@ -916,22 +916,14 @@ void UniformSlab::find_modes_single_pol()
   if (global.lambda == 0)
   {
     cout << "Error: wavelength not set." << endl;
-    return;
+    return kt;
   }
   
   if (global.N == 0)
   {
     cout << "Error: number of modes not set." << endl;
-    return;
+    return kt;
   }
-
-  // Set contants and clear modeset.
-  
-  const Complex k = 2*pi/global.lambda * core->n();
-
-  for (unsigned int i=0; i<modeset.size(); i++)
-    delete modeset[i];
-  modeset.clear();
 
   // If no analytic solution is available, follow same route as
   // non-uniform slab.
@@ -945,30 +937,12 @@ void UniformSlab::find_modes_single_pol()
 
     if (r_wall)
       tmp.set_right_wall(*r_wall);
-    
-    tmp.find_modes();
-
-    for (unsigned int i=1; i<=tmp.N(); i++)
-    {
-      UniformSlabMode *newmode = new 
-        UniformSlabMode(global.polarisation, tmp.get_mode(i)->get_kz(), this);
-
-      newmode->normalise();
-
-      modeset.push_back(newmode);
-    }
-
-    // Remember wavelength and gain these modes were calculated for.
-
-    last_lambda = global.lambda;
-
-    if (global.gain_mat)
-      last_gain_mat = *global.gain_mat;
-
-    return;
+   
+    vector<Complex> old_kt; // Sweep not implemented for this case.
+    return tmp.find_kt(old_kt);
   }
 
-  // Use analytical solution available. 
+  // Use analytical solution if available.
 
   // TEM mode.
   
@@ -976,46 +950,69 @@ void UniformSlab::find_modes_single_pol()
                                      && (abs(R_right + 1.0) < 1e-10) )
     || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
                                      && (abs(R_right - 1.0) < 1e-10) ) )
-  {
-    UniformSlabMode *newmode
-      = new UniformSlabMode(global.polarisation, k, this);
-
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
-  }
+    kt.push_back(0.0);
 
   // Other modes.
   
   Complex start  = (abs(R_left*R_right-1.0) < 1e-10) ? 0 : pi;
   unsigned int i = (abs(R_left*R_right-1.0) < 1e-10) ? 1 : 0;
-  
-  while (modeset.size() != global.N)
-  {
-    Complex kz = sqrt(k*k - pow((start+2*i*pi)/2./get_width(), 2));
 
+  while (kt.size() != global.N)
+  {
+    kt.push_back((start+2*i*pi)/2./get_width());
+    i++;
+  }
+
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformSlab::build_modeset
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void UniformSlab::build_modeset(vector<Complex>& kt)
+{  
+  // Clear old modeset.
+
+  for (unsigned int i=0; i<modeset.size(); i++)
+    delete modeset[i];
+  modeset.clear();
+
+  // Create new modeset.
+
+  const Complex k = 2*pi/global.lambda * core->n();
+  
+  for (unsigned int i=0; i<kt.size(); i++)
+  { 
+    Complex kz = sqrt(k*k - kt[i]*kt[i]);
+    
     if (real(kz) < 0) 
       kz = -kz;
 
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
-    
-    UniformSlabMode *newmode
-      = new UniformSlabMode(global.polarisation, kz, this);
 
+    Polarisation pol = global.polarisation;
+    if (global.polarisation == TE_TM)
+      pol = ( i < int(kt.size()/2) ) ? TE : TM;
+
+    UniformSlabMode *newmode = new UniformSlabMode(pol, kz, this);
+    
     newmode->normalise();
     
     modeset.push_back(newmode);
-
-    i++;
   }
 
   // Remember wavelength and gain these modes were calculated for.
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat = *global.gain_mat; 
 }
 
 
