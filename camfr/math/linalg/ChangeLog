@@ -1,3 +1,8 @@
+2003-01-24  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * linalg.h: Add determinant_band.
+	* linalg.cpp: Ditto.
+
 2002-12-20  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * linalg.h: Add determinant.
