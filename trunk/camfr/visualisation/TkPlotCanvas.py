@@ -4,7 +4,7 @@
 #
 # Written by Konrad Hinsen <hinsen@cnrs-orleans.fr>
 # With contributions from RajGopal Srinivasan <raj@cherubino.med.jhmi.edu>
-# Last revision: 2001-3-26
+# Last revision: 2002-5-14
 #
 
 from Tkinter import *
@@ -370,7 +370,7 @@ class PlotCanvas(Frame):
         self.canvas.bind('<ButtonRelease-2>', self._hideValue)
         self.popup_menu.add_command(label='Auto Scale',
                                     command=self._autoScale)
-        self.popup_menu.add_command(label='Run Xmgr',
+        self.popup_menu.add_command(label='Run Xmgrace',
                                     command=self._xmgr)
         self.canvas.bind('<Button-3>', self._popupMenu)
 	self._setsize()
@@ -706,7 +706,7 @@ class PlotCanvas(Frame):
             graphics, xaxis, yaxis = self.last_draw
             graphics.writeToFile(file, '!\n')
             file.close()
-            os.system('xmgr ' + filename)
+            os.system('xmgrace ' + filename + ' &')
             os.unlink(filename)
 
     def _showValue(self, event):

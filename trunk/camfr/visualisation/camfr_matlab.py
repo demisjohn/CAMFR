@@ -316,7 +316,8 @@ def plot_field_waveguide(mode, component, r_x):
 #
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
+def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
+                     overlay_n=1, contour=1):
     
     f = zeros([len(r_x),len(r_z)], Float)
 
@@ -335,7 +336,8 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
 #
 ##############################################################################
 
-def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
+def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
+                            overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Float)
 
@@ -354,7 +356,8 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
 #
 ##############################################################################
 
-def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
+def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
+               overlay_n=1, contour=1):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
@@ -373,7 +376,8 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
 #
 ##############################################################################
 
-def animate_field_stack(stack, component, r_x, r_z, filename=0):
+def animate_field_stack(stack, component, r_x, r_z, filename=0,
+                        overlay_n=1, contour=1):
     
     f = zeros([len(r_x),len(r_z)], Complex)
 
@@ -392,7 +396,8 @@ def animate_field_stack(stack, component, r_x, r_z, filename=0):
 #
 ##############################################################################
 
-def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
+def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
+                               overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Complex)
 
@@ -411,7 +416,7 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
 #
 ##############################################################################
 
-def animate_field(o, component, r1, r2, filename=0):
+def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
         animate_field_stack(o, component, r1, r2, filename)
