@@ -115,19 +115,12 @@ vector<Complex> roots_contour(const Contour& contour,
     Complex root = mueller(*contour.get_f(), roots1[i], roots1[i]+.001,
                            1e-15, &roots2, 50, &error);
 
-    cout << roots1[i] << " " << root << " " << error << endl;
-
     if (error)
       continue;
 
     if (contour.encloses(root))
-    {
-      cout << "@ " << root << endl;
-      roots2.push_back(root); 
-    }
+      roots2.push_back(root);
   }
-
-  cout << "@ found " << roots2.size() << endl;
   
   return roots2;      
 }
