@@ -1,0 +1,258 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// File:     patterson_test.cpp
+// Author:   Peter.Bienstman@rug.ac.be
+// Date:     20000320
+// Version:  1.0
+//
+// Copyright (C) 2001 Peter Bienstman - Ghent University
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include <iostream>
+#include <iomanip>
+#include "patterson_quad.h"
+
+using namespace std;
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F1
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F1 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return sqrt(x);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F2
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F2 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return 0.92*cosh(x)-cos(x);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F3
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F3 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return 1./(.9+x*x+x*x*x*x);}
+};
+
+
+    
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F4
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F4 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return x*sqrt(x);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F5
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F5 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return 1./(1+x*x*x*x);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F6
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F6 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+      {counter++; return 1./(1+.5*sin(31.4159*x));}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F7
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F7 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return x/(exp(x)-1);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F8
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F8 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+      {counter++; return sin(314.159*x)/3.14159/x;}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F9
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F9 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+      {counter++; return 50/(2500*x*x+1)/3.14159;}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F10
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F10 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+    {counter++; return cos(cos(x)+3*sin(x)+2*cos(2*x)+3*cos(3*x)+3*sin(2*x));}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F11
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F11 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x) {counter++; return log(x);}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F12
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F12 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+      {counter++; return 4*pi*pi*x*sin(20*pi*x)*cos(2*pi*x);;}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Test function F13
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class F13 : public RealFunction
+{
+  public:
+    Real operator()(const Real& x)
+      {counter++; return 1./(1+(230*x-30)*(230*x-30));}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Integrate function with different precisions.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void integrate(RealFunction& f, Real a, Real b)
+{
+  bool succes;
+
+  cout << "1e-3 " << patterson(f, a, b, 1e-3, &succes);
+  int t1 = f.times_called();
+  cout << "\t" << t1    << "\t " << succes << "\t";
+
+  cout << "1e-6 " << patterson(f, a, b, 1e-6, &succes);
+  int t2 = f.times_called();
+  cout << "\t" << t2-t1 << "\t " << succes << "\t";
+
+  cout << "1e-8 " << patterson(f, a, b, 1e-8, &succes);
+  int t3 = f.times_called();
+  cout << "\t" << t3-t2 << "\t " << succes << endl;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Main driver
+//
+/////////////////////////////////////////////////////////////////////////////
+
+int main()
+{  
+  cout << setprecision(15);
+  
+  F1  f1;  cout << "F1 : "; integrate(f1,  0,   1);
+  F2  f2;  cout << "F2 : "; integrate(f2, -1,   1);
+  F3  f3;  cout << "F3 : "; integrate(f3, -1,   1);
+  F4  f4;  cout << "F4 : "; integrate(f4,  0,   1);
+  F5  f5;  cout << "F5 : "; integrate(f5,  0,   1);
+  F6  f6;  cout << "F6 : "; integrate(f6,  0,   1);
+  F7  f7;  cout << "F7 : "; integrate(f7,  0,   1);
+  F8  f8;  cout << "F8 : "; integrate(f8,  0.1, 1);
+  F9  f9;  cout << "F9 : "; integrate(f9,  0,   10);
+  F10 f10; cout << "F10: "; integrate(f10, 0,   3.1415927);
+  F11 f11; cout << "F11: "; integrate(f11, 0,   1);
+  F12 f12; cout << "F12: "; integrate(f12, 0,   1);
+  F13 f13; cout << "F13: "; integrate(f13, 0,   1);
+   
+  return 0;
+}
+

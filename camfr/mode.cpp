@@ -1,0 +1,63 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// File:     mode.cpp
+// Author:   Peter.Bienstman@rug.ac.be
+// Date:     19990407
+// Version:  1.1
+//
+// Copyright (C) 1998,1999 Peter Bienstman - Ghent University
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include <sstream>
+#include <iomanip>
+#include "mode.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Mode::operator==
+//
+/////////////////////////////////////////////////////////////////////////////
+
+bool Mode::operator== (const Mode& rhs) const
+{
+  const Real eps = 1e-15;
+  
+  return (    (pol==rhs.pol)
+           && (abs(kz-rhs.kz) < eps)
+           && (abs(kz_bw-rhs.kz_bw) < eps));
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// repr
+//
+/////////////////////////////////////////////////////////////////////////////
+
+string Mode::repr() const
+{
+  ostringstream s;
+  
+  s << pol << " " << setw(7) << kz;
+
+  Complex kt = sqrt( pow(2*pi/global.lambda, 2) - kz*kz);
+
+  s << " Theta " << atan(real(kt/kz))*180/pi;
+
+  return s.str();
+};
+
+
+
+
+
+
+
+
+
+
+
+

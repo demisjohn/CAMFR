@@ -1,0 +1,660 @@
+# -*-perl-*-
+
+$T2H_LANG = 'en';
+
+########################################################################
+# Control of Page layout:
+# You can make changes of the Page layout at two levels:
+# 1.) For small changes, it is often enough to change the value of
+#     some global string/hash/array variables
+# 2.) For larger changes, reimplement one of the T2H_DEFAULT_<fnc>* routines,
+#     give them another name, and assign them to the respective
+#     $T2H_<fnc> variable.
+
+# As a general interface, the hashes T2H_HREF, T2H_NAME, T2H_NODE hold 
+# href, html-name, node-name of
+# This     -- current section (resp. html page)
+# Top      -- top page ($T2H_TOP_FILE)
+# Contents -- Table of contents
+# Overview -- Short table of contents
+# Index    -- Index page
+# About    -- page which explain "navigation buttons"
+# First    -- first node 
+# Last     -- last node
+#
+# Whether or not the following hash values are set, depends on the context 
+# (all values are w.r.t. 'This' section)
+# Next        -- next node of texinfo
+# Prev        -- previous node of texinfo
+# Up          -- up node of texinfo
+# Forward     -- next node in reading order
+# Back        -- previous node in reading order
+# FastForward -- if leave node, up and next, else next node
+# FastBackward-- if leave node, up and prev, else prev node
+#
+# Furthermore, the following global variabels are set:
+# $T2H_THISDOC{title}     -- title as set by @setttile
+# $T2H_THISDOC{fulltitle} -- full title as set by @title...
+# $T2H_THISDOC{subtitle}  -- subtitle as set by @subtitle
+# $T2H_THISDOC{author}    -- author as set by @author
+# 
+# and pointer to arrays of lines which need to be printed by t2h_print_lines 
+# $T2H_OVERVIEW      -- lines of short table of contents
+# $T2H_TOC           -- lines of table of contents
+# $T2H_TOP           -- lines of Top texinfo node 
+# $T2H_THIS_SECTION  -- lines of 'This' section
+
+#
+# There are the following subs which control the layout:
+#
+$T2H_print_section            = \&T2H_DEFAULT_print_section;
+$T2H_print_Top_header         = \&T2H_DEFAULT_print_Top_header;       
+$T2H_print_Top_footer	      = \&T2H_DEFAULT_print_Top_footer;       
+$T2H_print_Top		      = \&T2H_DEFAULT_print_Top;              
+$T2H_print_Toc		      = \&T2H_DEFAULT_print_Toc;              
+$T2H_print_Overview	      = \&T2H_DEFAULT_print_Overview;         
+$T2H_print_Footnotes	      = \&T2H_DEFAULT_print_Footnotes;        
+$T2H_print_About	      = \&T2H_DEFAULT_print_About;            
+$T2H_print_misc_header	      = \&T2H_DEFAULT_print_misc_header;      
+$T2H_print_misc_footer	      = \&T2H_DEFAULT_print_misc_footer;      
+$T2H_print_misc		      = \&T2H_DEFAULT_print_misc;
+$T2H_print_chapter_header     = \&T2H_DEFAULT_print_chapter_header;      
+$T2H_print_chapter_footer     = \&T2H_DEFAULT_print_chapter_footer;      
+$T2H_print_page_head	      = \&T2H_DEFAULT_print_page_head;        
+$T2H_print_page_foot	      = \&T2H_DEFAULT_print_page_foot;        
+$T2H_print_head_navigation    = \&T2H_DEFAULT_print_head_navigation;  
+$T2H_print_foot_navigation    = \&T2H_DEFAULT_print_foot_navigation;  
+$T2H_button_icon_img	      = \&T2H_DEFAULT_button_icon_img;        
+$T2H_print_navigation	      = \&T2H_DEFAULT_print_navigation;       
+$T2H_about_body		      = \&T2H_DEFAULT_about_body;            
+$T2H_print_frame              = \&T2H_DEFAULT_print_frame;
+$T2H_print_toc_frame          = \&T2H_DEFAULT_print_toc_frame;
+
+########################################################################
+# Layout for html for every sections
+#
+sub T2H_DEFAULT_print_section
+{
+  my $fh = shift;
+  local $T2H_BUTTONS = \@T2H_SECTION_BUTTONS;
+  &$T2H_print_head_navigation($fh) if $T2H_SECTION_NAVIGATION;
+  my $nw = t2h_print_lines($fh);
+  if ($T2H_SPLIT eq 'section' && $T2H_SECTION_NAVIGATION)
+  {
+    &$T2H_print_foot_navigation($fh, $nw);
+  }
+  else
+  {
+    print $fh '<HR SIZE="6">' . "\n";
+  }
+}
+
+###################################################################
+# Layout of top-page I recommend that you use @ifnothtml, @ifhtml,
+# @html within the Top texinfo node to specify content of top-level
+# page. 
+#
+# If you enclose everything in @ifnothtml, then title, subtitle,
+# author and overview is printed
+# T2H_HREF of Next, Prev, Up, Forward, Back are not defined
+# if $T2H_SPLIT then Top page is in its own html file
+sub T2H_DEFAULT_print_Top_header
+{
+  &$T2H_print_page_head(@_) if $T2H_SPLIT;
+  t2h_print_label(@_); # this needs to be called, otherwise no label set
+  &$T2H_print_head_navigation(@_);
+}
+sub T2H_DEFAULT_print_Top_footer
+{
+  &$T2H_print_foot_navigation(@_);
+  &$T2H_print_page_foot(@_) if $T2H_SPLIT; 
+}
+sub T2H_DEFAULT_print_Top
+{
+  my $fh = shift;
+
+  # for redefining navigation buttons use:
+  # local $T2H_BUTTONS = [...];
+  # as it is, 'Top', 'Contents', 'Index', 'About' are printed
+  local $T2H_BUTTONS = \@T2H_MISC_BUTTONS;
+  &$T2H_print_Top_header($fh);
+  if ($T2H_THIS_SECTION)
+  {
+    # if top-level node has content, then print it with extra header
+    print $fh "<H1>$T2H_NAME{Top}</H1>"
+      unless ($T2H_HAS_TOP_HEADING);
+    t2h_print_lines($fh, $T2H_THIS_SECTION)
+  }
+  else
+  {
+    # top-level node is fully enclosed in @ifnothtml
+    # print fulltitle, subtitle, author, Overview
+    print $fh 
+      "<CENTER>\n<H1>" .
+      join("</H1>\n<H1>", split(/\n/,  $T2H_THISDOC{fulltitle})) .
+      "</H1>\n";
+    print $fh "<H2>$T2H_THISDOC{subtitle}</H2>\n" if $T2H_THISDOC{subtitle};
+    print $fh "$T2H_THISDOC{author}\n" if $T2H_THISDOC{author};
+    print $fh <<EOT;
+</CENTER>
+<HR>
+<P></P>  
+<H2> Overview: </H2>
+<BLOCKQUOTE>  
+EOT
+    t2h_print_lines($fh, $T2H_OVERVIEW);
+    print $fh "</BLOCKQUOTE>\n";
+  }
+  &$T2H_print_Top_footer($fh);
+}
+
+###################################################################
+# Layout of Toc, Overview, and Footnotes pages
+# By default, we use "normal" layout 
+# T2H_HREF of Next, Prev, Up, Forward, Back, etc are not defined
+# use: local $T2H_BUTTONS = [...] to redefine navigation buttons
+sub T2H_DEFAULT_print_Toc
+{
+  return &$T2H_print_misc(@_);
+}
+sub T2H_DEFAULT_print_Overview
+{
+  return &$T2H_print_misc(@_);
+}
+sub T2H_DEFAULT_print_Footnotes
+{
+  return &$T2H_print_misc(@_);
+}
+sub T2H_DEFAULT_print_About
+{
+  return &$T2H_print_misc(@_);
+}
+
+sub T2H_DEFAULT_print_misc_header
+{
+  &$T2H_print_page_head(@_) if $T2H_SPLIT;
+  # this needs to be called, otherwise, no labels are set
+  t2h_print_label(@_); 
+  &$T2H_print_head_navigation(@_);
+}
+sub T2H_DEFAULT_print_misc_footer
+{
+  &$T2H_print_foot_navigation(@_);
+  &$T2H_print_page_foot(@_) if $T2H_SPLIT; 
+}
+sub T2H_DEFAULT_print_misc
+{
+  my $fh = shift;
+  local $T2H_BUTTONS = \@T2H_MISC_BUTTONS;
+  &$T2H_print_misc_header($fh);
+  print $fh "<H1>$T2H_NAME{This}</H1>\n";
+  t2h_print_lines($fh);
+  &$T2H_print_misc_footer($fh);
+}
+
+###################################################################
+# chapter_header and chapter_footer are only called if
+# T2H_SPLIT eq 'chapter'
+# chapter_header: after print_page_header, before print_section
+# chapter_footer: after print_section of last section, before print_page_footer
+# 
+# If you want to get rid of navigation stuff after each section,
+# redefine print_section such that it does not call print_navigation,
+# and put print_navigation into print_chapter_header
+@T2H_CHAPTER_BUTTONS =
+  (
+   'FastBack', 'FastForward', ' ', 
+   ' ', ' ', ' ', ' ',
+   'Top', 'Contents', 'Index', 'About', 
+  );
+
+sub T2H_DEFAULT_print_chapter_header
+{
+  # nothing to do there, by default
+  if (! $T2H_SECTION_NAVIGATION)
+  {
+    my $fh = shift;
+    local $T2H_BUTTONS = \@T2H_CHAPTER_BUTTONS;
+    &$T2H_print_navigation($fh);
+    print $fh "\n<HR SIZE=2>\n";
+  }
+}
+
+sub T2H_DEFAULT_print_chapter_footer
+{
+  local $T2H_BUTTONS = \@T2H_CHAPTER_BUTTONS;
+  &$T2H_print_navigation(@_);
+}
+###################################################################
+$T2H_TODAY = &pretty_date;		# like "20 September 1993"
+
+sub pretty_date {
+    local($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
+
+    ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
+    $year += ($year < 70) ? 2000 : 1900;
+    # obachman: Let's do it as the Americans do
+    return($MONTH_NAMES->{$T2H_LANG}[$mon] . ", " . $mday . " " . $year);
+}
+
+
+###################################################################
+# Layout of standard header and footer
+#
+
+# Set the default body text, inserted between <BODY ... > 
+###$T2H_BODYTEXT = 'LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"';
+$T2H_BODYTEXT = 'LANG="' . $T2H_LANG . '" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"';
+# text inserted after <BODY ...>
+$T2H_AFTER_BODY_OPEN = '';
+#text inserted before </BODY>
+$T2H_PRE_BODY_CLOSE = '';
+# this is used in footer
+$T2H_ADDRESS = "by $T2H_USER " if $T2H_USER;
+$T2H_ADDRESS .= "on $T2H_TODAY";
+# this is added inside <HEAD></HEAD> after <TITLE> and some META NAME stuff
+# can be used for <style> <script>, <meta> tags
+$T2H_EXTRA_HEAD = '<LINK REL="STYLESHEET" HREF="camfr.css">';
+
+sub T2H_DEFAULT_print_page_head
+{
+  my $fh = shift; 
+  my $longtitle = "$T2H_THISDOC{title}: $T2H_NAME{This}";
+  print $fh <<EOT;
+<HTML>
+$T2H_DOCTYPE
+<!-- Created on $T2H_TODAY by $THISPROG -->
+<!-- 
+$T2H_AUTHORS 
+-->
+<HEAD>
+<TITLE>$longtitle</TITLE>
+
+<META NAME="description" CONTENT="$longtitle">
+<META NAME="keywords" CONTENT="$longtitle">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="$THISPROG">
+$T2H_EXTRA_HEAD
+</HEAD>
+
+<BODY $T2H_BODYTEXT>
+$T2H_AFTER_BODY_OPEN
+EOT
+}
+
+sub T2H_DEFAULT_print_page_foot
+{
+  my $fh = shift;
+  print $fh <<EOT;
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+$T2H_ADDRESS
+using <A HREF="$T2H_HOMEPAGE"><I>texi2html</I>.</A>
+$T2H_PRE_BODY_CLOSE
+</BODY>
+</HTML>
+EOT
+}
+
+###################################################################
+# Layout of navigation panel
+
+# if this is set, then a vertical navigation panel is used
+$T2H_VERTICAL_HEAD_NAVIGATION = 0;
+sub T2H_DEFAULT_print_head_navigation
+{
+  my $fh = shift;
+  if ($T2H_VERTICAL_HEAD_NAVIGATION)
+  {
+    print $fh <<EOT;
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">
+<TR VALIGN="TOP">
+<TD ALIGN="LEFT">
+EOT
+  }
+  &$T2H_print_navigation($fh, $T2H_VERTICAL_HEAD_NAVIGATION);
+  if ($T2H_VERTICAL_HEAD_NAVIGATION)
+  {
+    print $fh <<EOT;
+</TD>
+<TD ALIGN="LEFT">
+EOT
+  }
+  elsif ($T2H_SPLIT eq 'section')
+  {
+    print $fh "<HR SIZE=1>\n";
+  }
+}
+
+# Specifies the minimum page length required before a navigation panel
+# is placed at the bottom of a page (the default is that of latex2html)
+# T2H_THIS_WORDS_IN_PAGE holds number of words of current page
+$T2H_WORDS_IN_PAGE = 300;
+sub T2H_DEFAULT_print_foot_navigation
+{
+  my $fh = shift;
+  my $nwords = shift;
+  if ($T2H_VERTICAL_HEAD_NAVIGATION)
+  {
+    print $fh <<EOT;
+</TD>
+</TR>
+</TABLE>
+EOT
+  }
+  print $fh "<HR SIZE=1>\n";
+  &$T2H_print_navigation($fh) if ($nwords >= $T2H_WORDS_IN_PAGE)
+}
+
+######################################################################
+# navigation panel
+#
+# specify in this array which "buttons" should appear in which order
+# in the navigation panel for sections; use ' ' for empty buttons (space)
+
+#T2H_SECTION_BUTTONS =
+# (
+#  'Back', 'Forward', ' ', 'FastBack', 'Up', 'FastForward',  
+#  ' ', ' ', ' ', ' ',
+#  'Top', 'Contents', 'Index', 'About', 
+# );
+
+@T2H_SECTION_BUTTONS =
+  (
+   'Contents', ' ', 'Back', 'Up', 'Forward', ' ', 'Index',, 
+  );
+
+# buttons for misc stuff
+
+#@T2H_MISC_BUTTONS = ('Top', 'Contents', 'Index', 'About');
+@T2H_MISC_BUTTONS = ('Contents', 'Index');
+
+# insert here name of icon images for buttons 
+# Icons are used, if $T2H_ICONS and resp. value are set
+
+$T2H_ICONS = 1;
+
+%T2H_ACTIVE_ICONS =
+  (
+   'Top',      '',
+   'Contents', 'figs/contents.gif',
+   'Overview', '',
+   'Index',    'figs/index.gif',
+   'Back',     'figs/previous.gif',
+   'FastBack', '',
+   'Prev',     '',
+   'Up',       'figs/up.gif',
+   'Next',     '',
+   'Forward',  'figs/next.gif',
+   'FastForward', '',
+   'About' ,    '',
+   'First',    '',
+   'Last',     '',
+   ' ',        ''
+  );
+
+# insert here name of icon images for these, if button is inactive
+%T2H_PASSIVE_ICONS =
+  (
+   'Top',      '',
+   'Contents', 'figs/contents.gif',
+   'Overview', '',
+   'Index',    'figs/index.gif',
+   'Back',     'figs/previous.gif',
+   'FastBack', '',
+   'Prev',     '',
+   'Up',       'figs/up.gif',
+   'Next',     '',
+   'Forward',  'figs/next.gif',
+   'FastForward', '',
+   'About' ,    '',
+   'First',    '',
+   'Last',     '',
+   ' ',        ''
+  );
+
+# how to create IMG tag
+sub T2H_DEFAULT_button_icon_img
+{
+  my $button = shift;
+  my $icon = shift;
+  my $name = shift;
+  return qq{<IMG SRC="$icon" BORDER="0" ALT="$button: $name" ALIGN="MIDDLE">};
+}
+
+# Names of text as alternative for icons
+%T2H_NAVIGATION_TEXT =
+  (
+   'Top',      'Top',
+   'Contents', 'Contents',
+   'Overview', 'Overview',
+   'Index',    'Index',
+   ' ',        ' &nbsp; ',
+   'Back',     ' &lt; ',
+   'FastBack', ' &lt;&lt; ',
+   'Prev',     'Prev',
+   'Up',       ' Up ',
+   'Next',     'Next',
+   'Forward',  ' &gt; ',
+   'FastForward',  ' &gt;&gt; ',
+   'About',     ' ? ',
+   'First',    ' |&lt; ',
+   'Last',     ' &gt;| '
+  );
+
+sub T2H_DEFAULT_print_navigation
+{
+  my $fh = shift;
+  my $vertical = shift;
+  my $spacing = 1;
+  print $fh "<TABLE CELLPADDING=$spacing CELLSPACING=$spacing BORDER=0>\n";
+
+  print $fh "<TR>" unless $vertical;
+  for $button (@$T2H_BUTTONS)
+  {
+    print $fh qq{<TR VALIGN="TOP" ALIGN="LEFT">\n} if $vertical;
+    print $fh qq{<TD VALIGN="MIDDLE" ALIGN="LEFT">};
+
+    if (ref($button) eq 'CODE')
+    {
+      &$button($fh, $vertical);
+    }
+    elsif ($button eq ' ')
+    { # handle space button
+      print $fh 
+	$T2H_ICONS && $T2H_ACTIVE_ICONS{' '} ? 
+	 &$T2H_button_icon_img($button, $T2H_ACTIVE_ICONS{' '}) :
+	 $T2H_NAVIGATION_TEXT{' '};
+      next;
+    }
+    elsif ($T2H_HREF{$button})
+    { # button is active
+      print $fh   
+	 $T2H_ICONS && $T2H_ACTIVE_ICONS{$button} ? # use icon ? 
+	   t2h_anchor('', $T2H_HREF{$button},  # yes
+		    &$T2H_button_icon_img($button,
+					$T2H_ACTIVE_ICONS{$button},
+					$T2H_NAME{$button})) 
+	 : # use text
+	 "[" . 
+	 t2h_anchor('', $T2H_HREF{$button}, $T2H_NAVIGATION_TEXT{$button}) .
+	 "]";  
+    }
+    else
+    { # button is passive 
+      print $fh 
+	$T2H_ICONS && $T2H_PASSIVE_ICONS{$button} ?
+	 &$T2H_button_icon_img($button,
+			       $T2H_PASSIVE_ICONS{$button},
+			       $T2H_NAME{$button}) :
+	 
+	 "[" . $T2H_NAVIGATION_TEXT{$button} . "]";
+    }
+    print $fh "</TD>\n";
+    print $fh "</TR>\n" if $vertical;
+  }
+  print $fh "</TR>" unless $vertical;
+  print $fh "</TABLE>\n";
+}
+
+######################################################################
+# Frames: this is from "Richard Y. Kim" <ryk@coho.net>
+# Should be improved to be more conforming to other _print* functions
+
+sub T2H_DEFAULT_print_frame
+{
+  my $fh = shift;
+  print $fh <<EOT;
+<HTML>
+<HEAD><TITLE>$T2H_THISDOC{title}</TITLE></HEAD>
+<FRAMESET cols="140,*"> 
+  <FRAME name=toc  src="$docu_toc_frame_file">
+  <FRAME name=main src="$docu_doc">
+</FRAMESET> 
+</HTML>
+EOT
+}
+
+sub T2H_DEFAULT_print_toc_frame
+{
+  my $fh = shift;
+  &$T2H_print_page_head($fh);
+  print $fh <<EOT;
+<H2>Content</H2>
+EOT
+  print $fh map {s/HREF=/target=\"main\" HREF=/; $_;} @stoc_lines;
+  print $fh "</BODY></HTML>\n";
+}
+
+######################################################################
+# About page
+#
+
+# T2H_PRE_ABOUT might be a function
+$T2H_PRE_ABOUT = <<EOT;
+This document was generated $T2H_ADDRESS
+using <A HREF="$T2H_HOMEPAGE"><I>texi2html</I></A>
+<P></P>  
+EOT
+$T2H_AFTER_ABOUT = '';
+
+sub T2H_DEFAULT_about_body
+{
+  my $about;
+  if (ref($T2H_PRE_ABOUT) eq 'CODE')
+  {
+    $about = &$T2H_PRE_ABOUT();
+  }
+  else
+  {
+    $about = $T2H_PRE_ABOUT;
+  }
+  $about .= <<EOT;
+The buttons in the navigation panels have the following meaning:
+<P></P>
+<table border = "1">
+<TR>
+<TH> Button </TH>
+<TH> Name </TH>
+<TH> Go to </TH>
+<TH> From 1.2.3 go to</TH>
+</TR>
+EOT
+  
+  for $button (@T2H_SECTION_BUTTONS)
+  {
+    next if $button eq ' ' || ref($button) eq 'CODE';
+    $about .= <<EOT;
+<TR>
+<TD ALIGN="CENTER">
+EOT
+    $about .= 	
+      ($T2H_ICONS && $T2H_ACTIVE_ICONS{$button} ?
+       &$T2H_button_icon_img($button, $T2H_ACTIVE_ICONS{$button}) :
+       " [" . $T2H_NAVIGATION_TEXT{$button} . "] ");
+    $about .= <<EOT;
+</TD>
+<TD ALIGN="CENTER">
+$button
+</TD>
+<TD>
+$T2H_BUTTONS_GOTO{$button}
+</TD>
+<TD>
+$T2H_BUTTONS_EXAMPLE{$button}
+</TD>
+</TR>
+EOT
+  }
+
+  $about .= <<EOT;
+</TABLE>
+<P></P>
+where the <STRONG> Example </STRONG> assumes that the current position 
+is at <STRONG> Subsubsection One-Two-Three </STRONG> of a document of 
+the following structure:
+<UL>
+<LI> 1. Section One  </LI>
+<UL>
+<LI>1.1 Subsection One-One</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.2 Subsection One-Two</LI>
+<UL>
+<LI>1.2.1 Subsubsection One-Two-One
+</LI><LI>1.2.2 Subsubsection One-Two-Two
+</LI><LI>1.2.3 Subsubsection One-Two-Three &nbsp; &nbsp; <STRONG>
+&lt;== Current Position </STRONG>
+</LI><LI>1.2.4 Subsubsection One-Two-Four
+</LI></UL>
+<LI>1.3 Subsection One-Three</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.4 Subsection One-Four</LI>
+</UL>
+</UL>
+$T2H_AFTER_ABOUT
+EOT
+  return $about;  
+}
+
+  
+%T2H_BUTTONS_GOTO =
+  (
+   'Top',      'cover (top) of document',
+   'Contents', 'table of contents',
+   'Overview', 'short table of contents',
+   'Index',    'concept index',
+   'Back',     'previous section in reading order',
+   'FastBack', 'previous or up-and-previous section ',
+   'Prev',     'previous section same level',
+   'Up',       'up section',
+   'Next',     'next section same level',
+   'Forward',  'next section in reading order',
+   'FastForward', 'next or up-and-next section',
+   'About' ,    'this page',
+   'First',    'first section in reading order',
+   'Last',     'last section in reading order',
+  );
+
+%T2H_BUTTONS_EXAMPLE = 
+(
+   'Top',      ' &nbsp; ',
+   'Contents', ' &nbsp; ',
+   'Overview', ' &nbsp; ',
+   'Index',    ' &nbsp; ',
+   'Back',     '1.2.2',
+   'FastBack', '1.1',
+   'Prev',     '1.2.2',
+   'Up',       '1.2',
+   'Next',     '1.2.4',
+   'Forward',  '1.2.4',
+   'FastForward', '1.3',
+   'About',     ' &nbsp; ',
+   'First',    '1.',
+   'Last',     '1.2.4',
+);

@@ -1,0 +1,33 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// File:     polyroot.h
+// Author:   Peter.Bienstman@rug.ac.be
+// Date:     20000327
+// Version:  1.0
+//
+// Copyright (C) 2001 Peter Bienstman - Ghent University
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef POLYROOT_H
+#define POLYROOT_H
+
+#include "../../../defs.h"
+#include <vector>
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// polyroot
+//
+//   Wrapper around Netlib's Jenkins-Traub algorithm to calculate roots
+//   of a polynomial.
+//   The coefficients are ordered by decreasing powers of z.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> polyroot(const vector<Complex>& coef);
+
+
+
+#endif

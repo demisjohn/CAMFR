@@ -1,0 +1,23 @@
+INSTALLATION
+
+For the compilation of CAMFR, a C++ compiler is needed that supports
+many features from the latest C++ standard. Use e.g. a recent version
+(2.95.3 or later) of the gcc compiler from http://www.gnu.org/gcc.
+
+CAMFR also requires the following external programs or libraries, 
+which must be installed first. The use of the lastest versions is 
+recommended.
+
+- Python from http://www.python.org
+- Numerical Python from http://sourceforge.net/projects/numpy
+- The Boost Python Library from http://www.boost.org
+- a recent snapshot of Blitz++ from http://oonumerics.org/blitz
+- the Fortran linear algebra libraries BLAS and LAPACK, which you can get from 
+  http://www.netlib.org. If possible however, use a vendor-supplied version 
+  for maximum performance.
+
+Now edit make.inc and setup.py to adjust the location of these libraries, as well
+as other machine-dependent parameters and compiler flags. There are some examples
+in the files make.inc.{various_platforms}.
+
+Install the CAMFR library by typing 'python setup.py install'.
