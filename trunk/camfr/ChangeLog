@@ -26,7 +26,7 @@ CAMFR 1.1 (2003-03-05):
    Cavity(bottom,top). This makes the coordinate system more intuitive.
  - arbitrary sources can now be placed inside a cavity
 
-     e.g. cavity.set_Source(fw, bw)
+     e.g. cavity.set_source(fw, bw)
 
  - fixed memory corruption when doing exotic things with Expressions
  - fixed crash when plotting uniform layers or planars

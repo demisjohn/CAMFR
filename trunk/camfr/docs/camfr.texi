@@ -3096,8 +3096,7 @@ imaginary part of the gain index between 0 and 0.015. The parameters of the
 laser mode are printed out upon completion, and the cavity 
 field is automatically set to the lasing field.
 @item
-@code{find_all_modes(lambda0, lambda1, deltalambda, n_imag0=0.0, n_imag1=0.015, passes=1)}: similar to @code{find_mode()}, but prints out all laser modes 
-found in this range. Modes that are spaced closer than @code{deltalambda} will
+@code{find_all_modes(lambda0, lambda1, deltalambda, n_imag0=0.0, n_imag1=0.015, passes=1)}: similar to @code{find_mode()}, but prints out all laser modes found in this range. Modes that are spaced closer than @code{deltalambda} will
 not be resolved.
 @item
 @code{sigma()}: returns the singular value of the cavity at the current
