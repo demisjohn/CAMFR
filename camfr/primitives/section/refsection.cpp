@@ -46,7 +46,9 @@ class Overlap_x_ : public ComplexFunction
 
       //return f1.E1 * f2.H2 - f1.E2 * f2.H1; // Normalisation
       
-      return eps / eps0 * f1.Ez * f2.Ez; // O_zz
+      //return eps / eps0 * f1.Ez * f2.Ez; // O_zz
+
+      return eps / eps0 * (f1.E1*f2.E1 + f1.E2*f2.E2); // O_trans
     }
 
   protected:
@@ -319,22 +321,6 @@ Complex cos_cos(const Complex& a,  const Complex& b,
 }
 
 
-class sin_sin_ : public ComplexFunction
-{
-  public:
-
-    sin_sin_(const Complex &a_, const Complex& b_, 
-             const Complex& c_,const Complex& d_)
-      :a(a_), b(b_), c(c_), d(d_) {}
-
-    Complex operator()(const Complex& x)
-    {
-      return sin(a*x+d)*sin(c*x+d);
-    }
-    Complex a,b,c,d;
-};
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -359,17 +345,6 @@ Complex sin_sin(const Complex& a,  const Complex& b,
     T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));
   else
     T2 = 0.5*(x2-x1)*cos(b-d);
-
-/*
-  sin_sin_ f(a,b,c,d);
-  Wrap_real_to_real f_r(f);
-  Wrap_real_to_imag f_i(f);
-
-  Complex num =  patterson_quad(f_r, real(x1), real(x2), 1e-2, 4)
-             + I*patterson_quad(f_i, real(x1), real(x2), 1e-2, 4);  
-
-  std::cout << "***" << num << -T1+T2 << std::endl;
-*/
 
   return -T1+T2;
 }
@@ -417,9 +392,6 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
         Complex x1 = section_disc[k];
 
         Slab* s = profile->slabs[k];
-
-        //std::cout << "Slab " << k << x0 << " "<< x1 << std::endl;
-
         vector<Complex> slab_disc = s->get_discontinuities();
     
         // Loop over y materials.
@@ -431,24 +403,58 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
 
           Complex eps = s->eps_at(Coord(slab_disc[l],0,0,Min,Min,Min));
 
-          //std::cout << "  Disc " << l << " " << y0 << y1 << sqrt(eps/eps0) 
-          //          << std::endl;
+          // Calculate O_EE_ij.
 
-          // Calc O_zz.
+          O_EE_ij += eps * TE_i->A * TE_j->A * TE_i->ky * TE_j->ky
+            * cos_cos(TE_i->kx, TE_i->kx0, TE_j->kx, TE_j->kx0, x0, x1)
+            * sin_sin(TE_i->ky, TE_i->ky0, TE_j->ky, TE_j->ky0, y0, y1)  +
+            
+            eps * TE_i->A * TE_j->A * TE_i->kx * TE_j->kx
+            * sin_sin(TE_i->kx, TE_i->kx0, TE_j->kx, TE_j->kx0, x0, x1)
+            * cos_cos(TE_i->ky, TE_i->ky0, TE_j->ky, TE_j->ky0, y0, y1);
 
-          O_zz_ij += -eps * TM_i->A * TM_j->A 
+          // Calculate O_MM_ij.
+
+          O_MM_ij += eps * TM_i->A * TM_j->A * TM_i->kx * TM_j->kx
+            * cos_cos(TM_i->kx, TM_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
+            * sin_sin(TM_i->ky, TM_i->ky0, TM_j->ky, TM_j->ky0, y0, y1)  +
+            
+            eps * TM_i->A * TM_j->A * TM_i->ky * TM_j->ky
+            * sin_sin(TM_i->kx, TM_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
+            * cos_cos(TM_i->ky, TM_i->ky0, TM_j->ky, TM_j->ky0, y0, y1);
+
+          // Calculate O_EM_ij.
+
+          O_EM_ij += eps * TE_i->A * TM_j->A * TE_i->ky * TM_j->kx
+            * cos_cos(TE_i->kx, TE_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
+            * sin_sin(TE_i->ky, TE_i->ky0, TM_j->ky, TM_j->ky0, y0, y1)  -
+            
+            eps * TE_i->A * TM_j->A * TE_i->kx * TM_j->ky
+            * sin_sin(TE_i->kx, TE_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
+            * cos_cos(TE_i->ky, TE_i->ky0, TM_j->ky, TM_j->ky0, y0, y1);
+
+          // Calculate O_ME_ij.
+
+          O_ME_ij += eps * TM_i->A * TE_j->A * TM_i->kx * TE_j->ky
+            * cos_cos(TM_i->kx, TM_i->kx0, TE_j->kx, TE_j->kx0, x0, x1)
+            * sin_sin(TM_i->ky, TM_i->ky0, TE_j->ky, TE_j->ky0, y0, y1)  -
+            
+            eps * TM_i->A * TE_j->A * TM_i->ky * TE_j->kx
+            * sin_sin(TM_i->kx, TM_i->kx0, TE_j->kx, TE_j->kx0, x0, x1)
+            * cos_cos(TM_i->ky, TM_i->ky0, TE_j->ky, TE_j->ky0, y0, y1);
+
+          // Calc O_zz_ij.
+
+          O_zz_ij += -eps * TM_i->A * TM_j->A
             * TM_i->kt2() * TM_j->kt2() / TM_i->kz / TM_j->kz
             * sin_sin(TM_i->kx, TM_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
             * sin_sin(TM_i->ky, TM_i->ky0, TM_j->ky, TM_j->ky0, y0, y1);
-
-          //std::cout << O_zz_ij/eps0 << std::endl;
         }
       }
 
-      Complex num = overlap_numeric_(TM_i,TM_j,profile);
-      const Real omega  = 2*pi/global.lambda * c;
-      std::cout << i << " " << j << " " << O_zz_ij/eps0 << " " 
-                << num << std::endl;
+      //Complex num = overlap_numeric_(TM_i,TE_j,profile);
+      //std::cout << i << " " << j << " " << O_ME_ij/eps0 << " " 
+      //          << num << std::endl;
 
       (*O_EE)(i,j) = O_EE_ij; (*O_EE)(j,i) = O_EE_ij;
       (*O_MM)(i,j) = O_MM_ij; (*O_MM)(j,i) = O_MM_ij;
