@@ -904,12 +904,15 @@ Field Stack::field(const Coord& coord)
 
   // Calculate field expansion.
 
-  const unsigned int index =
+  unsigned int index =
     index_lookup(coord.z, coord.z_limit, interface_positions);
 
   const vector<Chunk>* chunks
     = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
-
+  
+  if (index == chunks->size())
+    index--;
+  
   Waveguide* wg = (*chunks)[index].sc->get_ext();
 
   cVector fw(wg->N(),fortranArray);
@@ -957,8 +960,9 @@ void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
 
   if (    (real(coord.z) > real(last_z))
        || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus)) )
-  {
-    FieldExpansion f(interface_field.back().propagate(-get_total_thickness()));
+  { 
+    FieldExpansion f(interface_field.back().
+                     propagate(coord.z-get_total_thickness()));
     *fw = f.fw; *bw = f.bw;
     return;
   }
