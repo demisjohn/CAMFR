@@ -19,8 +19,9 @@
 #include "sectionmode.h"
 #include "sectionoverlap.h"
 #include "../slab/slabmatrixcache.h"
-#include "../slab/isoslab/slaboverlap.h"
 #include "../slab/isoslab/slabmode.h"
+#include "../slab/isoslab/slaboverlap.h"
+#include "../../math/calculus/fourier/fourier.h"
 
 using std::vector;
 using std::cout;
@@ -750,68 +751,6 @@ vector<ModeEstimate*> Section2D::estimate_kz2_omar_schuenemann()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// fourier
-//
-//  Returns fourier expansion of order m = -M,...,M of a piecewise 
-//  continuous function f given by:
-//
-//    disc[0] -> disc[1]   : f[0]
-//    ...
-//    disc[n] -> disc[n+1] : f[n]
-//
-//  Basis functions are exp(j.m.2.pi/d.x). (d can be overridden).
-//
-//  Also has the option to extend the profile by adding mirror image at x=0.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-cVector fourier(const vector<Complex>& f, const vector<Complex>& disc, int M,
-                const Complex* d=0, bool extend=false)
-{
-  Complex D = d ? *d : disc.back() - disc.front();
-  if (extend)
-    D *= 2.0;
-  Complex K = 2.*pi/D;
-
-  cVector result(2*M+1,fortranArray);
-
-  for (int m=-M; m<=M; m++)
-  {
-    Complex result_m = 0.0;
-
-    for (unsigned int k=0; k<int(disc.size()-1); k++)
-    {
-      Complex factor;
-      if (m==0)
-      { 
-        factor = disc[k+1]-disc[k];
-        if (extend)
-          factor *= 2.0;
-      }
-      else
-      {
-        const Complex t = -I*Real(m)*K;
-        factor = (exp(t*disc[k+1])-exp(t*disc[k])) / t;
-        if (extend)
-          factor += (exp(-t*disc[k])-exp(-t*disc[k+1])) / t;
-      }
-
-      result_m += factor * f[k];
-    }
-    
-    result(m+M+1) = result_m / D;
-  }
-
-  if (abs(D) < 1e-12)
-    result = 0.0;
-  
-  return result;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 //  Returns 2D fourier expansion of order m_x = -M,...,M and n_y = -N,...,N 
 //  of dielectric profile give by a sequence of slabs:
 //
@@ -1288,6 +1227,8 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     py_error("Error: only implemented for same wall type on opposite walls");
     exit(-1);
   }
+
+  const bool Li = (global_section.section_solver == L);
   
   // Calculate eps and inv_eps matrix.
 
@@ -1297,14 +1238,18 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   cMatrix eps_(4*M+1,4*N+1,fortranArray);
   eps_ = fourier_eps_2D(slabs, disc, 2*M, 2*N, false, extend);
 
-  cMatrix inv_eps_(4*M+1,4*N+1,fortranArray);
-  inv_eps_ = fourier_eps_2D(slabs, disc, 2*M, 2*N, true, extend);  
+  cMatrix inv_eps_(fortranArray);
 
+  if (!Li)
+  {
+    inv_eps_.resize(4*M+1,4*N+1);
+    inv_eps_.reference(fourier_eps_2D(slabs, disc, 2*M, 2*N, true, extend));  
+  }
+  
   int m_ = 2*M+1;  
   int n_ = 2*N+1;
 
   const int MN = m_*n_;
-  const bool Li = (global_section.section_solver == L);
   
   cMatrix eps(MN,MN,fortranArray);
 
@@ -1754,7 +1699,6 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       }
     std::cout << std::endl;
   }
-
 */
 
   // Calculate H fields from E fields.
@@ -1810,12 +1754,12 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       cVector* Ex = new cVector(MN,fortranArray);
       cVector* Ey = new cVector(MN,fortranArray);
       cVector* Hx = new cVector(MN,fortranArray);
-      cVector* Hy = new cVector(MN,fortranArray); 
+      cVector* Hy = new cVector(MN,fortranArray);
 
       *Ex = eig_big  (r1,i); 
       *Ey = eig_big  (r2,i);
       *Hx = eig_big_H(r1,i)/kz/k0*Y0;
-      *Hy = eig_big_H(r2,i)/kz/k0*Y0; 
+      *Hy = eig_big_H(r2,i)/kz/k0*Y0;
 
       ModeEstimate* est = new ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
