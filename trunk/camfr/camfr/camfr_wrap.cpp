@@ -230,7 +230,7 @@ inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: PythonFunction
+// PythonFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -251,11 +251,26 @@ class PythonFunction : public ComplexFunction
 inline cVector slab_expand_field(Slab& s, PyObject* o, Real eps)
   {PythonFunction f(o); return s.expand_field(&f, eps);}
 
+inline void stack_set_inc_field_function(Stack& s, PyObject* o, Real eps)
+{
+  Slab* slab = dynamic_cast<Slab*>(s.get_inc());
+  
+  if (!slab)
+  {
+    PyErr_SetString(PyExc_ValueError, 
+                    "set_inc_field_function only implemented for slabs.");
+    throw boost::python::argument_error();
+  }
+
+  PythonFunction f(o);
+  s.set_inc_field(slab->expand_field(&f, eps));
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: GaussianFunction
+// GaussianFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -263,26 +278,42 @@ class GaussianFunction : public ComplexFunction
 {
   public:
 
-    GaussianFunction (Real height, Real width, Real position)
+    GaussianFunction (Complex height, Complex width, Complex position)
       : h(height), w(width), p(position) {}
 
     Complex operator()(const Complex& x)
-	{counter++; return h*exp(-(x-p)*(x-p)/(w*w*2));}
+	{counter++; return h*exp(-(x-p)*(x-p)/(w*w*2.0));}
 
   protected:
 
-    Real h, w, p;
+    Complex h, w, p;
 };
 
-inline cVector slab_expand_gaussian(Slab& s, Real height, Real width,
-                                    Real pos, Real eps)
-  {GaussianFunction f(height,width,pos); return s.expand_field(&f, eps);}
+inline cVector slab_expand_gaussian
+  (Slab& s, Complex height, Complex width, Complex pos, Real eps)
+    {GaussianFunction f(height,width,pos); return s.expand_field(&f, eps);}
+
+inline void stack_set_inc_field_gaussian
+  (Stack& s, Complex height, Complex width, Complex pos, Real eps)
+{
+  Slab* slab = dynamic_cast<Slab*>(s.get_inc());
+  
+  if (!slab)
+  {
+    PyErr_SetString(PyExc_ValueError, 
+                    "set_inc_field_gaussian only implemented for slabs.");
+    throw boost::python::argument_error();
+  }
+
+  GaussianFunction f(height,width,pos);
+  s.set_inc_field(slab->expand_field(&f, eps));
+}
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: PlaneWaveFunction
+// PlaneWaveFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -300,9 +331,25 @@ class PlaneWaveFunction : public ComplexFunction
     Complex h, s;
 };
 
-inline cVector slab_expand_plane_wave(Slab& s, Complex height,
-                                      Complex slope, Real eps)
-  {PlaneWaveFunction f(height,slope); return s.expand_field(&f, eps);}
+inline cVector slab_expand_plane_wave
+  (Slab& s, Complex height, Complex slope, Real eps)
+    {PlaneWaveFunction f(height,slope); return s.expand_field(&f, eps);}
+
+inline void stack_set_inc_field_plane_wave
+  (Stack& s, Complex height, Complex slope, Real eps)
+{
+  Slab* slab = dynamic_cast<Slab*>(s.get_inc());
+  
+  if (!slab)
+  {
+    PyErr_SetString(PyExc_ValueError, 
+                    "set_inc_field_plane_Wave only implemented for slabs.");
+    throw boost::python::argument_error();
+  }
+
+  PlaneWaveFunction f(height,slope);
+  s.set_inc_field(slab->expand_field(&f, eps));
+}
 
 
 
@@ -859,34 +906,37 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     class_<Stack>("Stack")
     .def_init(args<const Expression&>())
     .def_init(args<const Term&>())
-    .def("calc",           &Stack::calcRT)
-    .def("free",           &Stack::freeRT)
-    .def("inc",            &Stack::get_inc,
+    .def("calc",                     &Stack::calcRT)
+    .def("free",                     &Stack::freeRT)
+    .def("inc",                      &Stack::get_inc,
          return_value_policy<reference_existing_object>())
-    .def("ext",            &Stack::get_ext,
+    .def("ext",                      &Stack::get_ext,
          return_value_policy<reference_existing_object>())
-    .def("length",         &Stack::get_total_thickness)
-    .def("set_inc_field",  stack_set_inc_field)
-    .def("set_inc_field",  stack_set_inc_field_2)
-    .def("inc_field",      &Stack::get_inc_field)
-    .def("refl_field",     &Stack::get_refl_field)
-    .def("trans_field",    &Stack::get_trans_field)
-    .def("inc_S_flux",     stack_inc_S_flux)
-    .def("ext_S_flux",     stack_ext_S_flux)
-    .def("field",          &Stack::field)
-    .def("lateral_S_flux", stack_lateral_S_flux)
-    .def("lateral_S_flux", stack_lateral_S_flux_2)
-    .def("eps",            &Stack::eps_at)
-    .def("mu",             &Stack::mu_at)
-    .def("n",              &Stack::n_at)
-    .def("R12",            stack_get_R12)
-    .def("R21",            stack_get_R21)
-    .def("T12",            stack_get_T12)
-    .def("T21",            stack_get_T21)
-    .def("R12",            stack_R12)
-    .def("R21",            stack_R21)
-    .def("T12",            stack_T12)
-    .def("T21",            stack_T21)
+    .def("length",                   &Stack::get_total_thickness)
+    .def("set_inc_field",            stack_set_inc_field)
+    .def("set_inc_field",            stack_set_inc_field_2)
+    .def("set_inc_field_function",   stack_set_inc_field_function)
+    .def("set_inc_field_gaussian",   stack_set_inc_field_gaussian)
+    .def("set_inc_field_plane_wave", stack_set_inc_field_plane_wave)
+    .def("inc_field",                &Stack::get_inc_field)
+    .def("refl_field",               &Stack::get_refl_field)
+    .def("trans_field",              &Stack::get_trans_field)
+    .def("inc_S_flux",               stack_inc_S_flux)
+    .def("ext_S_flux",               stack_ext_S_flux)
+    .def("field",                    &Stack::field)
+    .def("lateral_S_flux",           stack_lateral_S_flux)
+    .def("lateral_S_flux",           stack_lateral_S_flux_2)
+    .def("eps",                      &Stack::eps_at)
+    .def("mu",                       &Stack::mu_at)
+    .def("n",                        &Stack::n_at)
+    .def("R12",                      stack_get_R12)
+    .def("R21",                      stack_get_R21)
+    .def("T12",                      stack_get_T12)
+    .def("T21",                      stack_get_T21)
+    .def("R12",                      stack_R12)
+    .def("R21",                      stack_R21)
+    .def("T12",                      stack_T12)
+    .def("T21",                      stack_T21)
     .def("__add__", TERM_PLUS_TERM_F(Stack, const Term))
     .def("__add__", TERM_PLUS_TERM_F(Stack, Stack))
     .def("__add__", TERM_PLUS_TERM_F(Stack, InfStack))
