@@ -56,7 +56,7 @@ void InfStack::calcRT()
 
   for (int k=1; k<=s.N() && j<=N; k++)
   {
-    const BlochMode* mode = dynamic_cast<const BlochMode*>(s.get_mode(k));
+    BlochMode* mode = dynamic_cast<const BlochMode*>(s.get_mode(k));
 
     if (abs(mode->get_kz()) < 1e-5) // Detect presence of dummy mode.
     {
