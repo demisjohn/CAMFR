@@ -6,9 +6,8 @@
 #
 ###################################################################
 
+from camfr import *
 from cmath import *
-from camfr_work import *
-from Numeric import *
 
 import unittest, eps
 

@@ -6,8 +6,8 @@
 #
 ###################################################################
 
-from camfr_work import *
-from Numeric import *
+from camfr import *
+
 import unittest, eps
 
 class precision(unittest.TestCase):
