@@ -2382,7 +2382,7 @@ Important to note is that @code{animate_field} requires a complex number to
 work correctly, so the full complex field component needs to be used rather
 than e.g. the real part.
 
-Both @code{plot_field} and @code{animate_field} can take an additional positional argument like @code{filename="out.gif"} which indicates the filename to write the picture to. For pictures, a variety of formats are supported (gif, jpg, png, eps, ...), where the suffix of the filename will determine the format to be used. For animations only uncompressed animated gif is supported.
+Both @code{plot_field} and @code{animate_field} can take an additional named argument like @code{filename="out.gif"} which indicates the filename to write the picture to. For pictures, a variety of formats are supported (gif, jpg, png, eps, ...), where the suffix of the filename will determine the format to be used. For animations only uncompressed animated gif is supported.
 
 Note that instead of a @code{Stack}, one can also pass a 
 @code{BlochStack.mode} to @code{animate_field}.
@@ -3558,7 +3558,7 @@ a waveguide or the 2D index distribution in a Cartesian stack. @code{r_x} and
 @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying which 
 interval to plot and with which resolution. @code{x} is the transverse 
 direction, @code{z} the propagation direction. The actual display is dependent
-on which visualisation backend is loaded. An extra positional argument @code{filename='outputname.formatextension'} is supported. For pictures, a variety of formats are supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will determine the format to be used.
+on which visualisation backend is loaded. An extra named argument @code{filename='outputname.formatextension'} is supported. For pictures, a variety of formats are supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will determine the format to be used.
 
 
 
@@ -3576,7 +3576,7 @@ which field component to plot, e.g. @code{lambda f : f.E2().real}.
 specifying which  interval to plot and with which resolution. @code{x} is the 
 transverse  direction, @code{z} the propagation direction. The actual display
 is dependent on which visualisation backend is loaded. Note that the function
-also supports an additional postional argument @code{filename='outputname.formatextension'}. For pictures, a variety of formats are 
+also supports an additional named argument @code{filename='outputname.formatextension'}. For pictures, a variety of formats are 
 supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the 
 suffix of the filename will determine the format to be used. Other arguments
 are @code{overlay_n} (defaults to true) which overlays the index profile
@@ -3600,12 +3600,7 @@ field component to plot, e.g. @code{lambda f : f.E2()}. @code{r_x} and
 which  interval to plot and with which resolution. @code{x} is the 
 transverse  direction, @code{z} the propagation direction. The actual display 
 is dependent on which visualisation  backend is loaded. Note that the function
-also supports an additional postional argument @code{filename='outputname'}, which writes the animation to an uncompressed gif. @code{filename} is
-an optional string argument to determine which file to write an (uncompressed)
-animated gif. Other arguments are @code{overlay_n} (defaults to true) 
-which overlays the index profile on the field plot, and @code{contour} 
-(defaults to true) which uses contours to show the index profile rather 
-than gray scale.
+also supports an additional named argument @code{filename='outputname'}, which writes the animation to an uncompressed gif. Other arguments are @code{overlay_n} (defaults to true) which overlays the index profile on the field plot, and @code{contour} (defaults to true) which uses contours to show the index profile rather than gray scale.
 
 
 @node Index,  , Reference guide, top
