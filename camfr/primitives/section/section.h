@@ -78,6 +78,8 @@ class SectionImpl : public MultiWaveguide
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
 
   protected:
+    
+  public: // tmp
 
     int M;
 

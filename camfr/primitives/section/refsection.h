@@ -102,11 +102,15 @@ class RefSectionMode : public Mode
     
     RefSection* get_geom() const {return geom;}
 
+    Complex kt2() const {return kx*kx + ky*ky;}
+
   protected:
 
     Complex kx, kx0;
     Complex ky, ky0;
     RefSection* geom;
+
+    friend class RefSection;
 };
 
 
