@@ -213,7 +213,7 @@ Complex SlabDisp::operator()(const Complex& kt)
   }
 
   // Return error.
-  
+
   if (!u_wall)
     return fw_chunk_end_scaled + bw_chunk_end_scaled;
   else

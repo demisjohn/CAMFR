@@ -42,7 +42,8 @@ Complex SlabMode::get_kz() const
 
 Complex SlabMode::get_cos() const
 {
-  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2)); 
+  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2));
+
 /*
     // cs only
 
@@ -192,7 +193,6 @@ Field SlabMode::field(const Coord& coord_) const
 
   if (pol == TE)
   {
-
     const Complex C = 1.0 / (k0*c) / geom->mu_at(coord);
         
     field.E1 = 0.0;
