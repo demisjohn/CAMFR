@@ -40,8 +40,7 @@ class SlabFlux : public RealFunction
     {
       counter++;
       Field f=fe.field(Coord(x,0,0));
-      return (global.polarisation == TE) ? real(-f.E2*conj(f.H1))
-                                         : real( f.E1*conj(f.H2));
+      return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
     }
 
   protected:
