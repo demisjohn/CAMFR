@@ -87,7 +87,12 @@ class FieldExpansion
     FieldExpansion(Waveguide* wg_, cVector& fw_, cVector& bw_)
       : wg( wg_), fw(fw_), bw(bw_) {}
 
+    FieldExpansion(const FieldExpansion& f)
+      : wg(f.wg), fw(f.fw.copy()), bw(f.bw.copy()) {}
+
     Field field(const Coord& coord) const;
+
+    FieldExpansion propagate(const Complex& z) const;
 
     Waveguide* wg;
 
