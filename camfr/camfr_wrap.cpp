@@ -143,7 +143,7 @@ inline void set_lower_PML(Real PML)
   if (PML > 0)
     py_print("Warning: gain in PML.");
 
-  global_slab.left_PML = PML;
+  global_slab.lower_PML = PML;
 }
 
 inline void set_upper_PML(Real PML)
@@ -151,7 +151,23 @@ inline void set_upper_PML(Real PML)
   if (PML > 0)
     py_print("Warning: gain in PML.");
 
-  global_slab.right_PML = PML;
+  global_slab.upper_PML = PML;
+}
+
+inline void set_left_PML(Real PML)
+{
+  if (PML > 0)
+    py_print("Warning: gain in PML.");
+
+  global_section.left_PML = PML;
+}
+
+inline void set_right_PML(Real PML)
+{
+  if (PML > 0)
+    py_print("Warning: gain in PML.");
+
+  global_section.right_PML = PML;
 }
 
 inline void set_circ_PML(Real PML)
@@ -162,20 +178,23 @@ inline void set_circ_PML(Real PML)
   global_circ.PML = PML;
 }
 
-inline void set_left_wall(SlabWall* w)
-  {py_print("Warning: CAMFR <1.0 set_left_wall replaced by set_lower_wall.");}
+inline void set_left_wall(Section_wall_type w)
+  {global_section.leftwall = w;}
 
-inline void set_right_wall(SlabWall* w)
-  {py_print("Warning: CAMFR <1.0 set_right_wall replaced by set_upper_wall.");}
+inline void set_right_wall(Section_wall_type w)
+  {global_section.rightwall = w;}
 
 inline void set_lower_wall(SlabWall* w)
-  {global_slab.leftwall = w;}
+  {global_slab.lowerwall = w;}
 
 inline void set_upper_wall(SlabWall* w)
-  {global_slab.rightwall = w;}
+  {global_slab.upperwall = w;}
 
 inline void set_beta(const Complex& beta)
   {global.slab_ky = beta;}
+
+inline void set_guided_only(bool b)
+  {global_section.guided_only = b;}
 
 inline int mode_pol(const Mode& m) {return m.pol;}
 
@@ -691,6 +710,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("set_lower_PML",              set_lower_PML)
     .def("set_circ_PML",               set_circ_PML)
     .def("set_beta",                   set_beta)
+    .def("set_guided_only",            set_guided_only)
     .def("free_tmps",                  free_tmps);
 
   // Wrap Coord.
@@ -1015,8 +1035,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   class_<Slab, bases<MultiWaveguide> >("Slab", args<const Term&>())
     .def_init(args<const Expression&>())
-    .def("set_lower_wall",    &Slab::set_left_wall)
-    .def("set_upper_wall",    &Slab::set_right_wall)
+    .def("set_lower_wall",    &Slab::set_lower_wall)
+    .def("set_upper_wall",    &Slab::set_upper_wall)
     .def("width",             slab_width)
     .def("expand_field",      slab_expand_field)
     .def("expand_gaussian",   slab_expand_gaussian) 
@@ -1031,10 +1051,10 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap Section.
 
   class_<Section, bases<MultiWaveguide> >
-  ("Section", args<const Expression&>())
-    .def_init(args<const Expression&, int>())
-    .def_init(args<const Expression&, const Expression&>())
-    .def_init(args<const Expression&, const Expression&, int>())
+  ("Section", args<Expression&>())
+    .def_init(args<Expression&, int>())
+    .def_init(args<Expression&, Expression&>())
+    .def_init(args<Expression&, Expression&, int>())
     .def("width", section_width)
     ;
 }

@@ -48,3 +48,6 @@ sin_type = 1
 slab_E_wall    = SlabWallMixed(1.0,  1.0)
 slab_H_wall    = SlabWallMixed(1.0, -1.0)
 slab_open_wall = SlabWallMixed(0.0,  1.0)
+
+E_wall = 0
+H_wall = 1
