@@ -1,11 +1,26 @@
-CAMFR 1.0.1:
+CAMFR 1.1:
 
  - improved stability for Slabs
  - Python doesn't terminate abruptly anymore when faced with some user
    errors or lost modes
- - plot_n and plot_field now works for BlochStacks too
+ - animation of field profiles is much smoother (Lieven Vanholme)
+ - field plots can be saved in a variety of formats (jpg, gif, png, ...)
+   Animations can be saved as an (uncompressed) animated gif (Lieven Vanholme)
 
-CAMFR 1.0:
+     e.g. plot_field(s, lambda f : f.E2().real, r_x, r_z, "field.jpg")
+
+ - plot_n and plot_field now works for BlochStacks, BlochModes and Cavities
+   too
+ - added Stack.fw_bw(z), which returns a tuple of the expansion 
+   coefficients of the forward and backward field at position z in the Stack
+
+     e.g. fw, bw = stack.fw_bw(0)
+
+ - Cavity.find_modes_in_region() has been renamed to Cavity::find_all_modes()
+
+
+
+CAMFR 1.0 (2002-09-24):
 
  - faster binaries, especially under Windows, which can be up to three
    times faster than CAMFR 0.9
@@ -42,6 +57,6 @@ the following changes:
 
 
 
-CAMFR 0.9:
+CAMFR 0.9 (2001-09-06):
 
  - initial public release
