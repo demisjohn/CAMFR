@@ -66,6 +66,7 @@ Modelling optical devices
 * Semi-infinite stacks::        
 * Defining complicated structures::  
 * General excitations for slabs::  
+* CAMFR 3D::                    
 * Tips for troubleshooting problems::  
 
 Visualisation
@@ -1085,6 +1086,7 @@ cylindrical), although the examples given are only for a single geometry.
 * Semi-infinite stacks::        
 * Defining complicated structures::  
 * General excitations for slabs::  
+* CAMFR 3D::                    
 * Tips for troubleshooting problems::  
 @end menu
 
@@ -1916,7 +1918,7 @@ custom shapes by defining a Python object which overloads
 
 @page
 
-@node General excitations for slabs, Tips for troubleshooting problems, Defining complicated structures, Modelling optical devices
+@node General excitations for slabs, CAMFR 3D, Defining complicated structures, Modelling optical devices
 @section General excitations for slabs
 
 @cindex general excitations, gaussian incidence, plane wave incidence
@@ -2014,7 +2016,91 @@ when modelling discontinuous functions, just like e.g. in Fourier analysis.
 
 @page
 
-@node Tips for troubleshooting problems,  , General excitations for slabs, Modelling optical devices
+@node CAMFR 3D, Tips for troubleshooting problems, General excitations for slabs, Modelling optical devices
+@section CAMFR 3D
+
+@cindex three-dimensional structures
+
+The following pages illustrate how to use CAMFR to find modes of waveguides with an arbitrary 2D cross-section. These 2D waveguides can subsequently be stacked together in @code{Stack}, @code{BlochStack}, or @code{Cavity} objects. Since this code is still in development, some of the things mentioned here are subject to change.
+
+The following code looks for the ground mode of a (quarter) of a square waveguide, exploiting symmetry:
+@example
+@group
+from camfr_work import *
+
+set_lambda(1.0)
+set_N(1)
+
+core = Material(1.5)
+clad = Material(1.0)
+
+set_section_solver(NT)
+set_mode_correction(full)
+
+set_left_wall(H_wall)
+set_right_wall(H_wall)
+set_right_PML(-0.05)
+
+set_lower_wall(slab_E_wall)
+set_upper_wall(slab_E_wall)
+set_upper_PML(-0.05)
+
+wg = Slab(core(0.25) + clad(1))
+air = Slab(clad(wg.width()))
+        
+all = wg(0.25) + air(1)
+
+s = Section(all, 100, 40)
+s.calc()
+
+print s
+@end group
+@end example
+
+Note that the development version of camfr with the latest version of the 3D solver is called @code{camfr_work} rather then @code{camfr}. This allows people to have the release and the development version installed side-by-side.
+
+In order to explain all the options, some insight into the nature of the 3D model is needed.
+
+As a first step of the model, a coarse estimate of all the modes of a @code{Section} (a waveguide with a 2D cross section) is created using a plane-wave model. In a second step, these estimates (or a subset of them) are refined using an expansion based on modes of the 1D waveguides making up the @code{Section}. Since these can better satisfy the boundary conditions, more accurate results can be obtained.
+
+For the first step, the user can choose between three plane wave models:
+
+@itemize @bullet
+@item @code{set_code_solver(OS)}: Omar-Schuenemann: modes of a uniform square waveguide are used in the expansion. Slowly converging, and not really recommended.
+@item @code{set_code_solver(NT)}: waveguide variant of Noponen-Turunen, a grating based Fourier method.
+@item @code{set_code_solver(Li)}: Li, a refinement of Noponen-Turunen, but it only gives more accurate results using a high number of plane waves. Since we're only interested in obtaining a coarse estimate to use in the second step, this solver is not recommended, as it is slower.
+@end itemize
+
+The line @code{s = Section(all, 100, 40)} means we use 100 plane waves in the first stage, and refine it using 40 1D modes in each Slab during the second stage. @code{all} can be any 2D stack, including those fabricated with the @code{Geometry} function.
+
+The user has the option of choosing which modes get refined during the second stage: 
+
+@itemize @bullet
+@item @code{set_mode_correction(full)}: all modes.
+@item @code{set_mode_correction(guided_only)}: only guided modes
+@item @code{set_mode_correction(snap)}: don't refine any modes, but set numerical noise on the imaginary part of @code{kz} for guided modes to zero.
+@end itemize
+
+When you're only interested in the modes of a @code{Section}, and not putting @code{Section}s together is a @code{Stack}, @code{set_mode_correction(full)} is the way to go, as it is more accurate. For a full 3D model with different  @code{Section}s however, such an approach can be very time-consuming, especially in the calculation of the overlap integrals, which are much quicker in a plane wave basis. In that case, it's better to use @code{guided_only} or @code{snap}. @code{snap} is the fastest, but can sometimes require a lot of plane waves to get accurate results. @code{guided_only} is a hybrid approach, which is more accurate, but can sometimes miss a mode. When using @code{guided_only}, it's adviseable to use @code{set_orthogonal(False)} as well, as using a mixture of two expansion sets somewhat distorts the mode orthogonality.
+
+Some loose remarks:
+
+@itemize @bullet
+@item If you have estimates on the location of the modes, e.g. from a previous simulation for a slightly different structure, you can skip stage 1 and use user-provided estimates instead: @code{s.set_estimate{n_eff1}}, @code{s.set_estimate{n_eff2}}, ... .
+@item When you're only interested in the fundamental mode, it's tempting to use @code{set_N(1)}. However, sometimes this yields a higher-order mode, because the noise on the coarse estimate during stage 1 can be such that the order of mode 0 and mode 1 gets swapped. One option is to use more palne waves, but often it works just as well to increase the value of @code{set_N()}. Taking more estimates to stage 2 will improve the chances of finding all modes you are interested in.
+@end itemize
+
+Some interface quirks which are due to the development nature of the model and will probably change in the final version :
+@itemize @bullet
+@item For left and right walls, the syntax is @code{E_wall} and @code{H_wall}, while for upper and lower walls it's @code{slab_E_wall} and @code{slab_H_wall}.
+@item For the @code{NT} and @code{Li} solver, currently opposite walls have to be of the same type (i.e. no electric wall on the left with a magnetic wall on the right).
+@item For the @code{NT} and @code{Li} solver, the first number as argument to @code{Section()} is not exactly equal to the number of plane waves used. The program will print out the actual number of plane waves orders used in each direction (e.g. @code{M N 10 9}) and the actual size of the eigenproblem solved. The ratio between @code{M} and @code{N} is proportional to the aspect ratio of the waveguide.
+ 
+@end itemize
+
+@page
+
+@node Tips for troubleshooting problems,  , CAMFR 3D, Modelling optical devices
 @section Tips for troubleshooting problems
 
 @cindex convergence problems, troubleshooting, core dump, crash
