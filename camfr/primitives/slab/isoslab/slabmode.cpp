@@ -134,7 +134,6 @@ Complex SlabMode::get_cos() const
 
   return cs;
 
-
   // 45 deg cut.
 
   if (imag(cs*kz) > 0)

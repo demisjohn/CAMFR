@@ -95,7 +95,7 @@ class Slab_M_Mode : public SlabMode
     // Expansion coeff. of forward and backward waves at each interface.
         
     std::vector<Complex> fw; // towards x=+inf
-    std::vector<Complex> bw;  // towards x=-inf
+    std::vector<Complex> bw; // towards x=-inf
 
     // x-component of wavevector.
     

@@ -830,11 +830,11 @@ void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
 
   overlap_pw_numeric(mode, k, E, &Oz_num, &O1_num);
 
-  if (abs(*Oz-Oz_num) > 1e-5)
+  //if (abs(*Oz-Oz_num) > 1e-4)
   std::cout << E << " Oz " << *Oz << " " << Oz_num << " " << abs(*Oz-Oz_num)
             << std::endl; 
  
-  if (abs(*O1-O1_num) > 1e-5)
+  //if (abs(*O1-O1_num) > 1e-4)
   std::cout << E << " O1 " << *O1 << " " << O1_num << " " << abs(*O1-O1_num) 
             << std::endl;
 }
