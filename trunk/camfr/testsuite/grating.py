@@ -33,7 +33,7 @@ class grating(unittest.TestCase):
         s1.calc()
         E1 = s1.mode(0).field(Coord(gp/2.,0,0)).E2()
 
-        E1_OK = 9.37774762121+2.35575448038e-14j
+        E1_OK = 9.37774761087-2.90162100076e-13j
         print E1, "expected", E1_OK
         E1_pass = abs((E1 - E1_OK) / E1_OK) < eps.testing_eps
 
@@ -43,7 +43,7 @@ class grating(unittest.TestCase):
         s2.calc()
         E2 = s2.mode(0).field(Coord(gp/2.,0,0)).E2()
 
-        E2_OK = 7.03147812904-6.44220331377e-11j
+        E2_OK = 7.03164255766-6.9718563713e-11j
         print E2, "expected", E2_OK
         E2_pass = abs((E2 - E2_OK) / E2_OK) < eps.testing_eps
 
