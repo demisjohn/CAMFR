@@ -269,6 +269,8 @@ inline Real slab_width(Slab& s)
   {return real(s.get_width());}
 inline Real section_width(Section& s)
   {return real(s.get_width());}
+inline Real section_height(Section& s)
+  {return real(s.get_height());}
 
 
 
@@ -1056,7 +1058,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def_init(args<Expression&, int>())
     .def_init(args<Expression&, Expression&>())
     .def_init(args<Expression&, Expression&, int>())
-    .def("width", section_width)
+    .def("width",  section_width)
+    .def("height", section_height)
+    .def("eps",    &Section::eps_at)
+    .def("mu",     &Section::mu_at)
+    .def("n",      &Section::n_at)
     ;
 }
 
