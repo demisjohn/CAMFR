@@ -68,6 +68,8 @@ class Slab_M : public SlabImpl
     std::vector<Complex> get_params() const;
     void set_params(const std::vector<Complex>&);
 
+    bool is_mirror_image_of(const SlabImpl* medium_II) const;
+
   protected:
 
     std::vector<Complex> find_kt(std::vector<Complex>& old_kt);
