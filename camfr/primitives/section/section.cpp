@@ -1048,15 +1048,16 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
   exit(-1);
 #endif
 
-  // Calculate M and N. 
-
-  // TODO: take aspect ratio into account.
+  // Calculate M and N.
   // TODO: speed up by using more .reference.
 
   const Complex k0 = 2*pi/global.lambda;
 
-  int M = int(sqrt(Real(M1)));
-  int N = int(sqrt(Real(M1)));
+  const Real W = real(get_width());
+  const Real H = real(get_height());
+
+  int M = int(sqrt(Real(M1*W/H)));
+  int N = int(sqrt(Real(M1*H/W)));
 
   bool extend = true;
 
@@ -1076,6 +1077,8 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
   global_section.M = M;
   global_section.N = N; 
+
+  std::cout << "M N " << M << " " << N << " " << std::endl;
 
   Complex alpha0 = (abs( R_left*R_right-1.0) < 1e-10) ? 0 : pi/get_width()/2.;
   Complex  beta0 = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : pi/get_height()/2.;
