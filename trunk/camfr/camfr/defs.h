@@ -42,6 +42,7 @@ typedef enum {ADR, track} Solver;
 typedef enum {normal, extra, SVD} Stability;
 typedef enum {T_T, S_T, S_S} Field_calc;  
 typedef enum {GEV, T} Bloch_calc;
+typedef enum {lapack, arnoldi} Eigen_calc;
 
 
 
@@ -160,6 +161,10 @@ struct Global
 
     // Determines which algorithm is used to calculate Bloch modes.
     Bloch_calc bloch_calc;
+
+    // Determines which algorithm is used to calculate the lowest 
+    // eigenvalue in cavity calculations.
+    Eigen_calc eigen_calc;
 
     // TMP switch that tells CAMFR is the local modes are orthogonal.
     // CAMFR should later figure this out by itself.
