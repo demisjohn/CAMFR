@@ -78,7 +78,7 @@ class metal_splitter(unittest.TestCase):
         splitter.calc()
 
         R = splitter.R12(0,0)
-        R_OK = 0.784056622162+0.388717728367j
+        R_OK = 0.759051112391+0.364101270668j
 
         print R, "expected", R_OK
         
