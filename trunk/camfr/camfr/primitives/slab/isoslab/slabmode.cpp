@@ -16,6 +16,30 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// signedsqrt2_
+//
+//   Square root with branch cut at 45 degrees.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex signedsqrt2_(const Complex& kz2)
+{
+  Complex new_kz = sqrt(kz2);
+
+  if (imag(new_kz) > 0)
+    new_kz = -new_kz;
+
+  if (abs(imag(new_kz)) < abs(real(new_kz)))
+    if (real(new_kz) < 0)
+      new_kz = -new_kz;
+
+  return new_kz;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // SlabMode::field
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -25,7 +49,18 @@ Complex SlabMode::get_kz() const
   if (abs(global_slab.beta) < 1e-10)
     return kz;
   else // Rotate kz for off-axis incidence.
-    return signedsqrt(kz*kz - pow(global_slab.beta, 2));
+  {
+    Complex new_kz = sqrt(kz*kz - pow(global_slab.beta, 2));
+
+    if (imag(new_kz) > 0)
+      new_kz = -new_kz;
+    
+    if (abs(imag(new_kz)) < abs(real(new_kz)))
+      if (real(new_kz) < 0)
+        new_kz = -new_kz;
+
+    return new_kz;
+  }
 }
 
 
@@ -68,9 +103,10 @@ Field SlabMode::field(const Coord& coord_) const
   forw_backw_at(coord, &right_x, &left_x);
 
   // Calculate total field.
-
+  // Note that cs needs to be in sync with generalslab.cpp.
+  
   const Complex sn = global_slab.beta / kz;
-  const Complex cs = signedsqrt(1.0 - sn*sn);
+  const Complex cs = signedsqrt2_(1.0 - sn*sn);
   
   Field field;
 
@@ -130,9 +166,9 @@ Field SlabMode::field(const Coord& coord_) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Slab_M_Mode::Slab_M_Mode
-  (Polarisation pol, const Complex& kz, const Slab_M* geom)
-  : SlabMode(pol, kz, geom)
+Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz, 
+                         const Complex& kt_, const Slab_M* geom)
+    : SlabMode(pol, kz, geom), kt(kt_)
 {
   A = (pol == TE) ? 0.0 : 1.0;
   B = (pol == TE) ? 1.0 : 0.0;

@@ -1,5 +1,10 @@
 2002-03-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+        * slabmode.h: Remember kt.
+	* slabmode.cpp: Dito.
+
+2002-03-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
         * slab.cpp: Refactor, fix memory leak, fix tracing.
 
 2002-03-06 Peter Bienstman  <Peter.Bienstman@rug.ac.be>

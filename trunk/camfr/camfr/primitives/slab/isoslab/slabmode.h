@@ -67,7 +67,8 @@ class Slab_M_Mode : public SlabMode
 {
   public:
 
-    Slab_M_Mode(Polarisation pol, const Complex& kz, const Slab_M* geom);
+    Slab_M_Mode(Polarisation pol,  const Complex& kz, 
+                const Complex& kt, const Slab_M* geom);
     
     void normalise();
     
@@ -75,6 +76,8 @@ class Slab_M_Mode : public SlabMode
 
     Complex kx_at(const Coord& c) const
       {return kx[index_lookup(c.c1, c.c1_limit, geom->discontinuities)];}
+
+    Complex get_kt() const {return kt;}
     
   protected:
 
@@ -88,6 +91,10 @@ class Slab_M_Mode : public SlabMode
     // x-component of wavevector.
     
     vector<Complex> kx;
+
+    // Root of the orignal dispersion relation.
+    
+    Complex kt;
 };
 
 
