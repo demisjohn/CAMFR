@@ -452,7 +452,7 @@ std::vector<Complex> mueller
            && (abs(z_final[j]-z_cluster) > 0.001) )
       {
         //std::cout << "Deflating other "<<i<< " " <<(*transform)(z_final[j]) 
-        //          << std::endl;
+        //          << z_final[j] << std::endl;
         //deflate.push_back(z_final[j]);
       }
 
@@ -462,7 +462,7 @@ std::vector<Complex> mueller
     {
       deflate.push_back(z_cluster);
       std::cout << "Deflating cluster " << i << " " << (*transform)(z_cluster)
-                << std::endl;
+                << z_cluster << std::endl;
       
       bool error = false;
       bool verbose = verbosity == 2; 
