@@ -1,3 +1,7 @@
+2003-11-03  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* defs.cpp: Relax unstable_exp_threshold.
+
 2003-08-04  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* geometry.py: Fix thinko in to_expression.

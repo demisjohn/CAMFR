@@ -34,7 +34,7 @@ bool same(const Complex& fw_I_l, const Complex& fw_II_l,
           const Complex& fw_I_u, const Complex& fw_II_u, 
           const Complex& bw_I_u, const Complex& bw_II_u)
 {
-  const Real eps = 1e-10;
+  const Real eps = 1e-4;
 
   if (abs(fw_I_l - fw_II_l) > eps)
     return false;
