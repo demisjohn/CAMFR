@@ -1115,6 +1115,51 @@ cMatrix invert_svd(const cMatrix& A)
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// determinant
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex determinant(const cMatrix& A)
+{
+  // Check dimensions.
+
+  const int N = A.rows();
+  
+  if (N != A.columns())
+  {
+    py_error("Only square matrices currently supported.");
+    exit (-1);
+  }
+
+  // Do LU decomposition.
+
+  cMatrix LU_(N,N,fortranArray);
+  iVector P (N,  fortranArray);
+  LU(A, &LU_, &P);
+
+  // Calculate determinant.
+
+  Complex determinant = 1.0;
+  for (int i=1; i<=N; i++)
+    determinant *= LU_(i,i);
+
+  // Calcute sign change due to permutations.
+
+  int changed = 0;
+  for (int i=1; i<=N; i++)
+    if (P(i) != i)
+      changed++;
+  
+  int swaps = int(changed/2);
+  bool odd_swaps = 2*int(swaps/2) != swaps;
+  
+  return odd_swaps ? -determinant : determinant;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Do LU decomposition of matrix A.
 //
 /////////////////////////////////////////////////////////////////////////////

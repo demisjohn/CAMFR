@@ -1,3 +1,8 @@
+2002-12-20  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * linalg.h: Add determinant.
+	* linalg.cpp: Ditto.
+
 2002-03-20  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * linalg.cpp: Clean up Fortran name handling.
