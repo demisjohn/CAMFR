@@ -1,6 +1,7 @@
 from machine_cfg import *
 
 Default("camfr")
+import os
 
 # Construct build environments.
 
@@ -10,7 +11,8 @@ env = Environment(CPPPATH = include_dirs,
 		  CXX  = cxx,  CXXFLAGS  = flags,
 	          F77  = f77,  F77FLAGS  = fflags,
 		  LINK = link, LINKFLAGS = link_flags,
-		  LIBS = libs, SHLIBPREFIX = "")
+		  LIBS = libs, SHLIBPREFIX = "", 
+		  ENV = {'PATH' : os.environ['PATH']})
 
 env_noopt = env.Copy(CCFLAGS = flags_noopt, CXXFLAGS = flags_noopt)
 
