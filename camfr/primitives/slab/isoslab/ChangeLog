@@ -1,3 +1,8 @@
+2002-05-28 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * slabmode.cpp: Improve stability for TEM mode.
+	* slaboverlap.cpp: Ditto.
+
 2002-05-13 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * slabmode.cpp: Improve symmetry for backward calc.

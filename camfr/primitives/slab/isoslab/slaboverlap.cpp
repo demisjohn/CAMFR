@@ -93,8 +93,8 @@ Complex overlap(const SlabMode* mode_I,
   
   // Actual calculation.
 
-  Complex term1 = 0;
-  Complex term2 = 0;
+  Complex term1 = 0.0;
+  Complex term2 = 0.0;  
 
   for (int k=0; k<int(disc->size()-1); k++) // Loop over all regions.
   {
@@ -141,9 +141,9 @@ Complex overlap(const SlabMode* mode_I,
     if ( abs(kx_I + kx_II) > eps ) // normal case
     {
       // + f(upper_Min)
-      
-      term1 += C*I / (kx_I + kx_II) * ( fw_I_u * fw_II_u - bw_I_u * bw_II_u );
 
+      term1 += C*I / (kx_I + kx_II) * ( fw_I_u * fw_II_u - bw_I_u * bw_II_u );
+      
       // - f(lower_Plus)
 
       term1 -= C*I / (kx_I + kx_II) * ( fw_I_l * fw_II_l - bw_I_l * bw_II_l );
@@ -152,7 +152,7 @@ Complex overlap(const SlabMode* mode_I,
     {
       // + f(upper_Min) - f(lower_Plus)
       
-      term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
+      term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );      
     }
     
     //
