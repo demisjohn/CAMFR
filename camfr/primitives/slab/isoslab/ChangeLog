@@ -1,3 +1,7 @@
+2003-08-06 Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* slab.cpp: Support for TE_TM in new field calc.
+
 2003-08-01 Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* slab.cpp: Add field_calc_heuristic.

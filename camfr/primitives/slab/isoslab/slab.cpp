@@ -294,7 +294,7 @@ void Slab_M::find_modes()
     vector<Complex> old_kt_TE;
     if (modeset.size())
       for (unsigned int i=0; i<n; i++)
-        old_kt_TE.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt()); 
+        old_kt_TE.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
 
     vector<Complex> kt(find_kt(old_kt_TE));
     kt.erase(kt.begin()+n, kt.end());
@@ -1328,6 +1328,10 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
 void Slab_M::build_modeset(vector<Complex>& kt)
 {
+  // Set polarisation.
+
+  Polarisation old_polarisation = global.polarisation;
+
   // Clear old modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
@@ -1445,9 +1449,10 @@ void Slab_M::build_modeset(vector<Complex>& kt)
 
   // Find candidate cores to calculate modes from.
   
-  std::sort(kt.begin(), kt.end(), kt_sorter());
-  vector<vector<int> > best_cores;
-  
+  if (global.polarisation != TE_TM)
+    std::sort(kt.begin(), kt.end(), kt_sorter());
+
+  vector<vector<int> > best_cores; 
   for (unsigned int i=0; i<kt.size(); i++)
   {
     vector<Real> error_i;
@@ -1463,6 +1468,8 @@ void Slab_M::build_modeset(vector<Complex>& kt)
         if (imag(kz) > 0)
           kz = -kz;
 
+      if (old_polarisation == TE_TM)
+        global.polarisation = ( i < int(global.N/2) ) ? TE : TM;
       Planar::set_kt(kz);
 
       lower_stacks[j].calcRT();
@@ -1554,9 +1561,10 @@ void Slab_M::build_modeset(vector<Complex>& kt)
 
     // Create mode.
 
-    Polarisation pol = global.polarisation;
-    if (global.polarisation == TE_TM)
+    Polarisation pol = old_polarisation;
+    if (old_polarisation == TE_TM)
       pol = ( i < int(global.N/2) ) ? TE : TM;
+    global.polarisation = pol;
 
     calc_fw = !calc_fw;
 
@@ -1600,11 +1608,13 @@ void Slab_M::build_modeset(vector<Complex>& kt)
   delete l_boundary;
   delete u_boundary;
 
+  global.polarisation = old_polarisation;
+
   // Remember wavelength and gain these modes were calculated for.
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat; 
+    last_gain_mat = *global.gain_mat;
 }
 
 
