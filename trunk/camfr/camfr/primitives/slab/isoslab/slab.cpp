@@ -729,6 +729,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
 
   // Create new modeset.
   
+  bool calc_fw = true;
   for (unsigned int i=0; i<kt.size(); i++)
   {
     Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
@@ -744,7 +745,8 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     if (global.polarisation == TE_TM)
       pol = ( i < int(kt.size()/2) ) ? TE : TM;
     
-    Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this);
+    calc_fw = !calc_fw;
+    Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
     
     newmode->normalise();
     
