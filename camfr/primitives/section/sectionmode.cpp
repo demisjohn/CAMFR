@@ -45,11 +45,18 @@ Section2D_Mode::Section2D_Mode
 
   cMatrix Q(M,M,fortranArray);
   if (! geom->symmetric)
+  {
+    geom->left.calcRT();
+    geom->right.calcRT();
     Q.reference(multiply(geom-> left.as_multi()->get_R12(), 
                          geom->right.as_multi()->get_R12()));
+  }  
   else
+  {
+    geom->left.calcRT(); 
     Q.reference(multiply(geom-> left.as_multi()->get_R12(), 
                          geom-> left.as_multi()->get_R12()));
+  }
   
   cVector e(M,fortranArray);
   cMatrix E(M,M,fortranArray);
@@ -72,10 +79,10 @@ Section2D_Mode::Section2D_Mode
   // Set fields.
 
   geom->right.set_inc_field(f);
-  geom->left .set_inc_field(geom->right.get_refl_field());
-
-  geom->left .get_interface_field( &left_interface_field);
   geom->right.get_interface_field(&right_interface_field);
+
+  geom->left .set_inc_field(geom->right.get_refl_field());
+  geom->left .get_interface_field( &left_interface_field);
 
   global.N = old_N;
   global.slab_ky = old_beta;

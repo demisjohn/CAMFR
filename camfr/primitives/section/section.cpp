@@ -302,6 +302,9 @@ Section::Section(Expression& expression, int M1, int M2)
     }
   }
 
+  left_ex.remove_term_front();
+  left_ex.remove_term_front();
+
   if (global_section.leftwall == E_wall)
     leftwall_sc = new E_Wall(*left_ex.get_ext());
   if (global_section.leftwall == H_wall)
@@ -722,7 +725,6 @@ void Section2D::find_modes_from_series()
 
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
-
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
   {
@@ -767,13 +769,10 @@ void Section2D::find_modes_from_series()
       if (imag(kz) > 0)
         kz = -kz;
 
-    Mode* newmode = new Mode(global.polarisation,kz,-kz);
+    Section2D_Mode* newmode
+     = new Section2D_Mode(global.polarisation,kz,this);
 
-    //Section2D_Mode* newmode
-    // = new Section2D_Mode(global.polarisation,kz,this);
-    
-    std::cout << "TMP no normalise" << std::endl;
-    //newmode->normalise();
+    newmode->normalise();
 
     modeset.push_back(newmode);
   }

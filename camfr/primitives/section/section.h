@@ -211,7 +211,7 @@ class Section2D : public SectionImpl
       {return left.get_total_thickness() + right.get_total_thickness();}
 
     Complex get_height() const
-      {return dynamic_cast<Slab*>(left.get_inc())->get_width();}
+      {return slabs[0]->get_width();}
     
     void find_modes();
 
