@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "mueller.h"
 
 #ifdef _WIN32
@@ -369,7 +370,8 @@ std::vector<Complex> mueller_multiple
 /////////////////////////////////////////////////////////////////////////////
 
 std::vector<Complex> mueller
-  (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter)
+  (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter,
+   ComplexFunction* transform)
 {
   vector<Complex> allroots;
   
@@ -388,13 +390,20 @@ std::vector<Complex> mueller
     bool error = false;
     
     Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
-                               &deflate, maxiter, &error, true); 
+                               &deflate, maxiter, &error); 
 
     if (error)
       py_error("Mueller solver failed to converge.");
 
-    std::cout << i << " " << z0[i] << "-->" << new_root << std::endl;
-   
+    std::ostringstream s;
+    if (!transform)
+      s << i << " " << z0[i] << " --> " << new_root;
+    else
+      s << i << " " << (*transform)(z0[i]) << " --> "
+                    << (*transform)(new_root);
+
+    py_print(s.str());
+
     if (!error)
       allroots.push_back(new_root);
   }

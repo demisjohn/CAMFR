@@ -66,12 +66,13 @@ std::vector<Complex> mueller_multiple
 //
 //  Given a set of zero estimates z0, find the true zeros.
 //  Uses deflation.
+//  'transform' is only used to transform the z's when printing the results.
 //
 /////////////////////////////////////////////////////////////////////////////
 
 std::vector<Complex> mueller
   (ComplexFunction& f, const std::vector<Complex>& z0, Real eps=1e-14, 
-   int maxiter=50);
+   int maxiter=50,ComplexFunction* transform=NULL);
 
 
 
