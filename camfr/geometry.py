@@ -423,10 +423,10 @@ class Geometry:
                 i_end += 1
 
             if i_end == i+1:
-                new_slabs.append(average_slabs(slabs, i, i_end))
-            else:
                 new_slabs.append(slabs[i])
-            
+            else:
+                new_slabs.append(average_slabs(slabs, i, i_end))
+                
             d.append((i_end - i) * dx)
                                               
             i = i_end
