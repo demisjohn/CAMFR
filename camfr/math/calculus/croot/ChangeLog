@@ -1,5 +1,9 @@
 2002-05-10  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* allroots.cpp: Improve robustness.
+
+2002-05-10  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* mueller.h: Optionally deflate extra zeros in mueller_multiple.
 	* mueller.cpp: Ditto.
 
