@@ -1,15 +1,22 @@
--stability: zipper.py, KC
--series_solver: double_prism, zipper
+-stabilise PML in series solver
 
--move newfield.py to testsuite
+-series solver for degenerate waveguides: double_prism, zipper (relax mueller),
+ dircoup (PML)
 
--series solver for degenerate waveguides (relax mueller)
--infstack: fix ext_field_expansion, calc_interface field
+-S_flux at arbitrary position
+
+-infstack: fix ext_field_expansion, calc_interface_field, fw_bw(s.length())
 -reformulate TE as fourier series
 -Trent's algorithm to invert Toeplitz
 -always take minimum number of modes in series solver
 -stability tips for infstacks
+
 -band calculation with fixed k_t
+
+-remove f,zabs debug code from slabmode.cpp
+-document field_calc_heuristic
+
+-mode_calc from core only for guided modes
 
 CAMFR 3D:
 
@@ -112,12 +119,12 @@ MEDIUM TERM:
 SOURCE MAINTENANCE
 
 -Use scons Clean function
+-remove old mode profile calculator
 -Section sorter to mode.h
 -Numeric is imported automatically. Remove from docs and examples.
 -move to uBLAS? (www.genesys-e.org/ublas)
 -build: eliminate as many makefiles as possible
 -remove set_precision_enhancement and friends
--get rid of S_T, T_T in field_calc
 -make the C++ naming convention more uniform and in sync with Python names
  (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)
 -use BaseMaterial where appropriate
