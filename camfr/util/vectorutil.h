@@ -107,4 +107,23 @@ void remove_opposites(vector<T>* v, Real eps=0)
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// is_present
+//
+//   Check if element is present with tolarance eps.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+template <class T>
+bool is_present(const vector<T>& v, const T& z, Real eps=0)
+{
+  for (unsigned int i=0; i<v.size(); i++)
+    if (abs(v[i]-z) <= eps)
+      return true;
+  
+  return false;
+}
+
+
 #endif
