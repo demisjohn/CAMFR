@@ -158,7 +158,7 @@ making it possible to perform sophisticated simulations and postprocessing.
 The examples in this chapter can be found in the directory 
 @code{examples/tutorial} in the main CAMFR directory. If you're on a Windows
 system, this directory could by something like 
-@code{C:\python22\Libs\site-packages\camfr}, on a Unix system it is usually 
+@code{C:\python22\Lib\site-packages\camfr}, on a Unix system it is usually 
 @code{/usr/lib/python2.2/site-packages/camfr}.
 
 The first file 
