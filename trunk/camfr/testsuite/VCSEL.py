@@ -18,7 +18,7 @@ class VCSEL(unittest.TestCase):
         print "Running VCSEL..."
 
         set_lambda(.980)
-        set_N(60)
+        set_N(100)
         set_circ_order(1)
 	set_sweep_from_previous(1)
 
@@ -77,8 +77,8 @@ class VCSEL(unittest.TestCase):
         wavelength = get_lambda()
         gain = gain_m.gain()
         
-        wavelength_OK = 0.980358455457
-        gain_OK = 500.101730607
+        wavelength_OK = 0.980365834012
+        gain_OK = 1182.17331249
 
         print wavelength, "expected", wavelength_OK
         print gain, "expected", gain_OK
