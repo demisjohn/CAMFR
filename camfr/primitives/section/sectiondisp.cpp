@@ -63,6 +63,22 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
 
   left_d  = dynamic_cast<StackImpl*>( left->get_sc())->get_thicknesses();
   right_d = dynamic_cast<StackImpl*>(right->get_sc())->get_thicknesses();
+
+  // Determine minimum refractive index.
+
+  vector<Material*> materials = left->get_materials();
+  vector<Material*> right_mat = right->get_materials();
+  materials.insert(materials.end(), right_mat.begin(), right_mat.end());
+
+  min_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
 }
 
 
@@ -71,25 +87,39 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
 //
 // SectionDisp::operator()
 //
+//   kt = k in the region with minimum refractive index.
+//
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::operator()(const Complex& beta)
+Complex SectionDisp::operator()(const Complex& kt)
 {
   counter++;
   
   global.lambda = lambda;
-  global_slab.beta = beta;
   global.orthogonal = false;
   global.polarisation = TE_TM;
+
+  Complex old_beta = global_slab.beta;
+
+  const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
+  Complex beta = sqrt(C*min_eps_mu - kt*kt);
+
+  if (real(beta) < 0)
+    beta = -beta;
+  
+  if (abs(imag(beta)) < 1e-12)
+    if (imag(beta) > 0)
+      beta = -beta;
+
+  global_slab.beta = beta;
 
   int old_N = global.N;
   global.N = M;
 
-  Complex res = (global.eigen_calc == lapack) ? calc_lapack (beta)
-                                              : calc_arnoldi(beta);
+  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_arnoldi();
 
   global.N = old_N;
-  global_slab.beta = 0.0;
+  global_slab.beta = old_beta;
 
   return res;
 }
@@ -102,23 +132,13 @@ Complex SectionDisp::operator()(const Complex& beta)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::calc_lapack2(const Complex& beta)
+Complex SectionDisp::calc_lapack2()
 {
   // Calculate eigenvectors.
-  
-  global.lambda = lambda;
-  global_slab.beta = beta;
-  global.orthogonal = false;
-  global.polarisation = TE_TM;
-
-  int old_N = global.N;
-  global.N = M;
 
   left->calcRT();
   if (! symmetric)
     right->calcRT();
-
-  global.N = old_N;
   
   cMatrix Q(M,M,fortranArray);
   if (! symmetric)
@@ -148,23 +168,13 @@ Complex SectionDisp::calc_lapack2(const Complex& beta)
 }
 
 
-Complex SectionDisp::calc_lapack(const Complex& beta)
+Complex SectionDisp::calc_lapack()
 {
   // Calculate eigenvectors.
-  
-  global.lambda = lambda;
-  global_slab.beta = beta;
-  global.orthogonal = false;
-  global.polarisation = TE_TM;
-
-  int old_N = global.N;
-  global.N = M;
 
   left->calcRT();
   if (! symmetric)
     right->calcRT();
-
-  global.N = old_N;
   
   cMatrix Q(M,M,fortranArray);
   if (! symmetric)
@@ -250,7 +260,7 @@ class Multiplier
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::calc_arnoldi(const Complex& beta)
+Complex SectionDisp::calc_arnoldi()
 {
 /*
   left->calcRT();
@@ -316,6 +326,8 @@ vector<Complex> SectionDisp::get_params() const
     params.push_back(*right_d[i]);
 
   params.push_back(lambda);
+
+  params.push_back(min_eps_mu);
   
   return params;
 }
@@ -361,6 +373,8 @@ void SectionDisp::set_params(const vector<Complex>& params)
     *right_d[i] = params[params_index++];
   
   lambda = real(params[params_index++]);
+
+  min_eps_mu = params[params_index];
 
    left->freeRT();
   right->freeRT();

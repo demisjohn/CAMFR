@@ -173,6 +173,8 @@ class Section2D : public SectionImpl
 
     std::vector<Complex> params; // Last parameters of dispersion relation.
     std::vector<Material*> materials;
+
+    friend class Section2D_Mode;
 };
 
 

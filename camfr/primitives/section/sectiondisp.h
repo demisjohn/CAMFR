@@ -39,14 +39,16 @@ class SectionDisp : public ComplexFunction
     
   protected:
 
-    Complex calc_lapack (const Complex& beta);
-    Complex calc_lapack2(const Complex& beta);
-    Complex calc_arnoldi(const Complex& beta);
+    Complex calc_lapack();
+    Complex calc_lapack2();
+    Complex calc_arnoldi();
 
     Stack* left;
     Stack* right;
 
     bool symmetric;
+
+    Complex min_eps_mu;
 
     std::vector<Slab*> left_slabs;
     std::vector<Slab*> right_slabs;  
