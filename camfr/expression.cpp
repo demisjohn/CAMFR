@@ -14,6 +14,7 @@
 #include "expression.h"
 #include "stack.h"
 #include "interface.h"
+#include "primitives/slab/slabmatrixcache.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -37,6 +38,7 @@ void free_tmps()
   Expression::tmp_stacks.clear();
   Expression::tmp_exprs.clear();
   interface_cache.clear();
+  slabmatrix_cache.clear();
 }
 
 
@@ -761,4 +763,48 @@ const Term operator*(unsigned int N, const Expression& e)
   }
 
   return Term(new_e, N);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// material_expression_to_table
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void material_expression_to_table(const Expression& e, 
+                                  vector<Complex>* eps, 
+                                  vector<Complex>* mu,
+                                  vector<Complex>* d)
+{
+  Expression ex = e.flatten();
+  
+  for (unsigned int i=0; i<ex.get_size(); i++)
+  {
+    Material* m = dynamic_cast<Material*>(ex.get_term(i)->get_mat());
+
+    if (!m)
+    {
+      cerr << "Error: expression contains non-material term." << endl;
+      exit (-1);
+    }
+
+    Complex thickness = ex.get_term(i)->get_d();
+
+    // Combine two succesive terms containing the same material.
+
+    if ( (i+1 < ex.get_size()) && (m == ex.get_term(i+1)->get_mat()) )
+    {
+      thickness += ex.get_term(i+1)->get_d();
+      i++;
+    }
+
+    if (abs(thickness))
+    {
+      eps->push_back(m->eps());
+       mu->push_back(m->mu());
+        d->push_back(thickness);
+    }
+  }
 }

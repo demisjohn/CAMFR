@@ -54,7 +54,7 @@ class SlabImpl : public MultiWaveguide
   public:
 
     SlabImpl() : leftwall(NULL), rightwall(NULL) {}
-    ~SlabImpl() {}
+    ~SlabImpl();
 
     void  set_left_wall(SlabWall&  left) { leftwall=&left;}
     void set_right_wall(SlabWall& right) {rightwall=&right;}
@@ -68,6 +68,9 @@ class SlabImpl : public MultiWaveguide
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
+
+    virtual vector<Complex> get_params() const;
+    virtual void set_params(const vector<Complex>&);
 
   protected:
 

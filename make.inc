@@ -43,7 +43,7 @@ MATH   = -lm
 # compiler flags
 
 #FLAGS  = -fPIC -O3 --param max-inline-insns=600 -march=pentiumpro \
-#	-ftemplate-depth-30  -ffast-math \
+#	-ftemplate-depth-30 -ffast-math \
 #      	-funroll-loops -fstrict-aliasing -I$(BLITZ)\
 #	-I$(PYTHON) -I$(BOOST_INC)
 FLAGS  =  -g -fPIC -I$(BLITZ) -I$(PYTHON) -I$(BOOST_INC)
