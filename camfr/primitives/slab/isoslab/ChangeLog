@@ -1,3 +1,11 @@
+2002-12-12 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slabmode.cpp: Consolidate signed_sqrt.
+
+2002-12-02 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.cpp: Switch to enable backward modes.
+
 2002-12-02 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slab.cpp: Tmp disable backward modes.
