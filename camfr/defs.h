@@ -237,6 +237,10 @@ struct Global
 
     // The out-of-plane beta component for slabs.
     Complex slab_ky;
+
+    // The number of modes used in the auxialiary series expansion solver 
+    // will be global.N * global.mode_surplus.
+    Real mode_surplus;
 };
 
 extern Global global;
