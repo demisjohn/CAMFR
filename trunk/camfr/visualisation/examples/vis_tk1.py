@@ -20,8 +20,8 @@ air  = Material(1.0)
 
 # Define waveguide.
 
-PML = 0.1
-slab = Slab(air(2-PML*1j) + GaAs(0.5) + air(2-PML*1j))
+PML = -0.1
+slab = Slab(air(2+PML*1j) + GaAs(0.5) + air(2+PML*1j))
 
 slab.calc()
 

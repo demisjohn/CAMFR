@@ -21,10 +21,10 @@ air  = Material(1.0)
 
 # Define stack.
 
-PML = 0.1
+PML = -0.1
 
-space = Slab(air(4 - 2*PML*1j))
-slab = Slab(air(1.5 - PML*1j) + GaAs(1) + air(1.5 - PML*1j))
+space = Slab(air(4 + 2*PML*1j))
+slab = Slab(air(1.5 + PML*1j) + GaAs(1) + air(1.5 + PML*1j))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 

@@ -22,9 +22,9 @@ air  = Material(1.0)
 
 # Define slabs.
 
-PML = 0.1
+PML = -0.1
 
-space = Slab(air(4 - 2*PML*1j))
+space = Slab(air(4 + 2*PML*1j))
 
 # Calculate reflectivity for different widths.
 
@@ -32,8 +32,8 @@ v = []
 
 for W in arange(.100,.200,.010):
 
-    slab = Slab(air(2 - PML*1j - W/2.) + GaAs(W)  \
-              + air(2 - PML*1j - W/2.))
+    slab = Slab(air(2 + PML*1j - W/2.) + GaAs(W)  \
+              + air(2 + PML*1j - W/2.))
     stack = Stack(space(0) + slab(0.5) + space(0))
     stack.calc()
 
