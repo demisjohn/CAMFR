@@ -210,7 +210,7 @@ class StackPlot:
         fileMenu.add_command(       label="Save as picture",
                              command = lambda:self._save("CAMFRPICTURE"))
         fileMenu.add_command(       label="Save as movie",
-                             command = lambda:self._save("CCAMFRGIFMOVIE"))
+                             command = lambda:self._save("CAMFRGIFMOVIE"))
         fileMenu.add_command(       label="Save as movieframes",
                              command = lambda:self._save("CAMFRFRAMESMOVIE"))
         fileMenu.add_command(       label="Quit",
