@@ -1,3 +1,7 @@
+2002-05-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mueller.cpp: More robust underflow convergence.
+
 2002-05-01  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* allroots.h: Add support for downwards contour extension.
