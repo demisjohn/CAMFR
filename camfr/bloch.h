@@ -30,11 +30,8 @@ class BlochStack : public MultiWaveguide
 
     BlochStack(const Expression& e);
     
-    Complex eps_at(const Coord& coord) const 
-      {return stack.eps_at(coord);}
-
-    Complex  mu_at(const Coord& coord) const 
-      {return stack. mu_at(coord);}
+    Material* material_at(const Coord& coord) const 
+      {return stack.material_at(coord);}
 
     bool operator==(const Waveguide& w) const 
       {return &w==this;}

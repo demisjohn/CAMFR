@@ -1169,50 +1169,25 @@ Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Stack::eps_at
+// Stack::material_at
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Complex Stack::eps_at(const Coord& coord) const
+Material* Stack::material_at(const Coord& coord) const
 {  
   if ( (abs(coord.z) < 1e-10) && (coord.z_limit == Min))
-    return get_inc()->eps_at(coord);
+    return get_inc()->material_at(coord);
 
   unsigned int index =
     index_lookup(coord.z, coord.z_limit, interface_positions);
 
   if (index == interface_positions.size())
-    return get_ext()->eps_at(coord);
+    return get_ext()->material_at(coord);
 
   const vector<Chunk>* chunks
     = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
   
-  return (*chunks)[index].sc->get_ext()->eps_at(coord);
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Stack::mu_at
-//  
-/////////////////////////////////////////////////////////////////////////////
-
-Complex Stack::mu_at(const Coord& coord) const
-{  
-  if ( (abs(coord.z) < 1e-10) && (coord.z_limit == Min))
-    return get_inc()->mu_at(coord);
-
-  unsigned int index =
-    index_lookup(coord.z, coord.z_limit, interface_positions);
-
-  if (index == interface_positions.size())
-    return get_ext()->mu_at(coord);
-
-  const vector<Chunk>* chunks
-    = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
-
-  return (*chunks)[index].sc->get_ext()->mu_at(coord);
+  return (*chunks)[index].sc->get_ext()->material_at(coord);
 }
 
 

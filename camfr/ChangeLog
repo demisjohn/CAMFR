@@ -1,3 +1,10 @@
+2003-11-17  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* waveguide.h: Rework eps_at, mu_at.
+	* stack.h: Ditto.
+	* stack.cpp: Ditto.
+	* bloch.h: Ditto.
+
 2003-11-14  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* camfr_wrap.cpp: Wrap set_estimate for Slab.
