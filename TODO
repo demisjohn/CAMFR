@@ -1,4 +1,4 @@
--fw_bw add limit
+-check W and H in overlap
 -stabilise PML in series solver
 
 -series solver for degenerate waveguides: double_prism, zipper (relax mueller),
