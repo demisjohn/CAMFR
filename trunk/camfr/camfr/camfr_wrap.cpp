@@ -192,6 +192,9 @@ inline void set_mode_surplus(Real l)
 inline void set_backward_modes(bool b)
   {global.backward_modes = b;}
 
+inline void set_section_solver(Section_solver s)
+  {global.section_solver = s;}
+
 inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -733,6 +736,18 @@ BOOST_PYTHON_MODULE(_camfr)
   scope().attr("highest_index") = highest_index;
   scope().attr("lowest_loss")   = lowest_loss;
 
+  // Wrap Section_solver enum.
+
+  enum_<Section_solver>("Section_solver")
+    .value("OS", OS)
+    .value("NT", NT)
+    .value("L",  L)
+    ;
+
+  scope().attr("OS") = OS;
+  scope().attr("NT") = NT; 
+  scope().attr("L")  = L; 
+
   // Wrap getters and setters for global parameters.
 
   def("set_lambda",                 set_lambda);
@@ -771,7 +786,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_lower_PML",              set_lower_PML);
   def("set_circ_PML",               set_circ_PML);
   def("set_beta",                   set_beta);
-  def("set_guided_only",            set_guided_only);
+  def("set_guided_only",            set_guided_only);  
+  def("set_section_solver",         set_section_solver);
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes); 
   def("free_tmps",                  free_tmps);
