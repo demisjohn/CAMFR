@@ -47,7 +47,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   vector<Complex> params, step;
   vector<Complex> zeros, zeros_bis; // Two recent zero estimates.
   vector<Complex> zeros_try;        // New trial estimate.
-  vector<Complex> zeros_jump;       // The last jump made the zeros.
+  vector<Complex> zeros_jump;       // The last jump made by the zeros.
   vector<Complex> *oldest, *newest; // Points to either zeros or zeros_bis.
 
   vector<bool> valid(estimate1.size(),true);
@@ -57,11 +57,13 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   if (estimate1.size() == 0)
     return estimate1;
 
+  vector<Complex> params_orig = f.get_params();
+
   // Check if sweep needed.
   
   step = (params2 - params1) / resolution;
   
-  if (abs(step) == 0)
+  if (abs(step) < 1e-13)
     return estimate1;
 
   // Write initial zero locations to file.
@@ -140,6 +142,9 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     trouble       = false;
     trouble_index = -1;
     
+    //cout << "Traceroot progress " << params1.size() << ":" 
+    //     << abs(params-params1)/abs(params2-params1)*100 << "% " << endl;
+    
     zeros_try.clear();
     for (unsigned int i=0; !trouble && i<zeros.size(); i++)
       if (valid[i])
@@ -148,6 +153,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
                                     0,100,&trouble));  
         if (trouble)
         {
+          //cout << "Mueller didn't converge for " << zeros[i] << endl;
           trouble_index = i;
           break;
         }
@@ -353,8 +359,8 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 
   delete s;
 
-  f.set_params(params1); // Restore f. 
-
+  f.set_params(params_orig); // Restore f. 
+  
   return zeros2;
 }
 
