@@ -53,6 +53,24 @@ Complex overlap(const SlabMode* mode_I,
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_TM_TE
+//
+//   This calculates two beta-independent terms in the overlap integral
+//   for TM-TE mode-coupling with an out-of-plane component:
+//     Ex.Hz and Ez.Hx
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
+		   Complex* Ex_Hz, Complex* Ez_Hx,
+		   const SlabCache* cache=NULL,
+		   const vector<Complex>* disc=NULL,
+		   int i=0, int j=0, int I_index=0, int II_index=0);
+
+
+
 #endif
 
 
