@@ -210,7 +210,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
 
   if ( (mode_I->pol != TM) || (mode_II->pol != TE) )
   {
-     cerr << "Wrong polaristion of modes in overlap_TM_TE." << endl;
+     cerr << "Wrong polarisation of modes in overlap_TM_TE." << endl;
      exit (-1);
   }
 
