@@ -1,9 +1,14 @@
-2003-11-14 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2004-08-18 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slabmatrixcache.cpp: Add possibility to write out overlap 
+	                       matrices for Davy.
+
+2003-11-14 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* generalslab.h: Add add_kz2_estimate.
 	* generalslab.cpp: Ditto.
 
-2003-07-11 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-07-11 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* generalslab.cpp: Relax tolerance on remove_copies.
 
