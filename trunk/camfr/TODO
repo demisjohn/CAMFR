@@ -1,5 +1,17 @@
+CAMFR 1.0:
+
+-upgrade boost: contants
+-Field.S1(), Field.S2(), Field.Sz()
+-set_lower/upper_wall
+-define PML globally
+-update manual
+-thin structures
+-memory management
+-KC complex modes stability
+
 CAMFR 3D:
 
+-PC walls, non-ortho
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
  complex modes, determinant faster than eigenvalues?
@@ -50,7 +62,6 @@ MEDIUM TERM:
 
 -making stripping of executable dependent on debug switches
 
--implement CoordStretcher for slabs?
 -automatic setting of global.orthogonal
 -explicitly return *all* modes found in Cavity::find_all_modes
 -make 'precision' dynamic
@@ -71,6 +82,7 @@ MEDIUM TERM:
 SOURCE MAINTENANCE
 
 -use scons shared library support
+-move to uBLAS? (www.genesys-e.org/ublas)
 -build: eliminate as many makefiles as possible, slab_global.beta
 -remove set_precision_enhancement and friends
 -get rid of S_T, T_T in field_calc

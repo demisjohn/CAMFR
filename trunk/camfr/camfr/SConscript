@@ -64,6 +64,7 @@ env.Library(target = "camfr", \
 		      primitives/section/section.cpp \
 		      primitives/section/sectionmode.cpp \
 		      primitives/section/sectiondisp.cpp \
+		      primitives/section/sectionoverlap.cpp \
 		      defs"+_o + " math/bessel/slatec/limits"+_o + " " +
 		      fortran_files)
 

@@ -870,9 +870,13 @@ void Stack::set_interface_field(const vector<FieldExpansion>& field)
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-void Stack::get_interface_field(vector<FieldExpansion>* field) const
+void Stack::get_interface_field(vector<FieldExpansion>* field)
 {
   field->clear();
+
+  if (interface_field.size() <= 1)
+    calc_interface_fields();
+
   *field = interface_field;
 }
 
