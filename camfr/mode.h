@@ -96,23 +96,18 @@ struct betasorter
 
 struct modesorter
 {
-    bool operator()(const Mode& a, const Mode& b)
-    {
-      if ( (a.pol == TE) && (b.pol != TE) )
-        return true;
-
-      if ( (a.pol == TM) && (b.pol != TM) )
-        return false;
-
-      const Complex kz_a = a.get_kz();
-      const Complex kz_b = b.get_kz();
-      
-      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
-    }
-
     bool operator()(const Mode* a, const Mode* b)
     {
-      return operator()(*a,*b);
+      if ( (a->pol == TE) && (b->pol != TE) )
+        return true;
+
+      if ( (a->pol == TM) && (b->pol != TM) )
+        return false;
+
+      const Complex kz_a = a->get_kz();
+      const Complex kz_b = b->get_kz();
+      
+      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
     }
 };
 
