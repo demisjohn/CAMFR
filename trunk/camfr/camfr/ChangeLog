@@ -1,3 +1,8 @@
+2005-02-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* material.h: Add UniaxialMaterial.
+	* camfr_wrap.cpp: Ditto.
+
 2005-02-02  Pieter Dumon  <Pieter.Dumon@UGent.be>
 
 	* bloch.h: Add support for BlochStacks inside of other Stacks.
