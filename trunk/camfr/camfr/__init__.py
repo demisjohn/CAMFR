@@ -17,8 +17,9 @@ print
 Plus = 0
 Min  = 1
 
-ADR   = 0
-track = 1
+ADR    = 0
+track  = 1
+series = 3
 
 normal = 0
 extra  = 1

@@ -1,3 +1,9 @@
+2002-11-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* defs.h: Add series solver option.
+	* camfr_wrap.cpp: Ditto.
+	* __init__.py: Ditto.
+	
 2002-09-12  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* waveguide.cpp: Recalc if global.N changes.
