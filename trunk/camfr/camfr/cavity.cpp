@@ -74,12 +74,6 @@ Cavity::Cavity(Stack& bot_, Stack& top_)
      "Error: top and bottom half of cavity have different incidence media.");
     return;
   }
-
-  if (!global.gain_mat)
-  {
-    py_error("Error: no gain material defined for cavity.");
-    exit (-1);
-  }
 }
 
 
@@ -274,8 +268,8 @@ Real Cavity::calc_sigma(int* dominant_mode)
   std::ostringstream s;
 
   s << "@ " << global.lambda
-    << " " << imag(global.gain_mat->n())
-    << " " << global.gain_mat->gain()
+    << " " << (global.gain_mat ? imag(global.gain_mat->n()) : 0.0)
+    << " " << (global.gain_mat ? global.gain_mat->gain()    : 0.0)
     << " " << sigma(N)
     << " " << *dominant_mode;
   
