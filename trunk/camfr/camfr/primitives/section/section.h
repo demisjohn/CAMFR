@@ -21,7 +21,7 @@
 #include "sectiondisp.h" // TMP
 
 typedef enum {lowest_loss, highest_index} Sort_type;
-typedef enum {OS, NT, L} Section_solver;
+typedef enum {OS, NT, L, L_anis} Section_solver;
 typedef enum {none, snap, guided_only, full} Mode_correction;
 
 
@@ -46,6 +46,7 @@ struct SectionGlobal
     int M;
     int N;
     bool keep_all_estimates;
+    Real PML_fraction;
 };
 
 extern SectionGlobal global_section;
@@ -276,7 +277,16 @@ class Section2D : public SectionImpl
     void find_modes_by_sweep();
 
     std::vector<ModeEstimate*> estimate_kz2_omar_schuenemann();
-    std::vector<ModeEstimate*> estimate_kz2_fourier();
+    std::vector<ModeEstimate*> estimate_kz2_fourier();    
+
+    void create_FG_NT(cMatrix* F, cMatrix* G, int M, int N,
+                      const Complex& alpha0, const Complex& beta0);
+
+    void create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
+                      const Complex& alpha0, const Complex& beta0);    
+
+    void create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
+                      const Complex& alpha0, const Complex& beta0);
 
     std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.
