@@ -1,6 +1,7 @@
 from __future__ import division
 
 from _camfr import *
+from camfr_tk import *
 from geometry import *
 from camfrversion import *
 
