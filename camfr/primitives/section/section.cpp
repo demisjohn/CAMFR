@@ -574,6 +574,12 @@ struct loss_sorter
     }
 };
 
+struct kz2_sorter
+{
+    bool operator()(const Complex& kz2_a, const Complex& kz2_b)
+      {return ( real(kz2_a) > real(kz2_b) );}
+};
+
 struct kt_to_neff : ComplexFunction
 {
   Complex C;
@@ -798,6 +804,83 @@ cMatrix fourier_eps_2D(const vector<Slab*>& slabs,
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//  Returns 'split' 2D fourier expansion of 1/eps.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cMatrix fourier_eps_2D_y_x(const vector<Slab*>& slabs,
+                           const vector<Complex>& disc, int M, int N)
+{
+  const Complex Lx = disc.back() - disc.front();
+
+  const int MN = (2*M+1)*(2*N+1); 
+  cMatrix result(MN,MN,fortranArray);
+  result = 0.0;
+  
+  for (int i=0; i<slabs.size(); i++)
+  {
+    // Calculate 1D fourier transform of 1/eps(y) profile.
+
+    vector<Complex> disc_i_y(slabs[i]->get_discontinuities());
+    disc_i_y.insert(disc_i_y.begin(), 0.0);
+    
+    vector<Complex> f_i_y;
+    for (int k=0; k<disc_i_y.size()-1; k++)
+      f_i_y.push_back(eps0/slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus)));
+    
+    cVector fourier_1D_y(4*N+1,fortranArray);   
+    fourier_1D_y = fourier(f_i_y, disc_i_y, 2*N);
+
+    cMatrix eps_y(2*N+1,2*N+1,fortranArray);
+    for (int i1=-N; i1<=N; i1++)
+      for (int i2=-N; i2<=N; i2++)
+        eps_y(i1+N+1,i2+N+1) = fourier_1D_y(i1-i2 + 2*N+1);
+
+    cMatrix inv_eps_y(2*N+1,2*N+1,fortranArray);
+    inv_eps_y.reference(invert(eps_y)); // TODO: exploit Toeplitz.
+
+    //std::cout << i << " " << eps_y << std::endl;
+    //exit (-1); //inv_eps_y << std::endl;
+    //std::cout << std::flush;
+
+    // Calculate pseudo 1D fourier transform in x direction.
+
+    vector<Complex> disc_i_x;
+    disc_i_x.push_back(disc[i]);
+    disc_i_x.push_back(disc[i+1]);
+
+    vector<Complex> f_i_x; 
+    f_i_x.push_back(1.0);
+
+    cVector fourier_1D_x(4*M+1,fortranArray);
+    fourier_1D_x = fourier(f_i_x, disc_i_x, 2*M, &Lx);
+
+    // Fill result matrix.
+
+    for (int m=-M; m<=M; m++)
+      for (int n=-N; n<=N; n++)
+      {
+        int i1 = (m+M+1) + (n+N)*(2*M+1);
+      
+        for (int j=-M; j<=M; j++)
+          for (int l=-N; l<=N; l++)
+          {
+            int i2 = (j+M+1) + (l+N)*(2*M+1);
+
+            result(i1,i2) += fourier_1D_x(m-j + 2*M+1) *
+                                inv_eps_y(n   + N+1, l + N+1);
+          }
+      } 
+  }
+  
+  return result;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Section2D::find_modes_from_series()
@@ -863,6 +946,7 @@ cVector Section2D::estimate_kz2_li()
 
   // Calculate M and N. 
   // TODO: take aspect ratio into account.
+  // TODO: speed up by using more .reference.
 
   const Complex k0 = 2*pi/global.lambda;
 
@@ -883,7 +967,7 @@ cVector Section2D::estimate_kz2_li()
   const int MN = (2*M+1)*(2*N+1);
   
   cMatrix     eps(MN,MN,fortranArray);
-  cMatrix inv_eps(MN,MN,fortranArray);
+  cMatrix inv_eps(MN,MN,fortranArray); // 'Bad' formulation.
 
   for (int m=-M; m<=M; m++)
     for (int n=-N; n<=N; n++)
@@ -899,6 +983,20 @@ cVector Section2D::estimate_kz2_li()
           inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
         }
     }
+
+  bool old = (global.bloch_calc == T); // Hijacked switch.
+
+  cMatrix inv_eps_2(MN,MN,fortranArray); // 'Good' formulation.
+
+  if (!old)
+    inv_eps_2.reference(invert(eps));
+
+  // Calculate fourier_eps_2D_y_x.
+
+  cMatrix eps_y_x(MN,MN,fortranArray);
+
+  if (!old)
+    eps_y_x.reference(fourier_eps_2D_y_x(slabs, disc, M, N));
   
   // Calculate alpha and beta vector.
 
@@ -916,9 +1014,65 @@ cVector Section2D::estimate_kz2_li()
        beta(i) =  beta0 + n*2.*pi/get_height();     
     }
 
-  // Constuct F matrix.
+
+  //
+  // New formulation.
+  //
 
   cMatrix F(2*MN,2*MN,fortranArray);
+  cMatrix G(2*MN,2*MN,fortranArray);
+
+  if (!old)
+  {
+
+  // Constuct F matrix.
+  
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      F(i1,   i2)    =  alpha(i1) * inv_eps_2(i1,i2) *  beta(i2);      
+      F(i1,   i2+MN) = -alpha(i1) * inv_eps_2(i1,i2) * alpha(i2);        
+      F(i1+MN,i2)    =   beta(i1) * inv_eps_2(i1,i2) *  beta(i2);
+      F(i1+MN,i2+MN) =  -beta(i1) * inv_eps_2(i1,i2) * alpha(i2);      
+
+      if (i1==i2)   
+      {
+        F(i1,   i2+MN) += k0*k0;
+        F(i1+MN,i2)    -= k0*k0;
+      }
+    }
+  
+  // Construct G matrix.
+  
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+      G(i1,   i2+MN) = -k0*k0 * eps_y_x(i1,i2);        
+      G(i1+MN,i2)    =  k0*k0 * eps_y_x(i1,i2); // TMP: only symmetric
+      G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+
+      if (i1==i2) 
+      {     
+        G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
+        G(i1+MN,i2)    -=  beta(i2)*beta(i2);
+      }
+      
+    }
+
+  std::cout << "Done new" << std::endl;
+  
+  }
+
+  //
+  // Old formulation.
+  //
+
+  else
+  {
+    
+
+  // Constuct F matrix.
   
   for (int i1=1; i1<=MN; i1++)
     for (int i2=1; i2<=MN; i2++)
@@ -936,8 +1090,6 @@ cVector Section2D::estimate_kz2_li()
     }
   
   // Construct G matrix.
-
-  cMatrix G(2*MN,2*MN,fortranArray);
   
   for (int i1=1; i1<=MN; i1++)
     for (int i2=1; i2<=MN; i2++)
@@ -951,9 +1103,12 @@ cVector Section2D::estimate_kz2_li()
       {     
         G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
         G(i1+MN,i2)    -=  beta(i2)*beta(i2);
-      }
-      
+      }    
     }
+
+
+  std::cout << "Done old" << std::endl;
+  }
   
   // Solve eigenproblem.
 
@@ -970,9 +1125,9 @@ cVector Section2D::estimate_kz2_li()
   E /= k0*k0;
 
   std::cout << "Eigenproblem size " << 2*MN << std::endl;
-  for (int i=1; i<2*MN; i++)
-    std::cout << i << " " << E(i) << " " << sqrt(E(i)) << " " 
-              << sqrt(E(i))/2./pi*global.lambda << std::endl;
+  //for (int i=1; i<2*MN; i++)
+  //  std::cout << i << " " << E(i) << " " << sqrt(E(i)) << " " 
+  //            << sqrt(E(i))/2./pi*global.lambda << std::endl;
   
   return E;
 }
@@ -1036,35 +1191,51 @@ void Section2D::find_modes_from_series()
 
     Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
     
-    cVector kz2(M1,fortranArray);
+    cVector kz2(fortranArray);
 
     if (global.eigen_calc == arnoldi)
+    {  
+      int M = int(sqrt(Real(M1)));      
+      int N = int(sqrt(Real(M1)));
+      kz2.resize(2*(2*M+1)*(2*N+1));
       kz2 = estimate_kz2_li();
+    }
+    
     else
+    {
+      kz2.resize(M1);
       kz2 = estimate_kz2();
+    }
 
     //for (unsigned int i=1; i<=kz2.size(); i++)
     //  std::cout << "raw " << i << " "
     //            << sqrt(kz2(i))/2./pi*global.lambda << std::endl;
 
-    for (unsigned int i=1; i<=M1; i++)
+    for (unsigned int i=1; i<=kz2.rows(); i++)
       if (real(sqrt(kz2(i))) < 1.01*max_kz)
         kz2_coarse.push_back(kz2(i));
   }
-  user_estimates.clear();
+  user_estimates.clear();  
+
+  if (global.eigen_calc == arnoldi)
+  {    
+    std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
+
+    for (unsigned int i=0; i<kz2_coarse.size(); i++)
+      std::cout << i << " " << sqrt(kz2_coarse[i])/2./pi*global.lambda
+                << std::endl;
+
+    exit (-1);
+  }
 
   // Refine estimates.
 
   py_print("Refining estimates...");
 
-  if (sort == highest_index)
+  if (sort == highest_index) // TODO: kz2_sorter?
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), index_sorter());
   else
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
-
-  //for (unsigned int i=0; i<kz2_coarse.size(); i++)
-  //  std::cout << i << " " << sqrt(kz2_coarse[i])/2./pi*global.lambda 
-  //            << std::endl;  
 
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
