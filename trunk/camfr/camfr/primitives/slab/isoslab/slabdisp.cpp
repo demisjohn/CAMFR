@@ -30,7 +30,7 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
 
   material_expression_to_table(expression, &eps, &mu, &thicknesses);
     
-  // Find min real refractive index of structure.
+  // Find min refractive index of structure.
 
   Complex eps_mu_min = eps[0]*mu[0];
   
@@ -38,7 +38,7 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
   {
     Complex eps_mu = eps[i]*mu[i];
     
-    if (real(eps_mu) < real(eps_mu_min))
+    if (abs(eps_mu) < abs(eps_mu_min))
       eps_mu_min = eps_mu;
   }
 
@@ -69,7 +69,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
      mu.push_back(materials[i]->mu());
   }
 
-  // Find min real refractive index of structure.
+  // Find min refractive index of structure.
 
   Complex eps_mu_min = eps[0]*mu[0];
   
@@ -77,7 +77,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   {
     Complex eps_mu = eps[i]*mu[i];
     
-    if (real(eps_mu) < real(eps_mu_min))
+    if (abs(eps_mu) < abs(eps_mu_min))
       eps_mu_min = eps_mu;
   }
 
