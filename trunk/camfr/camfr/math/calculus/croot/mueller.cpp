@@ -384,7 +384,11 @@ std::vector<Complex> mueller
  
     for (unsigned int j=0; j<allroots.size(); j++)
       if (abs(allroots[j]-z0[i]) < 0.5)
+      {
+        //std::cout << "Deflating " << i << " " << (*transform)(allroots[j]) 
+        //          << std::endl;
         deflate.push_back(allroots[j]);
+      }
 
     // Find zero.
 
