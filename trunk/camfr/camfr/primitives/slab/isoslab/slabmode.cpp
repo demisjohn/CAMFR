@@ -42,7 +42,31 @@ Complex SlabMode::get_kz() const
 
 Complex SlabMode::get_cos() const
 {
-  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2));
+  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2)); 
+/*
+    // cs only
+
+    if (real(cs) < 0) 
+      cs = -cs;
+
+    if (abs(real(cs)) < 1e-12)
+      if (imag(cs) > 0)
+        cs = -cs;
+
+    return cs;
+
+    // classic
+
+    if (real(cs*kz) < 0) 
+      cs = -cs;
+
+    if (abs(real(cs*kz)) < 1e-12)
+      if (imag(cs*kz) > 0)
+        cs = -cs;
+
+    return cs;
+    
+*/
 /*
   if (geom->is_dummy())
   {
@@ -74,7 +98,28 @@ Complex SlabMode::get_cos() const
     return cs;
   }
 */
+
+/*
+    // Forward flux.
+
+    const Complex C = (pol == TE) ? geom->get_core()->mu() 
+                                  : geom->get_core()->eps();
+
+    const Complex S = (conj(kz/C)*cs);
+  
+    if (real(S) < 0)
+      cs = -cs;
+    if (abs(real(S)) < 1e-12)
+      if (imag(S) < 0) // TODO: check
+      {
+        std::cout << "S purely imag" << std::endl;
+        cs = -cs;
+      }
+  
+    return cs;
+*/
   // Lossy only.
+
 
   if (imag(cs*kz) > 0)
     cs = -cs;
