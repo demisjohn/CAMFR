@@ -27,10 +27,10 @@ camfr_extension = Extension(
     library_dirs=["./camfr",                                          \
                   "../boost_1_25_0/libs/python/src",                  \
                   "../blitz-20001213/lib",                            \
-                  "/usr/local/intel/mkl/LIB"],                        \
+                  "/opt/intel/mkl/lib/32"],                           \
     include_dirs=["camfr", "../boost_1_25_0","../blitz-20001213"],    \
-    libraries=["camfr", "boost_python", "blitz", "mkl32_lapack",      \
-               "mkl32_p3", "m", "g2c", "stdc++"] )
+    libraries=["camfr", "boost_python", "blitz", "mkl_lapack",        \
+               "mkl_p3", "m", "g2c", "stdc++"] )
 
 # Set up the extension.
 
@@ -42,6 +42,6 @@ setup(name="camfr_work", version="1.0pre",                            \
       py_modules=['geometry', 'camfr_tk', 'TkPlotCanvas'],            \
       package_dir={'': 'camfr', '': 'visualisation'},                 \
       # FIXME: ugly hack
-      data_files=[('lib/python21', ['camfr/geometry.py'])],           \
+      data_files=[('lib/python2.1', ['camfr/geometry.py'])],           \
       ext_modules=[camfr_extension],                                  \
       cmdclass={'build_ext' : camfr_build_ext} )
