@@ -471,7 +471,7 @@ DiagStack::DiagStack(const Expression& e, unsigned int no_of_periods)
 /////////////////////////////////////////////////////////////////////////////
 
 void DiagStack::calcRT()
-{
+{ 
   if (!recalc_needed())
     return;
 
@@ -547,6 +547,8 @@ MonoStack::MonoStack(const Expression& e, unsigned int no_of_periods)
 
 void MonoStack::calcRT()
 {
+  global.N = 1;
+
   if (!recalc_needed())
     return;
 
