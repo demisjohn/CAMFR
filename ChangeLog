@@ -1,3 +1,11 @@
+CAMFR 1.2:
+
+ - improved stability for Slabs
+ - added various small utility functions: Stack.width(), BlochStack.width(),
+   Cavity.width(), Cavity.length(), Cavity.bot_stack(), Cavity.top_Stack().
+
+
+
 CAMFR 1.1 (2003-03-05):
 
  - improved stability for Slabs
