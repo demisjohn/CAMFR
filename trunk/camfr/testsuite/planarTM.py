@@ -45,6 +45,8 @@ class planarTE(unittest.TestCase):
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
+        free_tmps()
+
         self.failUnless(R_pass and T_pass)
 
 suite = unittest.makeSuite(planarTE, 'test')        
