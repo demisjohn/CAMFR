@@ -78,6 +78,12 @@ class Contour
     
     std::vector<Contour> adjacent_ur() const;
 
+    // Returns three equally-sized adjacent contours to the right, downwards,
+    // and diagonally downwards-right. Integrals along common line segments
+    // are precalculated and reused.
+    
+    std::vector<Contour> adjacent_dr() const;
+
     // Return a contour twice the size of the original one, with the same
     // bottom right point. Integrals along common line segments
     // are precalculated and reused.
