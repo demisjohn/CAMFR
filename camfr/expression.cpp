@@ -100,7 +100,7 @@ Expression::~Expression()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Expression::add_term(const Term& t_) const
+void Expression::add_term(const Term& t_)
 {
   Term* t = new Term(t_);
   terms.push_back(t);
@@ -114,7 +114,7 @@ void Expression::add_term(const Term& t_) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Expression::insert_term_front(const Term& t_) const
+void Expression::insert_term_front(const Term& t_)
 {
   Term* t = new Term(t_);
   terms.insert(terms.begin(), t);
@@ -128,7 +128,7 @@ void Expression::insert_term_front(const Term& t_) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Expression::remove_term_front() const
+void Expression::remove_term_front()
 {
   delete terms[0]; 
   terms.erase(terms.begin());
@@ -776,16 +776,18 @@ const Expression operator+(const Expression& L, const Term& R)
 
   Waveguide* wg1 = L.get_ext();
   Waveguide* wg2 = R.get_inc();
+
+  Expression L_new = L;
   
   if (wg1 != wg2)
   {
     Scatterer* sc = interface_cache.get_interface(wg1, wg2);
-    L.add_term(Term(*sc));
+    L_new.add_term(Term(*sc));
   }
 
-  L.add_term(R);
+  L_new.add_term(R);
   
-  return L;
+  return L_new;
 }
 
 

@@ -65,9 +65,11 @@ StackImpl::StackImpl
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
+StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
   : no_of_periods(no_of_periods_)
 {
+  Expression e = e_; // Create working copy.
+
   // Check validity of expression.
 
   for (unsigned int i=0; i<e.get_size(); i++)
