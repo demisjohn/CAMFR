@@ -35,9 +35,16 @@ Real patterson_quad_sub(RealFunction& f, Real a, Real b, Real eps,
 
   if ( (error == false) || (abs(abs_error) <= abs(result_estimate * eps)) )
     return result;
-  else
-    return patterson_quad_sub(f, a, (a+b)/2., eps, result_estimate, max_k)
-         + patterson_quad_sub(f, (a+b)/2., b, eps, result_estimate, max_k);
+  
+  // If subdivision would be too fine, give up and return estimate.
+
+  if (abs(b-a) < 1e-14)
+    return .5*(b-a)*(f(b)+f(a));
+
+  // Subdivide interval.
+
+  return patterson_quad_sub(f, a, (a+b)/2., eps, result_estimate, max_k)
+       + patterson_quad_sub(f, (a+b)/2., b, eps, result_estimate, max_k);
 }
 
 
@@ -60,7 +67,7 @@ Real patterson_quad(RealFunction& f, Real a, Real b,
     return result;
 
   // Do adaptive subdivision of interval.
-  
+
   return patterson_quad_sub(f,  a, (a+b)/2., eps, result, max_k)
        + patterson_quad_sub(f, (a+b)/2., b,  eps, result, max_k);
 }
