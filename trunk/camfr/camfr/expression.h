@@ -72,6 +72,8 @@ class Expression
     
     void insert_term_front(const Term& t) const;
 
+    void remove_term_front() const;
+
     // Same as add term, but adds an interface if needed.
     
     void operator+=(const Term& t);
