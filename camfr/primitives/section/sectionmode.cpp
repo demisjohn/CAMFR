@@ -311,8 +311,8 @@ Field Section1D_Mode::field(const Coord& coord) const
   Field f;
 
   f.E1 = fw * f_slab.Ez  -  bw * f_slab.Ez;
-  f.E2 = fw * f_slab.E1  +  bw * f_slab.E2;
-  f.Ez = fw * f_slab.E2  +  bw * f_slab.Ez;
+  f.E2 = fw * f_slab.E1  +  bw * f_slab.E1;
+  f.Ez = fw * f_slab.E2  +  bw * f_slab.E2;
 
   f.H1 = fw * f_slab.Hz  +  bw * f_slab.Hz;
   f.H2 = fw * f_slab.H1  -  bw * f_slab.H1;

@@ -123,8 +123,9 @@ class Section : public MultiWaveguide
     Mode* get_fw_mode(int i) const {return s->get_fw_mode(i);}
     Mode* get_bw_mode(int i) const {return s->get_bw_mode(i);}
     
-    Complex eps_at(const Coord& coord) const {return s->eps_at(coord);}
-    Complex  mu_at(const Coord& coord) const {return s-> mu_at(coord);}
+    Complex eps_at(const Coord& co) const {return s->eps_at(co);}
+    Complex  mu_at(const Coord& co) const {return s-> mu_at(co);}
+    Complex   n_at(const Coord& co) const {return sqrt(eps_at(co)/eps0);}  
     
     int N() const {return s->N();}
 
