@@ -48,9 +48,6 @@ class grating(unittest.TestCase):
         print E2, "expected", E2_OK
         E2_pass = abs((E2 - E2_OK) / E2_OK) < eps.testing_eps
 
-        print s1
-        print s2
-
         free_tmps()
         
         set_upper_wall (slab_E_wall)
