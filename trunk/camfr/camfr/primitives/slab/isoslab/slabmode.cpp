@@ -29,18 +29,7 @@ Complex SlabMode::get_kz() const
   if (abs(global.slab_ky) < 1e-10)
     return kz;
   else // Rotate kz for off-axis incidence.
-  {
-    Complex new_kz = sqrt(kz*kz - pow(global.slab_ky, 2));
-
-    if (imag(new_kz) > 0)
-      new_kz = -new_kz;
-    
-    if (abs(imag(new_kz)) < abs(real(new_kz)))
-      if (real(new_kz) < 0)
-        new_kz = -new_kz;
-
-    return new_kz;
-  }
+    return slab_signedsqrt(kz*kz - pow(global.slab_ky, 2));
 }
 
 
