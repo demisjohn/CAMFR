@@ -451,7 +451,7 @@ Complex overlap_numeric_(const SlabMode* mode_I,
 void overlap_reference_modes(cMatrix* O_tt, cMatrix* O_zz,
                              const UniformSlab& ref, const Slab_M& profile)
 {
-  // Set constants..
+  // Set constants.
 
   const Real eps_copies = 1e-10; // Don't choose too low.
   const Complex C_TM = global.lambda / (2.*pi*c * ref.eps_at(Coord(0,0,0)));
