@@ -838,10 +838,10 @@ FieldExpansion Stack::inc_field_expansion()
   if (bw_inc)
     refl_field += multiply(as_multi()->get_T21(), inc_field_bw);
 
-  FieldExpansion inc_field(get_inc(), inc_field, refl_field);
-  interface_field.push_back(inc_field);
+  FieldExpansion inc_field_exp(get_inc(), inc_field, refl_field);
+  interface_field.push_back(inc_field_exp);
 
-  return inc_field;
+  return inc_field_exp;
 }
 
 
