@@ -14,8 +14,8 @@
 #define SECTIONDISP_H
 
 #include "../../stack.h"
-#include "../slab/generalslab.h"
 #include "../../math/calculus/calculus.h"
+#include "../slab/generalslab.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +29,8 @@ class SectionDisp : public ComplexFunction
 {
   public:
 
-    SectionDisp(Stack& _left, Stack& _right, Real _lambda);
+    SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
+                bool symmetric = false);
 
     Complex operator()(const Complex& beta);
 
@@ -38,8 +39,13 @@ class SectionDisp : public ComplexFunction
     
   protected:
 
+    Complex calc_lapack (const Complex& beta);
+    Complex calc_arnoldi(const Complex& beta);
+
     Stack* left;
     Stack* right;
+
+    bool symmetric;
 
     vector<Slab*> left_slabs;
     vector<Slab*> right_slabs;  
@@ -48,6 +54,8 @@ class SectionDisp : public ComplexFunction
     vector<Complex*> right_d;
     
     Real lambda;
+
+    int M;
 };
 
 
