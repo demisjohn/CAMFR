@@ -623,7 +623,10 @@ void Section2D::find_modes_from_scratch_by_track()
       Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
                                I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
 
-      if (!error && metal && abs(real(kt_new)) > 0.1)
+      if (abs(disp(kt_new)) > 1e-2)
+        error = true;
+
+      if (!error && abs(real(kt_new)) > 0.001)
       {
         py_print("Found complex mode pair.");
         kt_complex.push_back(kt_new);
@@ -636,7 +639,7 @@ void Section2D::find_modes_from_scratch_by_track()
   if (kt_lossless.size())
   {
     if (real(sqrt(C*min_eps_mu_lossless - kt_lossless[0]*kt_lossless[0])) > 
-      real(left.get_inc()->get_mode(1)->get_kz()) )
+      real(left.get_inc()->get_mode(1)->get_kz())+0.1 )
     cout << "n_eff higher than expected!" << endl;
     cout << "Slab kz: " << left.get_inc()->get_mode(1)->get_kz() << endl;
   }
@@ -682,7 +685,15 @@ void Section2D::find_modes_from_scratch_by_track()
           : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
                     1e-11,0,100,&error);
 
-        if (!error && metal && (abs(imag(kt_new)) > 0.1))
+        std::cout << kt_new << " -> " << abs(disp(kt_new)) << std::endl;
+        
+        if (abs(disp(kt_new)) > 1e-2)
+        {
+          std::cout << "rejected" << std::endl;
+          error = true;
+        }
+
+        if (!error && (abs(imag(kt_new)) > 0.001))
         {
           py_print("Found complex mode pair.");
           kt_complex.push_back(kt_new);
@@ -691,9 +702,11 @@ void Section2D::find_modes_from_scratch_by_track()
           kt_lossless.push_back(real(kt_new));
       }
 
-      modes_left = (kt_lossless.size() + 2*kt_complex.size() >= global.N + 2) 
+      int modes_needed = global.N + 2*left.get_inc()->N() + 2;
+      
+      modes_left = (kt_lossless.size() + 2*kt_complex.size() >= modes_needed) 
         ? 0
-        : global.N - kt_lossless.size() -2*kt_complex.size() + 2;
+        : modes_needed - kt_lossless.size() -2*kt_complex.size();
 
       kt_begin = real(kt_lossless[kt_lossless.size()-1])+.0001;
       extra++;
