@@ -1,28 +1,26 @@
--investigate worse convergence for TM modes
+-bug: symmetric cavity (top,top) gives problems
+-bug: stack field for points in incidence or exit medium
+-check if flipped scatterers work
 -push limit for # lateral periods
 -core in get/set params
--build: Eliminate as many makefiles as possible, slab_global.beta
 -circ_mode check: 0/0
 -infstack recalc modes, inf*(notation), diagslab, unexpected powerflow
  in bandgap crow_wg
+-check for presence of gain medium in cavity
+-prevent user from from making a stack with uniform layers with different
+ widths
+-default planar::set_theta (Peter)
+-improve documentation for Planar, flipped scatteres, walls
+
+
+CAMFR 3D
+
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
  complex modes, determinant faster than eigenvalues?
-
-SHORT TERM 
-
--default planar::set_theta (Peter)
-
--tune new complex zero finder
--related: make definition of C_upperright uniform
--related: test it for leaky modes
--related: set max mueller iteration to 50?
--related: reenable complex modes in circ
--related: test sign of beta in backward modes in circ (using power flux)
-
--improve documentation for Planar
-
--waiting for Boost update: operator+=, automatic conversion to Term
+-dispersion relation of 2D slabs:
+   -do not handle left and right walls through expressions
+   -try to eliminate need for O_II_I in interface.cpp
 
 
 MEDIUM TERM:
@@ -30,16 +28,9 @@ MEDIUM TERM:
 -speed up M - U1, where U1 is unit matrix
 -short cut check_error in Bessel functions
 
--better handling of decoupled waveguides (Peter)
--related: check instabilities in bend2, first formulation of rods (Peter)
--related: PhC waveguide, no symmetry trick: large no of cl periods (Peter)
--possible to remove hack for removing unstable exp, extra signed sqrt (Peter)
--idem: hack for tails in slabmodes (Peter)
+-more general handling of decoupled waveguides
 
--check for presence of gain medium in cavity
--prevent user from from making a stack with uniform layers with different
- widths
--eliminate warning for zero tranmission through wall when calculating 
+-eliminate warning for zero transmission through wall when calculating 
  fields in stack.
 
 -new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
@@ -51,17 +42,19 @@ MEDIUM TERM:
 -implement Bloch modes for MonoScatterers
 -speed up Bloch for symmetric structures
 
+-investigate worse convergence for TM modes
+
+-tune new complex zero finder
+-related: make definition of C_upperright uniform
+-related: test it for leaky modes
+-related: reenable complex modes in circ
+-related: test sign of beta in backward modes in circ (using power flux)
+
 -use asymptotic expansions for circular structures
 -more general interactive visualisation of mode profiles (phase, components)
 -write a GUI for defining complicated structures
 -integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy?
--better integration with SciPy?
 -add Python docbook comments
-
--dispersion relation of 2D slabs:
-   -do not handle left and right walls through expressions
-   -check E/H wall for TM, make slab_wall polarisation safe
-   -try to eliminate need for O_II_I in interface.cpp
 
 -making stripping of executable dependent on debug switches
 
@@ -85,6 +78,7 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-build: Eliminate as many makefiles as possible, slab_global.beta
 -remove set_precision_enhancement and friends
 -make material.get_eps_mu
 -get rid of S_T, T_T in field_calc
