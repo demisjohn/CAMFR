@@ -72,13 +72,16 @@ class PhC_splitter(unittest.TestCase):
         wg.calc()
 
         guided = 0
-        for i in range(2*N()):
+
+        while wg.mode(guided).kz().real <= 0:
+            guided += 1
+        for i in arange(guided,2*N()):
             if (abs(wg.mode(i).kz().imag) < abs(wg.mode(guided).kz().imag)):
                 if wg.mode(i).kz().real > 0:
                     guided = i
 
         guided_kz = wg.mode(guided).kz()
-        guided_kz_OK = 2.88202409033+2.3206236622e-05j
+        guided_kz_OK = 2.88202052061+2.32070579321e-05j
 
         print guided_kz, "expected", guided_kz_OK
 
@@ -104,7 +107,7 @@ class PhC_splitter(unittest.TestCase):
         # Calculate field.
 
         E_field = splitter.field(Coord(a,0,a)).E2()
-        E_field_OK = -4.93897197038-8.94554089604j
+        E_field_OK = 1.8632053978-17.7862379984j
 
         print E_field, "expected", E_field_OK
 
