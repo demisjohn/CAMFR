@@ -1,6 +1,7 @@
 CAMFR 1.1:
 
  - improved stability for Slabs
+ - inc_S_flux and ext_S_flux are now much faster
  - Python doesn't terminate abruptly anymore when faced with some user
    errors or lost modes
  - the refractive index profile can now be displayed on top of the 
@@ -20,7 +21,7 @@ CAMFR 1.1:
 
  - Cavity.find_modes_in_region() has been renamed to Cavity::find_all_modes()
  - fixed memory corruption when doing exotic things with Expressions
-
+ - fixed crash when plotting uniform layers or planars
 
 
 CAMFR 1.0 (2002-09-24):
