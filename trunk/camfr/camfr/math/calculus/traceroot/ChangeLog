@@ -1,3 +1,8 @@
+2002-03-18  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* traceroot.cpp: Increase portability.
+
 2002-03-14  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* traceroot.cpp: Improve checking for identical params.
+

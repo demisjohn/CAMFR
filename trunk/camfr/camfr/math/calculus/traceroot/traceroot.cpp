@@ -30,8 +30,8 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
                           vector<Complex>&     params1,
                           vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
-                          int resolution       = 1,
-                          string* fname        = NULL)
+                          int resolution,
+                          string* fname)
 { 
   // Declare all variables before first goto-label.
 
@@ -377,8 +377,8 @@ vector<Complex> traceroot(vector<Real>&        estimate1,
                           vector<Complex>&     params1,
                           vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
-                          int resolution       = 1,
-                          string* fname        = NULL)
+                          int resolution,
+                          string* fname)
 {
   vector<Complex> c_estimate1;
   for (unsigned int i=0; i<estimate1.size(); i++)
@@ -401,10 +401,10 @@ vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
                                  vector<Complex>&     params1,
                                  vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
-                                 int resolution       = 1,
-                                 int chunk_length     = 48,
-                                 int overlap          = 4,
-                                 string* fname        = NULL)
+                                 int resolution,
+                                 int chunk_length,
+                                 int overlap,
+                                 string* fname)
 { 
   vector<Complex> zeros2;
   int chunknumber=0;
@@ -462,10 +462,10 @@ vector<Complex> traceroot_chunks(vector<Real>&        estimate1,
                                  vector<Complex>&     params1,
                                  vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
-                                 int resolution       = 1,
-                                 int chunk_length     = 48,
-                                 int overlap          = 4,
-                                 string* fname        = NULL)
+                                 int resolution,
+                                 int chunk_length,
+                                 int overlap,
+                                 string* fname)
 {
   vector<Complex> c_estimate1;
   for (unsigned int i=0; i<estimate1.size(); i++)

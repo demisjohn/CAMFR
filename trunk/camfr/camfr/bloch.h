@@ -101,7 +101,7 @@ class Bandtracer : public Tracesorter
 {
   public:
 
-    Bandtracer::Bandtracer(Real period) 
+    Bandtracer(Real period) 
       {
         add_turning_point( pi/period);
         add_turning_point(-pi/period);
