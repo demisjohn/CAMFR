@@ -283,8 +283,17 @@ inline boost::python::object blochmode_fw_bw(BlochMode& b, Real z)
 
 inline Real stack_length(Stack& s) 
   {return real(s.get_total_thickness());}
+inline Real stack_width(Stack& s) 
+  {return real(s.get_inc()->c1_size());}
 inline Real blochstack_length(BlochStack& bs) 
   {return real(bs.get_total_thickness());} 
+inline Real blochstack_width(BlochStack& bs)
+  {return real(bs.c1_size());}
+inline Real cavity_length(Cavity& c) 
+  {return real(c.get_bot()->get_total_thickness() 
+             + c.get_top()->get_total_thickness());} 
+inline Real cavity_width(Cavity& c)
+  {return real(c.get_top()->get_inc()->c1_size());}
 inline Real slab_width(Slab& s)
   {return real(s.get_width());}
 inline Real section_width(Section& s)
@@ -950,6 +959,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("ext",                      &Stack::get_ext,
          return_value_policy<reference_existing_object>())
     .def("length",                   stack_length)
+    .def("width",                    stack_width)
     .def("set_inc_field",            stack_set_inc_field)
     .def("set_inc_field",            stack_set_inc_field_2)
     .def("set_inc_field_function",   stack_set_inc_field_function)
@@ -987,6 +997,8 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("sigma",          cavity_calc_sigma)
     .def("set_source",     cavity_set_current_source)
     .def("set_source",     cavity_set_general_source)
+    .def("length",         cavity_length)
+    .def("width",          cavity_width)
     .def("field",          &Cavity::field)
     .def("n",              &Cavity::n_at)
     .def("bot_stack",      &Cavity::get_bot,
@@ -1002,6 +1014,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("mode",        blochstack_get_mode,
          return_value_policy<reference_existing_object>())
     .def("length",      blochstack_length)
+    .def("width",       blochstack_width)
     .def("beta_vector", &BlochStack::get_beta_vector)
     .def("__repr__",    &BlochStack::repr)
     ;
