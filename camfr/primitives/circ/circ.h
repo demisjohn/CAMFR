@@ -90,8 +90,7 @@ class Circ_M : public MultiWaveguide
     std::vector<Material*> get_materials() const
       {return material;}
 
-    Complex eps_at(const Coord& coord) const;
-    Complex  mu_at(const Coord& coord) const;
+    Material* material_at(const Coord& coord) const;
 
     Complex kt_to_kz(const Complex& kt);
     Complex kz_to_kt(const Complex& kz);
@@ -214,9 +213,8 @@ class Circ : public MultiWaveguide
     Mode* get_fw_mode(int i) const {return c->get_fw_mode(i);}
     Mode* get_bw_mode(int i) const {return c->get_bw_mode(i);}
     
-    Complex eps_at(const Coord& coord) const {return c->eps_at(coord);}
-    Complex  mu_at(const Coord& coord) const {return c-> mu_at(coord);}
-    Complex   n_at(const Coord& coord) const {return c->  n_at(coord);}
+    Material* material_at(const Coord& coord) const 
+      {return c->material_at(coord);}
     
     int N() const {return c->N();}
 

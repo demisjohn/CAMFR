@@ -1,24 +1,28 @@
-2003-11-03 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-11-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slab.cpp: Introduce material_at.
+
+2003-11-03 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slaboverlap.cpp: Relax tolerance.
 
-2003-10-29 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-10-29 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slaboverlap.cpp: Improve detection of normalisation integrals.
 
-2003-08-07 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-08-07 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Throw away bogus estimates.
 
-2003-08-06 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-08-06 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Support for TE_TM in new field calc.
 
-2003-08-01 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-08-01 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Add field_calc_heuristic.
 
-2003-07-11 Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-07-11 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.h: Better calculation of mode profiles.
 	* slab.cpp: Ditto.

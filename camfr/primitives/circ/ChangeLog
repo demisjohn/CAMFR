@@ -1,3 +1,8 @@
+2003-11-17  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* circ.h: Introduce material_at.
+	* circ.cpp: Ditto.
+
 2003-07-19  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* circ.cpp: Relax tolerance on remove_copies.

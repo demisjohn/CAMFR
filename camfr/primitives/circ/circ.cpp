@@ -160,11 +160,11 @@ bool Circ_M::no_gain_present() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Circ_M::eps_at
+// Circ_M::material_at
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex Circ_M::eps_at(const Coord& coord) const
+Material* Circ_M::material_at(const Coord& coord) const
 {
   unsigned int i = index_lookup(coord.c1, coord.c1_limit, radius);
   
@@ -174,28 +174,7 @@ Complex Circ_M::eps_at(const Coord& coord) const
     i = material.size()-1;
   }
 
-  return material[i]->eps();
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Circ_M::mu_at
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex Circ_M::mu_at(const Coord& coord) const
-{
-  unsigned int i = index_lookup(coord.c1, coord.c1_limit, radius);
-  
-  if (i == material.size())
-  {
-    py_error("Warning: coordinate out of range in mu_at. Restricting it.");
-    i = material.size()-1;
-  }
-
-  return material[i]->mu();
+  return material[i];
 }
 
 
