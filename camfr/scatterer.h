@@ -331,6 +331,7 @@ class TransparentScatterer : public DiagScatterer
     std::vector<Material*> get_materials() const {return inc->get_materials();}
     bool contains(const Material& m)       const {return inc->contains(m);}
     bool recalc_needed()                   const {return false;}
+    bool all_layers_uniform()              const {return inc->is_uniform();}
 };
 
 
@@ -355,6 +356,7 @@ class E_Wall : public DiagScatterer
     std::vector<Material*> get_materials() const {return inc->get_materials();}
     bool contains(const Material& m)       const {return inc->contains(m);}
     bool recalc_needed()                   const {return false;}
+    bool all_layers_uniform()              const {return inc->is_uniform();}
 };
 
 class E_Wall_Mono : public MonoScatterer
@@ -390,6 +392,7 @@ class H_Wall : public DiagScatterer
     std::vector<Material*> get_materials() const {return inc->get_materials();}
     bool contains(const Material& m)       const {return inc->contains(m);}
     bool recalc_needed()                   const {return false;}
+    bool all_layers_uniform()              const {return inc->is_uniform();}
 };
 
 class H_Wall_Mono : public MonoScatterer

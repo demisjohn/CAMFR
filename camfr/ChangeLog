@@ -1,5 +1,9 @@
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* scatterer.h: Improve all_layers_uniform.
+
+2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* geometry.py: Improve to_expression.
 
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
