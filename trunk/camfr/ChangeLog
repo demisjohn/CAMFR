@@ -3,6 +3,7 @@ CAMFR 1.0.1:
  - improved stability for Slabs
  - Python doesn't terminate abruptly anymore when faced with some user
    errors or lost modes
+ - plot_n and plot_field now works for BlochStacks too
 
 CAMFR 1.0:
 

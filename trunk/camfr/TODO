@@ -1,24 +1,22 @@
 CAMFR 3D:
 
--normalise modes
+
+-Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D
 -free slabmatrixcache?
--PC walls, non-ortho
--generalise cahce to work with different M in each section.
--Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
- nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
+-generalise cache to work with different M in each section.
+-auto-partitioned section,
+ nmax=neff_core?, eps_trace_coarse, precision, SectionFlux,
  complex modes, determinant faster than eigenvalues?
--dispersion relation of 2D slabs:
-   -do not handle left and right walls through expressions
-   -try to eliminate need for O_II_I in interface.cpp
+-dispersion relation of 2D slabs: try to eliminate need for O_II_I in 
+ interface.cpp
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -Complex modes in presence of PML
 
 
-
 MEDIUM TERM:
 
--stack forward_bacward at
+-export Stack::forward_backward_at to Python
 
 -speed up M - U1, where U1 is unit matrix
 -short cut check_error in Bessel functions
@@ -81,6 +79,8 @@ MEDIUM TERM:
 -convert slabwall PC to Material Stacks
 -slabwall: cache get_R12 for startfield, get_error
 -kill virtual functions in SlabWall (perhaps elsewhere too, get_kz()?)
+-PC and TBC walls for Sections
+
 
 
 SOURCE MAINTENANCE
