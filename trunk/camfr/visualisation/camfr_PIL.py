@@ -173,7 +173,7 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0,
 ##############################################################################
 
 def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
-                              min_area = 100000, scale =1):
+                                 min_area = 100000, scale =1):
     import Image, ImageDraw
     
     # Determine width and height of a vector.
@@ -338,7 +338,8 @@ def _create_arrow_plot(px, pz, r_x=0, r_y=0,
     # Scale pz & px
     
     pmax    = max( MLab.max(MLab.max(abs(pz))), MLab.max(MLab.max(abs(px))))
-    cst     = ARROWSIZE/pmax
+    if (pmax == 0): cst     = 0
+    else:           cst     = ARROWSIZE/pmax
     pz      = pz*cst 
     px      = px*cst     
 
@@ -458,11 +459,11 @@ def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         # Log(z**2) gives a (much) nicer plot than log(abs(z)).
         # We should get positive values anyhow.
 
-        zmax    = 2*log(MLab.max(MLab.max(abs(z))))
-        
         # Supplement to make sure the z isn't zero this really changes
         # the feeling of the image.. so not that correct.
         zcst    = 1e-8
+
+        zmax    = 2*log(MLab.max(MLab.max(abs(z)))+ zcst)
         zmin    = log(zcst)                 # Arround -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
 
@@ -480,7 +481,13 @@ def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         # Scale factors for z.
 
         zmax    = MLab.max(MLab.max(abs(z)))
-        z_scale = (len(colormap)-1)/(2*zmax)
+        if (zmax == 0):
+            # in this case, z=0, the middle of the color palet
+            #(z+zmax)*z_scale) should be = len(colormap)/2
+            z_scale = (len(colormap)-1)/2
+            zmax = 1 
+        else:
+            z_scale = (len(colormap)-1)/(2*zmax)
 
         # Calculate each frame.
         

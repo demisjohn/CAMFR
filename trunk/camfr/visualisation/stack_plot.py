@@ -11,6 +11,9 @@ from camfr import *
 from Numeric import *
 from Tkinter import *
 
+# win bug?? of toch ergens code die ik mis
+import camfr_PIL
+
 HELPCONTENT = """\
 CAMFR plot: some tips, oddities:
 
@@ -118,7 +121,8 @@ class StackPlot:
             self.bottom     = 0
             self.blochStack = stack
             self.N          = stack.N()
-            self.stack      = stack.mode(0)
+            if self.N > 0 :
+                self.stack  = stack.mode(0)
             self.mode       = IntVar()
             self.mode.set(0)
 
@@ -201,8 +205,14 @@ class StackPlot:
         self.menuBar = Menu()
         
         fileMenu = Menu(self.menuBar,tearoff=0)
-        fileMenu.add_command(       label="Save as...",
-                                    command = self._save)
+        fileMenu.add_command(       label = "Save as raw data",
+                             command = lambda:self._save("CAMFRRAWDATA"))
+        fileMenu.add_command(       label="Save as picture",
+                             command = lambda:self._save("CAMFRPICTURE"))
+        fileMenu.add_command(       label="Save as movie",
+                             command = lambda:self._save("CCAMFRGIFMOVIE"))
+        fileMenu.add_command(       label="Save as movieframes",
+                             command = lambda:self._save("CAMFRFRAMESMOVIE"))
         fileMenu.add_command(       label="Quit",
                                     command = self._quit)
         
@@ -234,29 +244,27 @@ class StackPlot:
         self.menuBar.add_cascade(   label="Config",     menu=configMenu)
         self.menuBar.add_cascade(   label="Help",       menu=helpMenu)
 
+
    ###########################################################################
    #
-   # Makes a frame with the start-stop-pause buttons.
+   # Makes a frame with the play-pause button.
+   # More buttons (plain pause or full stop) can easily be added
    #
    ###########################################################################
 
     def _makeMovieButtons(self):      
-        # Buttons.
         self.wBf    = Frame ()         # WorkButtonFrame.
-        playB       = Button(self.wBf, text='play',
+
+        self.playpauseB  = Button(self.wBf,text='play ',
+                             bd = 0, #border
+                             font=( "Courier New", 10, ""),
                              activebackground="#FF5555" ,
                              command = self._moviePlay)
-        stopB       = Button(self.wBf, text='stop',
-                             command = self._movieStop)
-        self.pauseB = Button(self.wBf, text='pause',
-                             activebackground="#FF5555",
-                             command = self._moviePause)
 
         # Griding.
         self.wBf.grid()
-        stopB.grid(row=0, column=0)
-        playB.grid(row=0, column=1)
-        self.pauseB.grid(row=0, column=2)
+        self.playpauseB.grid(row=0, column=0)
+     
 
    ###########################################################################
    #
@@ -291,7 +299,7 @@ class StackPlot:
                                value="Hzi", command = self._drawNewField,
                                anchor=W)
         else:
-            self.field.set("E1r")
+            self.field.set("H2r")
             rEr = Radiobutton( self.fbf, text="E1.r", variable=self.field,
                                value="E1r", command = self._drawNewField,
                                anchor=W)
@@ -321,18 +329,43 @@ class StackPlot:
 
         # Mode button.
         if self.N:
-            def slidevar(var):
-                self.fm  = [[],[],[]]
-                self.stack = self.blochStack.mode(self.mode.get())
-                self._drawNewField()  
 
-            self.slider = Scale(self.fbf, from_=0, to=self.N-1 ,
-                                orient = HORIZONTAL,
-                                width = "6", variable=self.mode)
-            self.slider.bind("<ButtonRelease-2>", slidevar)
-            #Can't use but1, think this is a calbackbugfrom another function
-            self.slider.grid(row=3 , column=0, columnspan=2, sticky=W)
+            def modeVar(var):
+                if (self.mode.get() < 0): self.mode.set(0)
+                elif (self.mode.get() > (self.N - 1)): self.mode.set(self.N-1)
+                self._drawNewMode()   
 
+            def left():
+                if (self.mode.get() > 0):
+                    self.mode.set( self.mode.get() - 1)
+                    self._drawNewMode()                    
+
+            def right():
+                if (self.mode.get() < self.N -1):
+                    self.mode.set( self.mode.get() + 1)
+                    self._drawNewMode()                    
+
+            #mode chooser field button frame
+            mcfbf = Frame(self.fbf)
+            mcfbf.grid(row=3 , columnspan=2, sticky=W+E+N+S)
+            
+            leftButton      = Button(mcfbf, text="<",
+                                     bd = 0, #border
+                                     font=( "", 10, "bold"),
+                                     command=left)
+            rightButton     = Button(mcfbf, text=">",
+                                     bd = 0,
+                                     font=( "", 10, "bold"),
+                                     command=right)
+            
+            modeEntry       = Entry(mcfbf, width=3)
+            modeEntry.config(textvariable=self.mode)
+            modeEntry.bind('<Key-Return>', modeVar)
+
+            leftButton.grid(    row=0 , column=0)
+            modeEntry.grid(     row=0 , column=1)
+            rightButton.grid(   row=0 , column=2)
+         
 
    ###########################################################################
    #
@@ -343,7 +376,7 @@ class StackPlot:
     def _makeFieldPlotWindow(self):
 
         from matrix_plot_canvas import MatrixPlotCanvas
-           
+        
         self.fieldPlotFrame = Frame()
         self.fieldPlotFrame.grid()
         
@@ -413,6 +446,8 @@ class StackPlot:
 
     def _movieStop(self):
         self.PLAY = 0
+        self.playpauseB.config(text="play ")
+        self._drawField()
 
    ###########################################################################
    #
@@ -421,6 +456,32 @@ class StackPlot:
    ###########################################################################
 
     def _moviePlay(self):
+
+        if (self.PLAY == 0):    #stopped
+            self._movieNewPlay()
+            self.PLAY = 1
+            self.playpauseB.config(text="pause")
+            self._movie()
+        elif(self.PLAY == 1):     #playing
+            self.PLAY = 2
+            self.playpauseB.config(text="play ")
+        elif (self.PLAY == 2):    #paused
+            self.PLAY = 1
+            self.playpauseB.config(text="pause")
+
+
+#    def _moviePlay(self):
+#        #if new field..
+#        self._movieNewPlay()
+#
+#        if (self.PLAY == 2):
+#            self.pauseB.config(bg = "#CCCCCC")
+#            
+#        self.PLAY = 1
+#        self._movie()
+
+
+    def _movieNewPlay(self):
         #  New field?.
         if self.REDRAWMOVIE:
             self.REDRAWMOVIE = 0
@@ -428,23 +489,7 @@ class StackPlot:
                 self.fm[self.fm_nr], min_area=0,
                 scale = self.fieldRange[2],
                 ln = self.logPlot.get())
-
-        if (self.PLAY != 2): self.PLAY = 1
-        self._movie()
-
-   ###########################################################################
-   #
-   # Changes the color of an active pause button.
-   #
-   ###########################################################################
-
-    def _moviePause(self):
-        if (self.PLAY == 2):
-            self.PLAY = 1
-            self.pauseB.config(bg = "#CCCCCC")
-        else:
-            self.PLAY = 2
-            self.pauseB.config(bg = "#FF2222")
+        
 
    ###########################################################################
    #
@@ -496,6 +541,9 @@ class StackPlot:
         self.REDRAWMOVIE = 1     # Movie pictures will have to be rewritten.
         self.REDRAWPICTURE = 1   # Picture will have to be rewritten.
 
+        if self.PLAY==2 : self.PLAY = 0  # because we don't want a frame from
+                                         # the old movie
+        
         field   = self.field.get()
         z       = zeros(0,Complex)
 
@@ -557,7 +605,8 @@ class StackPlot:
         px   = zeros([len(yr),len(xr)], Float)
         py   = zeros([len(yr),len(xr)], Float)
 
-        camfr_PIL._calc_arrow_stack(py, px, self.stack, yr, xr)
+        if self._hasField():
+            camfr_PIL._calc_arrow_stack(py, px, self.stack, yr, xr)
 
         self.mat_py = py      
         self.mat_px = px
@@ -573,6 +622,7 @@ class StackPlot:
         self._calcField()
         self._drawField()
 
+       
    ###########################################################################
    #
    # If a new region is chosen in the stack canvas:
@@ -589,6 +639,24 @@ class StackPlot:
         self._calcIndex()
         self._calcPoynting()
         self._drawField()
+
+
+   ###########################################################################
+   #
+   # A new mode, a new poynting (BlochstackCode)
+   #
+   ###########################################################################
+   
+    def _drawNewMode(self):
+
+        self.fm  = [[],[],[]] # remove old field
+        self.stack = self.blochStack.mode(self.mode.get())
+
+        self.REDRAWPOYNTING = 1
+        self._calcPoynting()
+        
+        self._drawNewField()  # a new mode, a new field
+
 
    ###########################################################################
    #
@@ -631,19 +699,27 @@ class StackPlot:
                                 min_area = 0, scale=self.fieldRange[2] )
                 self.REDRAWPOYNTING = 0
 
-
         # Movie or pic?.
         if (self.PLAY > 0) :
-            self._moviePlay()
+            if self.REDRAWMOVIE:
+               self._movieNewPlay()
+            self._movie()
         else:
             if self.REDRAWPICTURE:
                 if self.logPlot.get():
                     mat_f   = log( abs(self.fm[self.fm_nr]) +1e-4)
                     # **2 instead of abs().
-                    cc      = 3                             # Palet.
+                    
+                    #better should check if matrix is zero?
+                    if self._hasField() :  cc = 3 # Palet.
+                    else: cc = 1
+                          
                 else:
                     mat_f   = array(self.mat_f)
-                    cc      = 0
+                    
+                    #better should check if matrix is zero?
+                    if self._hasField() :    cc = 0
+                    else:                    cc = 1
                     
                 self.pic_f  = camfr_PIL._create_matrix_plot( \
                                 mat_f, min_area = 0, colorcode=cc, \
@@ -680,14 +756,43 @@ class StackPlot:
    ###########################################################################
 
     def _calc_field(self,component):
+
         xr = self.fieldRange[3]
         yr = self.fieldRange[4]
         f  = zeros([len(yr),len(xr)], Complex)
 
-        camfr_PIL._calc_field_stack(f, self.stack, yr, xr, component)
+        if self._hasField():
+            #a 'popup' appears while calculating 
+            calcInfoFrame = infoFrame("calculating...")
+            self.stackCanvas.update()#needed to show calcInfoFrame(apparently)
+            camfr_PIL._calc_field_stack(f, self.stack, yr, xr, component)
+            calcInfoFrame.destroy()
 
         return f
-    
+
+
+   ###########################################################################
+   #
+   # stack:
+   # Controls if (inc)field is set. This has consequences for plotting etc..
+   # blochstack:
+   # control if N is > 0
+   #
+   ###########################################################################
+
+    def _hasField(self):
+        hasField = 0
+        tr = 0
+        try:
+            tr = len(self.stack.inc_field())
+        except AttributeError:
+            pass
+        if ( tr or self.N >0 ): hasField = 1
+
+        return hasField
+
+
+            
    ###########################################################################
    #
    # Makes the fysical range:
@@ -786,63 +891,99 @@ class StackPlot:
    #
    ###########################################################################
 
-    def _save(self):
+    def _save(self, saveas="CAMFRPICTURE"):
         import tkFileDialog, tkMessageBox, os, gifmaker, Image, ImagePalette
         
         index   = self.indexFlag.get()
 
+        if (saveas=="CAMFRPICTURE"):
+            ifile = "myplot.jpg"
+            ftypes = [("picture", ".jpg"),
+                      ("picture", ".bmp"),
+                      ("picture", ".png")]
+            ttle = "save plot"
+        elif (saveas=="CAMFRRAWDATA"):
+            ifile = "myplot.xls"
+            ftypes = [("numeric tabbed", ".xls")]
+            ttle = "save data"
+        elif (saveas=="CAMFRGIFMOVIE"):
+            ifile = "mymovie.gif"
+            ftypes = [("movie",".gif")]
+            ttle = "save movie as gif"
+        elif (saveas=="CAMFRFRAMESMOVIE"):
+            ifile = "mymovie.jpg"
+            ftypes = [("moviefiles",".jpg"),
+                      ("moviefiles", ".bmp"),
+                      ("moviefiles", ".png")]
+            ttle = "save movie as jpg files"
+                      
         #  Get file name.
         name    = tkFileDialog.asksaveasfilename(
-                        filetypes   =[ ("picture & movie",".gif"),
-                                       ("picture", ".jpg"),
-                                       ("picture", ".bmp"),
-                                       ("picture", ".png"),
-                                       ("numeric tabbed",".xls")],
-                        initialfile ="myplot.jpg",
-                        title       ="save plot")
+                        filetypes   = ftypes ,
+                        initialfile = ifile,
+                        title       = ttle)
         
         (root, ext) = os.path.splitext(name)
 
         # Save options.
-        if ext in camfr_PIL.formats:
-        # For movie.
-            if (self.PLAY == 1):
-                if ext in ['.gif', '.GIF']:
-                    movie2 = range(0,len(self.movie))
-                    for Nr in range(0,len(self.movie)):
-                        if not index: movie2[Nr] = self.movie[Nr].convert("P")
-                        else:
-                            movie2[Nr] = camfr_PIL._overlay_pictures(
-                                self.movie[Nr], self.pic_n, 1).convert("P")
-                    fp = open(name,"wb")
-                    gifmaker.makedelta(fp, movie2)
-                    fp.close()
-                else:
-                    tkMessageBox.showwarning(
-                        title=".gif fails",
-                        message="""movie will be saved as different
-                                \n %s _n %s \n files"""%(root,ext))
-                    for Nr in range(0,len(self.movie)):
-                        nameNR = root + "_%i" %Nr + ext
-                        if not index: self.movie[Nr].save(nameNR)
-                        else:
-                            camfr_PIL._overlay_pictures(
-                            self.movie[Nr], self.pic_n, 1).save(nameNR)
-        # For pic.
+        if (saveas=="CAMFRPICTURE"):
+            if not(ext in camfr_PIL.formats):
+                ext = '.jpg'
+            name = root + ext
+            if not index: self.pic_f.save(name)
             else:
-                if not index: self.pic_f.save(name)
-                else:
                     camfr_PIL._overlay_pictures(
                     self.pic_f, self.pic_n, 1).save(name)
             print "file saved as ", name
-        # For values.
-        elif (ext == '.xls'):
-             self._saveMatrix( name, self.mat_f)
-             print "file saved as", name
+
+        elif (saveas=="CAMFRRAWDATA"):
+            if not (ext in ['.xls','.XLS']):
+                ext = '.xls'
+            name = root + ext
+            self._saveMatrix( name, self.mat_f)
+            print "file saved as", name
+
+
+        elif (saveas=="CAMFRGIFMOVIE"):
+            if not (ext in ['.gif', '.GIF']):
+                ext = '.gif'
+            name = root + ext
+
+            # copy from playbutton 
+            self._movieNewPlay()
+    
+            movie2 = range(0,len(self.movie))
+            for Nr in range(0,len(self.movie)):
+                if not index: movie2[Nr] = self.movie[Nr].convert("P")
+                else:
+                    movie2[Nr] = camfr_PIL._overlay_pictures(
+                        self.movie[Nr], self.pic_n, 1).convert("P")
+            fp = open(name,"wb")
+            gifmaker.makedelta(fp, movie2)
+            fp.close()
+            print "file saved as", name
+
+        elif (saveas=="CAMFRFRAMESMOVIE"):
+            if not(ext in camfr_PIL.formats):
+                ext = '.jpg'
+
+            # this wil make a movie if nessecary
+            self._movieNewPlay()
+
+            for Nr in range(0,len(self.movie)):
+                nameNR = root + "_%i" %Nr + ext
+                if not index: self.movie[Nr].save(nameNR)
+                else:
+                    camfr_PIL._overlay_pictures(
+                    self.movie[Nr], self.pic_n, 1).save(nameNR)
+
+            print "file saved as %i "%len(self.movie),root,"_Nr",ext," frames"
+
         else:
             tkMessageBox.showwarning(
                 title="fail",
-                message="You should add gif or jpg or xls.")
+                message="no file/data is saved")
+
 
    ###########################################################################
    #
@@ -958,6 +1099,26 @@ class colorFrame:
         okButton.pack()
 
 
+##############################################################################
+#
+# class infoFrame
+#
+#   This class makes a small informationpanel.
+#
+##############################################################################
+
+class infoFrame:
+    def __init__(self, infostring="info"):
+        infot       = Toplevel()
+        self.infot  = infot
+        infot.title('camfr')
+        infoLabel   = Label(infot, text=infostring,
+                            fg="black",bg="white",
+                            font=("Helvetica", 12))
+        infoLabel.pack()
+
+    def destroy(self):
+        self.infot.destroy()
 
 ##############################################################################
 #
@@ -1166,4 +1327,4 @@ class configurationFrame:
         
         return 1
 
-    
+
