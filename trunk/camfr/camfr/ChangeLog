@@ -1,3 +1,7 @@
+2005-02-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.cpp: Add L_anis solver.
+
 2005-02-08  Pieter Dumon  <Pieter.Dumon@UGent.be>
 
 	* bloch.cpp: Better detection of fw/bw modes.

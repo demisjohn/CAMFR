@@ -778,14 +778,16 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Section_solver enum.
 
   enum_<Section_solver>("Section_solver")
-    .value("OS", OS)
-    .value("NT", NT)
-    .value("L",  L)
+    .value("OS",     OS)
+    .value("NT",     NT)
+    .value("L",      L)
+    .value("L_anis", L_anis)
     ;
 
-  scope().attr("OS") = OS;
-  scope().attr("NT") = NT; 
-  scope().attr("L")  = L;   
+  scope().attr("OS")      = OS;
+  scope().attr("NT")      = NT; 
+  scope().attr("L")       = L;  
+  scope().attr("L_anis")  = L_anis;  
 
   // Wrap Mode_correction enum.
 
