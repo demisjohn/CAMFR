@@ -1,3 +1,7 @@
+2003-08-08  Peter Bienstman <Peter.Bienstman@ugent.be>
+
+	* polariton2.py: New test.
+
 2003-08-06  Peter Bienstman <Peter.Bienstman@ugent.be>
 
 	* sudbo.py: New test.
