@@ -28,10 +28,10 @@
 class SlabWall; // forward declaration - see slabwall.h
 struct SlabGlobal
 {
-    Real       left_PML;
-    Real      right_PML;
-    SlabWall*  leftwall; // NULL: electric wall.
-    SlabWall* rightwall;
+    Real      lower_PML;
+    Real      upper_PML;
+    SlabWall* lowerwall; // NULL: electric wall.
+    SlabWall* upperwall;
 };
 
 extern SlabGlobal global_slab;
@@ -54,11 +54,11 @@ class SlabImpl : public MultiWaveguide
 { 
   public:
 
-    SlabImpl() : leftwall(NULL), rightwall(NULL) {}
+    SlabImpl() : lowerwall(NULL), upperwall(NULL) {}
     ~SlabImpl();
 
-    void  set_left_wall(SlabWall&  left) { leftwall=&left;}
-    void set_right_wall(SlabWall& right) {rightwall=&right;}
+    void set_lower_wall(SlabWall& lower) {lowerwall=&lower;}
+    void set_upper_wall(SlabWall& upper) {upperwall=&upper;}
     
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
@@ -82,11 +82,11 @@ class SlabImpl : public MultiWaveguide
 
   protected:
 
-    SlabWall*  leftwall; // NULL means use wall from global_slab.
-    SlabWall* rightwall;
+    SlabWall* lowerwall; // NULL means use wall from global_slab.
+    SlabWall* upperwall;
 
-    // x-values of the interfaces, not including left wall, including
-    // right wall.
+    // x-values of the interfaces, not including lower wall, including
+    // upper wall.
     
     std::vector<Complex> discontinuities;
 
@@ -135,8 +135,8 @@ class Slab : public MultiWaveguide
     Mode* get_fw_mode(int i) const {return s->get_fw_mode(i);}
     Mode* get_bw_mode(int i) const {return s->get_bw_mode(i);}
     
-    void  set_left_wall(SlabWall&  left) const {s->set_left_wall(left);}
-    void set_right_wall(SlabWall& right) const {s->set_right_wall(right);}
+    void set_lower_wall(SlabWall& lower) const {s->set_lower_wall(lower);}
+    void set_upper_wall(SlabWall& upper) const {s->set_upper_wall(upper);}
     
     Complex eps_at(const Coord& coord) const {return s->eps_at(coord);}
     Complex  mu_at(const Coord& coord) const {return s-> mu_at(coord);}

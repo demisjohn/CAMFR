@@ -47,10 +47,10 @@ Slab_M::Slab_M(const Expression& expression)
     Complex thickness = ex.get_term(i)->get_d();
 
     if (i == 0)
-      thickness += I*global_slab.left_PML;
+      thickness += I*global_slab.lower_PML;
 
     if (i == ex.get_size()-1)
-      thickness += I*global_slab.right_PML;
+      thickness += I*global_slab.upper_PML;
 
     // Combine two succesive terms containing the same material.
 
@@ -59,10 +59,10 @@ Slab_M::Slab_M(const Expression& expression)
       thickness += ex.get_term(i+1)->get_d();
     
       if (i+1 == 0)
-        thickness += I*global_slab.left_PML;
+        thickness += I*global_slab.lower_PML;
 
       if (i+1 == ex.get_size()-1)
-        thickness += I*global_slab.right_PML;
+        thickness += I*global_slab.upper_PML;
       
       i++;
     }
@@ -337,11 +337,11 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
 {
   // Determine reflection coefficients of walls.
 
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
 
   // Find min and max refractive index of structure.
 
@@ -383,7 +383,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
     dir = dr;
   }
 
-  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
+  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall);
   unsigned int zeros = global.N + 2 + materials.size();
   vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright,
                                1e-4, 1e-4, 4, dir);
@@ -406,10 +406,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   // In case of a homogeneous medium, add a TEM mode if appropriate.
   
   if (materials.size() == 1)
-    if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-                                       && (abs(R_right + 1.0) < 1e-10) )
-      || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-                                       && (abs(R_right - 1.0) < 1e-10) ) )
+    if ( ( (global.polarisation == TM) && (abs(R_lower + 1.0) < 1e-10)
+                                       && (abs(R_upper + 1.0) < 1e-10) )
+      || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
+                                       && (abs(R_upper - 1.0) < 1e-10) ) )
       kt.insert(kt.begin(), 0);
 
   return kt;
@@ -436,24 +436,24 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   // Determine reflection coefficients of walls.
 
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
 
   bool branchcut = false;
-  if ( (abs(R_left) < eps_zero) || (abs(R_right) < eps_zero) )
+  if ( (abs(R_lower) < eps_zero) || (abs(R_upper) < eps_zero) )
     branchcut = true; // Branchcuts exist only in open structures.
 
   bool TBC = false; // Transparent boundary conditions.
   if (   dynamic_cast<SlabWall_TBC*>(l_wall)
-      || dynamic_cast<SlabWall_TBC*>(r_wall) )
+      || dynamic_cast<SlabWall_TBC*>(u_wall) )
     TBC = true;
 
   bool PC = false; // Photonic crystal boundary conditions.
   if (   dynamic_cast<SlabWall_PC*>(l_wall)
-      || dynamic_cast<SlabWall_PC*>(r_wall) )
+      || dynamic_cast<SlabWall_PC*>(u_wall) )
     PC = true;
 
   // Find min and max refractive index of lossless structure.
@@ -476,7 +476,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   // Create dispersion relation for lossless structure.
   
-  SlabDisp disp(materials, thicknesses, lambda, l_wall, r_wall);
+  SlabDisp disp(materials, thicknesses, lambda, l_wall, u_wall);
   params = disp.get_params();
 
   vector<Complex> params_lossless;
@@ -530,6 +530,9 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   std::reverse(kt_prop_lossless.begin(), kt_prop_lossless.end());
 
+  //for (int i=0; i<kt_prop_lossless.size(); i++)
+  //  std::cout << i << " " << kt_prop_lossless[i] << std::endl;
+
   // Eliminate false zeros.
 
   remove_elems(&kt_prop_lossless, 0.0, eps_copies);
@@ -548,13 +551,15 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   vector<Complex> kt_lossless, kt_complex;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
-  { 
-    if ( branchcut && (abs(disp(I*kt_prop_lossless[i])) > 1e-2) )
+  {
+    const Real f = abs(disp(I*kt_prop_lossless[i]));
+    
+    if (branchcut && (f > 1e-2))
     {
       std::ostringstream s;
       s << "Warning: possibly insufficient precision around kt "
         << kt_prop_lossless[i] << "." << std::endl;
-      s << "Removing this candidate.";
+      s << "Removing this candidate with f(x)=" << f << ".";
       py_print(s.str());
     }
     else
@@ -724,10 +729,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   // In case of a homogeneous medium, add a TEM mode if appropriate.
   
   if (materials.size() == 1)
-    if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-                                       && (abs(R_right + 1.0) < 1e-10) )
-      || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-                                       && (abs(R_right - 1.0) < 1e-10) ) )
+    if ( ( (global.polarisation == TM) && (abs(R_lower + 1.0) < 1e-10)
+                                       && (abs(R_upper + 1.0) < 1e-10) )
+      || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
+                                       && (abs(R_upper - 1.0) < 1e-10) ) )
       kt.insert(kt.begin(), 0);
 
   return kt;
@@ -745,12 +750,12 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 { 
   // Set constants.
 
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
     
   // Trace modes from old configuration to new one.
   
-  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
+  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall);
   vector<Complex> params_new = disp.get_params();
     
   vector<Complex> forbidden;
@@ -985,17 +990,17 @@ vector<Complex> UniformSlab::find_kt()
 
   // Determine reflection coefficients of walls.
 
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1;
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
 
   // Check values.
 
   bool analytic = true;
-  if ( ((abs(R_left -1.0) > 1e-10) && (abs(R_left +1.0) > 1e-10)) ||
-       ((abs(R_right-1.0) > 1e-10) && (abs(R_right+1.0) > 1e-10)) )
+  if ( ((abs(R_lower-1.0) > 1e-10) && (abs(R_lower+1.0) > 1e-10)) ||
+       ((abs(R_upper-1.0) > 1e-10) && (abs(R_upper+1.0) > 1e-10)) )
     analytic = false;
   
   if (global.lambda == 0)
@@ -1018,10 +1023,10 @@ vector<Complex> UniformSlab::find_kt()
     Slab_M tmp = (*core)(get_width()/2.) + (*core)(get_width()/2.);
 
     if (l_wall)
-      tmp.set_left_wall(*l_wall);
+      tmp.set_lower_wall(*l_wall);
 
-    if (r_wall)
-      tmp.set_right_wall(*r_wall);
+    if (u_wall)
+      tmp.set_upper_wall(*u_wall);
    
     vector<Complex> old_kt; // Sweep not implemented for this case.
     return tmp.find_kt(old_kt);
@@ -1031,16 +1036,16 @@ vector<Complex> UniformSlab::find_kt()
 
   // TEM mode.
   
-  if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-                                     && (abs(R_right + 1.0) < 1e-10) )
-    || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-                                     && (abs(R_right - 1.0) < 1e-10) ) )
+  if ( ( (global.polarisation == TM) && (abs(R_lower + 1.0) < 1e-10)
+                                     && (abs(R_upper + 1.0) < 1e-10) )
+    || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
+                                     && (abs(R_upper - 1.0) < 1e-10) ) )
     kt.push_back(0.0);
 
   // Other modes.
   
-  Complex start  = (abs(R_left*R_right-1.0) < 1e-10) ? 0 : pi;
-  unsigned int i = (abs(R_left*R_right-1.0) < 1e-10) ? 1 : 0;
+  Complex start  = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : pi;
+  unsigned int i = (abs(R_lower*R_upper-1.0) < 1e-10) ? 1 : 0;
 
   while (kt.size() != global.N)
   {

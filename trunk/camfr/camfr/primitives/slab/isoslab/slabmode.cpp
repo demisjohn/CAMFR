@@ -56,7 +56,7 @@ Field SlabMode::field(const Coord& coord_) const
   // Check and coerce input.
 
   Coord coord(coord_);
-  coord.c1 = coord_.c1 + I*global_slab.left_PML;
+  coord.c1 = coord_.c1 + I*global_slab.lower_PML;
 
   const Real x = real(coord.c1);
   const Real d = real(geom->get_width());
@@ -82,8 +82,8 @@ Field SlabMode::field(const Coord& coord_) const
 
   // Calculate amplitude of forward and backward waves at x-value.
 
-  Complex right_x, left_x;
-  forw_backw_at(coord, &right_x, &left_x);
+  Complex fw_x, bw_x;
+  forw_backw_at(coord, &fw_x, &bw_x);
 
   // Calculate total field.
   // Note that cs needs to be in sync with generalslab.cpp.
@@ -98,12 +98,12 @@ Field SlabMode::field(const Coord& coord_) const
     const Complex C = 1.0 / (k0*c) / geom->mu_at(coord);
         
     field.E1 = 0.0;
-    field.E2 = right_x + left_x;
+    field.E2 = fw_x + bw_x;
     field.Ez = 0.0;
     
-    field.H1 = C * (-right_x - left_x) * kz;
+    field.H1 = C * (-fw_x - bw_x) * kz;
     field.H2 = 0.0;
-    field.Hz = C * ( right_x - left_x) * kx;
+    field.Hz = C * ( fw_x - bw_x) * kx;
 
     if (abs(global.slab_ky) > 1e-6)
     {
@@ -120,12 +120,12 @@ Field SlabMode::field(const Coord& coord_) const
     const Complex C = 1.0 / (k0*c) / geom->eps_at(coord);
  
     field.H1 = 0.0;
-    field.H2 = right_x - left_x;
+    field.H2 = fw_x - bw_x;
     field.Hz = 0.0;
 
-    field.E1 = C * ( right_x - left_x) * kz;
+    field.E1 = C * ( fw_x - bw_x) * kz;
     field.E2 = 0.0;
-    field.Ez = C * (-right_x - left_x) * kx;
+    field.Ez = C * (-fw_x - bw_x) * kx;
 
     if (abs(global.slab_ky) > 1e-6)
     {
@@ -157,7 +157,7 @@ Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz,
   A = (pol == TE) ? 0.0 : 1.0;
   B = (pol == TE) ? 1.0 : 0.0;
 
-  calc_left_right(calc_fw);
+  calc_fw_bw(calc_fw);
 }
 
 
@@ -194,10 +194,10 @@ Complex safe_mult_(const Complex& a, const Complex& b)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M_Mode::calc_left_right
+// Slab_M_Mode::calc_fw_bw
 //
-//  'right' refers to waves propagating in +x. 
-//   'left' refers to waves propagating in -x.
+//   'fw' refers to waves propagating in +x. 
+//   'bw' refers to waves propagating in -x.
 //
 //   The amplitudes of these waves can be calculated starting from the
 //   first material (calc_fw == true) or from the last material
@@ -205,16 +205,16 @@ Complex safe_mult_(const Complex& a, const Complex& b)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M_Mode::calc_left_right(bool calc_fw)
-{ 
+void Slab_M_Mode::calc_fw_bw(bool calc_fw)
+{  
   const Slab_M* slab = dynamic_cast<const Slab_M*>(geom);
   
   const Complex k0_2 = pow(2*pi/global.lambda, 2);
   
   // Determine walls.
 
-  SlabWall* l_wall = slab->leftwall  ? slab->leftwall  : global_slab.leftwall;
-  SlabWall* r_wall = slab->rightwall ? slab->rightwall : global_slab.rightwall;
+  SlabWall* l_wall = slab->lowerwall ? slab->lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = slab->upperwall ? slab->upperwall : global_slab.upperwall;
   
   // Calculate kx in each section.
 
@@ -240,21 +240,21 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
   }
 
   Complex R_wall_l = l_wall ? l_wall->get_R12() : -1.0;
-  Complex R_wall_r = r_wall ? r_wall->get_R12() : -1.0;
+  Complex R_wall_u = u_wall ? u_wall->get_R12() : -1.0;
 
-  Complex R_wall_inc = calc_fw ? R_wall_l : R_wall_r;
-  Complex R_wall_ext = calc_fw ? R_wall_r : R_wall_l;
+  Complex R_wall_inc = calc_fw ? R_wall_l : R_wall_u;
+  Complex R_wall_ext = calc_fw ? R_wall_u : R_wall_l;
   
   // Calculate forward and backward plane wave expansion coefficients
   // at the interfaces.
   
-  // Set seed field. If the left wall is not explicitly set, default to
+  // Set seed field. If the lower wall is not explicitly set, default to
   // electric wall. This also avoids a virtual function call.
 
   Complex fw_chunk_begin_scaled;
   Complex bw_chunk_begin_scaled;
 
-  SlabWall* inc_wall = calc_fw ? l_wall : r_wall;
+  SlabWall* inc_wall = calc_fw ? l_wall : u_wall;
 
   if (!inc_wall)
   {
@@ -271,10 +271,10 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
     bw_chunk_begin_scaled = swap;
   }
 
-  vector<Complex> fw, bw;
+  vector<Complex> fw_, bw_;
   
-  fw.push_back(fw_chunk_begin_scaled);
-  bw.push_back(bw_chunk_begin_scaled);
+  fw_.push_back(fw_chunk_begin_scaled);
+  bw_.push_back(bw_chunk_begin_scaled);
    
   // Loop through chunks and relate fields at the end of each chunk to
   // those at the beginning of the chunk.
@@ -322,8 +322,8 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
       scaling = 0.0;
     }
 
-    fw.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
-    bw.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
+    fw_.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
+    bw_.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
 
     // Propagate in medium and scale along the way, by
     // factoring out and discarding the positive exponentials.
@@ -348,8 +348,8 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
       scaling -= I_kx_d;
     }
 
-    fw.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
-    bw.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
+    fw_.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
+    bw_.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
     
     // Update values for next iteration.
     
@@ -362,51 +362,51 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
   if (real(kz) > imag(kz))
   {
     if (abs(R_wall_ext + 1.0) < 1e-10)
-      bw.back() = -fw.back();
+      bw_.back() = -fw_.back();
     if (abs(R_wall_ext - 1.0) < 1e-10)
-      bw.back() =  fw.back();
+      bw_.back() =  fw_.back();
   }
 
-  // Assemble fw/bw into left/right. Note that the first element in
+  // Assemble fw_/bw_ into fw/bw. Note that the first element in
   // left/right is always duplicated.
 
-   left.clear();
-  right.clear();
+  fw.clear();
+  bw.clear();
 
   if (calc_fw)
   {
-    right = fw;
-     left = bw;
+    fw = fw_;
+    bw= bw_;
   }
   else
   {
-    right.push_back(bw.back());
-     left.push_back(fw.back());
+    fw.push_back(bw_.back());
+    bw.push_back(fw_.back());
 
-    for (unsigned int i=bw.size()-1; i>0; i--)
+    for (unsigned int i=bw_.size()-1; i>0; i--)
     {
-      right.push_back(bw[i]);
-       left.push_back(fw[i]);
+      fw.push_back(bw_[i]);
+      bw.push_back(fw_[i]);
     } 
   }
 
   // For open boundary conditions, set the fields at infinity for the
-  // leaky modes equal to zero to due to the infinite absorbion in the PML.
+  // leaky modes equal to zero to due to the infinite absorption in the PML.
 
   if (abs(R_wall_l) < 1e-10)
   {
-     left[0] =  left[1] = 0.0;
-    right[0] = right[1] = 0.0;
+    fw[0] = fw[1] = 0.0;
+    bw[0] = bw[1] = 0.0;
   }
   
-  if (abs(R_wall_r) < 1e-10)
+  if (abs(R_wall_u) < 1e-10)
   {
-     left.back() = 0.0;
-    right.back() = 0.0;
+    fw.back() = 0.0;
+    bw.back() = 0.0;
   }
   
-  //for (unsigned int i=0; i<left.size(); i++)
-  //  std::cout << i << kx[i] << left[i] << right[i] << std::endl;
+  //for (unsigned int i=0; i<fw.size(); i++)
+  //  std::cout << i << kx[i] << fw[i] << bw[i] << std::endl;
   //std::cout << std::endl;
 }
 
@@ -430,10 +430,10 @@ void Slab_M_Mode::normalise()
   A /= sqrt(power);
   B /= sqrt(power);
 
-  for (unsigned int i=0; i<right.size(); i++)
+  for (unsigned int i=0; i<fw.size(); i++)
   {
-    right[i] /= sqrt(power);
-     left[i] /= sqrt(power);
+    fw[i] /= sqrt(power);
+    bw[i] /= sqrt(power);
   }
 }
 
@@ -446,7 +446,7 @@ void Slab_M_Mode::normalise()
 /////////////////////////////////////////////////////////////////////////////
 
 void Slab_M_Mode::forw_backw_at
-  (const Coord& coord, Complex* fw, Complex* bw) const
+  (const Coord& coord, Complex* fw_x, Complex* bw_x) const
 {   
   // Calculate constants.
   
@@ -476,16 +476,16 @@ void Slab_M_Mode::forw_backw_at
   
   if (abs(d_prev) < 1e-9)
   {
-    *fw = right[prev_index];
-    *bw =  left[prev_index];
+    *fw_x = fw[prev_index];
+    *bw_x = bw[prev_index];
 
     return;
   }
 
   if (abs(d_next) < 1e-9)
   {
-    *fw = right[next_index];
-    *bw =  left[next_index];
+    *fw_x = fw[next_index];
+    *bw_x = bw[next_index];
 
     return;
   }
@@ -494,13 +494,13 @@ void Slab_M_Mode::forw_backw_at
   
   if (imag(kx) < 0) 
   {
-    *fw = right[prev_index] * exp(-I * kx * d_prev);
-    *bw =  left[next_index] * exp(-I * kx * d_next);
+    *fw_x = fw[prev_index] * exp(-I * kx * d_prev);
+    *bw_x = bw[next_index] * exp(-I * kx * d_next);
   }
   else
   {
-    *fw = right[next_index] * exp( I * kx * d_next);
-    *bw =  left[prev_index] * exp( I * kx * d_prev);
+    *fw_x = fw[next_index] * exp( I * kx * d_next);
+    *bw_x = bw[prev_index] * exp( I * kx * d_prev);
   }
 }
 
@@ -524,7 +524,7 @@ UniformSlabMode::UniformSlabMode(Polarisation pol,
 
   // Set amplitude.
 
-  SlabWall* l_wall = geom->leftwall ? geom->leftwall : global_slab.leftwall;
+  SlabWall* l_wall = geom->lowerwall ? geom->lowerwall : global_slab.lowerwall;
   
   if (!l_wall)
   {

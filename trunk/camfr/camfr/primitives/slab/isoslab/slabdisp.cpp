@@ -23,8 +23,8 @@ using std::vector;
 /////////////////////////////////////////////////////////////////////////////
 
 SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
-                   SlabWall* leftwall_, SlabWall* rightwall_)
-  : lambda(lambda_), leftwall(leftwall_), rightwall(rightwall_)
+                   SlabWall* lowerwall_, SlabWall* upperwall_)
+  : lambda(lambda_), lowerwall(lowerwall_), upperwall(upperwall_)
 {
   // Create a table with the eps's and the mu's. This avoids repeated
   // virtual function calls and allows to sweep these parameters without
@@ -55,9 +55,9 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
 
 SlabDisp::SlabDisp(const vector<Material*>& materials,
                    const vector<Complex>& thicknesses_, Real lambda_,
-                   SlabWall* leftwall_, SlabWall* rightwall_)
+                   SlabWall* lowerwall_, SlabWall* upperwall_)
   : thicknesses(thicknesses_), lambda(lambda_),
-    leftwall(leftwall_), rightwall(rightwall_)
+    lowerwall(lowerwall_), upperwall(upperwall_)
 {
   // Create a table with the eps's and the mu's. This avoids repeated
   // virtual function calls and allows to sweep these parameters without
@@ -134,11 +134,11 @@ Complex SlabDisp::operator()(const Complex& kt)
   // Determine wall reflectivities. If the walls are not explicitly set,
   // default to electric walls. This also avoids a virtual function call.
 
-  SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
-  SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
   
   // Set seed field.
   
@@ -186,10 +186,10 @@ Complex SlabDisp::operator()(const Complex& kt)
     
     Complex I_kx_d = I * kx[i2] * thicknesses[i2];
 
-    if ( (k == 0) && (abs(R_left) < 1e-10) ) 
+    if ( (k == 0) && (abs(R_lower) < 1e-10) ) 
       I_kx_d = 0;
 
-    if ( (k == eps.size()-1) && (abs(R_right) < 1e-10) )
+    if ( (k == eps.size()-1) && (abs(R_upper) < 1e-10) )
       I_kx_d = 0;
 
     if (global.solver == track)
@@ -213,10 +213,10 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   // Return error.
   
-  if (!r_wall)
+  if (!u_wall)
     return fw_chunk_end_scaled + bw_chunk_end_scaled;
   else
-    return r_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
+    return u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
 }
 
 
