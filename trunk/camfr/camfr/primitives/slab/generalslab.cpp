@@ -191,7 +191,7 @@ void SlabImpl::fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
-{ 
+{
   // Fill field cache.
 
   SlabImpl* medium_I  = this;
@@ -282,7 +282,7 @@ void SlabImpl::calc_overlap_matrices
       (*O_II_I)(i,  n+j) =   0.0;
       (*O_II_I)(n+i,  j) =   m->Ex_Hz_cross(2,i,j) * sin_I (  j)
                            - m->Ez_Hx_cross(2,i,j) * sin_II(n+i);
-      (*O_II_I)(n+i,n+j) =   m->TM_TM      (2,i,j) * cos_I (n+j);  
+      (*O_II_I)(n+i,n+j) =   m->TM_TM      (2,i,j) * cos_I (n+j);
     }
 
   for (int i=1; i<=N; i++)
