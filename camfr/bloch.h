@@ -24,6 +24,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+class BlochMode;
+
 class BlochStack : public MultiWaveguide
 {
   public:
@@ -55,6 +57,22 @@ class BlochStack : public MultiWaveguide
 
     cVector get_beta_vector() const;
     
+    virtual Mode* get_fw_mode(int i) const;
+    virtual Mode* get_bw_mode(int i) const;
+    
+    // Fool interface building code.
+
+    const Waveguide* get_inc() const {return this;}
+    const Waveguide* get_ext() const {return this;}
+
+    // Get true interface waveguide.
+
+    Waveguide* get_inc_wg() const {return stack.get_inc();}
+    Waveguide* get_ext_wg() const {return stack.get_ext();} 
+
+    void get_expansion_matrices(cMatrix& ff, cMatrix& fb, 
+                                cMatrix& bf, cMatrix& bb, bool left); 
+        
   protected:
 
     Stack stack;
@@ -74,6 +92,8 @@ class BlochStack : public MultiWaveguide
 // BlochMode
 //
 /////////////////////////////////////////////////////////////////////////////
+
+typedef enum {undefined,forward,backward} Direction;
 
 class BlochMode : public Mode
 {
@@ -95,11 +115,15 @@ class BlochMode : public Mode
 
     Stack* get_geom() const {return geom;}
 
+    Direction get_direction() const {return direction;}
+    
   protected:
 
     Stack* geom;
 
     mutable std::vector<FieldExpansion> interface_field;
+
+    Direction direction;
 };
 
 

@@ -257,6 +257,14 @@ class Stack
     const Complex T12(int i, int j) const;
     const Complex T21(int i, int j) const;
     
+    // Interface to get R and T matrices. Needs to be used instead of 
+    // the MultiScatterer iface due to delayed normalisation of Bloch modes.
+    
+    const cMatrix get_R12() const;
+    const cMatrix get_T12() const; 
+    const cMatrix get_R21() const;
+    const cMatrix get_T21() const;
+    
     // Low level functions.
     
     Scatterer*   get_sc()            const {return sc;}

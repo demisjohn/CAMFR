@@ -249,15 +249,6 @@ inline SectionMode* section_get_mode(const Section& s, int i)
 inline BlochMode* blochstack_get_mode(BlochStack& b, int i)
   {check_wg_index(b,i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
 
-inline cMatrix stack_get_R12(const Stack& s)
-  {if (s.as_multi()) return s.as_multi()->get_R12();}
-inline cMatrix stack_get_R21(const Stack& s)
-  {if (s.as_multi()) return s.as_multi()->get_R21();}
-inline cMatrix stack_get_T12(const Stack& s)
-  {if (s.as_multi()) return s.as_multi()->get_T12();}
-inline cMatrix stack_get_T21(const Stack& s)
-  {if (s.as_multi()) return s.as_multi()->get_T21();}
-
 inline Complex stack_R12(const Stack& s, int i, int j)
   {check_index(i); check_index(j); return s.R12(i+1,j+1);}
 inline Complex stack_R21(const Stack& s, int i, int j)
@@ -1066,10 +1057,10 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("eps",                      &Stack::eps_at)
     .def("mu",                       &Stack::mu_at)
     .def("n",                        &Stack::n_at)
-    .def("R12",                      stack_get_R12)
-    .def("R21",                      stack_get_R21)
-    .def("T12",                      stack_get_T12)
-    .def("T21",                      stack_get_T21)
+    .def("R12",                      &Stack::get_R12)
+    .def("R21",                      &Stack::get_R21)
+    .def("T12",                      &Stack::get_T12)
+    .def("T21",                      &Stack::get_T21)
     .def("R12",                      stack_R12)
     .def("R21",                      stack_R21)
     .def("T12",                      stack_T12)

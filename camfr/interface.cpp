@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include "interface.h"
+#include "bloch.h"
 
 using std::vector;
 
@@ -50,12 +51,29 @@ void DenseInterface::calcRT()
   inc->find_modes();
   ext->find_modes();
 
-  if (global.orthogonal == false)
-    (global.stability == normal) ? calcRT_non_orth_fast()
-                                 : calcRT_non_orth_safe();
-  else
-    (global.stability == normal) ? calcRT_fast()
-                                 : calcRT_safe();
+  // Check if the left or right waveguide is a BlochStack
+
+  BlochStack* bs1 = dynamic_cast<BlochStack*>(inc);
+  BlochStack* bs2 = dynamic_cast<BlochStack*>(ext);
+
+  if (bs1 || bs2)
+  {
+    if (bs1 && bs2)
+      calcRT_bloch_bloch();
+    else if (bs1)
+      calcRT_bloch_wg();
+    else
+      calcRT_wg_bloch();
+  } 
+  else 
+  {
+    if (global.orthogonal == false)
+      (global.stability == normal) ? calcRT_non_orth_fast()
+                                   : calcRT_non_orth_safe();
+    else
+      (global.stability == normal) ? calcRT_fast()
+                                   : calcRT_safe();
+  }
 
   // Remember wavelength and gain these matrices were calculated for.
 
@@ -374,6 +392,190 @@ void DenseInterface::calcRT_non_orth_fast()
 
   T12 = X(r1,r1); R21 = X(r1,r2);
   R12 = X(r2,r1); T21 = X(r2,r2);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DenseInterface::calcRT_bloch_bloch
+//
+//  calculates interface between two BlochStacks
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void DenseInterface::calcRT_bloch_bloch()
+{
+  py_error("Bloch-Bloch interface not yet supported!");
+  exit (-1);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// DenseInterface::calcRT_bloch_wg
+//
+//  Calculates interface from a BlochStack to a waveguide.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void DenseInterface::calcRT_bloch_wg()
+{
+  BlochStack*     s1 = (BlochStack*) inc;
+  MultiWaveguide* s2 = (MultiWaveguide*) ext;
+
+  const int N = global.N;
+
+  // Create unity matrix.
+
+  cMatrix U1(N,N,fortranArray);
+  U1 = 0.0;
+  for (int i=1; i<=N; i++)
+    U1(i,i) = 1.0;
+
+  // Auxiliary matrices.
+
+  cMatrix c(N,N,fortranArray);
+  cMatrix d(N,N,fortranArray);
+
+  // Create field matrices.
+
+  cMatrix ff(N,N,fortranArray); cMatrix bb(N,N,fortranArray);
+  cMatrix fb(N,N,fortranArray); cMatrix bf(N,N,fortranArray);
+
+  s1->get_expansion_matrices(ff,fb,bf,bb,false);
+
+  cMatrix inv_bb(N,N,fortranArray);
+  inv_bb.reference(invert_svd(bb));
+
+  // Calculate the R an T matrices of the BlochStack/wg interface.
+
+  Stack s((*s1->get_ext_wg())(0)+(*s2)(0));
+  s.calcRT();
+  MultiScatterer* m = s.as_multi();
+
+  if (!m)
+  {
+    py_error("No MultiWaveguide in calcRT_bloch_wg.");
+    exit(-1);
+  }
+
+  const cMatrix& s_R12(m->get_R21());
+  const cMatrix& s_R21(m->get_R12());
+  const cMatrix& s_T12(m->get_T21());
+  const cMatrix& s_T21(m->get_T12());
+
+  cMatrix inv_s_T12(N,N,fortranArray);
+  inv_s_T12.reference(invert_svd(s_T12));
+
+  // Calc R12.
+
+  c =  fb - multiply(s_R21,ff);
+  d = -bb + multiply(s_R21,bf);
+
+  R12.reference(multiply(invert_svd(d),c));
+
+  // Calc T12.
+
+  c = bf - multiply(s_R21,bb);
+  d = ff - multiply(s_R21,fb) + multiply(c,R12);
+
+  T12.reference(multiply(inv_s_T12,d));
+
+  // Calc T21.
+
+  c = U1- multiply(s_R21,bf,inv_bb);
+
+  T21.reference(multiply(inv_bb,invert_svd(c),s_T12));
+
+  // Calc R21.
+
+  R21 = s_R12 + multiply(s_T21,bf,T21);
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// DenseInterface::calcRT_wg_bloch
+//
+//  Calculates interface from a waveguide to a BlochStack.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void DenseInterface::calcRT_wg_bloch()
+{
+  MultiWaveguide* s1 = (MultiWaveguide*) inc;
+  BlochStack*     s2 = (BlochStack*) ext;
+
+  const int N = global.N;
+
+  // Create unity matrix.
+
+  cMatrix U1(N,N,fortranArray);
+  U1 = 0.0;
+  for (int i=1; i<=N; i++)
+    U1(i,i) = 1.0;
+
+  // Auxiliary matrices.
+
+  cMatrix c(N,N,fortranArray);
+  cMatrix d(N,N,fortranArray);
+
+  // Create field matrices.
+
+  cMatrix ff(N,N,fortranArray); cMatrix bb(N,N,fortranArray);
+  cMatrix fb(N,N,fortranArray); cMatrix bf(N,N,fortranArray);
+
+  s2->get_expansion_matrices(ff,fb,bf,bb,true);
+
+  cMatrix inv_ff(N,N,fortranArray);
+  inv_ff.reference(invert_svd(ff));
+
+  // Calculate the R an T matrices of the wg/BlochStack interface. 
+
+  Stack s((*s1)(0)+ (*s2->get_inc_wg())(0));
+  s.calcRT();
+  MultiScatterer* m = s.as_multi();
+
+  if (!m)
+  {
+    py_error("No MultiWaveguide in calcRT_bloch_wg.");
+    exit(-1);
+  }
+
+  const cMatrix& s_R12(m->get_R12());
+  const cMatrix& s_R21(m->get_R21());
+  const cMatrix& s_T12(m->get_T12());
+  const cMatrix& s_T21(m->get_T21());
+
+  cMatrix inv_s_T12(N,N,fortranArray);
+  inv_s_T12.reference(invert_svd(s_T12));
+
+  // Calc R21.
+
+  c =  bf - multiply(s_R21,bb);
+  d = -ff + multiply(s_R21,fb);
+
+  R21.reference(multiply(invert_svd(d),c));
+
+  // Calc T21.
+
+  c = fb - multiply(s_R21,ff);
+  d = bb - multiply(s_R21,bf) + multiply(c,R21);
+
+  T21.reference(multiply(inv_s_T12,d));
+
+  // Calc T12.
+
+  c = U1 - multiply(s_R21,fb,inv_ff);
+
+  T12.reference(multiply(inv_ff,invert_svd(c),s_T12));
+
+  // Calc R12.
+
+  R12 = s_R12 + multiply(s_T21,fb,T12);
 }
 
 

@@ -15,6 +15,7 @@
 #include "S_scheme.h"
 #include "S_scheme_fields.h"
 #include "T_scheme_fields.h"
+#include "bloch.h"
 
 using std::vector;
 
@@ -955,8 +956,10 @@ Field Stack::field(const Coord& coord)
   
   Waveguide* wg = (*chunks)[index].sc->get_ext();
 
-  cVector fw(wg->N(),fortranArray);
-  cVector bw(wg->N(),fortranArray);
+  // fw and bw matrices for blochstacks have only global.N components.
+
+  cVector fw(global.N,fortranArray);
+  cVector bw(global.N,fortranArray);
 
   fw_bw_field(coord, &fw, &bw);
 
@@ -1205,7 +1208,25 @@ const Complex Stack::R12(int i, int j) const
   MultiScatterer* multi = as_multi();
 
   if (multi)
-    return (multi->get_R12())(i,j);
+  {
+    Complex R12ij = (multi->get_R12())(i,j); 
+
+    BlochStack* bs_inc = dynamic_cast<BlochStack*>(multi->get_inc());
+
+    if (bs_inc) // Normalise.
+    {
+      BlochMode* fm = dynamic_cast<BlochMode*>(bs_inc->get_fw_mode(j));
+      BlochMode* bm = dynamic_cast<BlochMode*>(bs_inc->get_bw_mode(i));
+
+      Real w = bs_inc->c1_size().real();
+
+      Complex fflux = fm->S_flux(0,w,1e-10);
+      Complex bflux = bm->S_flux(0,w,1e-10);
+
+      R12ij *= sqrt(bflux/fflux);    
+    }
+    return R12ij;
+  }
   else
     return as_mono()->get_R12();
 }
@@ -1223,7 +1244,26 @@ const Complex Stack::R21(int i, int j) const
   MultiScatterer* multi = as_multi();
 
   if (multi)
-    return (multi->get_R21())(i,j);
+  {
+    Complex R21ij = (multi->get_R21())(i,j);
+
+    BlochStack* bs_ext = dynamic_cast<BlochStack*>(multi->get_ext());
+    
+    if (bs_ext) // Mormalise.
+    {
+      BlochMode* fm = dynamic_cast<BlochMode*>(bs_ext->get_fw_mode(i));
+      BlochMode* bm = dynamic_cast<BlochMode*>(bs_ext->get_bw_mode(j));
+      
+      Real w = bs_ext->c1_size().real();
+
+      Complex fflux = fm->S_flux(0,w,1e-10);
+      Complex bflux = bm->S_flux(0,w,1e-10);
+
+      R21ij *= sqrt(fflux/bflux);
+    }
+
+    return R21ij;
+  } 
   else
     return as_mono()->get_R21();
 }
@@ -1241,7 +1281,38 @@ const Complex Stack::T12(int i, int j) const
   MultiScatterer* multi = as_multi();
 
   if (multi)
-    return (multi->get_T12())(i,j);
+  {
+    Complex T12ij = (multi->get_T12())(i,j);
+
+    BlochStack* bs_inc = dynamic_cast<BlochStack*>(multi->get_inc());
+    BlochStack* bs_ext = dynamic_cast<BlochStack*>(multi->get_ext());
+
+    Complex fflux1, fflux2;
+
+    if (bs_inc)
+    {
+      Real w = bs_inc->c1_size().real();
+      BlochMode* fm  = dynamic_cast<BlochMode*>(bs_inc->get_fw_mode(j));
+      fflux1 = fm->S_flux(0,w,1e-10);
+
+      T12ij /= sqrt(fflux1);
+    }
+
+    if (bs_ext)
+    {
+      if (bs_ext==bs_inc && i==j)
+        fflux2 = fflux1;
+      else
+      {
+        Real w = bs_ext->c1_size().real();
+        BlochMode* fm = dynamic_cast<BlochMode*>(bs_ext->get_fw_mode(i));
+        fflux2 = fm->S_flux(0,w,1e-10);
+       }
+
+       T12ij *= sqrt(fflux2);
+    }
+    return T12ij;
+  }
   else
     return as_mono()->get_T12();
 }
@@ -1259,13 +1330,129 @@ const Complex Stack::T21(int i, int j) const
   MultiScatterer* multi = as_multi();
 
   if (multi)
-    return (multi->get_T21())(i,j);
+  {
+    Complex T21ij = (multi->get_T21())(i,j);
+
+    BlochStack* bs_inc = dynamic_cast<BlochStack*>(multi->get_inc());
+    BlochStack* bs_ext = dynamic_cast<BlochStack*>(multi->get_ext());
+
+    Complex bflux1, bflux2;
+
+    if (bs_inc)
+    {
+      Real w = bs_inc->c1_size().real();
+      BlochMode* bm = dynamic_cast<BlochMode*>(bs_inc->get_bw_mode(i));
+
+      bflux2 = bm->S_flux(0,w,1e-10);
+
+      T21ij *= sqrt(bflux2);
+    }
+
+    if (bs_ext)
+    {
+      if (bs_ext==bs_inc && i==j)
+        bflux1 = bflux2;
+      else
+      {
+        Real w = bs_ext->c1_size().real();
+        BlochMode* bm = dynamic_cast<BlochMode*>(bs_ext->get_bw_mode(j));
+        bflux1 = bm->S_flux(0,w,1e-10);
+       }
+      
+       T21ij /= sqrt(bflux1);
+    }
+    return T21ij;
+  }
   else
     return as_mono()->get_T21();
 }
 
 
-  
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// In the case of a stack starting and/or ending with a semi-infinite 
+// BlochStack, the following methods get the normalised R/T elements, 
+// as opposed to DenseScatterer->get_Rxx/Txx.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_R12
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_R12() const
+{
+  cMatrix R12p(global.N,global.N,fortranArray);
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+      (R12p)(i,j) = R12(i,j);
+
+  return R12p;	
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_R21
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_R21() const
+{
+  cMatrix R21p(global.N,global.N,fortranArray);
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+      (R21p)(i,j) = R21(i,j);
+
+   return R21p;	
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_T12
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_T12() const
+{
+  cMatrix T12p(global.N,global.N,fortranArray);
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+      (T12p)(i,j) = T12(i,j);
+
+   return T12p;	
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_T21
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_T21() const
+{
+  cMatrix T21p(global.N,global.N,fortranArray);
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+      (T21p)(i,j) = T21(i,j);
+
+  return T21p;	
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Stack::create_sc
