@@ -3,6 +3,8 @@ CAMFR 1.1:
  - improved stability for Slabs
  - Python doesn't terminate abruptly anymore when faced with some user
    errors or lost modes
+ - the refractive index profile can now be displayed on top of the 
+   field plots (Lieven Vanholme)
  - animation of field profiles is much smoother (Lieven Vanholme)
  - field plots can be saved in a variety of formats (jpg, gif, png, ...)
    Animations can be saved as an (uncompressed) animated gif (Lieven Vanholme)
