@@ -54,9 +54,10 @@ Slab_M::Slab_M(const Expression& expression, int M_series_)
     if (i == ex.get_size()-1)
       thickness += I*global_slab.upper_PML;
 
-    // Combine two succesive terms containing the same material.
+    // Combine succesive terms containing the same material.      
 
-    if ( (i+1 < ex.get_size()) && (m == ex.get_term(i+1)->get_mat()) )
+    while ( (i+1 < ex.get_size())
+         && (*m == *(dynamic_cast<Material*>(ex.get_term(i+1)->get_mat()))) )
     {
       thickness += ex.get_term(i+1)->get_d();
     
@@ -1330,7 +1331,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
   }
-  
+ 
   const Complex C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
 
   // Create Planars.
@@ -1338,7 +1339,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
   vector<Planar> planars;
   for (unsigned int i=0; i<materials.size(); i++)
     planars.push_back(Planar(*materials[i]));
-
+  
   // Determine walls.
 
   SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;

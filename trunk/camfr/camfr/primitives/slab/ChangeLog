@@ -1,3 +1,7 @@
+2005-01-26 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slab.cpp: Improve detection of same materials.
+
 2004-08-18 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slabmatrixcache.cpp: Write to text file.

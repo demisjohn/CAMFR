@@ -36,6 +36,9 @@ bool same(const Complex& fw_I_l, const Complex& fw_II_l,
 {
   const Real eps = 1e-4;
 
+  // TODO: also return true if it are two waveguides 
+  // which are each other's image under inversion symmetry.
+
   if (abs(fw_I_l - fw_II_l) > eps)
     return false;
   if (abs(bw_I_l - bw_II_l) > eps)
@@ -206,7 +209,6 @@ Complex overlap(const SlabMode* mode_I,
     else // normalisation integral (same modes) or degenerate case
     {
       // + f(upper_Min) - f(lower_Plus)
-
       if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
                fw_I_u, fw_II_u, bw_I_u, bw_II_u))
         term2 += C * d * ( fw_I_l * bw_II_l + bw_I_l * fw_II_l );
