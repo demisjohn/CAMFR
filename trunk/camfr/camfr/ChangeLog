@@ -1,3 +1,13 @@
+2005-02-02  Pieter Dumon  <Pieter.Dumon@UGent.be>
+
+	* bloch.h: Add support for BlochStacks inside of other Stacks.
+	* bloch.cpp: Ditto.
+	* interface.h: Ditto.
+	* interface.cpp: Ditto.
+	* stack.cpp: Ditto.
+	* stack.h: Ditto.
+	* camfr_wrap.cpp: Ditto.
+
 2005-01-28  Peter Debackere  <Peter.Debackere@UGent.be>
 
 	* camfr_wrap.cpp: Add switches for ASR solver.

@@ -53,6 +53,9 @@ class DenseInterface : public DenseScatterer
     void calcRT_safe();
     void calcRT_non_orth_fast();
     void calcRT_non_orth_safe();
+    void calcRT_bloch_bloch();
+    void calcRT_bloch_wg();
+    void calcRT_wg_bloch();
 };
 
 

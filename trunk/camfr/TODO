@@ -23,6 +23,8 @@
 
 -planar set_kt
 
+-time 'a = b + multiply()' vs 'c.reference(multiply()); a = b+c'
+
 -band calculation with fixed k_t
 
 -averaging of eps

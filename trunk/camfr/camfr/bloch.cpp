@@ -310,6 +310,98 @@ cVector BlochStack::get_beta_vector() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// BlochStack::get_fw_mode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Mode* BlochStack::get_fw_mode(int i) const
+{
+  BlochMode* bm;
+
+  int count=0;
+  for (int index=1; count<i && index<=N(); index++)
+  {
+    bm = dynamic_cast<BlochMode*>(get_mode(index));
+    if (bm->get_direction() == forward)
+      count++;
+  }
+  
+  return (count==i) ? bm : NULL;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BlochStack::get_bw_mode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Mode* BlochStack::get_bw_mode(int i) const
+{  
+
+  BlochMode* bm;
+
+  int count=0;
+  for (int index=1; count<i && index<=N(); index++)
+  {
+    bm = dynamic_cast<BlochMode*>(get_mode(index));
+    if (bm->get_direction() == backward)
+      count++;
+  }
+  
+  return (count==i) ? bm : NULL;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BlochStack::get_expansion_matrices
+//
+// Returns matrices of forward and backward components
+// of forward and backward modes
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void BlochStack::get_expansion_matrices(cMatrix& ff, cMatrix& fb, 
+                                        cMatrix& bf, cMatrix& bb, bool left)
+{
+  Coord c(0.0,0.0,(left)?0.0:stack.get_total_thickness());
+
+  for (int i=1;i<=global.N;i++)
+  {
+    BlochMode* fwm = dynamic_cast<BlochMode*>(get_fw_mode(i));
+    BlochMode* bwm = dynamic_cast<BlochMode*>(get_bw_mode(i));
+
+    if ( !fwm || !bwm )
+    {
+      py_error("Not enough forward or backward modes in BlochStack");
+      exit(-1);
+    }
+
+    cVector fffield(global.N,fortranArray);
+    cVector bbfield(global.N,fortranArray);
+    cVector bffield(global.N,fortranArray);
+    cVector fbfield(global.N,fortranArray);
+
+    fwm->fw_bw_field(c,&fffield,&fbfield);
+    bwm->fw_bw_field(c,&bffield,&bbfield);
+
+    for (int j=1; j<=global.N; j++)
+    {
+      ff(j,i) = fffield(j);
+      fb(j,i) = fbfield(j);
+      bb(j,i) = bbfield(j);
+      bf(j,i) = bffield(j);
+    }
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // BlochMode::BlochMode
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -320,6 +412,34 @@ BlochMode::BlochMode(const Polarisation pol, const Complex& kz, Stack* s,
 {
   FieldExpansion f(geom->get_inc(), F, B);
   interface_field.push_back(f);
+
+  // Determine if the mode is forward or backward.
+
+  if (abs(get_kz()) < 1e-5) // This is a dummy mode.
+    direction = undefined;
+  else
+  {
+    bool fw = false;
+    
+    if (imag(get_kz()) < -1e-3)
+      fw = true;
+    else if (imag(get_kz()) > 1e-3)
+      fw = false;
+    else
+      fw = real(get_kz()) > 0.0;
+
+    Real S = S_flux(0,real(geom->get_inc()->c1_size()),0.1);
+
+    if (fw && (S < 0) && (abs(S) > 1e-3) )
+      fw = false;
+    else if (!fw && (S>0) && (abs(S) > 1e-3) )
+      fw = true;
+
+    if (fw)
+      direction = forward;
+    else
+      direction = backward;
+   }
 }
 
 
