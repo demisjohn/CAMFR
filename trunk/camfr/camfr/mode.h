@@ -117,6 +117,40 @@ struct modesorter
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Function object for sorting Bloch modes according to their losses. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+struct modesorter_bloch
+{
+    bool operator()(const Mode* a, const Mode* b)
+    {
+      const Complex kz_a = a->get_kz();
+      const Complex kz_b = b->get_kz();
+
+      if (abs(kz_a) < 1e-8)
+        return false;
+
+      if (abs(kz_b) < 1e-8)
+        return true;
+
+      if ((abs(imag(kz_a)) > 1e-6) || (abs(imag(kz_b)) > 1e-6))
+      {
+        if (abs(imag(kz_a)+imag(kz_b)) < 1e-6)
+          return imag(kz_a) < imag(kz_b);
+        
+        return ( abs(imag(kz_a)) < abs(imag(kz_b)) );
+      }
+
+      return real(kz_a) > real(kz_b);
+    }
+};
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Sorts the modes to agree with the order in BDM's software (for easier
 // comparison):
 //
