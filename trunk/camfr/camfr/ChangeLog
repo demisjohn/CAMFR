@@ -1,3 +1,7 @@
+2002-11-26  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Update to Boost release version.
+
 2002-11-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* defs.h: Add series solver option.

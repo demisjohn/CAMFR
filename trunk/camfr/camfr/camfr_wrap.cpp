@@ -3,29 +3,14 @@
 //
 // File:          camfr_wrap.cpp
 // Author:        Peter.Bienstman@rug.ac.be
-// Date:          20020403
-// Version:       2.0
+// Date:          20021119
+// Version:       2.1
 //
 // Copyright (C) 2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
-// TODO
-//
-// Enums and constants
-// Default arguments
-
-#define BOOST_PYTHON_V2
-
-#include <boost/python/module.hpp>
-#include <boost/python/class.hpp>
-#include <boost/python/operators.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/call.hpp>
-#include <boost/python/return_value_policy.hpp>
-#include <boost/python/reference_existing_object.hpp>
-#include <boost/python/converter/rvalue_from_python_data.hpp>
-
+#include <boost/python.hpp>
 #include "Numeric/arrayobject.h"
 
 #include "defs.h"
@@ -76,17 +61,17 @@ inline void set_N(int n)
 inline int get_N()
   {return global.N;}
 
-inline void set_polarisation(long pol)
-  {global.polarisation = Polarisation(pol);}
+inline void set_polarisation(Polarisation pol)
+  {global.polarisation = pol;}
 
 inline void set_gain_material(Material* m)
   {global.gain_mat = m;} 
 
-inline void set_solver(long s)
-  {global.solver = Solver(s);} 
+inline void set_solver(Solver s)
+  {global.solver = s;} 
 
-inline void set_stability(long s)
-  {global.stability = Stability(s);}
+inline void set_stability(Stability s)
+  {global.stability = s;}
 
 inline void set_precision(unsigned int i)
   {global.precision = i;} 
@@ -118,14 +103,14 @@ inline void set_chunk_tracing(bool b)
 inline void set_unstable_exp_threshold(Real d)
   {global.unstable_exp_threshold = d;} 
 
-inline void set_field_calc(long f)
-  {global.field_calc = Field_calc(f);} 
+inline void set_field_calc(Field_calc f)
+  {global.field_calc = f;} 
 
-inline void set_bloch_calc(long s)
-  {global.bloch_calc = Bloch_calc(s);}
+inline void set_bloch_calc(Bloch_calc s)
+  {global.bloch_calc = s;}
 
-inline void set_eigen_calc(long s)
-  {global.eigen_calc = Eigen_calc(s);}
+inline void set_eigen_calc(Eigen_calc s)
+  {global.eigen_calc = s;}
 
 inline void set_orthogonal(bool b)
   {global.orthogonal = b;}
@@ -136,8 +121,8 @@ inline void set_degenerate(bool b)
 inline void set_circ_order(int n)
   {global_circ.order = n;}
 
-inline void set_circ_fieldtype(long f)
-  {global_circ.fieldtype = Fieldtype(f);}
+inline void set_circ_fieldtype(Fieldtype f)
+  {global_circ.fieldtype = f;}
 
 inline void set_lower_PML(Real PML)
 {
@@ -179,11 +164,11 @@ inline void set_circ_PML(Real PML)
   global_circ.PML = PML;
 }
 
-inline void set_left_wall(long w)
-  {global_section.leftwall = Section_wall_type(w);}
+inline void set_left_wall(Section_wall_type w)
+  {global_section.leftwall = w;}
 
-inline void set_right_wall(long w)
-  {global_section.rightwall = Section_wall_type(w);}
+inline void set_right_wall(Section_wall_type w)
+  {global_section.rightwall = w;}
 
 inline void set_lower_wall(SlabWall* w)
   {global_slab.lowerwall = w;}
@@ -196,6 +181,9 @@ inline void set_beta(const Complex& beta)
 
 inline void set_guided_only(bool b)
   {global_section.guided_only = b;}
+
+inline void set_mode_surplus(Real l)
+  {global.mode_surplus = l;}
 
 inline int mode_pol(const Mode& m) {return m.pol;}
 
@@ -231,8 +219,6 @@ inline Mode* waveguide_get_fw_mode(const Waveguide& w, int i)
 inline Mode* waveguide_get_bw_mode(const Waveguide& w, int i)
   {check_index(i); return w.get_bw_mode(i+1);}
 
-
-
 inline BlochMode* blochstack_get_mode(BlochStack& b, int i)
   {check_bloch_index(i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
 
@@ -261,6 +247,16 @@ inline Real stack_inc_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
 inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
   {return dynamic_cast<MultiWaveguide*>(s.get_ext())
      ->S_flux(s.ext_field_expansion(),c1_start,c1_stop,eps);}
+
+inline boost::python::object stack_fw_bw(Stack& s, Real z)
+{
+  cVector fw(global.N,fortranArray);
+  cVector bw(global.N,fortranArray);
+
+  s.fw_bw_field(Coord(0,0,z), &fw, &bw);
+
+  return boost::python::make_tuple(fw, bw);
+}
 
 inline Real stack_length(Stack& s) 
   {return real(s.get_total_thickness());}
@@ -526,8 +522,7 @@ Term waveguide_to_term(Waveguide& w, const Complex& d)
   
 /////////////////////////////////////////////////////////////////////////////
 //
-// These functions compensate for the current lack of automatic handling
-// of default arguments in Boost.
+// Functions dealing with handling of default arguments.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -537,40 +532,19 @@ Complex stack_lateral_S_flux(Stack& s, Real c)
 Complex stack_lateral_S_flux_2(Stack& s, Real c, int k)
   {std::vector<Complex> S_k; s.lateral_S_flux(c, &S_k); return S_k[k];}
 
-Real cavity_calc_sigma(Cavity& c)
-  {return c.calc_sigma();}
-
-void cavity_find_modes_in_region_3
-  (Cavity& c, Real lambda_start, Real lambda_stop, Real delta_lambda)
-    {return c.find_modes_in_region(lambda_start, lambda_stop, delta_lambda);} 
-
-void cavity_find_modes_in_region_7
-  (Cavity& c, Real lambda_start, Real lambda_stop,
-   Real delta_lambda, unsigned int number,
-   Real n_imag_start, Real n_imag_stop, unsigned int passes)
-{
-  return c.find_modes_in_region(lambda_start, lambda_stop, delta_lambda,
-                                number, n_imag_start, n_imag_stop, passes);
-}
-
-void cavity_find_mode_2(Cavity& c, Real lambda_start, Real lambda_stop)
-  {return c.find_mode(lambda_start, lambda_stop);}
-
-void cavity_find_mode_5
-  (Cavity& c, Real lambda_start, Real lambda_stop,
-   Real n_imag_start, Real n_imag_stop, unsigned int passes)
-{
-  return
-    c.find_mode(lambda_start, lambda_stop, n_imag_start, n_imag_stop, passes); 
-}
-void cavity_set_source(Cavity& c, Coord& pos, Coord& orientation)
-  {c.set_source(pos,orientation);}
-
 void stack_set_inc_field(Stack& s, const cVector& f)
   {s.set_inc_field(f);}
 
 void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b) 
   {s.set_inc_field(f, &const_cast<cVector&>(b));}
+
+Real cavity_calc_sigma(Cavity& c)
+  {return c.calc_sigma();}
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(cav_find_mode, Cavity::find_mode,2,5)
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(cav_find_modes, \
+  Cavity::find_modes_in_region,3,7)
 
 
 
@@ -583,8 +557,7 @@ void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b)
 #undef PyArray_Type
 extern PyTypeObject PyArray_Type;
 
-
-BOOST_PYTHON_MODULE_INIT(_camfr)
+BOOST_PYTHON_MODULE(_camfr)
 {
   using namespace boost::python;
 
@@ -598,132 +571,157 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   register_cVector_from_python();
 
-  module camfr("_camfr");
+  // Wrap Limit enum.
 
-#if 0
+  enum_<Limit>("Limit")
+    .value("Plus", Plus)
+    .value("Min",  Min)
+    ;
 
-    // Wrap Limit enum.
+  scope().attr("Plus") = Plus;
+  scope().attr("Min")  = Min;
 
-  camfr
- 
-    .add(
-      enum_<Limit>("Limit")
-      .value("Plus", Plus)
-      .value("Min",  Min)
-      )
+  // Wrap Solver enum.
 
-    // Wrap Solver enum.
+  enum_<Solver>("Solver")
+    .value("ADR",    ADR)
+    .value("track",  track)
+    .value("series", series)
+    ;
 
-    .add(
-      enum_<Solver>("Solver")
-      .value("ADR",    ADR)
-      .value("track",  track)
-      .value("series", series)
-      )
- 
-    // Wrap Stability enum.
+  scope().attr("ADR")    = ADR;
+  scope().attr("track")  = track;
+  scope().attr("series") = series;
 
-    .add(
-      enum_<Stability>("Stability")
-      .value("normal", ADR)
-      .value("extra",  track)
-      .value("SVD",    SVD)
-      )
+  // Wrap Stability enum.
 
-    // Wrap Field_calc enum.
+  enum_<Stability>("Stability")
+    .value("normal", normal)
+    .value("extra",  extra)
+    .value("SVD",    SVD)
+    ;
 
-    .add(
-      enum_<Field_calc>("Field_calc")
-      .value("T_T", T_T)
-      .value("S_T", S_T)
-      .value("S_S", S_S)
-      )
+  scope().attr("normal") = normal;
+  scope().attr("extra")  = extra;
+  scope().attr("SVD")    = SVD;
 
-    // Wrap Bloch_calc enum.
+  // Wrap Field_calc enum.
 
-    .add(
-      enum_<Bloch_calc>("Bloch_calc")
-      .value("GEV", GEV)
-      .value("T",   T)
-      )
+  enum_<Field_calc>("Field_calc")
+    .value("T_T", T_T)
+    .value("S_T", S_T)
+    .value("S_S", S_S)
+    ;
 
-    // Wrap Eigen_calc enum.
+  scope().attr("T_T") = T_T;
+  scope().attr("S_T") = S_T;
+  scope().attr("S_S") = S_S;
 
-    .add(
-      enum_<Eigen_calc>("Eigen_calc")
-      .value("lapack",  lapack)
-      .value("arnoldi", arnoldi)
-      )
+  // Wrap Bloch_calc enum.
 
-    // Wrap Polarisation enum.
+  enum_<Bloch_calc>("Bloch_calc")
+    .value("GEV", GEV)
+    .value("T",   T)
+    ;
 
-    .add(
-      enum_<Polarisation>("Polarisation")
-      .value("unknown", unknown)
-      .value("TEM",     TEM)
-      .value("TE",      TE)
-      .value("TM",      TM)
-      .value("HE",      HE)
-      .value("EH",      EH)
-      .value("TE_TM",   TE_TM)
-      )
+  scope().attr("GEV") = GEV;
+  scope().attr("T")   = T;
 
-    // Wrap Fieldtype enum.
+  // Wrap Eigen_calc enum.
 
-    .add(
-      enum_<Fieldtype>("Fieldtype")
-      .value("cos_type", cos_type)
-      .value("sin_type", sin_type)
-      );
+  enum_<Eigen_calc>("Eigen_calc")
+    .value("lapack",  lapack)
+    .value("arnoldi", arnoldi)
+    ;
 
-#endif
+  scope().attr("lapack")  = lapack;
+  scope().attr("arnoldi") = arnoldi;
 
-  // Wrap getters and setters for global parameters.   
+  // Wrap Polarisation enum.
 
-  camfr
-    .def("set_lambda",                 set_lambda)
-    .def("get_lambda",                 get_lambda)
-    .def("set_N",                      set_N)
-    .def("N",                          get_N)
-    .def("set_polarisation",           set_polarisation)
-    .def("set_gain_material",          set_gain_material)
-    .def("set_solver",                 set_solver)
-    .def("set_stability",              set_stability)
-    .def("set_precision",              set_precision)
-    .def("set_precision_enhancement",  set_precision_enhancement)
-    .def("set_dx_enhanced",            set_dx_enhanced)
-    .def("set_precision_rad",          set_precision_rad)
-    .def("set_C_upperright",           set_C_upperright)
-    .def("set_sweep_from_previous",    set_sweep_from_previous)
-    .def("set_sweep_steps",            set_sweep_steps)
-    .def("set_eps_trace_coarse",       set_eps_trace_coarse)
-    .def("set_chunk_tracing",          set_chunk_tracing)
-    .def("set_unstable_exp_threshold", set_unstable_exp_threshold)
-    .def("set_field_calc",             set_field_calc)
-    .def("set_bloch_calc",             set_bloch_calc)
-    .def("set_eigen_calc",             set_eigen_calc)
-    .def("set_orthogonal",             set_orthogonal)
-    .def("set_degenerate",             set_degenerate)
-    .def("set_circ_order",             set_circ_order)
-    .def("set_circ_field_type",        set_circ_fieldtype)
-    .def("set_left_wall",              set_left_wall)
-    .def("set_right_wall",             set_right_wall)
-    .def("set_upper_wall",             set_upper_wall)
-    .def("set_lower_wall",             set_lower_wall)
-    .def("set_left_PML",               set_left_PML)
-    .def("set_right_PML",              set_right_PML)
-    .def("set_upper_PML",              set_upper_PML)
-    .def("set_lower_PML",              set_lower_PML)
-    .def("set_circ_PML",               set_circ_PML)
-    .def("set_beta",                   set_beta)
-    .def("set_guided_only",            set_guided_only)
-    .def("free_tmps",                  free_tmps);
+  enum_<Polarisation>("Polarisation")
+    .value("unknown", unknown)
+    .value("TEM",     TEM)
+    .value("TE",      TE)
+    .value("TM",      TM)
+    .value("HE",      HE)
+    .value("EH",      EH)
+    .value("TE_TM",   TE_TM)
+    ;
+
+  scope().attr("unknown") = unknown;
+  scope().attr("TEM")     = TEM;
+  scope().attr("TE")      = TE;
+  scope().attr("TM")      = TM;
+  scope().attr("HE")      = HE;
+  scope().attr("EH")      = EH;
+  scope().attr("TE_TM")   = TE_TM;
+
+  // Wrap Fieldtype enum.
+
+  enum_<Fieldtype>("Fieldtype")
+    .value("cos_type", cos_type)
+    .value("sin_type", sin_type)
+    ;
+
+  scope().attr("cos_type") = cos_type;
+  scope().attr("sin_type") = sin_type; 
+
+ // Wrap Section_wall_type enum.
+
+  enum_<Section_wall_type>("Section_wall_type")
+    .value("E_wall", E_wall)
+    .value("H_wall", H_wall)
+    ;
+
+  scope().attr("E_wall") = E_wall;
+  scope().attr("H_wall") = H_wall;
+
+  // Wrap getters and setters for global parameters.
+
+  def("set_lambda",                 set_lambda);
+  def("get_lambda",                 get_lambda);
+  def("set_N",                      set_N);
+  def("N",                          get_N);
+  def("set_polarisation",           set_polarisation);
+  def("set_gain_material",          set_gain_material);
+  def("set_solver",                 set_solver);
+  def("set_stability",              set_stability);
+  def("set_precision",              set_precision);
+  def("set_precision_enhancement",  set_precision_enhancement);
+  def("set_dx_enhanced",            set_dx_enhanced);
+  def("set_precision_rad",          set_precision_rad);
+  def("set_C_upperright",           set_C_upperright);
+  def("set_sweep_from_previous",    set_sweep_from_previous);
+  def("set_sweep_steps",            set_sweep_steps);
+  def("set_eps_trace_coarse",       set_eps_trace_coarse);
+  def("set_chunk_tracing",          set_chunk_tracing);
+  def("set_unstable_exp_threshold", set_unstable_exp_threshold);
+  def("set_field_calc",             set_field_calc);
+  def("set_bloch_calc",             set_bloch_calc);
+  def("set_eigen_calc",             set_eigen_calc);
+  def("set_orthogonal",             set_orthogonal);
+  def("set_degenerate",             set_degenerate);
+  def("set_circ_order",             set_circ_order);
+  def("set_circ_field_type",        set_circ_fieldtype);
+  def("set_left_wall",              set_left_wall);
+  def("set_right_wall",             set_right_wall);
+  def("set_upper_wall",             set_upper_wall);
+  def("set_lower_wall",             set_lower_wall);
+  def("set_left_PML",               set_left_PML);
+  def("set_right_PML",              set_right_PML);
+  def("set_upper_PML",              set_upper_PML);
+  def("set_lower_PML",              set_lower_PML);
+  def("set_circ_PML",               set_circ_PML);
+  def("set_beta",                   set_beta);
+  def("set_guided_only",            set_guided_only);
+  def("set_mode_surplus",           set_mode_surplus);
+  def("free_tmps",                  free_tmps);
 
   // Wrap Coord.
 
-  class_<Coord>("Coord", args<const Real&, const Real&, const Real&>())
-    //.def_init(args<const Complex&, const Complex&, const Complex&,
-    //                          Limit,          Limit,          Limit>())
+  class_<Coord>("Coord", init<const Real&, const Real&, const Real&,
+         optional<Limit, Limit, Limit> >())
     .def("__repr__", &Coord::repr)
     ;
 
@@ -758,8 +756,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Material.
 
-  class_<Material, bases<BaseMaterial> >("Material", args<const Complex&>())
-    .def_init(args<const Complex&, const Complex&>()) // TODO: def. arg
+  class_<Material, bases<BaseMaterial> >
+    ("Material", init<const Complex&, optional<const Complex&> >())
     .def("__call__", material_to_term)
     .def("n",        &Material::n)
     .def("epsr",     &Material::epsr)
@@ -856,21 +854,21 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap FlippedScatterer.
 
   class_<FlippedScatterer, bases<MultiScatterer> >
-    ("FlippedScatterer", args<MultiScatterer&>());
+    ("FlippedScatterer", init<MultiScatterer&>());
 
   // Wrap E_Wall.
 
-  class_<E_Wall, bases<DiagScatterer> >("E_Wall", args<Waveguide&>());
+  class_<E_Wall, bases<DiagScatterer> >("E_Wall", init<Waveguide&>());
 
   // Wrap H_Wall.
 
-  class_<H_Wall, bases<DiagScatterer> >("H_Wall", args<Waveguide&>());
+  class_<H_Wall, bases<DiagScatterer> >("H_Wall", init<Waveguide&>());
 
   // Wrap Expression.
 
   class_<Expression>("Expression")
-    .def_init(args<const Term&>())
-    .def_init(args<const Expression&>())
+    .def(init<const Term&>())
+    .def(init<const Expression&>())
     .def("flatten",  &Expression::flatten)
     .def("inc",  &Expression::get_inc,
          return_value_policy<reference_existing_object>())
@@ -887,9 +885,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Term.
 
-  class_<Term>("Term", args<Scatterer&>())
-    .def_init(args<Stack&>())
-    .def_init(args<const Expression&>())
+  class_<Term>("Term", init<Scatterer&>())
+    .def(init<Stack&>())
+    .def(init<const Expression&>())
     .def("inc",  &Term::get_inc,
          return_value_policy<reference_existing_object>())
     .def("ext",  &Term::get_ext,
@@ -903,8 +901,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Stack.
 
-  class_<Stack>("Stack", args<const Expression&>())
-    .def_init(args<const Term&>())
+  class_<Stack>("Stack", init<const Expression&>())
+    .def(init<const Term&>())
     .def("calc",                     &Stack::calcRT)
     .def("free",                     &Stack::freeRT)
     .def("inc",                      &Stack::get_inc,
@@ -923,6 +921,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("inc_S_flux",               stack_inc_S_flux)
     .def("ext_S_flux",               stack_ext_S_flux)
     .def("field",                    &Stack::field)
+    .def("fw_bw",                    stack_fw_bw)
     .def("lateral_S_flux",           stack_lateral_S_flux)
     .def("lateral_S_flux",           stack_lateral_S_flux_2)
     .def("eps",                      &Stack::eps_at)
@@ -942,20 +941,18 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Cavity.
 
-  class_<Cavity>("Cavity", args<Stack&, Stack&>())
-    .def("find_modes_in_region", cavity_find_modes_in_region_3)
-    .def("find_modes_in_region", cavity_find_modes_in_region_7)
-    .def("find_mode",            cavity_find_mode_2)
-    .def("find_mode",            cavity_find_mode_5)
-    .def("sigma",                cavity_calc_sigma)
-    .def("set_source",           cavity_set_source)
-    .def("field",                &Cavity::field)
+  class_<Cavity>("Cavity", init<Stack&, Stack&>())
+    .def("find_mode",      &Cavity::find_mode, cav_find_mode())
+    .def("find_all_modes", &Cavity::find_modes_in_region,cav_find_modes())
+    .def("sigma",          cavity_calc_sigma)
+    .def("set_source",     &Cavity::set_source)
+    .def("field",          &Cavity::field)
     ;
 
   // Wrap BlochStack.
 
   class_<BlochStack, bases<MultiWaveguide> >
-    ("BlochStack", args<const Expression&>())
+    ("BlochStack", init<const Expression&>())
     .def("mode",        blochstack_get_mode,
          return_value_policy<reference_existing_object>())
     .def("length",      blochstack_length)
@@ -974,7 +971,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap InfStack.
 
   class_<InfStack, bases<DenseScatterer> >
-    ("InfStack", args<const Expression&>())
+    ("InfStack", init<const Expression&>())
     .def("R12", &InfStack::get_R12,
          return_value_policy<reference_existing_object>())
     ;
@@ -995,14 +992,14 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Planar.
 
-  class_<Planar, bases<MonoWaveguide> >("Planar", args<Material&>())
+  class_<Planar, bases<MonoWaveguide> >("Planar", init<Material&>())
     .def("set_theta", &Planar::set_theta)
     ;
 
   // Wrap Circ.
 
-  class_<Circ, bases<MultiWaveguide> >("Circ", args<Term&>())
-    .def_init(args<Expression&>())
+  class_<Circ, bases<MultiWaveguide> >("Circ", init<Term&>())
+    .def(init<Expression&>())
     ;
 
   // Wrap SlabWall.
@@ -1014,33 +1011,33 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap SlabWallMixed.
 
   class_<SlabWallMixed, bases<SlabWall> >
-    ("SlabWallMixed", args<const Complex&, const Complex&>());
+    ("SlabWallMixed", init<const Complex&, const Complex&>());
 
-  //camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
-  //camfr.add(boost::python::make_ref(slab_H_wall),    "slab_H_wall");
-  //camfr.add(boost::python::make_ref(slab_open_wall), "slab_open_wall");
+  scope().attr("slab_E_wall")    = SlabWallMixed(1.0,  1.0);
+  scope().attr("slab_H_wall")    = SlabWallMixed(1.0, -1.0);
+  scope().attr("slab_open_wall") = SlabWallMixed(0.0,  1.0);
 
   // Wrap SlabWall_TBC.
 
   class_<SlabWall_TBC, bases<SlabWall> >
-    ("SlabWall_TBC", args<const Complex&, const Material&>());
+    ("SlabWall_TBC", init<const Complex&, const Material&>());
 
   // Wrap SlabWall_PC.
 
   class_<SlabWall_PC, bases<SlabWall> >
-    ("SlabWall_PC", args<const Expression&>());
+    ("SlabWall_PC", init<const Expression&>());
 
   // Wrap SlabDisp.
 
   class_<SlabDisp, bases<ComplexFunction> >
-    ("SlabDisp", args<Expression&, Real>())
-    .def_init(args<Expression&, Real, SlabWall*, SlabWall*>())
+    ("SlabDisp", init<Expression&, Real>())
+    .def(init<Expression&, Real, SlabWall*, SlabWall*>())
     ;
 
   // Wrap Slab.
 
-  class_<Slab, bases<MultiWaveguide> >("Slab", args<const Term&>())
-    .def_init(args<const Expression&>())
+  class_<Slab, bases<MultiWaveguide> >("Slab", init<const Term&>())
+    .def(init<const Expression&>())
     .def("set_lower_wall",    &Slab::set_lower_wall)
     .def("set_upper_wall",    &Slab::set_upper_wall)
     .def("width",             slab_width)
@@ -1052,16 +1049,16 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap SectionDisp.
 
   class_<SectionDisp, bases<ComplexFunction> >
-    ("SectionDisp", args<Stack&, Stack&, Real, int>());
+    ("SectionDisp", init<Stack&, Stack&, Real, int>());
 
   // Wrap Section.
 
   class_<Section, bases<MultiWaveguide> >
-  ("Section", args<Expression&>())
-    .def_init(args<const Term&>())
-    .def_init(args<Expression&, int>())
-    .def_init(args<Expression&, Expression&>())
-    .def_init(args<Expression&, Expression&, int>())
+  ("Section", init<Expression&>())
+    .def(init<const Term&>())
+    .def(init<Expression&, int>())
+    .def(init<Expression&, Expression&>())
+    .def(init<Expression&, Expression&, int>())
     .def("width",  section_width)
     .def("height", section_height)
     .def("eps",    &Section::eps_at)
@@ -1072,7 +1069,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap RefSection.
 
   class_<RefSection, bases<MultiWaveguide> >
-  ("RefSection", args<Material&, const Complex&, const Complex&>())
-    ; 
+  ("RefSection", init<Material&, const Complex&, const Complex&>())
+    ;
 }
 
