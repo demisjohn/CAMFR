@@ -301,10 +301,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   {
     Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
     
-    if (abs(eps_mu) < abs(min_eps_mu))
+    if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
 
-    if (abs(eps_mu) > abs(min_eps_mu))
+    if (real(eps_mu) > real(min_eps_mu))
       max_eps_mu = eps_mu;
   }
 
@@ -314,11 +314,13 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   
   Real max_kt = abs(sqrt(C*(max_eps_mu - min_eps_mu)))+1;
 
-  Real Re=real(global.C_upperright);
-  Real Im=imag(global.C_upperright);
+  Real Re = real(global.C_upperright);
+  Real Im = imag(global.C_upperright);
 
   Complex lowerleft (-0.1,      -0.1);
   Complex upperright( Re*max_kt, Im*max_kt);
+
+  lowerleft = -upperright;
 
   SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
   unsigned int zeros = global.N + 2 + materials.size();
@@ -393,27 +395,20 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       || dynamic_cast<SlabWall_PC*>(r_wall) )
     PC = true;
 
-  // Find and max/min refractive indices of lossless structure.
+  // Find min and max refractive index of lossless structure.
 
-  Real max_n = 0.0;
-  vector<Real> n_lossless;
-  for (unsigned int i=0; i<materials.size(); i++)
+  Real min_eps_mu_lossless=real(materials[0]->eps())*real(materials[0]->mu());
+  Real max_eps_mu_lossless=real(materials[0]->eps())*real(materials[0]->mu());
+  
+  for (unsigned int i=1; i<materials.size(); i++)
   {
-    Real n = real( materials[i]->n() * sqrt( materials[i]->mur()) );
-
-    n_lossless.push_back(n);
+    Real eps_mu_lossless = real(materials[i]->eps())*real(materials[i]->mu());
     
-    if (n > max_n)
-      max_n = n;
-  }
+    if (eps_mu_lossless < min_eps_mu_lossless)
+      min_eps_mu_lossless = eps_mu_lossless;
 
-  Real min_n = max_n;
-  for (unsigned int i=0; i<n_lossless.size(); i++)
-  {
-    Real n = n_lossless[i];
-    
-    if (n < min_n)
-      min_n = n;
+    if (eps_mu_lossless > min_eps_mu_lossless)
+      max_eps_mu_lossless = eps_mu_lossless;
   }
   
   // Create dispersion relation for lossless structure.
@@ -447,8 +442,9 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   Wrap_imag_to_abs prop_wrap(disp);
 
-  Real prop_kt_end_lossless
-    = abs(k0*sqrt(Complex(max_n*max_n - min_n*min_n)));
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;  
+  Real prop_kt_end_lossless 
+    = abs(sqrt(C*(max_eps_mu_lossless - min_eps_mu_lossless)));
 
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
@@ -456,21 +452,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     if (d_kt > prop_kt_end_lossless)
       d_kt = prop_kt_end_lossless;
 
-    int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
-
     kt_prop_lossless = brent_all_minima
-      (prop_wrap,0.0001,prop_kt_end_lossless,d_kt/global.precision,eps,sec);
-
-    // If precision_enhancement is larger than 1, refine our search for
-    // the guided modes.
-
-    if (global.precision_enhancement > 1)
-    {
-      vector<Real> kt_fine = brent_refine_minima
-        (prop_wrap,kt_prop_lossless,global.dx_enhanced,
-         d_kt/global.precision/global.precision_enhancement,eps,1);
-      kt_prop_lossless = kt_fine;
-    }
+      (prop_wrap,0.0001,prop_kt_end_lossless,d_kt/global.precision,eps,1);
   }
   else
     prop_kt_end_lossless = 0.25; // To make rectangle for complex zero search.
@@ -479,49 +462,45 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   // Eliminate false zeros.
 
+  remove_elems(&kt_prop_lossless, 0.0, eps_copies);
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Real kt_i = k0*sqrt(n_lossless[i]*n_lossless[i] - min_n*min_n);
+    Real kt_i = sqrt(C*(  real(materials[i]->eps())*real(materials[i]->mu()) 
+                        - min_eps_mu_lossless));
 
     remove_elems(&kt_prop_lossless,  kt_i, eps_copies);
-    remove_elems(&kt_prop_lossless, -kt_i, eps_copies);   
-    remove_elems(&kt_prop_lossless,  0.0,  eps_copies);
+    remove_elems(&kt_prop_lossless, -kt_i, eps_copies);
   }
   
-  // Check if the minima found correspond really to zeros and increase
-  // precision using a mueller solver (in the absense of branchcuts).
-  // Don't do this if precision_enhancement is larger than 1, since this
-  // typically indicate the presence of nearly degenerate modes.
+  // Check if the minima found correspond really to zeros by using a mueller
+  // Don't do this when there are branchcuts, as this can cause problems for
+  // numerical stability.
 
   vector<Complex> kt_lossless;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
   { 
-    const Real fx = abs(disp(I*kt_prop_lossless[i]));
-    
-    if (fx > 1e-2)
+    if ( branchcut && (abs(disp(I*kt_prop_lossless[i])) > 1e-2) )
     {
       std::ostringstream s;
       s << "Warning: possibly insufficient precision around kt "
         << kt_prop_lossless[i] << "." << std::endl;
-      s << "Removing this candidate with abs(fx) " << fx << ".";
+      s << "Removing this candidate.";
       py_print(s.str());
     }
     else
     {
-      Real kt_new;
-      
-      if ( (!branchcut) && (global.precision_enhancement == 1) )
-        kt_new = imag(mueller(disp, I*kt_prop_lossless[i],
-                              I*kt_prop_lossless[i]+0.002));
-      else
-        kt_new = kt_prop_lossless[i];
+      bool error = false;
 
-      kt_lossless.push_back(I*kt_new);
+      Real kt_new = imag(mueller(disp, I*kt_prop_lossless[i],
+                                 I*kt_prop_lossless[i]+0.002,1e-14,
+                                 0,100,&error));      
+      if (!error)
+        kt_lossless.push_back(I*kt_new);
     }
   }
 
 
-  
+
   //
   // II: Find evanescent modes of lossless structure.
   //
@@ -543,29 +522,20 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       vector<Real> kt_evan_lossless = brent_N_minima
         (evan_wrap,kt_begin,modes_left+extra,d_kt/global.precision_rad,eps,1);
       
-      // Check if the minima found correspond really to zeros and increase
-      // precision with mueller solver.
+      // Check if the minima found correspond really to zeros by using 
+      // a mueller solver.
 
       for (unsigned int i=0; i<kt_evan_lossless.size(); i++)
-      { 
-        const Real fx = abs(disp(kt_evan_lossless[i]));
-        if (fx > 1e-2)
-        {
-          std::ostringstream s;
-          s << "Warning: possibly insufficient precision around kt "
-            <<  kt_evan_lossless[i] << "." << std::endl;
-          s << "Removing this candidate with abs(fx) " << fx << ".";
-          py_print(s.str());
-        }
-        else
-        {
-          Real kt_new = branchcut
-            ? kt_evan_lossless[i]
-            : real(mueller(disp,kt_evan_lossless[i],
-                           kt_evan_lossless[i]+0.002*I));
+      {
+        bool error = false;
 
+        Real kt_new = branchcut
+          ? kt_evan_lossless[i]
+          : real(mueller(disp,kt_evan_lossless[i],
+                         kt_evan_lossless[i]+0.002*I,1e-14,0,100,&error));
+
+        if (!error)
           kt_lossless.push_back(kt_new);
-        }
       }
 
       modes_left = (kt_lossless.size() >= global.N + 2) ? 0
@@ -579,32 +549,44 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   
   //
-  // III: Eliminate doubles and false zeros and trace modes to those of
-  //      true structure.
+  // III: Eliminate double and false zeros, find degenerate zeros
+  //      snap them to axis and trace modes to those of the true structure.
   //
 
-  if (global.precision_enhancement == 1)
-    remove_copies(&kt_lossless, eps_copies);
+  remove_copies   (&kt_lossless, eps_copies);
+  remove_opposites(&kt_lossless, eps_copies);
+  remove_elems    (&kt_lossless, Complex(0.0), eps_copies);
 
-  remove_elems(&kt_lossless, Complex(0.0), eps_copies);
-
-  for (unsigned int i=0; i<n_lossless.size(); i++)
+  for (unsigned int i=0; i<materials.size(); i++)
   {
-    Complex kt_i = k0*sqrt(n_lossless[i]*n_lossless[i] - min_n*min_n);
+    Complex kt_i = sqrt(C*(real(materials[i]->eps())*real(materials[i]->mu())
+                         - min_eps_mu_lossless));
 
     remove_elems(&kt_lossless,  kt_i, eps_copies);
     remove_elems(&kt_lossless, -kt_i, eps_copies);
   }
 
+  vector<Complex> kt_lossless_single = kt_lossless;
+  kt_lossless = mueller_multiple(disp, kt_lossless_single);
+  for (unsigned int i=0; i<kt_lossless.size(); i++)
+  {
+    if (abs(real(kt_lossless[i])) < abs(imag(kt_lossless[i])))
+      kt_lossless[i] = I*imag(kt_lossless[i]);
+    else
+      kt_lossless[i] =   real(kt_lossless[i]);
+  }
+
+  bool degenerate = kt_lossless.size() > kt_lossless_single.size();
+  
   vector<Complex> kt, forbidden;
-  if (global.chunk_tracing == true)
+  if (global.chunk_tracing && !degenerate)
     kt = traceroot_chunks
       (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
   else
     kt = traceroot
       (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
 
- 
+
 
   //
   // IV: Find modes in complex plane
@@ -616,24 +598,24 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   {
     Real evan_kt_end = 2*(global.N-kt.size())*d_kt; // Not general!
 
-    Real Re=real(global.C_upperright);
-    Real Im=imag(global.C_upperright);
-
-    Complex lowerleft (0.001,          0.001);
-    //Complex upperright(Re*evan_kt_end, Im*prop_kt_end_lossless);
+    Complex lowerleft(0.001, 0.001);
     Complex upperright = global.C_upperright;
 
     const int sections = int(global.C_steps);
 
     vector<Complex> kt_complex = allroots(disp, lowerleft, upperright);
 
+    disp.set_params(params);
+
     // Eliminate doubles and false zeros.
 
     remove_copies(&kt_complex, eps_copies);
 
-    for (unsigned int i=0; i<n_lossless.size(); i++)
+    for (unsigned int i=0; i<materials.size(); i++)
     {
-      Complex kt_i = k0*sqrt(n_lossless[i]*n_lossless[i] - min_n*min_n);
+      Complex kt_i 
+        = sqrt(C*(   materials[i]->eps()*materials[i]->mu()) 
+                   - disp.get_min_eps_mu());
 
       remove_elems(&kt_complex,  kt_i, eps_copies);
       remove_elems(&kt_complex, -kt_i, eps_copies);
@@ -728,9 +710,9 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
-    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
+    Complex eps_mu = materials[i]->eps()*materials[i]->mu();
     
-    if (abs(eps_mu) < abs(min_eps_mu))
+    if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
   }
   
@@ -739,7 +721,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
   // Create new modeset.
   
   for (unsigned int i=0; i<kt.size(); i++)
-  { 
+  {
     Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
