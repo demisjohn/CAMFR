@@ -465,10 +465,12 @@ Term::Term(const Expression& e, unsigned int N_)
       for (unsigned int i=0; i<e.get_size(); i++)
         if (abs(imag(e.get_term(i)->get_d())) > 1e-6)
         {
-          py_error(
-           "Error: complex inner thickness not supported by this solver.");
-          exit (-1);
+          py_print(
+            "Warning: complex inner thickness not supported by this solver.");
+          py_print(
+            "Don't use this expression to initialise a Section.");
         }
+    
   }
 }
 
@@ -691,9 +693,22 @@ const Expression operator+(const Term& L, const Term& R)
 { 
   Expression e;
 
+  // Detect errors.
+
+  bool l_mat = (L.get_type() == MATERIAL) || (L.get_type() == MAT_EXPRESSION);
+  bool r_mat = (R.get_type() == MATERIAL) || (R.get_type() == MAT_EXPRESSION);
+
+  if ( (l_mat && !r_mat) || (r_mat && !l_mat))
+  {
+    py_error("Error: unexpected material term in expression.");
+    exit (-1);
+  }
+
   // Special case of propagation in incidence medium.
   
-  if ( (L.get_type() == WAVEGUIDE) && (L.get_d() != 0.0) )
+  if (    ((L.get_type() == WAVEGUIDE) && (L.get_d() != 0.0))
+       || ((L.get_type() == WAVEGUIDE) && (R.get_type() == WAVEGUIDE) 
+                                       && (L.get_wg() == R.get_wg())) )
   {
     Scatterer* sc = interface_cache.get_interface(L.get_wg(), L.get_wg());
     e.add_term(Term(*sc));
@@ -729,7 +744,22 @@ const Expression operator+(const Term& L, const Term& R)
 /////////////////////////////////////////////////////////////////////////////
 
 const Expression operator+(const Expression& L, const Term& R)
-{  
+{
+  // Detect errors.
+
+  bool l_mat = (L.get_term(L.get_size()-1)->get_type() == MATERIAL) 
+            || (L.get_term(L.get_size()-1)->get_type() == MAT_EXPRESSION);
+  bool r_mat = (R.get_type() == MATERIAL) 
+            || (R.get_type() == MAT_EXPRESSION);
+
+  if ( (l_mat && !r_mat) || (r_mat && !l_mat))
+  {
+    py_error("Error: unexpected material term in expression.");
+    exit (-1);
+  }
+
+  // Normal case.
+
   Waveguide* wg1 = L.get_ext();
   Waveguide* wg2 = R.get_inc();
   

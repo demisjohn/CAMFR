@@ -70,6 +70,16 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
   : no_of_periods(no_of_periods_)
 {
   // Check validity of expression.
+
+  for (unsigned int i=0; i<e.get_size(); i++)
+  {    
+    if (    (e.get_term(i)->get_type() == MATERIAL)
+         || (e.get_term(i)->get_type() == MAT_EXPRESSION) )
+    {
+      py_error("Error: unexpected material term in stack expression.");
+      exit (-1);
+    }
+  } 
   
   for (unsigned int i=0; i<e.get_size()-1; i++)
   {    

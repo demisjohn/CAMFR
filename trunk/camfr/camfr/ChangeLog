@@ -1,3 +1,8 @@
+2002-05-07  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* expression.cpp: Detect bad expressions.
+	* stack.cpp: Ditto.
+
 2002-05-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* expression.cpp: Fix Term(Stack).
