@@ -45,11 +45,8 @@ vector<Complex> allroots
 //
 /////////////////////////////////////////////////////////////////////////////
 
-typedef enum {ur, r} ExpandDirection;
-
 vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
                         const Complex& bottom_left, const Complex& top_right,
-                        ExpandDirection dir=ur,
                         Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4);
 
 

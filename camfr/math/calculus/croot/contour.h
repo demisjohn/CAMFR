@@ -47,7 +47,8 @@ class Contour
     Contour(const Complex& bottom_left, const Complex& top_right,
             ComplexFunction& f, unsigned int M,
             Real eps=1e-4, Real mu=1e-4, unsigned int max_k=8);
-    
+    Contour(const Contour&);
+    Contour& operator=(const Contour&);
     ~Contour() {}
 
     bool encloses(const Complex& z) const;
@@ -77,6 +78,12 @@ class Contour
     
     vector<Contour> adjacent_ur() const;
 
+    // Return a contour twice the size of the original one, with the same
+    // bottom right point. Integrals along common line segments
+    // are precalculated and reused.
+
+    Contour double_ur() const;
+
     void set_integrals(Segment segment, const vector<Complex>& ints)
       {integrals[segment] = ints; know_integrals[segment] = true;}
 
@@ -85,6 +92,7 @@ class Contour
     ComplexFunction* get_f()  const {return f;}
     Complex get_bottom_left() const {return bl;}
     Complex get_top_right()   const {return tr;}
+    Complex get_center()      const {return cc;}
     
   protected:
 
@@ -102,6 +110,9 @@ class Contour
 
   private:
 
+    void create_internal_points();
+    void copy_from(const Contour& c);
+    
     vector<Complex> path_integrals
       (unsigned int no_segments, Segment segments[], int signs[]) const;
 
