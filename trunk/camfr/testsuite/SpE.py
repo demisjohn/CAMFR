@@ -36,25 +36,22 @@ class SpE(unittest.TestCase):
 
         d = 2.75
 
-        top = Stack(air(d/2.) + wall)
-        bot = Stack(air(d/2.) + wall)
-
-        top_open = Stack(air(d/2.) + air(d/2.))
-        bot_open = Stack(air(d/2.) + air(d/2.))
+        s      = Stack(air(d/2.) + wall)
+        s_open = Stack(air(d))
 
         source_pos  = Coord(0,0,0)
         orientation = Coord(1,0,0)
 
         # Calculate modification of spontaneous emission.
     
-        cav = Cavity(top, bot)
+        cav = Cavity(s, s)
         cav.set_source(source_pos, orientation)
 
-        cav_open = Cavity(top_open, bot_open)
+        cav_open = Cavity(s_open, s_open)
         cav_open.set_source(source_pos, orientation)
 
-        eta  =   top.     field(Coord(0,0,0)).E1().real   \
-               / top_open.field(Coord(0,0,0)).E1().real 
+        eta  =   s.     field(Coord(0,0,0)).E1().real   \
+               / s_open.field(Coord(0,0,0)).E1().real 
 
         eta_OK = 1.13004085163
 
