@@ -28,12 +28,19 @@ using std::endl;
 Section2D_Mode::Section2D_Mode
   (Polarisation pol, const Complex& kz, Section2D* geom,
    cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_, bool corrected_)
-    : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_), 
+    : SectionMode(pol, kz, geom), Ex(0), Ey(0), Hx(0), Hy(0),
       corrected(corrected_)
-{  
+{
   if (corrected == false)
+  {
+    Ex = new cVector(Ex_->copy());
+    Ey = new cVector(Ey_->copy());
+    Hx = new cVector(Hx_->copy());
+    Hy = new cVector(Hy_->copy()); 
+
     return;
-  
+  }
+
   // Initialise.
 
   int old_N = global.N;
