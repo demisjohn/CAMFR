@@ -818,6 +818,8 @@ cVector fourier(const vector<Complex>& f, const vector<Complex>& disc, int M,
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <fstream>
+
 cMatrix fourier_eps_2D(const vector<Slab*>& slabs, 
                        const vector<Complex>& disc, int M, int N, 
                        bool invert=false, bool extend=true)
@@ -865,8 +867,27 @@ cMatrix fourier_eps_2D(const vector<Slab*>& slabs,
       for (int n=-N; n<=N; n++)
         result(m+M+1,n+N+1) += fourier_1D_x(m+M+1) * fourier_1D_y(n+N+1);
   }
-  
+
   return result;
+
+#if 0
+  // Check result
+
+  Complex Ly = slabs[0]->get_width();
+
+  std::ofstream file("fourier.txt");
+  for (Real x=-real(disc.back()); x<=real(disc.back()); x+=0.01)
+    for (Real y=-real(Ly); y<=real(Ly); y+=0.01)
+    {
+      Complex t=0.0;
+      for (int m=-M; m<=M; m+=1)
+        for (int n=-N; n<=N; n+=1)
+          t += result(m+M+1,n+N+1)
+            *exp(I*Real(m)*2.*pi*x/Lx/2.)*exp(I*Real(n)*2.*pi*y/Ly/2.);
+      file << x << " " << y << " " << real(t) << std::endl;
+    }
+  file.close();
+#endif
 }
 
 
@@ -933,12 +954,12 @@ cMatrix fourier_eps_2D_y_x(const vector<Slab*>& slabs,
     for (int m=-M; m<=M; m++)
       for (int n=-N; n<=N; n++)
       {
-        int i1 = (m+M+1) + (n+N)*(2*M+1);
+        int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
       
         for (int j=-M; j<=M; j++)
           for (int l=-N; l<=N; l++)
           {
-            int i2 = (j+M+1) + (l+N)*(2*M+1);
+            int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
 
             result(i1,i2) += fourier_1D_x(m-j + 2*M+1) *
                                 inv_eps_y(n   + N+1, l + N+1);
@@ -947,6 +968,164 @@ cMatrix fourier_eps_2D_y_x(const vector<Slab*>& slabs,
   }
   
   return result;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//  Returns 'split' 2D fourier expansion of 1/eps.
+//
+//  Also has the option to extend the profile by adding mirror images
+//  at the x=0 and y=0 planes.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cMatrix fourier_eps_2D_y_x_safe(const vector<Slab*>& slabs,
+                                const vector<Complex>& disc, 
+                                int M, int N, bool extend=false)
+{
+  const Complex Lx = disc.back() - disc.front();
+
+  const int MN = (2*M+1)*(2*N+1); 
+  cMatrix result(MN,MN,fortranArray);
+  result = 0.0;
+
+  vector<cMatrix> inv_eps_y_all;
+  
+  for (int i=0; i<slabs.size(); i++)
+  {
+    // Calculate 1D fourier transform of 1/eps(y) profile.
+
+    vector<Complex> disc_i_y(slabs[i]->get_discontinuities());
+    disc_i_y.insert(disc_i_y.begin(), 0.0);
+    
+    vector<Complex> f_i_y;
+    for (int k=0; k<disc_i_y.size()-1; k++)
+      f_i_y.push_back(eps0/slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus)));
+    
+    cVector fourier_1D_y(4*N+1,fortranArray);   
+    fourier_1D_y = fourier(f_i_y, disc_i_y, 2*N, NULL, extend);
+
+    cMatrix eps_y(2*N+1,2*N+1,fortranArray);
+    for (int i1=-N; i1<=N; i1++)
+      for (int i2=-N; i2<=N; i2++)
+        eps_y(i1+N+1,i2+N+1) = fourier_1D_y(i1-i2 + 2*N+1);
+
+    cMatrix inv_eps_y(2*N+1,2*N+1,fortranArray);
+    inv_eps_y.reference(invert(eps_y)); // TODO: exploit Toeplitz.
+    inv_eps_y_all.push_back(inv_eps_y);
+  }
+
+  // Calculate pseudo 1D fourier transform in x direction.
+
+  vector<Complex> disc_x = disc;
+
+  // Fill result matrix.
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {
+      int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+      
+      for (int j=-M; j<=M; j++)
+        for (int l=-N; l<=N; l++)
+        {
+          vector<Complex> f_x;
+          for (int k=0; k<inv_eps_y_all.size(); k++)
+            f_x.push_back(inv_eps_y_all[k](n+N+1,l+N+1));
+
+          cVector fourier_1D_x(4*M+1,fortranArray);
+          fourier_1D_x = fourier(f_x, disc_x, 2*M, NULL, extend);
+  
+          int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+
+          result(i1,i2) = fourier_1D_x(m-j + 2*M+1);
+        }
+    }
+  
+  return result;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//  Returns 'split' 2D fourier expansion of eps.
+//
+//  Also has the option to extend the profile by adding mirror images
+//  at the x=0 and y=0 planes.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cMatrix fourier_eps_2D_y_x_bis(const vector<Slab*>& slabs,
+                           const vector<Complex>& disc, 
+                           int M, int N, bool extend=false)
+{
+  const Complex Lx = disc.back() - disc.front();
+
+  const int MN = (2*M+1)*(2*N+1); 
+  cMatrix result(MN,MN,fortranArray);
+  result = 0.0;
+  
+  for (int i=0; i<slabs.size(); i++)
+  {
+    // Calculate 1D fourier transform of eps(y) profile.
+
+    vector<Complex> disc_i_y(slabs[i]->get_discontinuities());
+    disc_i_y.insert(disc_i_y.begin(), 0.0);
+    
+    vector<Complex> f_i_y;
+    for (int k=0; k<disc_i_y.size()-1; k++)
+      f_i_y.push_back(slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus))/eps0);
+    
+    cVector fourier_1D_y(4*N+1,fortranArray);   
+    fourier_1D_y = fourier(f_i_y, disc_i_y, 2*N, NULL, extend);
+
+    cMatrix eps_y(2*N+1,2*N+1,fortranArray);
+    for (int i1=-N; i1<=N; i1++)
+      for (int i2=-N; i2<=N; i2++)
+        eps_y(i1+N+1,i2+N+1) = fourier_1D_y(i1-i2 + 2*N+1);
+
+    cMatrix inv_eps_y(2*N+1,2*N+1,fortranArray);
+    inv_eps_y.reference(invert(eps_y)); // TODO: exploit Toeplitz.
+
+    //std::cout << i << " " << eps_y << std::endl;
+    //exit (-1); //eps_y << std::endl;
+    //std::cout << std::flush;
+
+    // Calculate pseudo 1D fourier transform in x direction.
+
+    vector<Complex> disc_i_x;
+    disc_i_x.push_back(disc[i]);
+    disc_i_x.push_back(disc[i+1]);
+
+    vector<Complex> f_i_x; 
+    f_i_x.push_back(1.0);
+
+    cVector fourier_1D_x(4*M+1,fortranArray);
+    fourier_1D_x = fourier(f_i_x, disc_i_x, 2*M, &Lx, extend);
+
+    // Fill result matrix.
+
+    for (int m=-M; m<=M; m++)
+      for (int n=-N; n<=N; n++)
+      {
+        int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+      
+        for (int j=-M; j<=M; j++)
+          for (int l=-N; l<=N; l++)
+          {
+            int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+
+            result(i1,i2) += fourier_1D_x(m-j + 2*M+1) *
+                                inv_eps_y(n   + N+1, l + N+1);
+          }
+      } 
+  }
+
+  cMatrix inv_result(MN,MN,fortranArray);
+  inv_result.reference(invert(result));  
+  return inv_result;
 }
 
 
@@ -967,7 +1146,7 @@ void rotate_slabs(const vector<Slab*>& slabs, const vector<Complex>& disc,
 
   disc_rot->clear();
   disc_rot->push_back(0.0);
-  for (int i=0; i<slabs.size(); i++)
+   for (int i=0; i<slabs.size(); i++)
   {
     vector<Complex> disc_i = slabs[i]->get_discontinuities();
     
@@ -1049,36 +1228,6 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   }
 #endif
 
-#if 0
-  vector<Complex> disc(discontinuities);
-  disc.insert(disc.begin(), 0.0);
-
-  int M = 40;
-  int N = 40;
-  
-  cMatrix F(2*M+1,2*N+1,fortranArray);
-  F = fourier_eps_2D(slabs, disc, M, N, false, false);
-
-  Complex d_x = disc.back();
-  Complex d_y = slabs[0]->get_width();
-
-  for (Real x=-real(d_x); x<=real(d_x); x+=.25)
-  {
-    for (Real y=-real(d_y); y<=real(d_y); y+=.25)
-    {
-      Complex result = 0.0;
-      for (int m=-M; m<=M; m++)      
-        for (int n=-N; n<=N; n++)
-          result += F(m+M+1,n+N+1)*exp(I*Real(m)*2.*pi/d_x*x)
-                                  *exp(I*Real(n)*2.*pi/d_y*y);
-
-      std::cout << x << " " << y << " " << real(result) << std::endl;
-    }
-  }
-
-  exit(-1);
-#endif
-
   // Calculate M and N.: to do: better approximations
 
   // TODO: speed up by using more .reference.
@@ -1106,7 +1255,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
       N--; // Note: don't do this for HH since it has a dummy solution.
-
+  
   global_section.M = M;
   global_section.N = N; 
 
@@ -1147,17 +1296,17 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   for (int m=-M; m<=M; m++)
     for (int n=-N; n<=N; n++)
     {
-      int i1 = (m+M+1) + (n+N)*(2*M+1);
+      int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
       
       for (int j=-M; j<=M; j++)
         for (int l=-N; l<=N; l++)
         {
-          int i2 = (j+M+1) + (l+N)*(2*M+1);
+          int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
 
-              eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1);
+          eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1);
 
-              if (!Li)
-                inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
+          if (!Li)
+            inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
         }
     }
 
@@ -1179,9 +1328,17 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   if (Li)
   {
-    eps_y_x.reference(fourier_eps_2D_y_x(slabs, disc, M, N, extend));
+    //eps_y_x.reference(fourier_eps_2D_y_x(slabs, disc, M, N, extend));
+    //rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
+    //eps_x_y.reference(fourier_eps_2D_y_x(slabs_rot, disc_rot, N, M, extend));
+
+    eps_y_x.reference(fourier_eps_2D_y_x_safe(slabs,disc,M,N,extend));
     rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
-    eps_x_y.reference(fourier_eps_2D_y_x(slabs_rot, disc_rot, N, M, extend));
+    eps_x_y.reference(fourier_eps_2D_y_x_safe(slabs_rot,disc_rot,N,M,extend));
+
+    //rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
+    //eps_y_x.reference(fourier_eps_2D_y_x_bis(slabs_rot,disc_rot,N,M,extend));
+    //eps_x_y.reference(fourier_eps_2D_y_x    (slabs_rot,disc_rot,N,M,extend));
   }
 
   // Calculate alpha and beta vector.
@@ -1192,10 +1349,10 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   for (int m=-M; m<=M; m++)
     for (int n=-N; n<=N; n++)
     {      
-      int i = (m+M+1) + (n+N)*(2*M+1);
+      int i = (m+M+1) + (n+N)*(2*M+1); // ***
 
       alpha(i) = alpha0 + m*2.*pi/get_width()/2.;
-       beta(i) =  beta0 + n*2.*pi/get_height()/2.;     
+      beta(i) =   beta0 + n*2.*pi/get_height()/2.;
     }
 
   //
@@ -1228,7 +1385,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   
     for (int i1=1; i1<=MN; i1++)
       for (int i2=1; i2<=MN; i2++)
-      {
+       {
         G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
         G(i1,   i2+MN) = -k0*k0 * eps_y_x(i1,i2);        
         G(i1+MN,i2)    =  k0*k0 * eps_x_y(i1,i2);
@@ -1242,7 +1399,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       
       }
 
-    std::cout << "Done Li" << std::endl;
+    std::cout << "Created Li eigenproblem" << std::endl;
   }
 
   //
@@ -1273,6 +1430,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     for (int i1=1; i1<=MN; i1++)
       for (int i2=1; i2<=MN; i2++)
       {
+
         G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
         G(i1,   i2+MN) = -k0*k0 * eps(i1,i2);        
         G(i1+MN,i2)    =  k0*k0 * eps(i1,i2);
@@ -1285,7 +1443,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
         }    
       }
 
-    std::cout << "Done Noponen/Turunen" << std::endl;
+    std::cout << "Created Noponen/Turunen eigenproblem" << std::endl;
   }
 
   // Free rotated slabs.
@@ -1298,7 +1456,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   cMatrix FG(2*MN,2*MN,fortranArray); 
   FG.reference(multiply(F,G));
 
-/*
+
   cVector E(2*MN,fortranArray); 
   cMatrix eig(2*MN,2*MN,fortranArray); 
 
@@ -1320,10 +1478,11 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     //  }
     //std::cout << std::endl;
   }
-*/
+
+  exit (-1);
   
   //
-  // Reduce eigenvalue problem.
+  // Reduced eigenvalue problem.
   //
 
   int M_ = int((m_+1)/2);  
@@ -1724,9 +1883,7 @@ void Section2D::find_modes_from_estimates()
         estimates.push_back(estimates_0[i]);
   }
 
-  // TMP
-
-  //global.N = estimates.size();
+  // global.N = estimates.size(); // TMP
 
   while (estimates.size() > global.N)
   {
