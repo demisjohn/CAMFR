@@ -13,12 +13,7 @@
 #ifndef BESSEL_H
 #define BESSEL_H
 
-#include <complex>
-using namespace std;
-
-typedef double          Real;
-typedef complex<double> Complex;
-
+#include "../../defs.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
