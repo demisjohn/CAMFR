@@ -1,3 +1,6 @@
+-SlabImpl::S_flux
+-check .png extension
+
 CAMFR 3D:
 
 -windows memory leak
@@ -7,6 +10,7 @@ CAMFR 3D:
 -clean up RefSectionMode::field (not used, but still)
 -re-enable symmetry?
 -improve interface of SectionDisp, remove f member of Section
+-rework place where stack gets split up in left and right part (3D_core.py)
 -optimise ref section overlap
 -experiment with ref index, eigenvalues_x
 -Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D, kz=0
