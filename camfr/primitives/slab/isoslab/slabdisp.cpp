@@ -192,7 +192,8 @@ Complex SlabDisp::operator()(const Complex& kt)
     if ( (k == eps.size()-1) && (abs(R_upper) < 1e-10) )
       I_kx_d = 0;
 
-    if (global.solver == ADR) // No scaling to keep the function analytic.
+    if ( (global.solver == ADR) || (global.solver == series) ) 
+    // No scaling to keep the function analytic.
     {
       fw_chunk_end_scaled *= exp(-I_kx_d);      
       bw_chunk_end_scaled *= exp(+I_kx_d);
