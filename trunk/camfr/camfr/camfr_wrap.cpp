@@ -183,9 +183,6 @@ inline void set_upper_wall(SlabWall* w)
 inline void set_beta(const Complex& beta)
   {global.slab_ky = beta;}
 
-inline void set_guided_only(bool b)
-  {global_section.guided_only = b;}
-
 inline void set_mode_surplus(Real l)
   {global.mode_surplus = l;}
 
@@ -195,8 +192,8 @@ inline void set_backward_modes(bool b)
 inline void set_section_solver(Section_solver s)
   {global_section.section_solver = s;}
 
-inline void set_mode_correction(bool b)
-  {global_section.mode_correction = b;}
+inline void set_mode_correction(Mode_correction c)
+  {global_section.mode_correction = c;}
 
 inline int mode_pol(const Mode& m) {return m.pol;}
 
@@ -769,7 +766,21 @@ BOOST_PYTHON_MODULE(_camfr)
 
   scope().attr("OS") = OS;
   scope().attr("NT") = NT; 
-  scope().attr("L")  = L; 
+  scope().attr("L")  = L;   
+
+  // Wrap Mode_correction enum.
+
+  enum_<Mode_correction>("Mode_correction")
+    .value("none",        none)
+    .value("snap",        snap)
+    .value("guided_only", guided_only)
+    .value("full",        full)
+    ;
+
+  scope().attr("none")        = none;
+  scope().attr("snap")        = snap;
+  scope().attr("guided_only") = guided_only;
+  scope().attr("full")        = full;
 
   // Wrap getters and setters for global parameters.
 
@@ -809,7 +820,6 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_lower_PML",              set_lower_PML);
   def("set_circ_PML",               set_circ_PML);
   def("set_beta",                   set_beta);
-  def("set_guided_only",            set_guided_only);  
   def("set_section_solver",         set_section_solver);  
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
