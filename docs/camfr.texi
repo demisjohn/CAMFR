@@ -2065,7 +2065,7 @@ set_N(1)
 core = Material(1.5)
 clad = Material(1.0)
 
-set_section_solver(NT)
+set_section_solver(L)
 set_mode_correction(full)
 
 set_left_wall(H_wall)
@@ -2099,20 +2099,21 @@ For the first step, the user can choose between three plane wave models:
 @itemize @bullet
 @item @code{set_code_solver(OS)}: Omar-Schuenemann: modes of a uniform square waveguide are used in the expansion. Slowly converging, and not really recommended.
 @item @code{set_code_solver(NT)}: waveguide variant of Noponen-Turunen, a grating based Fourier method. Not recommended.
-@item @code{set_code_solver(L)}: Li, a refinement of Noponen-Turunen. Convergest the fastest, but is slighty slower. Recommended.
+@item @code{set_code_solver(L)}: Li, a refinement of Noponen-Turunen. Convergest the fastest, but is slighty slower. Default and recommended.
 @end itemize
 
-The line @code{s = Section(all, 100, 40)} means we use 100 plane waves in the first stage, and refine it using 40 1D modes in each Slab during the second stage. @code{all} can be any 2D stack, including those fabricated with the @code{Geometry} function.
+The line @code{s = Section(all, 100, 40)} means we use 100 plane waves in the first stage, and refine it using 40 1D modes in each Slab during the second stage. @code{all} can be any 2D stack, including those fabricated with the @code{Geometry} function. Note: currently the 100 is a rough estimate: the software will print out how many modes were actually used.
 
 The user has the option of choosing which modes get refined during the second stage: 
 
 @itemize @bullet
 @item @code{set_mode_correction(full)}: all modes.
 @item @code{set_mode_correction(guided_only)}: only guided modes
-@item @code{set_mode_correction(snap)}: don't refine any modes, but set numerical noise on the imaginary part of @code{kz} for guided modes to zero.
+@item @code{set_mode_correction(snap)}: don't refine any modes, but set numerical noise on the imaginary part of @code{kz} for guided modes to zero (obsolete)..
+@item @code{set_mode_correction(none)}: don't refine any modes.
 @end itemize
 
-When you're only interested in the modes of a @code{Section}, and not putting @code{Section}s together is a @code{Stack}, @code{set_mode_correction(full)} is the way to go, as it is more accurate. For a full 3D model with different  @code{Section}s however, such an approach can be very time-consuming, especially in the calculation of the overlap integrals, which are much quicker in a plane wave basis. In that case, it's better to use @code{guided_only} or @code{snap}. @code{snap} is the fastest, but can sometimes require a lot of plane waves to get accurate results. @code{guided_only} is a hybrid approach, which is more accurate, but can sometimes miss a mode. When using @code{guided_only}, it's adviseable to use @code{set_orthogonal(False)} as well, as using a mixture of two expansion sets somewhat distorts the mode orthogonality.
+When you're only interested in the modes of a @code{Section}, and not putting @code{Section}s together is a @code{Stack}, @code{set_mode_correction(full)} is the way to go, as it is more accurate. For a full 3D model with different  @code{Section}s however, such an approach can be very time-consuming, especially in the calculation of the overlap integrals, which are much quicker in a plane wave basis. In that case, it's better to use @code{guided_only} or @code{none}. @code{none} is the fastest, but can sometimes require a lot of plane waves to get accurate results. @code{guided_only} is a hybrid approach, which is more accurate, but can sometimes miss a mode. When using @code{guided_only}, it's adviseable to use @code{set_orthogonal(False)} as well, as using a mixture of two expansion sets somewhat distorts the mode orthogonality.
 
 Some loose remarks:
 
