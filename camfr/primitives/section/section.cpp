@@ -298,7 +298,6 @@ Section::Section(Expression& expression, int M1, int M2)
     if (s)
     {
       Complex eps_i = s->eps_avg();
-      std::cout << i  << " " << eps_i/eps0 << std::endl;
       if (real(eps_i) > real(max_eps))
       {
         max_eps = eps_i;
@@ -1069,8 +1068,8 @@ cMatrix fourier_eps_2D_y_x_safe(const vector<Slab*>& slabs,
 /////////////////////////////////////////////////////////////////////////////
 
 cMatrix fourier_eps_2D_y_x_bis(const vector<Slab*>& slabs,
-                           const vector<Complex>& disc, 
-                           int M, int N, bool extend=false)
+                               const vector<Complex>& disc, 
+                               int M, int N, bool extend=false)
 {
   const Complex Lx = disc.back() - disc.front();
 
