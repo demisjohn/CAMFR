@@ -844,6 +844,6 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
   }
   catch(...)
   {
-    handle_exception();
+    //handle_exception();
   }
 }
