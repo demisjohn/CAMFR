@@ -247,6 +247,7 @@ class Section2D : public SectionImpl
     void find_modes_by_sweep();
 
     cVector estimate_kz2();
+    cVector estimate_kz2_li();
 
     std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.

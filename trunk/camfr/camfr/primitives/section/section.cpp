@@ -682,6 +682,183 @@ cVector Section2D::estimate_kz2()
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// fourier
+//
+//  Returns fourier expansion of order m = -M,...,M of a piecewise 
+//  continuous function f given by:
+//
+//    disc[0] -> disc[1]   : f[0]
+//    ...
+//    disc[n] -> disc[n+1] : f[n]
+//
+//  Basis functions are exp(j.m.2.pi/d.x). (d can be overridden).
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector fourier(const vector<Complex>& f, const vector<Complex>& disc, int M,
+                const Complex* d=0)
+{
+  const Complex D = d ? *d : disc.back() - disc.front();
+  const Complex K = 2.*pi/D;
+
+  cVector result(2*M+1,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+  {
+    Complex result_m = 0.0;
+
+    for (unsigned int k=0; k<int(disc.size()-1); k++)
+    {
+      Complex factor;
+      if (m==0)
+        factor = disc[k+1]-disc[k];
+      else
+      {
+        const Complex t = -I*Real(m)*K;
+        factor = (exp(t*disc[k+1])-exp(t*disc[k])) / t;
+      }
+
+      result_m += factor * f[k];
+    }
+    
+    result(m+M+1) = result_m / D;
+  }
+
+  if (abs(D) < 1e-12)
+    result = 0.0;
+  
+  return result;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//  Returns 2D fourier expansion of order m_x = -M,...,M and n_y = -N,...,N 
+//  of dielectric profile give by a sequence of slabs:
+//
+//    disc[0] -> disc[1]   : slabs[0]
+//    ...
+//    disc[n] -> disc[n+1] : slabs[n]
+//
+//  Basis functions are exp(j.m.2.pi/d.x).exp(j.n.2.pi/d.y).
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cMatrix fourier_eps_2D(const vector<Slab*>& slabs, 
+                       const vector<Complex>& disc, int M, int N)
+{
+  const Complex Lx = disc.back() - disc.front();
+  cMatrix result(2*M+1,2*N+1,fortranArray);
+  result = 0.0;
+  
+  for (int i=0; i<slabs.size(); i++)
+  {
+    // Calculate 1D fourier transform of eps(y) profile.
+
+    vector<Complex> disc_i_y(slabs[i]->get_discontinuities());
+    disc_i_y.insert(disc_i_y.begin(), 0.0);
+    
+    vector<Complex> f_i_y;
+    for (int k=0; k<disc_i_y.size()-1; k++)
+      f_i_y.push_back(slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus)));
+    
+    cVector fourier_1D_y(2*N+1,fortranArray);   
+    fourier_1D_y = fourier(f_i_y, disc_i_y, N);
+
+    // Calculate pseudo 1D fourier transform in x direction.
+
+    vector<Complex> disc_i_x;
+    disc_i_x.push_back(disc[i]);
+    disc_i_x.push_back(disc[i+1]);
+
+    vector<Complex> f_i_x; 
+    f_i_x.push_back(1.0);
+
+    cVector fourier_1D_x(2*M+1,fortranArray);
+    fourier_1D_x = fourier(f_i_x, disc_i_x, M, &Lx);
+
+    // Calculate 2D fourier transform.
+
+    for (int m=-M; m<=M; m++)
+      for (int n=-N; n<=N; n++)
+        result(m+M+1,n+N+1) += fourier_1D_x(m+M+1) * fourier_1D_y(n+N+1);
+  }
+  
+  return result;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section2D::find_modes_from_series()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector Section2D::estimate_kz2_li()
+{
+#if 0
+  vector<Complex> disc;  
+  vector<Complex> f;
+
+  disc.push_back(0.0);
+  f.push_back(0.0);
+  disc.push_back(1.0);
+  f.push_back(1.0);  
+  disc.push_back(2.0);
+  f.push_back(0.0);  
+  disc.push_back(4.0);
+  
+  int M = 10;
+  cVector F(2*M+1, fortranArray);
+  F = fourier(f,disc,M);
+
+  for (Real x=0; x<=4; x+=.1)
+  {
+    Complex result = 0.0;
+    for (int m=-M; m<=M; m++)
+      result += F(m+M+1)*exp(I*Real(m)*2.*pi/4.*x);
+
+    std::cout << x << " " << real(result) 
+              << " " << imag(result) << std::endl;
+  }
+#endif
+
+#if 0
+  vector<Complex> disc(discontinuities);
+  disc.insert(disc.begin(), 0.0);
+
+  int M = 20;
+  int N = 20;
+  
+  cMatrix F(2*M+1,2*N+1,fortranArray);
+  F = fourier_eps_2D(slabs, disc, M, N);
+
+  Complex d_x = disc.back();
+  Complex d_y = slabs[0]->get_width();
+
+  for (Real x=0; x<=real(d_x); x+=.05)
+  {
+    for (Real y=0; y<=real(d_y); y+=.05)
+    {
+      Complex result = 0.0;
+      for (int m=-M; m<=M; m++)      
+        for (int n=-N; n<=N; n++)
+          result += F(m+M+1,n+N+1)*exp(I*Real(m)*2.*pi/d_x*x)
+                                  *exp(I*Real(n)*2.*pi/d_y*y)/eps0;
+
+      std::cout << x << " " << y << " " << real(result) << std::endl;
+    }
+  }
+#endif
+
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Section2D::find_modes_from_series()
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -738,7 +915,11 @@ void Section2D::find_modes_from_series()
     Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
     
     cVector kz2(M1,fortranArray);
-    kz2 = estimate_kz2();
+
+    if (global.eigen_calc == arnoldi)
+      kz2 = estimate_kz2_li();
+    else
+      kz2 = estimate_kz2();
 
     //for (unsigned int i=1; i<=kz2.size(); i++)
     //  std::cout << "raw " << i << " "
