@@ -319,10 +319,3 @@ Field BlochMode::field(const Coord& coord) const
   
   return f;
 }
-
-
-
-
-
-
-
