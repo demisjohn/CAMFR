@@ -1,9 +1,7 @@
--bug: stack field for points in incidence or exit medium
--push limit for # lateral periods
--infstack recalc modes, inf*(notation), diagslab, unexpected powerflow
- in bandgap crow_wg
--default planar::set_theta (Peter)
--improve documentation for Planar
+-tutorial7.py: expr += material_term
+-push limit for # lateral periods, more tests, traceroot tuning.
+-docs: Planar, InfStack, geometry, correct windows path, change sign PML,
+ division
 
 
 CAMFR 3D
@@ -24,20 +22,21 @@ MEDIUM TERM:
 -more general handling of decoupled waveguides
 
 -eliminate warning for zero transmission through wall when calculating 
- fields in stack.
+ fields in stack
 
--implementation of flipped stacks.
+-implementation of flipped stacks
+-easier notation for InfStack: inf*(expression)
 
 -prevent GC of temporary objects in expressions (walls, flipped, infstack)
 
--new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
- Ability to cache field profiles and speed up.
--stack field on layer discontinuity: speed up by not propagating.
+-new function: stack::field(r0, r1, delta_r) to calc field on a grid,
+ ability to cache field profiles and speed up
+-stack field on layer discontinuity: speed up by not propagating
 -cleverer inc/ext_field_expansion that does not calculate internal fields
  when not needed
 
--implement Bloch modes for MonoScatterers
--speed up Bloch for symmetric structures
+-implement Bloch modes for MonoScatterers, InfStack for DiagScatters
+-speed up Bloch for symmetric structures?
 
 -investigate worse convergence for TM modes
 
@@ -55,7 +54,7 @@ MEDIUM TERM:
 
 -making stripping of executable dependent on debug switches
 
--implement CoordStretcher for slabs
+-implement CoordStretcher for slabs?
 -automatic setting of global.orthogonal
 -explicitly return *all* modes found in Cavity::find_all_modes
 -make 'precision' dynamic
@@ -75,9 +74,8 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
--build: Eliminate as many makefiles as possible, slab_global.beta
+-build: eliminate as many makefiles as possible, slab_global.beta
 -remove set_precision_enhancement and friends
--make material.get_eps_mu
 -get rid of S_T, T_T in field_calc
 -make the C++ naming convention more uniform and in sync with Python names
  (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)

@@ -20,12 +20,12 @@ air  = Material(1.0)
 
 # Define stack.
 
-PML = 0.1
+PML = -0.1
 
 set_left_wall(slab_H_wall)
 
-slab  = Slab(GaAs(.25) + air(2 - PML*1j))
-space = Slab(air(2.25 - PML*1j))
+slab  = Slab(GaAs(.25) + air(2 + PML*1j))
+space = Slab(air(2.25 + PML*1j))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 
@@ -37,7 +37,7 @@ stack.set_inc_field(inc)
 
 # Save the field to a file.
 
-outfile = open("tutorial6.out",'w')
+outfile = file("tutorial6.out",'w')
 
 for x in arange(0.000, 2.250, 0.100):
     for z in arange(0.000, 0.500, 0.010):
