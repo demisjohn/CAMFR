@@ -1,12 +1,16 @@
-2003-08-08  Peter Bienstman <Peter.Bienstman@ugent.be>
+2004-04-16  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* backward.py: New test.
+
+2003-08-08  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* polariton2.py: New test.
 
-2003-08-06  Peter Bienstman <Peter.Bienstman@ugent.be>
+2003-08-06  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* sudbo.py: New test.
 
-2003-08-01  Peter Bienstman <Peter.Bienstman@ugent.be>
+2003-08-01  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* slab2.py: New test.
 	* stack2.py: Ditto.
