@@ -245,6 +245,7 @@ void Circ_2_closed::ab_TE_TM(Complex* a_TE, Complex* b_TE,
 
   // Calculate bessel functions.
 
+
   Complex J2r, dJ2r, H2r, dH2r;
   Complex J2R, dJ2R, H2R, dH2R;
 
