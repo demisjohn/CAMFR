@@ -14,6 +14,9 @@ class VCSEL(unittest.TestCase):
         
         """VCSEL"""
 
+        print
+        print "Running VCSEL..."
+
         set_lambda(.980)
         set_N(60)
         set_circ_order(1)

@@ -16,6 +16,9 @@ class blazed_grating(unittest.TestCase):
         
         """Blazed grating"""
 
+        print
+        print "Running blazed grating..."
+
         set_lambda(1.55)
         set_N(30)
 

@@ -17,6 +17,9 @@ class SpE(unittest.TestCase):
         
         """Spontaneous emission"""
 
+        print
+        print "Running spontaneous emission..."
+
         set_N(60)
         set_lambda(1)
         set_circ_order(1)

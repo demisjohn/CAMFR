@@ -15,6 +15,9 @@ class substacks(unittest.TestCase):
         
         """Substracks"""
 
+        print
+        print "Running substacks..."
+
         set_lambda(1.1)
         set_N(50)
 
