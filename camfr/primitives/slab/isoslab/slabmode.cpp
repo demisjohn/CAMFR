@@ -173,13 +173,14 @@ Field SlabMode::field(const Coord& coord_) const
 /////////////////////////////////////////////////////////////////////////////
 
 Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz, 
-                         const Complex& kt_, const Slab_M* geom)
+                         const Complex& kt_, const Slab_M* geom,
+                         bool calc_fw)
     : SlabMode(pol, kz, geom), kt(kt_)
 {
   A = (pol == TE) ? 0.0 : 1.0;
   B = (pol == TE) ? 1.0 : 0.0;
 
-  calc_left_right();
+  calc_left_right(calc_fw);
 }
 
 
@@ -205,9 +206,16 @@ Complex safe_mult_(const Complex& a, const Complex& b)
 //
 // Slab_M_Mode::calc_left_right
 //
+//  'right' refers to waves propagating in +x. 
+//   'left' refers to waves propagating in -x.
+//
+//   The amplitudes of these waves can be calculated starting from the
+//   first material (calc_fw == true) or from the last material
+//   (calc_fw = false). 
+//
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M_Mode::calc_left_right()
+void Slab_M_Mode::calc_left_right(bool calc_fw)
 {
   const Slab_M* slab = dynamic_cast<const Slab_M*>(geom);
     
@@ -238,11 +246,11 @@ void Slab_M_Mode::calc_left_right()
     kx.push_back(kx_i);
   }
 
-   left.clear();
-  right.clear();
-
   Complex R_wall_l = l_wall ? l_wall->get_R12() : -1.0;
   Complex R_wall_r = r_wall ? r_wall->get_R12() : -1.0;
+
+  Complex R_wall_inc = calc_fw ? R_wall_l : R_wall_r;
+  Complex R_wall_ext = calc_fw ? R_wall_r : R_wall_l;
   
   // Calculate forward and backward plane wave expansion coefficients
   // at the interfaces.
@@ -253,16 +261,27 @@ void Slab_M_Mode::calc_left_right()
   Complex fw_chunk_begin_scaled;
   Complex bw_chunk_begin_scaled;
 
-  if (!l_wall)
+  SlabWall* inc_wall = calc_fw ? l_wall : r_wall;
+
+  if (!inc_wall)
   {
     fw_chunk_begin_scaled =  1.0;
     bw_chunk_begin_scaled = -1.0;
   }
   else
-    l_wall->get_start_field(&bw_chunk_begin_scaled, &fw_chunk_begin_scaled);
+    inc_wall->get_start_field(&bw_chunk_begin_scaled, &fw_chunk_begin_scaled);
 
-  right.push_back(fw_chunk_begin_scaled);
-   left.push_back(bw_chunk_begin_scaled);
+  if (calc_fw == false)
+  {
+    Complex swap = fw_chunk_begin_scaled;
+    fw_chunk_begin_scaled = bw_chunk_begin_scaled;
+    bw_chunk_begin_scaled = swap;
+  }
+
+  vector<Complex> fw, bw;
+  
+  fw.push_back(fw_chunk_begin_scaled);
+  bw.push_back(bw_chunk_begin_scaled);
    
   // Loop through chunks and relate fields at the end of each chunk to
   // those at the beginning of the chunk.
@@ -270,13 +289,17 @@ void Slab_M_Mode::calc_left_right()
   Complex fw_chunk_end_scaled;
   Complex bw_chunk_end_scaled;
 
-  Complex scaling = 0;
+  Complex scaling = 0.0;
   
-  for (unsigned int k=0; k<slab->materials.size(); k++)
+  int k_start = calc_fw ?             0             : slab->materials.size()-1;
+  int k_stop  = calc_fw ? slab->materials.size()-1  :             0;
+  int delta_k = calc_fw ?             1             :            -1;
+  
+  for (int k=k_start; calc_fw ? k<=k_stop : k>=k_stop; k+=delta_k)
   {
-    unsigned int i1 = (k==0) ? 0 : k-1; // Index incidence medium.
-    unsigned int i2 = k;                // Index exit medium.
-
+    int i1 = (k==k_start) ? k_start : k-delta_k; // Index incidence medium.
+    int i2 = k;                                  // Index exit medium.
+    
     Material* mat1 = slab->materials[i1];
     Material* mat2 = slab->materials[i2];
     
@@ -288,11 +311,11 @@ void Slab_M_Mode::calc_left_right()
   
     // Cross the interface.
     
-    fw_chunk_end_scaled =        (1.0+a)/2.0 * fw_chunk_begin_scaled +
-                          sign * (1.0-a)/2.0 * bw_chunk_begin_scaled;
+    fw_chunk_end_scaled =        (1.0+a)*0.5 * fw_chunk_begin_scaled +
+                          sign * (1.0-a)*0.5 * bw_chunk_begin_scaled;
 
-    bw_chunk_end_scaled = sign * (1.0-a)/2.0 * fw_chunk_begin_scaled +
-                                 (1.0+a)/2.0 * bw_chunk_begin_scaled;
+    bw_chunk_end_scaled = sign * (1.0-a)*0.5 * fw_chunk_begin_scaled +
+                                 (1.0+a)*0.5 * bw_chunk_begin_scaled;
 
     // After a core region, reset the scaling.
 
@@ -304,8 +327,8 @@ void Slab_M_Mode::calc_left_right()
       scaling = 0.0;
     }
 
-    right.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
-     left.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
+    fw.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
+    bw.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
 
     // Propagate in medium and scale along the way, by
     // factoring out and discarding the positive exponentials.
@@ -313,10 +336,10 @@ void Slab_M_Mode::calc_left_right()
     
     Complex I_kx_d = I * kx[i2] * slab->thicknesses[i2];
 
-    if ( (k == 0) && (abs(R_wall_l) < 1e-10) ) 
+    if ( (k == k_start) && (abs(R_wall_inc) < 1e-10) ) 
       I_kx_d = 0;
 
-    if ( (k == slab->materials.size()-1) && (abs(R_wall_r) < 1e-10) )
+    if ( (k == k_stop ) && (abs(R_wall_ext) < 1e-10) )
       I_kx_d = 0;
 
     if (real(I_kx_d) > 0.0)
@@ -330,13 +353,46 @@ void Slab_M_Mode::calc_left_right()
       scaling -= I_kx_d;
     }
 
-    right.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
-     left.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
+    fw.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
+    bw.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
     
     // Update values for next iteration.
     
     fw_chunk_begin_scaled = fw_chunk_end_scaled;
     bw_chunk_begin_scaled = bw_chunk_end_scaled;
+  }
+
+  // For metallic boundaries, correct for any rounding errors.
+
+  if (real(kz) > imag(kz))
+  {
+    if (abs(R_wall_ext + 1.0) < 1e-10)
+      bw.back() = -fw.back();
+    if (abs(R_wall_ext - 1.0) < 1e-10)
+      bw.back() =  fw.back();
+  }
+
+  // Assemble fw/bw into left/right. Note that the first element in
+  // left/right is always duplicated.
+
+   left.clear();
+  right.clear();
+
+  if (calc_fw)
+  {
+    right = fw;
+     left = bw;
+  }
+  else
+  {
+    right.push_back(bw.back());
+     left.push_back(fw.back());
+
+    for (unsigned int i=bw.size()-1; i>0; i--)
+    {
+      right.push_back(bw[i]);
+       left.push_back(fw[i]);
+    } 
   }
 
   // For open boundary conditions, set the fields at infinity for the
@@ -352,13 +408,10 @@ void Slab_M_Mode::calc_left_right()
   {
      left.back() = 0;
     right.back() = 0;
-  }
+  } 
 
-  // For metallic boundaries, correct for any rounding errors.
-
-  if (real(kz) > imag(kz))
-    if (abs(abs(R_wall_r) - 1.0) < 1e-10)
-      left.back() = -right.back();
+  //for (unsigned int i=0; i<left.size(); i++)
+  //  std::cout << i << left[i] << right[i] << std::endl;
 }
 
 
