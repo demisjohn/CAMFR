@@ -53,13 +53,8 @@ class Slab_M : public SlabImpl
 
     bool no_gain_present() const;
 
-    Complex eps_at(const Coord& coord) const
-      {return materials
-         [index_lookup(coord.c1, coord.c1_limit, discontinuities)]->eps();}
-    
-    Complex mu_at(const Coord& coord) const
-      {return materials
-         [index_lookup(coord.c1, coord.c1_limit, discontinuities)]->mu();}
+    Complex eps_at(const Coord& coord) const;    
+    Complex  mu_at(const Coord& coord) const;
 
     Complex get_width() const
       {return discontinuities[discontinuities.size()-1];}
