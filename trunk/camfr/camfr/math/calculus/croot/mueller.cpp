@@ -99,9 +99,8 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     cout << "Initial value of a = " << z3 << " f(a) = " << f3 << endl;
     cout << "Initial value of b = " << z2 << " f(b) = " << f2 << endl;
   }
-  
-  Complex dz23 = (f2 - f3) / (z2 - z3);
-  Complex z1 = z2 - f2 / dz23;
+
+  Complex z1 = z2 - f2 * (z2 - z3) / (f2 - f3);
 
   // Detect convergence problems.
 
