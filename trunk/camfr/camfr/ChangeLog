@@ -1,3 +1,8 @@
+2002-03-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* scatterer.h: Bug fix for special scatterers.
+	* scatterer.cpp: Ditto.
+
 2002-02-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mode.h: Add support for better sorting of Bloch modes.

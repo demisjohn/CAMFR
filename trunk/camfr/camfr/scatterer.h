@@ -298,10 +298,9 @@ class TransparentScatterer : public DiagScatterer
 {
   public:
 
-    TransparentScatterer(Waveguide& w)
-      : DiagScatterer(w, w) {allocRT(); R12=0; R21=0; T12=1; T21=1;}
+    TransparentScatterer(Waveguide& w) : DiagScatterer(w, w) {}
 
-    void calc_RT() {ext->find_modes();}
+    void calcRT();
 
     Complex get_total_thickness()     const {return 0.0;}
     vector<Material*> get_materials() const {return inc->get_materials();}
@@ -323,10 +322,9 @@ class E_Wall : public DiagScatterer
 {
   public:
 
-    E_Wall(Waveguide& w)
-      : DiagScatterer(w, w) {allocRT(); R12=-1.0; R21=-1.0; T12=0.0; T21=0.0;}
+    E_Wall(Waveguide& w) : DiagScatterer(w, w) {}
       
-    void calc_RT() {ext->find_modes();}
+    void calcRT();
 
     Complex get_total_thickness()     const {return 0.0;}   
     vector<Material*> get_materials() const {return inc->get_materials();}
@@ -348,10 +346,9 @@ class H_Wall : public DiagScatterer
 {
   public:
 
-    H_Wall(Waveguide& w)
-      : DiagScatterer(w, w) {allocRT(); R12=1.0; R21=1.0; T12=0.0; T21=0.0;}
+    H_Wall(Waveguide& w) : DiagScatterer(w, w) {}
 
-    void calc_RT() {ext->find_modes();}
+    void calcRT();
 
     Complex get_total_thickness()     const {return 0.0;}
     vector<Material*> get_materials() const {return inc->get_materials();}
