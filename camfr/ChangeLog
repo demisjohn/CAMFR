@@ -1,3 +1,7 @@
+2005-03-01  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* geometry3d.py: Implement add_flipped.
+
 2005-02-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* camfr_wrap.cpp: Add L_anis solver.

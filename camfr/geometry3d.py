@@ -351,6 +351,7 @@ class Geometry3D:
         
         e = Expression()
         d_z = []
+        final_sections = []
         oldsection = sections[0]
         zsecs = 0
  
@@ -360,11 +361,20 @@ class Geometry3D:
           else:
             e.add(oldsection(zsecs))
             d_z.append(zsecs)
+            final_sections.append(oldsection)
             oldsection = sections[i]
             zsecs = dz
 
         zsecs = (z1-z0) - sum(d_z)
         e.add(oldsection(zsecs))
+        d_z.append(zsecs)
+        final_sections.append(oldsection)
+
+        # Add flipped scatterer.
+
+        if add_flipped:
+          for i in range(len(final_sections)):
+            e.add((final_sections[-i-1])(d_z[-i-1]))
 
         return e
 
