@@ -19,7 +19,7 @@ formats = ['.gif', '.GIF', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP',
 #
 ##############################################################################
 
-def create_window_and_draw(drawobject):
+def _create_window_and_draw(drawobject):
     
     from TkPlotCanvas import Frame, PlotCanvas, TOP, SUNKEN, BOTH, YES
     
@@ -39,7 +39,7 @@ def create_window_and_draw(drawobject):
     
 ##############################################################################
 #
-# scatter_plot.
+# scatter_plot
 #
 ##############################################################################
 
@@ -51,13 +51,13 @@ def scatter_plot(x, y):
     for i in range(len(x)):
         v.append([x[i],y[i]])
         
-    create_window_and_draw(TkPlotCanvas.PolyMarker(v, fillcolor='white'))
+    _create_window_and_draw(TkPlotCanvas.PolyMarker(v, fillcolor='white'))
 
 
 
 ##############################################################################
 #
-# Plot a vector.
+# plot_vector
 #
 ##############################################################################
 
@@ -68,27 +68,28 @@ def plot_vector(v):
     pass
     try:
         is2d = v[0][0]
-        create_window_and_draw(TkPlotCanvas.PolyLine(v))
+        _create_window_and_draw(TkPlotCanvas.PolyLine(v))
     except TypeError:
         w = [] 
         for i in range(len(v)):
             w.append([i,v[i]])
-        create_window_and_draw(TkPlotCanvas.PolyLine(w))
+        _create_window_and_draw(TkPlotCanvas.PolyLine(w))
 
 
 
 ##############################################################################
 #
-# plot_scaled_matrix
+# _create_scaled_matrix_plot
 #
-#  Given a colormap with N colors, plots a matrix containing
-#  elements in the range 0..N.
+#  Low-level routine.
+#  Given a colormap with N colors, returns a plot picture of matrix.
+#  The matrix should contain elements in the range 0..N.
 #  r_x is the range for the horizontal axis (matrix columns),
-#  r_y for the vertical axis (rows)
+#  r_y for the vertical axis (rows).
 #
 ##############################################################################
 
-def plot_scaled_matrix(colormap, z, r_x=0, r_y=0):
+def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0):
     
     import Image
     
@@ -132,13 +133,15 @@ def plot_scaled_matrix(colormap, z, r_x=0, r_y=0):
 
 ##############################################################################
 #
-# Plot a matrix.
+# _create_matrix_plot
+#
+#  Low-level routine. Scales matrix and sets colormap.
 #
 ##############################################################################
 
-def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
+def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0):
 
-    import MLab, Tkinter, ImageTk, os, sys
+    import MLab
         
     # Scale z and find appropriate colormap.
     
@@ -161,10 +164,22 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
         z -= zmin
         if (zmax != zmin):
             z *= (len(colormap)-1)/(zmax-zmin)
-            
-    # Write picture to a file or put picture on canvas.
 
-    pic = plot_scaled_matrix(colormap, z, r_x, r_y)
+    return _create_scaled_matrix_plot(colormap, z, r_x, r_y)
+
+
+
+##############################################################################
+#
+# _output_pic
+#
+#  Low_level routine. Writes picture to a file or shows it on canvas.
+#
+##############################################################################
+
+def _output_pic(pic, filename=0):
+
+    import Tkinter, ImageTk, os, sys
     
     if filename:
         if '.' in filename:
@@ -195,13 +210,47 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
 
 ##############################################################################
 #
-# Creates a movie starting from a complex matrix representing phasors.
+# _overlay_pictures
+#
+#  Low_level routine. If contour=1, overlays the contours of pic2 with
+#  pic1. Otherwise the entire pic2 is overlayed with pic1.
 #
 ##############################################################################
 
-def phasormovie(z, r_x=0, r_y=0, filename=0):
+def _overlay_pictures(pic1, pic2, contour):
+
+    if (contour):
+        import ImageFilter, ImageChops
+        return ImageChops.multiply(pic2.filter(ImageFilter.CONTOUR), pic1)
+    else:
+        import Image
+        return Image.blend(pic2, pic1, 0.5)
+
+
+
+##############################################################################
+#
+# Plot a matrix.
+#
+#  High-level routine.
+#
+##############################################################################
+
+def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
+
+    _output_pic(_create_matrix_plot(z, r_x, r_y, colorcode), filename)
+
+
+
+##############################################################################
+#
+# Create a phasor movie.
+#
+##############################################################################
+
+def _create_phasor_movie(z, r_x=0, r_y=0):
     
-    import MLab, Tkinter, ImageTk, gifmaker, os, sys
+    import MLab
     
     # Make movie memory.
     
@@ -217,12 +266,29 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
     # Calculate each frame.
     
     for Nr in range(0,frames):
-        pic = plot_scaled_matrix(colormap, ((z+zmax)*z_scale).real, r_x, r_y)
+        pic = \
+          _create_scaled_matrix_plot(colormap,((z+zmax)*z_scale).real,r_x,r_y)
         movie.append(pic)
         z *= exp(2j*pi/frames)
 
-    # Write the movie to a file if wanted.
-    
+    return movie
+
+
+
+##############################################################################
+#
+# _output_movie
+#
+#  Low_level routine. Writes movie to a file or shows it on canvas.
+#
+##############################################################################
+
+def _output_movie(movie, filename):
+
+    import Tkinter, ImageTk, gifmaker, os, sys
+
+    frames = len(movie)
+
     if filename:
         for Nr in range(0,frames):
             movie[Nr] = movie[Nr].convert("P")  
@@ -242,7 +308,6 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
         print  "Created", userpath
         
     else:
-        
         root = Tkinter.Tk()
         
         # Close window procedure.
@@ -266,6 +331,18 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
                 root.after(int(100))
 
         root.destroy()       
+
+
+
+##############################################################################
+#
+# Creates a movie starting from a complex matrix representing phasors.
+#
+##############################################################################
+
+def phasormovie(z, r_x=0, r_y=0, filename=0):
+
+    _output_movie(_create_phasor_movie(z, r_x, r_y), filename)
 
 
 
@@ -452,6 +529,7 @@ def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
         print "Unsupported argument for plot_n."
 
 
+
 ##############################################################################
 #
 # Plot the field profile of a waveguide mode.
@@ -475,16 +553,31 @@ def plot_field_waveguide(mode, component, r_x):
 #
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
-    
+def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
+                     overlay_n=1, contour=1):
+
     f = zeros([len(r_x),len(r_z)], Float)
 
     for i_x in range(len(r_x)):
-      for i_z in range(len(r_z)):
-        f[len(r_x)-1-i_x,i_z] = \
-              component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        for i_z in range(len(r_z)):
+            f[len(r_x)-1-i_x,i_z] = \
+                  component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    plot_matrix(f, r_z, r_x, filename, colormap)
+    if not overlay_n:
+        return plot_matrix(f, r_z, r_x, filename, colormap)
+
+    # Overlay index profile.
+        
+    n = zeros([len(r_x),len(r_z)], Float)
+        
+    for i_x in range(len(r_x)):
+        for i_z in range(len(r_z)):
+            n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+
+    pic_n = _create_matrix_plot(n, r_z, r_x, whiteblack)
+    pic_f = _create_matrix_plot(f, r_z, r_x, colormap)
+
+    _output_pic(_overlay_pictures(pic_f, pic_n, contour), filename)
 
 
 
@@ -494,7 +587,8 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
 #
 ##############################################################################
 
-def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
+def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
+                            overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Float)
 
@@ -503,7 +597,21 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
         f[len(r_y)-1-i_y,i_x] = \
               component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
 
-    plot_matrix(f, r_x, r_y, filename, colormap)    
+    if not overlay_n:
+        return plot_matrix(f, r_x, r_y, filename, colormap)
+
+    # Overlay index profile.
+        
+    n = zeros([len(r_y),len(r_x)], Float)
+        
+    for i_x in range(len(r_x)):
+        for i_y in range(len(r_y)):
+            n[len(r_y)-1-i_y,i_x] = mode.n(Coord(r_x[i_x], r_y[i_y], 0)).real
+
+    pic_n = _create_matrix_plot(n, r_x, r_y, whiteblack)
+    pic_f = _create_matrix_plot(f, r_x, r_y, colormap)
+
+    _output_pic(_overlay_pictures(pic_f, pic_n, contour), filename)
 
 
 
@@ -513,14 +621,16 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
 #
 ##############################################################################
 
-def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
+def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
+               overlay_n=1, contour=1):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        plot_field_stack(o, component, r1, r2, filename, colormap)
+        plot_field_stack(o,component,r1,r2,filename,colormap,overlay_n,contour)
     elif type(o) == SectionMode:
-        plot_field_section_mode(o, component, r1, r2, filename, colormap)
+        plot_field_section_mode(o,component,r1,r2,filename,colormap,overlay_n,
+                                contour)
     else:
         print "Unsupported argument for plot_field."
         
@@ -532,16 +642,34 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
 #
 ##############################################################################
 
-def animate_field_stack(stack, component, r_x, r_z, filename=0):
-    
+def animate_field_stack(stack, component, r_x, r_z, filename=0,
+                        overlay_n=1, contour=1):
+
     f = zeros([len(r_x),len(r_z)], Complex)
 
     for i_x in range(len(r_x)):
-      for i_z in range(len(r_z)):
-        f[len(r_x)-1-i_x,i_z] = \
-              component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        for i_z in range(len(r_z)):
+            f[len(r_x)-1-i_x,i_z] = \
+                  component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    phasormovie(f, r_z, r_x, filename)
+    if not overlay_n:
+        return phasormovie(f, r_z, r_x, filename)
+
+    # Overlay index profile.
+        
+    n = zeros([len(r_x),len(r_z)], Float)
+        
+    for i_x in range(len(r_x)):
+        for i_z in range(len(r_z)):
+            n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+
+    pic_n = _create_matrix_plot (n, r_z, r_x, whiteblack)
+    mov_f = _create_phasor_movie(f, r_z, r_x)
+
+    for Nr in range(len(mov_f)):
+        mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
+
+    _output_movie(mov_f, filename)        
 
 
 
@@ -551,7 +679,8 @@ def animate_field_stack(stack, component, r_x, r_z, filename=0):
 #
 ##############################################################################
 
-def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
+def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
+                               overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Complex)
 
@@ -560,7 +689,24 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
         f[len(r_y)-1-i_y,i_x] = \
               component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
 
-    phasormovie(f, r_x, r_y, filename)
+    if not overlay_n:
+        return phasormovie(f, r_x, r_y, filename)
+
+    # Overlay index profile.
+        
+    n = zeros([len(r_y),len(r_x)], Float)
+        
+    for i_x in range(len(r_x)):
+        for i_y in range(len(r_y)):
+            n[len(r_y)-1-i_y,i_x] = mode.n(Coord(r_x[i_x], r_y[i_y], 0)).real
+
+    pic_n = _create_matrix_plot (n, r_x, r_y, whiteblack)
+    mov_f = _create_phasor_movie(f, r_x, r_y)
+
+    for Nr in range(len(mov_f)):
+        mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
+
+    _output_movie(mov_f, filename)   
 
 
 
@@ -570,11 +716,13 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
 #
 ##############################################################################
 
-def animate_field(o, component, r1, r2, filename=0):
+def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        animate_field_stack(o, component, r1, r2, filename)
+        animate_field_stack(o,component,r1,r2,filename,overlay_n,contour)
     elif type(o) == SectionMode:
-        animate_field_section_mode(o, component, r1, r2, filename)
+        animate_field_section_mode(o,component,r1,r2,filename,overlay_n,
+                                   contour)
     else:
         print "Unsupported argument for animate_field."
+        

@@ -13,7 +13,7 @@ palet       = 3
 #
 ##############################################################################
 
-def create_window_and_draw(drawobject):
+def _create_window_and_draw(drawobject):
 
     from TkPlotCanvas import Frame, PlotCanvas, TOP, SUNKEN, BOTH, YES
     
@@ -45,7 +45,7 @@ def scatter_plot(x, y):
     for i in range(len(x)):
         v.append([x[i],y[i]])
         
-    create_window_and_draw(TkPlotCanvas.PolyMarker(v, fillcolor='white'))
+    _create_window_and_draw(TkPlotCanvas.PolyMarker(v, fillcolor='white'))
 
 
 
@@ -62,18 +62,18 @@ def plot_vector(v):
     pass
     try:
         is2d = v[0][0]
-        create_window_and_draw(TkPlotCanvas.PolyLine(v))
+        _create_window_and_draw(TkPlotCanvas.PolyLine(v))
     except TypeError:
         w = [] 
         for i in range(len(v)):
             w.append([i,v[i]])
-        create_window_and_draw(TkPlotCanvas.PolyLine(w))
+        _create_window_and_draw(TkPlotCanvas.PolyLine(w))
 
 
 
 ##############################################################################
 #
-# plot_scaled_matrix
+# _plot_scaled_matrix
 #
 #  Given a colormap with N colors, plots a matrix containing
 #  elements in the range 0..N.
@@ -82,7 +82,7 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def plot_scaled_matrix(root, colormap, z, r_x=0, r_y=0):
+def _plot_scaled_matrix(root, colormap, z, r_x=0, r_y=0):
 
     import Tkinter
     
@@ -164,7 +164,7 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
     # Put picture on canvas.
 
     root = Tkinter.Tk()  
-    pic = plot_scaled_matrix(root, colormap, z, r_x, r_y)
+    pic = _plot_scaled_matrix(root, colormap, z, r_x, r_y)
     pic.pack()
     root.mainloop()
 
@@ -198,8 +198,8 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
     
     root = Tkinter.Tk()    
     for Nr in range(0,frames):
-        pic = plot_scaled_matrix(root, colormap, ((z+zmax)*z_scale).real,
-                                 r_x, r_y)
+        pic = _plot_scaled_matrix(root, colormap, ((z+zmax)*z_scale).real,
+                                  r_x, r_y)
         movie.append(pic)
         z *= exp(2j*pi/frames)
         
@@ -429,7 +429,8 @@ def plot_field_waveguide(mode, component, r_x):
 #
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
+def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
+                     overlay_n=1, contour=1):
     
     f = zeros([len(r_x),len(r_z)], Float)
 
@@ -448,7 +449,8 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
 #
 ##############################################################################
 
-def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
+def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
+                            overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Float)
 
@@ -467,7 +469,8 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
 #
 ##############################################################################
 
-def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
+def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
+               overlay_n=1, contour=1):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
@@ -486,7 +489,8 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
 #
 ##############################################################################
 
-def animate_field_stack(stack, component, r_x, r_z, filename=0):
+def animate_field_stack(stack, component, r_x, r_z, filename=0,
+                        overlay_n=1, contour=1):
     
     f = zeros([len(r_x),len(r_z)], Complex)
 
@@ -505,7 +509,8 @@ def animate_field_stack(stack, component, r_x, r_z, filename=0):
 #
 ##############################################################################
 
-def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
+def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
+                               overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Complex)
 
@@ -524,7 +529,7 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
 #
 ##############################################################################
 
-def animate_field(o, component, r1, r2, filename=0):
+def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
         animate_field_stack(o, component, r1, r2, filename)
