@@ -30,15 +30,10 @@ Complex Planar::kt = 0.0;
 
 Planar::Planar(Material& m) : MonoWaveguide(&m)
 { 
-  // Create mode and set E_cst and H_cst to get correct results in the
-  // generalised Fresnel formulas (interface.cpp).
-  // 'mode' is deleted in ~MonoWaveguide.
-  
-  Complex kz = calc_kz();
-  
-  mode = (global.polarisation == TE)
-    ? new Mode(TE, kz, -kz,        0.0,        1.0/core->mur() )
-    : new Mode(TM, kz, -kz, 1.0/core->epsr(),     0.0);
+  // Create dummy mode and update it in calc_kz.
+
+  mode = new Mode(TE, 0.0, 0.0, 0.0, 0.0);
+  calc_kz();
 }
 
 
@@ -49,8 +44,10 @@ Planar::Planar(Material& m) : MonoWaveguide(&m)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex Planar::calc_kz()
+Complex Planar::calc_kz() const
 {
+  // Calculate kz.
+
   Complex k  = 2.0*pi / global.lambda * core->n() * sqrt(core->mur());
   Complex kz = sqrt(k*k - kt*kt);
 
@@ -64,6 +61,26 @@ Complex Planar::calc_kz()
     if (imag(kz) > 0)
       kz = -kz;
   }
+
+  // Update mode and set E_cst and H_cst to get correct results in the
+  // generalised Fresnel formulas (interface.cpp).
+
+  mode->pol   = global.polarisation;
+  mode->kz    =  kz; 
+  mode->kz_bw = -kz;
+
+  if (global.polarisation == TE)
+  {
+    mode->A = 0.0;
+    mode->B = 1.0/core->mur();
+  }
+  else
+  {
+    mode->A = 1.0/core->epsr();
+    mode->B = 0.0;
+  }
+
+  // Return result.
 
   return kz;
 }

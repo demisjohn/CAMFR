@@ -41,6 +41,9 @@ class Planar : public MonoWaveguide
 
     bool operator==(const Waveguide& w) const
       {return *core == *(dynamic_cast<const Planar*>(&w)->core);}
+
+    Complex get_kz()    const {calc_kz(); return mode->kz;}
+    Complex get_kz_bw() const {calc_kz(); return mode->kz_bw;}
         
     static void set_kt(const Complex& kt_)
       {kt = kt_;}
@@ -54,8 +57,7 @@ class Planar : public MonoWaveguide
     Complex c1_size() const 
       {return 0.0;}
 
-    void find_modes()
-      {mode->kz = calc_kz(); mode->kz_bw = -mode->kz;}
+    void find_modes() {calc_kz();}
 
   protected:
 
@@ -64,7 +66,7 @@ class Planar : public MonoWaveguide
     
     static Complex kt;
 
-    Complex calc_kz();
+    Complex calc_kz() const;
 };
 
     
