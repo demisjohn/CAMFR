@@ -448,12 +448,12 @@ std::vector<Complex> mueller
     vector<Complex> deflate;
  
     for (unsigned int j=0; j<z_final.size(); j++)
-      if (    (abs(z_final[j]-z_cluster) < 0.5)
-           && (abs(z_final[j]-z_cluster) > 1e-3) )
+      if (    (abs(z_final[j]-z_cluster) < 0.05)
+           && (abs(z_final[j]-z_cluster) > 0.001) )
       {
-        //std::cout << "Deflating " << i << " " << (*transform)(z_final[j]) 
+        //std::cout << "Deflating other "<<i<< " " <<(*transform)(z_final[j]) 
         //          << std::endl;
-        deflate.push_back(z_final[j]);
+        //deflate.push_back(z_final[j]);
       }
 
     z_final.push_back(z_cluster);
@@ -461,8 +461,8 @@ std::vector<Complex> mueller
     for (unsigned int j=1; j<duplicates[i].size(); j++)
     {
       deflate.push_back(z_cluster);
-      //std::cout << "Deflating " << i << " " << (*transform)(z_cluster)
-      //          << std::endl;
+      std::cout << "Deflating cluster " << i << " " << (*transform)(z_cluster)
+                << std::endl;
       
       bool error = false;
       bool verbose = verbosity == 2; 
