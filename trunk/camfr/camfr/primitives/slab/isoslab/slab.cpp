@@ -154,6 +154,48 @@ bool Slab_M::no_gain_present() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Slab_M::eps_at
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Slab_M::eps_at(const Coord& coord) const
+{
+  unsigned int i = index_lookup(coord.c1, coord.c1_limit, discontinuities);
+  
+  if (i == materials.size())
+  {
+    py_error("Warning: coordinate out of range in eps_at. Restricting it.");
+    i = materials.size()-1;
+  }
+
+  return materials[i]->eps();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::mu_at
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Slab_M::mu_at(const Coord& coord) const
+{
+  unsigned int i = index_lookup(coord.c1, coord.c1_limit, discontinuities);
+  
+  if (i == materials.size())
+  {
+    py_error("Warning: coordinate out of range in mu_at. Restricting it.");
+    i = materials.size()-1;
+  }
+
+  return materials[i]->mu();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Slab_M::find_modes
 //
 /////////////////////////////////////////////////////////////////////////////
