@@ -99,7 +99,7 @@ vector<Complex> SlabImpl::disc_intersect(const SlabImpl* medium_II) const
   for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
     disc.push_back(medium_II->discontinuities[k]);
 
-  remove_copies(&disc, 1e-6);
+  remove_copies(&disc, 1e-9);
 
   sort(disc.begin(), disc.end(), RealSorter());
 
@@ -352,7 +352,7 @@ cVector SlabImpl::expand_field(ComplexFunction* f, Real eps)
     // Speed up convergence by splitting the integrals.
 
     for(int k=0; k<int(disc.size()-1); k++)
-    {
+    {     
       Real begin = real(disc[k]);
       Real end   = real(disc[k+1]);
       coef(m) +=   patterson_quad(f_re, begin, end, eps);
