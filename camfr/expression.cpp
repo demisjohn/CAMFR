@@ -437,7 +437,7 @@ Term::Term(Stack& st_)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Term::Term(const Expression& e, unsigned int N_=1)
+Term::Term(const Expression& e, unsigned int N_)
   : mat(NULL), wg(NULL), d(0.0), N(N_)
 {
   ex = new Expression(e);
@@ -515,6 +515,8 @@ bool Term::all_layers_uniform() const
       return st->all_layers_uniform();
 
   }
+
+  return false;
 }
 
 
@@ -545,6 +547,8 @@ bool Term::no_gain_present() const
     case (STACK_EXPRESSION):
       return st->no_gain_present();
   }
+
+  return true;
 }
 
 
@@ -572,6 +576,8 @@ bool Term::is_mono() const
     case (STACK_EXPRESSION):
       return st->is_mono();
   }
+
+  return false;
 }
 
 
@@ -599,6 +605,8 @@ Waveguide* Term::get_inc() const
     case (STACK_EXPRESSION):
       return st->get_inc();
   }
+
+  return 0;
 }
 
 
@@ -626,6 +634,8 @@ Waveguide* Term::get_ext() const
     case (STACK_EXPRESSION):
       return st->get_ext();
   }
+
+  return 0;
 }
 
 

@@ -36,11 +36,13 @@ class Scatterer
     Waveguide* get_inc() const {return inc;}
     Waveguide* get_ext() const {return ext;}
 
-    virtual Complex get_total_thickness()     const {}
-    virtual vector<Material*> get_materials() const {}
-    virtual bool contains(const Material& m)  const {}
-    virtual bool no_gain_present()            const {}
-    virtual bool recalc_needed()              const {}
+    virtual vector<Material*> get_materials() 
+      const {vector<Material*> m; return m;}
+
+    virtual Complex get_total_thickness()     const {return 0.0;}
+    virtual bool contains(const Material& m)  const {return false;}
+    virtual bool no_gain_present()            const {return true;}
+    virtual bool recalc_needed()              const {return true;}
     
     virtual bool all_layers_uniform() const {return false;}
     virtual bool is_mono() const {return false;}

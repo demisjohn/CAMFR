@@ -82,8 +82,8 @@ class Waveguide
     virtual bool  recalc_needed()                const = 0;
     virtual int   N()                            const = 0;
     virtual Mode* get_mode(int i)                const = 0;
-    virtual Mode* get_fw_mode(int i)             const {};
-    virtual Mode* get_bw_mode(int i)             const {};
+    virtual Mode* get_fw_mode(int i)             const {return 0;};
+    virtual Mode* get_bw_mode(int i)             const {return 0;};
     virtual void  find_modes()                         = 0;
     
     const Waveguide_length operator()(const Complex& d=0.0) const;
@@ -151,7 +151,7 @@ class MultiWaveguide : public Waveguide
 
     virtual Real S_flux(const FieldExpansion& f,
                         Real c1_start, Real c1_stop,
-                        Real precision = 1e-10) const {};
+                        Real precision = 1e-10) const {return 0.0;};
 
     void add_mode(Mode& m)
       {modeset.push_back(&m);}

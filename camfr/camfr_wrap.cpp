@@ -266,9 +266,11 @@ cVector from_python(PyObject* o, type<const cVector&>)
 PyObject* to_python(cMatrix& c)
 { 
   int dim[2]; dim[0] = global.N; dim[1] = global.N;
+
+  cMatrix c_bak; c_bak = c.copy();
   
   PyArrayObject* result = (PyArrayObject*)
-    PyArray_FromDimsAndData(2, dim, PyArray_CDOUBLE, (char*) c.data());
+    PyArray_FromDimsAndData(2, dim, PyArray_CDOUBLE, (char*) c_bak.data());
 
   // Reflect Fortran storage orders.
 
@@ -427,7 +429,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 {
   try
   {
-    module_builder camfr("camfr_work");
+     boost::python::module_builder camfr("camfr_work");
 
     import_array();
     
@@ -440,50 +442,50 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap Limit enum.
     
-    camfr.add(make_ref(Plus), "Plus");
-    camfr.add(make_ref(Min),  "Min");
+    camfr.add(boost::python::make_ref(Plus), "Plus");
+    camfr.add(boost::python::make_ref(Min),  "Min");
     
     // Wrap Solver enum.
     
-    camfr.add(make_ref(ADR),   "ADR");
-    camfr.add(make_ref(track), "track");
+    camfr.add(boost::python::make_ref(ADR),   "ADR");
+    camfr.add(boost::python::make_ref(track), "track");
 
     // Wrap Stability enum.
     
-    camfr.add(make_ref(normal), "normal");
-    camfr.add(make_ref(extra),  "extra");
-    camfr.add(make_ref(SVD),    "SVD");
+    camfr.add(boost::python::make_ref(normal), "normal");
+    camfr.add(boost::python::make_ref(extra),  "extra");
+    camfr.add(boost::python::make_ref(SVD),    "SVD");
 
     // Wrap Field_calc enum.
     
-    camfr.add(make_ref(T_T), "T_T");
-    camfr.add(make_ref(S_T), "S_T");
-    camfr.add(make_ref(S_S), "S_S");
+    camfr.add(boost::python::make_ref(T_T), "T_T");
+    camfr.add(boost::python::make_ref(S_T), "S_T");
+    camfr.add(boost::python::make_ref(S_S), "S_S");
 
     // Wrap Bloch_calc enum.
 
-    camfr.add(make_ref(GEV), "GEV");
-    camfr.add(make_ref(T),   "T");
+    camfr.add(boost::python::make_ref(GEV), "GEV");
+    camfr.add(boost::python::make_ref(T),   "T");
 
     // Wrap Eigen_calc enum.
 
-    camfr.add(make_ref(lapack),  "lapack");
-    camfr.add(make_ref(arnoldi), "arnoldi");
+    camfr.add(boost::python::make_ref(lapack),  "lapack");
+    camfr.add(boost::python::make_ref(arnoldi), "arnoldi");
 
     // Wrap Polarisation enum.
     
-    camfr.add(make_ref(unknown), "unknown");
-    camfr.add(make_ref(TEM),     "TEM");
-    camfr.add(make_ref(TE),      "TE");
-    camfr.add(make_ref(TM),      "TM");
-    camfr.add(make_ref(HE),      "HE");
-    camfr.add(make_ref(EH),      "EH");    
-    camfr.add(make_ref(TE_TM),   "TE_TM");
+    camfr.add(boost::python::make_ref(unknown), "unknown");
+    camfr.add(boost::python::make_ref(TEM),     "TEM");
+    camfr.add(boost::python::make_ref(TE),      "TE");
+    camfr.add(boost::python::make_ref(TM),      "TM");
+    camfr.add(boost::python::make_ref(HE),      "HE");
+    camfr.add(boost::python::make_ref(EH),      "EH");    
+    camfr.add(boost::python::make_ref(TE_TM),   "TE_TM");
 
     // Wrap Fieldtype enum.
 
-    camfr.add(make_ref(cos_type), "cos_type");
-    camfr.add(make_ref(sin_type), "sin_type");    
+    camfr.add(boost::python::make_ref(cos_type), "cos_type");
+    camfr.add(boost::python::make_ref(sin_type), "sin_type");    
 
     // Wrap getters and setters for global parameters.
       
@@ -518,16 +520,18 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap Coord.
 
-    class_builder<Coord> Coord_(camfr, "Coord");
+    boost::python::class_builder<Coord> Coord_(camfr, "Coord");
 
-    Coord_.def(constructor<const Complex&, const Complex&, const Complex&>());
-    Coord_.def(constructor<const Complex&, const Complex&, const Complex&,
-                                 Limit,          Limit,          Limit>());
+    Coord_.def(boost::python::constructor
+               <const Complex&, const Complex&, const Complex&>());
+    Coord_.def(boost::python::constructor
+               <const Complex&, const Complex&, const Complex&,
+                      Limit,          Limit,          Limit>());
     Coord_.def(&Coord::repr, "__repr__");
 
     // Wrap Field.
 
-    class_builder<Field> Field_(camfr, "Field");
+    boost::python::class_builder<Field> Field_(camfr, "Field");
 
     Field_.def(field_E1,      "E1");
     Field_.def(field_E2,      "E2");
@@ -541,30 +545,32 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap FieldExpansion.
 
-    class_builder<FieldExpansion> FieldExpansion_(camfr, "FieldExpansion");
+    boost::python::class_builder<FieldExpansion> 
+      FieldExpansion_(camfr, "FieldExpansion");
     
     FieldExpansion_.def(&FieldExpansion::field, "field");
     FieldExpansion_.def(&FieldExpansion::repr,  "__repr__");
     
     // Wrap Material_length.
 
-    class_builder<Material_length>
+    boost::python::class_builder<Material_length>
       Material_length_(camfr, "Material_length");
     
     // Wrap BaseMaterial.
 
-    class_builder<BaseMaterial> BaseMaterial_(camfr, "BaseMaterial");
+    boost::python::class_builder<BaseMaterial> 
+      BaseMaterial_(camfr, "BaseMaterial");
 
     BaseMaterial_.def(&material_to_term, "__call__");
     
     // Wrap Material.
 
-    class_builder<Material> Material_(camfr, "Material");
+    boost::python::class_builder<Material> Material_(camfr, "Material");
     Material_.declare_base(BaseMaterial_);
     Material_.def(&material_to_term, "__call__");
     
-    Material_.def(constructor<const Complex&>());
-    Material_.def(constructor<const Complex&, const Complex&>());
+    Material_.def(boost::python::constructor<const Complex&>());
+    Material_.def(boost::python::constructor<const Complex&,const Complex&>());
     Material_.def(&Material::n,    "n");
     Material_.def(&Material::epsr, "epsr");
     Material_.def(&Material::mur,  "mur");
@@ -575,12 +581,12 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap Waveguide_length.
 
-    class_builder<Waveguide_length>
+    boost::python::class_builder<Waveguide_length>
       Waveguide_length_(camfr, "Waveguide_length");
     
     // Wrap Waveguide.
 
-    class_builder<Waveguide> Waveguide_(camfr, "Waveguide");
+    boost::python::class_builder<Waveguide> Waveguide_(camfr, "Waveguide");
 
     Waveguide_.def(&Waveguide::get_core,    "core");
     Waveguide_.def(&Waveguide::eps_at,      "eps");
@@ -596,7 +602,9 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap MultiWaveguide.
 
-    class_builder<MultiWaveguide> MultiWaveguide_(camfr, "MultiWaveguide");
+    boost::python::class_builder<MultiWaveguide> 
+      MultiWaveguide_(camfr, "MultiWaveguide");
+
     MultiWaveguide_.declare_base(Waveguide_);
 
     MultiWaveguide_.def(&MultiWaveguide::field_from_source,
@@ -605,13 +613,15 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     
     // Wrap MonoWaveguide.
 
-    class_builder<MonoWaveguide> MonoWaveguide_(camfr, "MonoWaveguide");
+    boost::python::class_builder<MonoWaveguide> 
+      MonoWaveguide_(camfr, "MonoWaveguide");
+
     MonoWaveguide_.declare_base(Waveguide_);
     MonoWaveguide_.def(&waveguide_to_term, "__call__"); // tmp  
 
     // Wrap Mode.
 
-    class_builder<Mode> Mode_(camfr, "Mode");
+    boost::python::class_builder<Mode> Mode_(camfr, "Mode");
 
     Mode_.def(&Mode::field,    "field");
     Mode_.def(&Mode::n_eff,    "n_eff");
@@ -621,7 +631,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap Scatterer.
 
-    class_builder<Scatterer> Scatterer_(camfr, "Scatterer");
+    boost::python::class_builder<Scatterer> Scatterer_(camfr, "Scatterer");
 
     Scatterer_.def(&Scatterer::calcRT,  "calc");
     Scatterer_.def(&Scatterer::freeRT,  "free");
@@ -634,54 +644,57 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     
     // Wrap MultiScatterer.
 
-    class_builder<MultiScatterer> MultiScatterer_(camfr, "MultiScatterer");
+    boost::python::class_builder<MultiScatterer> 
+      MultiScatterer_(camfr, "MultiScatterer");
     MultiScatterer_.declare_base(Scatterer_);
 
     // Wrap DenseScatterer.
 
-    class_builder<DenseScatterer> DenseScatterer_(camfr, "DenseScatterer");
+    boost::python::class_builder<DenseScatterer> 
+      DenseScatterer_(camfr, "DenseScatterer");
     DenseScatterer_.declare_base(MultiScatterer_);
 
     // Wrap DiagScatterer.
 
-    class_builder<DiagScatterer> DiagScatterer_(camfr, "DiagScatterer");
+    boost::python::class_builder<DiagScatterer> 
+      DiagScatterer_(camfr, "DiagScatterer");
     DiagScatterer_.declare_base(MultiScatterer_);
 
     // Wrap MonoScatterer.
 
-    class_builder<MonoScatterer> MonoScatterer_(camfr, "MonoScatterer");
+    boost::python::class_builder<MonoScatterer> 
+      MonoScatterer_(camfr, "MonoScatterer");
     MonoScatterer_.declare_base(Scatterer_);
 
     // Wrap FlippedScatterer.
 
-    class_builder<FlippedScatterer>
+    boost::python::class_builder<FlippedScatterer>
       FlippedScatterer_(camfr, "FlippedScatterer");
     FlippedScatterer_.declare_base(MultiScatterer_);
 
-    FlippedScatterer_.def(constructor<MultiScatterer&>());
+    FlippedScatterer_.def(boost::python::constructor<MultiScatterer&>());
 
     // Wrap E_Wall.
 
-    class_builder<E_Wall> E_Wall_(camfr, "E_Wall");
-    E_Wall_.declare_base(DiagScatterer_);
-    
-    E_Wall_.def(constructor<Waveguide&>());
-  
-        
+    boost::python::class_builder<E_Wall> E_Wall_(camfr, "E_Wall");
+    E_Wall_.declare_base(DiagScatterer_);   
+
+    E_Wall_.def(boost::python::constructor<Waveguide&>());
+      
     // Wrap H_Wall.
 
-    class_builder<H_Wall> H_Wall_(camfr, "H_Wall");
+    boost::python::class_builder<H_Wall> H_Wall_(camfr, "H_Wall");
     H_Wall_.declare_base(DiagScatterer_);
     
-    H_Wall_.def(constructor<Waveguide&>());
+    H_Wall_.def(boost::python::constructor<Waveguide&>());
 
     // Wrap Expression.
 
-    class_builder<Expression> Expression_(camfr, "Expression");
+    boost::python::class_builder<Expression> Expression_(camfr, "Expression");
 
-    Expression_.def(constructor<>());
-    Expression_.def(constructor<const Term&>());
-    Expression_.def(constructor<const Expression&>());
+    Expression_.def(boost::python::constructor<>());
+    Expression_.def(boost::python::constructor<const Term&>());
+    Expression_.def(boost::python::constructor<const Expression&>());
     Expression_.def(&Expression::flatten,             "flatten");
     Expression_.def(&Expression::repr,                "__repr__");
     Expression_.def(&Expression::operator+=,          "add"); // todo: iadd
@@ -689,16 +702,18 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     Expression_.def(EX_PLUS_TERM_F(Stack),            "__add__");
     Expression_.def(EX_PLUS_TERM_F(const Expression), "__add__");
     Expression_.def(EX_PLUS_TERM_F(Scatterer),        "__add__");
-    Expression_.def(operators<op_mul>(), right_operand<unsigned int>());
-    Expression_.def(operators<op_mul>(),  left_operand<unsigned int>());
+    Expression_.def(boost::python::operators<boost::python::op_mul>(), 
+                    boost::python::right_operand<unsigned int>());
+    Expression_.def(boost::python::operators<boost::python::op_mul>(),  
+                    boost::python::left_operand<unsigned int>());
     
     // Wrap Term.
 
-    class_builder<Term> Term_(camfr, "Term");
+    boost::python::class_builder<Term> Term_(camfr, "Term");
     
-    Term_.def(constructor<Scatterer&>());
-    Term_.def(constructor<Stack&>());
-    Term_.def(constructor<const Expression&>());
+    Term_.def(boost::python::constructor<Scatterer&>());
+    Term_.def(boost::python::constructor<Stack&>());
+    Term_.def(boost::python::constructor<const Expression&>());
     Term_.def(&Term::get_inc, "inc");
     Term_.def(&Term::get_ext, "ext");
     Term_.def(&Term::repr,    "__repr__");
@@ -706,14 +721,16 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     Term_.def(TERM_PLUS_TERM_F(const Term, Stack),            "__add__");
     Term_.def(TERM_PLUS_TERM_F(const Term, const Expression), "__add__");
     Term_.def(TERM_PLUS_TERM_F(const Term, Scatterer),        "__add__");
-    Term_.def(operators<op_mul>(), right_operand<unsigned int>());
-    Term_.def(operators<op_mul>(),  left_operand<unsigned int>());    
+    Term_.def(boost::python::operators<boost::python::op_mul>(), 
+              boost::python::right_operand<unsigned int>());
+    Term_.def(boost::python::operators<boost::python::op_mul>(),  
+              boost::python::left_operand<unsigned int>());    
     
     // Wrap Stack.
     
-    class_builder<Stack> Stack_(camfr, "Stack");
+    boost::python::class_builder<Stack> Stack_(camfr, "Stack");
     
-    Stack_.def(constructor<const Expression&>());
+    Stack_.def(boost::python::constructor<const Expression&>());
     Stack_.def(&Stack::calcRT,              "calc");
     Stack_.def(&Stack::freeRT,              "free");
     Stack_.def(&Stack::get_inc,             "inc");
@@ -748,9 +765,9 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     
     // Wrap Cavity.
 
-    class_builder<Cavity> Cavity_(camfr, "Cavity");
+    boost::python::class_builder<Cavity> Cavity_(camfr, "Cavity");
 
-    Cavity_.def(constructor<Stack&, Stack&>());
+    Cavity_.def(boost::python::constructor<Stack&, Stack&>());
     Cavity_.def(cavity_find_modes_in_region_3, "find_modes_in_region");
     Cavity_.def(cavity_find_modes_in_region_7, "find_modes_in_region");
     Cavity_.def(cavity_find_mode_2,            "find_mode");
@@ -761,10 +778,10 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap BlochStack.
 
-    class_builder<BlochStack> BlochStack_(camfr, "BlochStack");
+    boost::python::class_builder<BlochStack> BlochStack_(camfr, "BlochStack");
     BlochStack_.declare_base(MultiWaveguide_);
 
-    BlochStack_.def(constructor<const Expression&>());
+    BlochStack_.def(boost::python::constructor<const Expression&>());
     BlochStack_.def(blochstack_get_mode,              "mode");
     BlochStack_.def(&BlochStack::get_total_thickness, "length");
     BlochStack_.def(&BlochStack::get_beta_vector,     "beta_vector");
@@ -772,7 +789,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     
     // Wrap BlochMode.
 
-    class_builder<BlochMode> BlochMode_(camfr, "BlochMode");
+    boost::python::class_builder<BlochMode> BlochMode_(camfr, "BlochMode");
     BlochMode_.declare_base(Mode_);
 
     BlochMode_.def(&BlochMode::fw_field, "fw_field");
@@ -781,40 +798,43 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap InfStack.
 
-    class_builder<InfStack> InfStack_(camfr, "InfStack");
+    boost::python::class_builder<InfStack> InfStack_(camfr, "InfStack");
     InfStack_.declare_base(DenseScatterer_);
 
-    InfStack_.def(constructor<const Expression&>());
-    InfStack_.def(constructor<const Expression&,const Complex&>()); // tmp
+    InfStack_.def(boost::python::constructor<const Expression&>());
+    InfStack_.def(boost::python::constructor
+                  <const Expression&,const Complex&>()); // tmp
     InfStack_.def(&InfStack::get_R12,  "R12");
 
     // Wrap RealFunction.
 
-    class_builder<RealFunction> RealFunction_(camfr, "RealFunction");
+    boost::python::class_builder<RealFunction> 
+      RealFunction_(camfr, "RealFunction");
 
     RealFunction_.def(&RealFunction::times_called, "times_called");
     RealFunction_.def(&RealFunction::operator(),   "__call__");
 
     // Wrap ComplexFunction.
 
-    class_builder<ComplexFunction> ComplexFunction_(camfr, "ComplexFunction");
+    boost::python::class_builder<ComplexFunction> 
+      ComplexFunction_(camfr, "ComplexFunction");
 
     ComplexFunction_.def(&ComplexFunction::times_called, "times_called");
     ComplexFunction_.def(&ComplexFunction::operator(),   "__call__");
 
     // Wrap Planar.
 
-    class_builder<Planar> Planar_(camfr, "Planar");
+    boost::python::class_builder<Planar> Planar_(camfr, "Planar");
     Planar_.declare_base(MonoWaveguide_);
     
-    Planar_.def(constructor<Material&>());
+    Planar_.def(boost::python::constructor<Material&>());
     Planar_.def(&Planar::set_theta, "set_theta");
     Planar_.def(&Planar::repr,     "__repr__"); // tmp
     Planar_.def(waveguide_to_term, "__call__"); // tmp 
     
     // Wrap Circ.
 
-    class_builder<Circ> Circ_(camfr, "Circ");
+    boost::python::class_builder<Circ> Circ_(camfr, "Circ");
     Circ_.declare_base(MultiWaveguide_);
     
     Circ_.def(constructor<const Term&>());
@@ -824,23 +844,26 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap SlabWall.
 
-    class_builder<SlabWall> SlabWall_(camfr, "SlabWall");
+    boost::python::class_builder<SlabWall> SlabWall_(camfr, "SlabWall");
 
     SlabWall_.def(&SlabWall::get_R12, "R");
 
     // Wrap SlabWallMixed.
 
-    class_builder<SlabWallMixed> SlabWallMixed_(camfr, "SlabWallMixed");
+    boost::python::class_builder<SlabWallMixed> 
+      SlabWallMixed_(camfr, "SlabWallMixed");
     SlabWallMixed_.declare_base(SlabWall_);
 
     SlabWallMixed_.def(constructor<const Complex&, const Complex&>());
 
     // Wrap SlabWall_TBC.
 
-    class_builder<SlabWall_TBC> SlabWall_TBC_(camfr, "SlabWall_TBC");
+    boost::python::class_builder<SlabWall_TBC> 
+      SlabWall_TBC_(camfr, "SlabWall_TBC");
     SlabWall_TBC_.declare_base(SlabWall_);
 
-    SlabWall_TBC_.def(constructor<const Complex&, const Material&>());
+    SlabWall_TBC_.def(boost::python::constructor
+                      <const Complex&, const Material&>());
 
     camfr.add(make_ref(slab_E_wall),    "slab_E_wall");
     camfr.add(make_ref(slab_H_wall),    "slab_H_wall");
@@ -848,27 +871,29 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap SlabWall_PC.
 
-    class_builder<SlabWall_PC> SlabWall_PC_(camfr, "SlabWall_PC");
+    boost::python::class_builder<SlabWall_PC> 
+      SlabWall_PC_(camfr, "SlabWall_PC");
     SlabWall_PC_.declare_base(SlabWall_);
 
     SlabWall_PC_.def(constructor<const Expression&>());
 
     // Wrap SlabDisp.
 
-    class_builder<SlabDisp> SlabDisp_(camfr, "SlabDisp");
+    boost::python::class_builder<SlabDisp> SlabDisp_(camfr, "SlabDisp");
     SlabDisp_.declare_base(ComplexFunction_);
 
-    SlabDisp_.def(constructor<Expression&, Real>());
-    SlabDisp_.def(constructor<Expression&, Real, SlabWall*, SlabWall*>());
+    SlabDisp_.def(boost::python::constructor<Expression&, Real>());
+    SlabDisp_.def(boost::python::constructor
+                  <Expression&, Real, SlabWall*, SlabWall*>());
     SlabDisp_.def(&SlabDisp::operator(), "__call__"); // tmp   
 
     // Wrap Slab.
 
-    class_builder<Slab> Slab_(camfr, "Slab");
+    boost::python::class_builder<Slab> Slab_(camfr, "Slab");
     Slab_.declare_base(MultiWaveguide_);
 
-    Slab_.def(constructor<const Term&>());
-    Slab_.def(constructor<const Expression&>());
+    Slab_.def(boost::python::constructor<const Term&>());
+    Slab_.def(boost::python::constructor<const Expression&>());
 
     Slab_.def(&Slab::set_left_wall,  "set_left_wall");
     Slab_.def(&Slab::set_right_wall, "set_right_wall");
@@ -878,21 +903,24 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     // Wrap SectionDisp.
 
-    class_builder<SectionDisp> SectionDisp_(camfr, "SectionDisp");
+    boost::python::class_builder<SectionDisp> 
+      SectionDisp_(camfr, "SectionDisp");
     SectionDisp_.declare_base(ComplexFunction_);
 
-    SectionDisp_.def(constructor<Stack&, Stack&, Real, int>());
+    SectionDisp_.def(boost::python::constructor<Stack&, Stack&, Real, int>());
     SectionDisp_.def(&SectionDisp::operator(), "__call__"); // tmp
 
     // Wrap Section.
 
-    class_builder<Section> Section_(camfr, "Section");
+    boost::python::class_builder<Section> Section_(camfr, "Section");
     Section_.declare_base(MultiWaveguide_);
 
-    Section_.def(constructor<const Expression&>());
-    Section_.def(constructor<const Expression&,int>());
-    Section_.def(constructor<const Expression&,const Expression&>());
-    Section_.def(constructor<const Expression&,const Expression&,int>());
+    Section_.def(boost::python::constructor<const Expression&>());
+    Section_.def(boost::python::constructor<const Expression&,int>());
+    Section_.def(boost::python::constructor
+                 <const Expression&,const Expression&>());
+    Section_.def(boost::python::constructor
+                 <const Expression&,const Expression&,int>());
 
     Section_.def(&Section::get_width, "width");
     Section_.def(&Section::repr,      "__repr__"); // tmp
