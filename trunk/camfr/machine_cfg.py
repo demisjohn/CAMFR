@@ -40,7 +40,7 @@ library_dirs = ["/home/pbienst/blitz-20001213/lib",
 
 # Library names.
 
-libs = ["bpl", "blitz", "mkl_lapack", "mkl_p3", "guide", "g2c"]
+libs = ["bpl", "blitz", "mkl_lapack", "mkl_def", "guide", "g2c"]
 
 # Command to strip library of excess symbols:
 

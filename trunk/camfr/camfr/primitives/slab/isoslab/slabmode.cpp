@@ -26,11 +26,11 @@ using std::vector;
 
 Complex SlabMode::get_kz() const 
 {
-  if (abs(global_slab.beta) < 1e-10)
+  if (abs(global.slab_ky) < 1e-10)
     return kz;
   else // Rotate kz for off-axis incidence.
   {
-    Complex new_kz = sqrt(kz*kz - pow(global_slab.beta, 2));
+    Complex new_kz = sqrt(kz*kz - pow(global.slab_ky, 2));
 
     if (imag(new_kz) > 0)
       new_kz = -new_kz;
@@ -88,7 +88,7 @@ Field SlabMode::field(const Coord& coord_) const
   // Calculate total field.
   // Note that cs needs to be in sync with generalslab.cpp.
   
-  const Complex sn = global_slab.beta / kz;
+  const Complex sn = global.slab_ky / kz;
   const Complex cs = slab_signedsqrt(1.0 - sn*sn);
   
   Field field;
@@ -105,7 +105,7 @@ Field SlabMode::field(const Coord& coord_) const
     field.H2 = 0.0;
     field.Hz = C * ( right_x - left_x) * kx;
 
-    if (abs(global_slab.beta) > 1e-6)
+    if (abs(global.slab_ky) > 1e-6)
     {
       field.Ez  = -field.E2 * sn / sqrt(cs);
       field.E2 *= cs / sqrt(cs);
@@ -127,7 +127,7 @@ Field SlabMode::field(const Coord& coord_) const
     field.E2 = 0.0;
     field.Ez = C * (-right_x - left_x) * kx;
 
-    if (abs(global_slab.beta) > 1e-6)
+    if (abs(global.slab_ky) > 1e-6)
     {
       field.E2  = field.Ez * sn / sqrt(cs);
       field.Ez *= cs / sqrt(cs);

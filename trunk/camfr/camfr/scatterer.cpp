@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "scatterer.h"
-#include "primitives/slab/generalslab.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -26,7 +25,7 @@ bool MultiScatterer::recalc_needed() const
   if (abs(global.lambda - last_lambda) > eps)
     return true;
 
-  if (abs(global_slab.beta - last_beta) > eps)
+  if (abs(global.slab_ky - last_slab_ky) > eps)
     return true;
 
   if (!global.gain_mat)
@@ -91,7 +90,7 @@ void DenseScatterer::allocRT()
 
   last_lambda   = 0.0;
   last_gain_mat = Material(0.0);
-  last_beta     = 0.0;
+  last_slab_ky  = 0.0;
 }
 
 
@@ -111,7 +110,7 @@ void DenseScatterer::freeRT()
 
   last_lambda   = 0.0;
   last_gain_mat = Material(0.0);
-  last_beta = 0.0;
+  last_slab_ky  = 0.0;
 }
 
 
@@ -136,7 +135,7 @@ void DenseScatterer::copy_RT_from(const DenseScatterer& sc)
   last_lambda = sc.last_lambda;
   if (global.gain_mat) 
     last_gain_mat = sc.last_gain_mat;
-  last_beta = sc.last_beta;
+  last_slab_ky = sc.last_slab_ky;
 }
 
 
@@ -254,7 +253,7 @@ void DiagScatterer::allocRT()
 
   last_lambda   = 0.0;
   last_gain_mat = Material(0.0);
-  last_beta     = 0.0;
+  last_slab_ky  = 0.0;
 }
 
 
@@ -281,7 +280,7 @@ void DiagScatterer::freeRT()
 
   last_lambda   = 0.0;
   last_gain_mat = Material(0.0);
-  last_beta     = 0.0;
+  last_slab_ky  = 0.0;
 }
 
 
@@ -313,7 +312,7 @@ void DiagScatterer::copy_RT_from(const DiagScatterer& sc_d)
   last_lambda = sc_d.last_lambda;
   if (global.gain_mat) 
     last_gain_mat = sc_d.last_gain_mat;
-  last_beta = sc_d.last_beta;
+  last_slab_ky = sc_d.last_slab_ky;
 }
 
 

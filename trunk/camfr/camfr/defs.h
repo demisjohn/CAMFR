@@ -234,6 +234,9 @@ struct Global
 
     // Determines whether special case should be given to degenerate modes.
     bool degenerate;
+
+    // The out-of-plane beta component for slabs.
+    Complex slab_ky;
 };
 
 extern Global global;

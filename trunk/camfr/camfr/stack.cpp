@@ -15,7 +15,6 @@
 #include "S_scheme.h"
 #include "S_scheme_fields.h"
 #include "T_scheme_fields.h"
-#include "primitives/slab/generalslab.h"
 
 using std::vector;
 
@@ -412,7 +411,7 @@ void DenseStack::calcRT()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
-  last_beta = global_slab.beta;
+  last_slab_ky = global.slab_ky;
 }
 
 
@@ -487,7 +486,7 @@ void DiagStack::calcRT()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
-  last_beta = global_slab.beta;
+  last_slab_ky = global.slab_ky;
 }
 
 

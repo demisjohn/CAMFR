@@ -91,11 +91,10 @@ class MultiScatterer : public Scatterer
 
     // The wavelength and gain the matrices were last calculated for,
     // are used to determine if recalculation is needed.
-    // Beta is the out-of-plane ky used in slabs.
 
     Complex  last_lambda;
     Material last_gain_mat;
-    Complex  last_beta;
+    Complex  last_slab_ky;
 };
 
 

@@ -12,7 +12,6 @@
 
 #include "sectionmode.h"
 #include "sectionoverlap.h"
-#include "../slab/generalslab.h"
 
 using std::vector;
 using std::cout;
@@ -35,8 +34,8 @@ Section2D_Mode::Section2D_Mode
   int M = geom->M;
   global.N = geom->M;
 
-  Complex old_beta = global_slab.beta;
-  global_slab.beta = kz;
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = kz;
 
   // Do eigenvalue calculation with eigenvectors.
 
@@ -75,7 +74,7 @@ Section2D_Mode::Section2D_Mode
   geom->right.get_interface_field(&right_interface_field);
 
   global.N = old_N;
-  global_slab.beta = old_beta;
+  global.slab_ky = old_beta;
 }
 
 
@@ -95,8 +94,8 @@ Field Section2D_Mode::field(const Coord& coord) const
   int old_N = global.N;
   global.N = section->M;
 
-  Complex old_beta = global_slab.beta;
-  global_slab.beta = kz;
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = kz;
 
   section->left .set_interface_field( left_interface_field);
   section->right.set_interface_field(right_interface_field);
@@ -139,7 +138,7 @@ Field Section2D_Mode::field(const Coord& coord) const
   }
 
   global.N = old_N;
-  global_slab.beta = old_beta;
+  global.slab_ky = old_beta;
 
   // Transform fields from Stack to Section coordinates.
 
@@ -170,8 +169,8 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
   int old_N = global.N;
   global.N = section->M;
 
-  Complex old_beta = global_slab.beta;
-  global_slab.beta = kz;
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = kz;
 
   section->left .set_interface_field( left_interface_field);
   section->right.set_interface_field(right_interface_field);
@@ -201,7 +200,7 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
   }
 
   global.N = old_N;
-  global_slab.beta = old_beta;
+  global.slab_ky = old_beta;
 }
 
 
