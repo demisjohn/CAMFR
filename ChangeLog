@@ -1,3 +1,9 @@
+CAMFR 1.0.1:
+
+ - improved stability for Slabs
+ - Python doesn't terminate abruptly anymore when faced with some user
+   errors or lost modes
+
 CAMFR 1.0:
 
  - faster binaries, especially under Windows, which can be up to three

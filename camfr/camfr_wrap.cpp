@@ -178,11 +178,11 @@ inline void set_circ_PML(Real PML)
   global_circ.PML = PML;
 }
 
-inline void set_left_wall(Section_wall_type w)
-  {global_section.leftwall = w;}
+inline void set_left_wall(long w)
+  {global_section.leftwall = Section_wall_type(w);}
 
-inline void set_right_wall(Section_wall_type w)
-  {global_section.rightwall = w;}
+inline void set_right_wall(long w)
+  {global_section.rightwall = Section_wall_type(w);}
 
 inline void set_lower_wall(SlabWall* w)
   {global_slab.lowerwall = w;}
@@ -1052,6 +1052,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   class_<Section, bases<MultiWaveguide> >
   ("Section", args<Expression&>())
+    .def_init(args<const Term&>())
     .def_init(args<Expression&, int>())
     .def_init(args<Expression&, Expression&>())
     .def_init(args<Expression&, Expression&, int>())
