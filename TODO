@@ -1,10 +1,4 @@
--drop precion in slab to 1e-11, fix NaN in calc_fw == true
--push limit for # lateral periods, more tests (inc. 3D), traceroot tuning
--docs: Planar, geometry, InfStack, change sign PML, division, gc, 
- stack.n(), set_precision, set_degenerate
-
-
-CAMFR 3D
+CAMFR 3D:
 
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
@@ -39,6 +33,7 @@ MEDIUM TERM:
 -speed up Bloch for symmetric structures?
 
 -investigate worse convergence for TM modes
+-generalise: make lambda complex
 
 -tune new complex zero finder
 -related: make definition of C_upperright uniform
@@ -49,7 +44,8 @@ MEDIUM TERM:
 -use asymptotic expansions for circular structures
 -more general interactive visualisation of mode profiles (phase, components)
 -write a GUI for defining complicated structures
--integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy?
+-integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy,
+ PyQtw  (http://gerard.vermeulen.free.fr) ?
 -add Python docbook comments
 
 -making stripping of executable dependent on debug switches
@@ -74,6 +70,7 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-use scons shared library support
 -build: eliminate as many makefiles as possible, slab_global.beta
 -remove set_precision_enhancement and friends
 -get rid of S_T, T_T in field_calc
@@ -95,8 +92,7 @@ LOW PRIORITY
 -split scaling (Peter)
 -scaling for complex modes, scaling when tracing (Peter)
 
--influence of normalisation on observables (sign sqrt, factor, ..)
- check sqrt(power) -> -1 norm (Peter)
+-check sqrt(power) -> -1 norm (Peter)
 -related: consolidate signedsqrt in material.h and circ.cpp (Peter)
 
 
