@@ -1,5 +1,9 @@
 2002-03-06 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+        * slab.cpp: Make use of new interface for traceroot.
+
+2002-03-06 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
         * slab.cpp: Fix typo.
 
 2002-03-06 Peter Bienstman  <Peter.Bienstman@rug.ac.be>

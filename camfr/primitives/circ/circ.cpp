@@ -483,6 +483,9 @@ void Circ_2::find_modes_from_scratch_by_track()
     (radius[0], real(radius[1]), co_lossless, cl_lossless, lambda,
      global_circ.order, guided, hankel, global.polarisation);
 
+  vector<Complex> guided_disp_lossless_params 
+    = guided_disp_lossless.get_params();
+
   Wrap_imag_to_real guided_wrap(guided_disp_lossless);
     
   vector<Real> kr2_guided_lossless_real;
@@ -509,16 +512,17 @@ void Circ_2::find_modes_from_scratch_by_track()
     (radius[0], radius[1], *material[0], *material[1],
      lambda, global_circ.order, guided, hankel, global.polarisation);
 
+  guided_disp_params = guided_disp.get_params();
+
   vector<Complex> forbidden;
   forbidden.push_back(0.0);
   forbidden.push_back(+k0*sqrt(delta_k));
   forbidden.push_back(-k0*sqrt(delta_k));
   
   vector<Complex> kr2_guided =
-    traceroot(kr2_guided_lossless,guided_disp_lossless,guided_disp,
+    traceroot(kr2_guided_lossless, guided_disp_lossless,
+              guided_disp_lossless_params, guided_disp_params,
               forbidden, global.sweep_steps);
-
-  guided_disp_params = guided_disp.get_params();
   
   cout << "Calls to guided dispersion relation: "
        << guided_disp_lossless.times_called() + guided_disp.times_called()
@@ -538,6 +542,8 @@ void Circ_2::find_modes_from_scratch_by_track()
   Circ_2_closed_rad_lossless rad_disp_lossless
     (radius[0], real(radius[1]), co_lossless, cl_lossless,
      lambda, global_circ.order, hankel, global.polarisation);
+
+  vector<Complex> rad_disp_lossless_params = rad_disp_lossless.get_params();
   
   Wrap_real_to_real rad_wrap(rad_disp_lossless);
   
@@ -564,6 +570,8 @@ void Circ_2::find_modes_from_scratch_by_track()
     (radius[0], radius[1], *material[0], *material[1],
      lambda, global_circ.order, rad, hankel, global.polarisation);
 
+  rad_disp_params = rad_disp.get_params();
+
   for (unsigned int i=0; i<kr2_guided.size(); i++)
     forbidden.push_back(kr2_guided[i]);
   
@@ -571,19 +579,19 @@ void Circ_2::find_modes_from_scratch_by_track()
 
   if (global.chunk_tracing == true)
     kr2_rad = traceroot_chunks
-      (kr2_rad_lossless, rad_disp_lossless, rad_disp,
+      (kr2_rad_lossless, rad_disp_lossless, 
+       rad_disp_lossless_params, rad_disp_params,
        forbidden, global.sweep_steps);
   else
     kr2_rad = traceroot
-      (kr2_rad_lossless, rad_disp_lossless, rad_disp,
+      (kr2_rad_lossless, rad_disp_lossless,
+       rad_disp_lossless_params, rad_disp_params,
        forbidden, global.sweep_steps);
 
   for (unsigned int i=0; i<kr2_rad.size(); i++)
     if (    ( (imag(kr2_rad[i]) < 0) && (hankel == kind_1) )
          || ( (imag(kr2_rad[i]) > 0) && (hankel == kind_2) ) )
       kr2_rad[i] = -kr2_rad[i]; // Pick stable sign.
-  
-  rad_disp_params = rad_disp.get_params();
   
   cout << "Calls to radiation dispersion relation: "
        << rad_disp_lossless.times_called() + rad_disp.times_called()
@@ -762,16 +770,11 @@ void Circ_2::find_modes_by_sweep()
   }
 
   Circ_2_closed
-    guided_disp_new(radius[0], radius[1], *material[0], *material[1],
-                    lambda, global_circ.order, guided, hankel,
-                    global.polarisation);
+    guided_disp(radius[0], radius[1], *material[0], *material[1],
+                lambda, global_circ.order, guided, hankel,
+                global.polarisation);
 
-  Circ_2_closed
-    guided_disp_old(radius[0], radius[1], *material[0], *material[1],
-                    lambda, global_circ.order, guided, hankel,
-                    global.polarisation);
-
-  guided_disp_old.set_params(guided_disp_params);
+  vector<Complex> guided_disp_params_new = guided_disp.get_params();
 
   vector<Complex> forbidden;
   forbidden.push_back(0.0);
@@ -779,10 +782,11 @@ void Circ_2::find_modes_by_sweep()
   forbidden.push_back(-k0*sqrt(delta_k));
 
   vector<Complex> kr2_guided =
-    traceroot(kr2_guided_old, guided_disp_old, guided_disp_new,
+    traceroot(kr2_guided_old, guided_disp, 
+              guided_disp_params, guided_disp_params_new,
               forbidden, global.sweep_steps);
 
-  guided_disp_params = guided_disp_new.get_params();
+  guided_disp_params = guided_disp_params_new;
 
   // Radiation and complex modes.
 
@@ -794,30 +798,28 @@ void Circ_2::find_modes_by_sweep()
   }
 
   Circ_2_closed
-    rad_disp_new(radius[0], radius[1], *material[0], *material[1],
-                 lambda, global_circ.order, rad, hankel, global.polarisation);
+    rad_disp(radius[0], radius[1], *material[0], *material[1],
+             lambda, global_circ.order, rad, hankel, global.polarisation);
 
-  Circ_2_closed
-    rad_disp_old(radius[0], radius[1], *material[0], *material[1],
-                 lambda, global_circ.order, rad, hankel, global.polarisation);
-
-  rad_disp_old.set_params(rad_disp_params);
+  vector<Complex> rad_disp_params_new = rad_disp.get_params();
 
   for (unsigned int i=0; i<kr2_guided.size(); i++)
     forbidden.push_back(kr2_guided[i]);
 
   vector<Complex> kr2_rad = 
-    traceroot(kr2_rad_old, rad_disp_old, rad_disp_new,
+    traceroot(kr2_rad_old, rad_disp, 
+              rad_disp_params, rad_disp_params_new,
               forbidden, global.sweep_steps);
-
-  rad_disp_params = rad_disp_new.get_params();
 
   // Backward modes. These are also included in the radiation modes,
   // but we need to keep track of them seperately.
 
   vector<Complex> kr2_backward_new =
-      traceroot(kr2_backward, rad_disp_old, rad_disp_new,
+      traceroot(kr2_backward, rad_disp, 
+                rad_disp_params, rad_disp_params_new,
                 forbidden, global.sweep_steps);
+
+  rad_disp_params = rad_disp.get_params();
   kr2_backward = kr2_backward_new;
 
   // Join modes.

@@ -408,12 +408,12 @@ void Slab_M::find_modes_from_scratch_by_track()
   
   SlabDisp disp(materials, thicknesses, lambda, l_wall, r_wall);
   params = disp.get_params();
-  
-  SlabDisp disp_lossless(materials, thicknesses, lambda, l_wall, r_wall);
+
   vector<Complex> params_lossless;
   for (unsigned int i=0; i<params.size(); i++)
     params_lossless.push_back(real(params[i]));
-  disp_lossless.set_params(params_lossless);
+
+  disp.set_params(params_lossless);
 
   // Make a rough estimate of separation between modes.
 
@@ -433,7 +433,7 @@ void Slab_M::find_modes_from_scratch_by_track()
   // I: Find propagating modes of lossless structure.
   //
   
-  Wrap_imag_to_abs prop_wrap(disp_lossless);
+  Wrap_imag_to_abs prop_wrap(disp);
 
   Real prop_kt_end_lossless
     = abs(k0*sqrt(Complex(max_n*max_n - min_n*min_n)));
@@ -484,7 +484,7 @@ void Slab_M::find_modes_from_scratch_by_track()
   vector<Complex> kt_lossless;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
   { 
-    const Real fx = abs(disp_lossless(I*kt_prop_lossless[i]));
+    const Real fx = abs(disp(I*kt_prop_lossless[i]));
     
     if (fx > 1e-2)
     {
@@ -497,7 +497,7 @@ void Slab_M::find_modes_from_scratch_by_track()
       Real kt_new;
       
       if ( (!branchcut) && (global.precision_enhancement == 1) )
-        kt_new = imag(mueller(disp_lossless, I*kt_prop_lossless[i],
+        kt_new = imag(mueller(disp, I*kt_prop_lossless[i],
                               I*kt_prop_lossless[i]+0.002));
       else
         kt_new = kt_prop_lossless[i];
@@ -514,7 +514,7 @@ void Slab_M::find_modes_from_scratch_by_track()
 
   if (!(branchcut || TBC))
   {
-    Wrap_real_to_abs evan_wrap(disp_lossless);
+    Wrap_real_to_abs evan_wrap(disp);
     
     Real kt_begin = .0001;
     int extra = 1;
@@ -535,7 +535,7 @@ void Slab_M::find_modes_from_scratch_by_track()
 
       for (unsigned int i=0; i<kt_evan_lossless.size(); i++)
       { 
-        const Real fx = abs(disp_lossless(kt_evan_lossless[i]));
+        const Real fx = abs(disp(kt_evan_lossless[i]));
         if (fx > 1e-2)
         {
           cout << "Warning: possibly insufficient precision around kt "
@@ -547,7 +547,7 @@ void Slab_M::find_modes_from_scratch_by_track()
         {
           Real kt_new = branchcut
             ? kt_evan_lossless[i]
-            : real(mueller(disp_lossless,kt_evan_lossless[i],
+            : real(mueller(disp,kt_evan_lossless[i],
                            kt_evan_lossless[i]+0.002*I));
 
           kt_lossless.push_back(kt_new);
@@ -584,16 +584,18 @@ void Slab_M::find_modes_from_scratch_by_track()
   vector<Complex> kt, forbidden;
   if (global.chunk_tracing == true)
     kt = traceroot_chunks
-      (kt_lossless, disp_lossless, disp, forbidden, global.sweep_steps);
+      (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
   else
     kt = traceroot
-      (kt_lossless, disp_lossless, disp, forbidden, global.sweep_steps);
+      (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
 
  
 
   //
   // IV: Find modes in complex plane
   //
+
+  disp.set_params(params);
 
   if ( (branchcut || TBC) && (kt.size() < global.N) )
   {
@@ -712,11 +714,11 @@ void Slab_M::find_modes_by_sweep()
     
   // Trace modes from old configuration to new one.
   
-  SlabDisp disp_new(materials, thicknesses, global.lambda, l_wall, r_wall);
-  SlabDisp disp_old(materials, thicknesses, global.lambda, l_wall, r_wall);
-  disp_old.set_params(params);
+  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
+  vector<Complex> params_new = disp.get_params();
 
-  Complex min_n = sqrt(disp_old.get_min_eps_mu()/eps0/mu0);
+  disp.set_params(params);
+  Complex min_n = sqrt(disp.get_min_eps_mu()/eps0/mu0);
   Complex k0_old = 2*pi/last_lambda;
   
   vector<Complex> kt_old;
@@ -725,9 +727,9 @@ void Slab_M::find_modes_by_sweep()
   
   vector<Complex> forbidden;
   vector<Complex> kt =
-    traceroot(kt_old, disp_old, disp_new, forbidden, global.sweep_steps);
+    traceroot(kt_old, disp, params, params_new, forbidden, global.sweep_steps);
 
-  params = disp_new.get_params();
+  params = params_new;
 
   // Check if modes were lost during tracing.
   
