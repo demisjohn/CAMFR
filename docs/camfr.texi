@@ -2068,8 +2068,8 @@ For the first step, the user can choose between three plane wave models:
 
 @itemize @bullet
 @item @code{set_code_solver(OS)}: Omar-Schuenemann: modes of a uniform square waveguide are used in the expansion. Slowly converging, and not really recommended.
-@item @code{set_code_solver(NT)}: waveguide variant of Noponen-Turunen, a grating based Fourier method.
-@item @code{set_code_solver(Li)}: Li, a refinement of Noponen-Turunen, but it only gives more accurate results using a high number of plane waves. Since we're only interested in obtaining a coarse estimate to use in the second step, this solver is not recommended, as it is slower.
+@item @code{set_code_solver(NT)}: waveguide variant of Noponen-Turunen, a grating based Fourier method. Not recommended.
+@item @code{set_code_solver(L)}: Li, a refinement of Noponen-Turunen. Convergest the fastest, but is slighty slower. Recommended.
 @end itemize
 
 The line @code{s = Section(all, 100, 40)} means we use 100 plane waves in the first stage, and refine it using 40 1D modes in each Slab during the second stage. @code{all} can be any 2D stack, including those fabricated with the @code{Geometry} function.
