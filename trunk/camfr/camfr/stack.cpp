@@ -456,7 +456,7 @@ DiagStack::DiagStack
 
 DiagStack::DiagStack(const Expression& e, unsigned int no_of_periods)
   : StackImpl(e, no_of_periods)
-{ 
+{  
   inc = chunks[0].sc->get_inc();
   ext = chunks[chunks.size()-1].sc->get_ext();
 }
