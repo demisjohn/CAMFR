@@ -1,3 +1,7 @@
+2003-01-17 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slabdisp.cpp: Better criterion for scaling.
+
 2002-12-20 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.h: Add get_cos, get_sin.

@@ -192,19 +192,19 @@ Complex SlabDisp::operator()(const Complex& kt)
     if ( (k == eps.size()-1) && (abs(R_upper) < 1e-10) )
       I_kx_d = 0;
 
-    if (global.solver == track)
+    if (global.solver == ADR) // No scaling to keep the function analytic.
+    {
+      fw_chunk_end_scaled *= exp(-I_kx_d);      
+      bw_chunk_end_scaled *= exp(+I_kx_d);
+    }
+    else 
     {
       if (real(I_kx_d) > 0)
         fw_chunk_end_scaled *= exp(-2.0*I_kx_d);
       else
         bw_chunk_end_scaled *= exp(+2.0*I_kx_d);
     }
-    else // No scaling to keep the function analytic.
-    {
-      fw_chunk_end_scaled *= exp(-I_kx_d);      
-      bw_chunk_end_scaled *= exp(+I_kx_d);
-    }
-    
+   
     // Update values for next iteration.
     
     fw_chunk_begin_scaled = fw_chunk_end_scaled;
