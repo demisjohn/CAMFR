@@ -197,10 +197,27 @@ Real machine_eps()
 
 void out_of_memory()
 {
-  std::cerr << "Camfr: Out of memory." << std::endl;
+  py_error("Fatal error: Out of memory.");
   exit(-1);
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// pick_sign_k
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void pick_sign_k(Complex* k)
+{
+  if (real(*k) < 0)
+    *k = - *k;
+
+  if (abs(real(*k)) < 1e-8)
+    if (imag(*k) > 0)
+      *k = - *k;
+}
 
 
 
