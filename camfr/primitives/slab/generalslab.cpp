@@ -142,11 +142,11 @@ void SlabImpl::calc_overlap_matrices
   {
     for (int i=1; i<=int(N); i++)
       for (int j=1; j<=int(N); j++)
-      {      
+      {        
         (*O_I_II)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-           &cache, &disc, i, j, 1, 2);      
+           &cache, &disc, i, j, 1, 2);
       
         (*O_II_I)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
@@ -158,7 +158,7 @@ void SlabImpl::calc_overlap_matrices
            dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
            &cache, &disc, i, j, 1, 1);
 
-      if (O_II_II) (*O_II_II)(i,j) = overlap
+        if (O_II_II) (*O_II_II)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
            &cache, &disc, i, j, 2, 2);
@@ -221,7 +221,7 @@ void SlabImpl::calc_overlap_matrices
       Ex_Hz_I_II(i,j) = Ex_Hz_I_II_ij;   Ez_Hx_I_II(i,j) = Ez_Hx_I_II_ij;
       Ex_Hz_II_I(i,j) = Ex_Hz_II_I_ij;   Ez_Hx_II_I(i,j) = Ez_Hx_II_I_ij;
     }
-
+  
   // Part II: beta-dependent part.
 
   cVector sin_I (N, fortranArray), cos_I (N, fortranArray);
@@ -232,7 +232,7 @@ void SlabImpl::calc_overlap_matrices
     sin_I (i) = global_slab.beta / medium_I ->get_mode(i)->get_kz();
     sin_II(i) = global_slab.beta / medium_II->get_mode(i)->get_kz(); 
 
-    cos_I (i) = sqrt(1.0 - sin_I (i) * sin_I (i));
+    cos_I (i) = sqrt(1.0 - sin_I (i) * sin_I (i)); // TODO: check sign
     cos_II(i) = sqrt(1.0 - sin_II(i) * sin_II(i));    
   }
 
