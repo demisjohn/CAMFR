@@ -107,6 +107,7 @@ class Section : public MultiWaveguide
 {
   public:
 
+    Section(const Term& t);
     Section(Expression& ex, int M=global.N);
     Section(Expression& left_ex, Expression& right_ex, int M=global.N);
     ~Section() {delete s; delete leftwall_sc; delete rightwall_sc;}
@@ -234,8 +235,8 @@ class Section1D : public SectionImpl
 { 
   public:
 
-    Section1D(Slab& slab, const Complex& width) 
-      : s(&slab), d(width) {uniform = false; core = s->get_core(); M=1;}
+    Section1D(Slab& slab_, const Complex& width) 
+      : slab(&slab_), d(width) {uniform=false; core=slab->get_core(); M=1;}
 
     ~Section1D() {}
     
@@ -243,31 +244,31 @@ class Section1D : public SectionImpl
       {return this == &w;}
     
     std::vector<Material*> get_materials() const
-      {return s->get_materials();}
+      {return slab->get_materials();}
     
     bool contains(const Material& m) const
-      {return s->contains(m);}
+      {return slab->contains(m);}
 
     bool no_gain_present() const
-      {return s->no_gain_present();}
+      {return slab->no_gain_present();}
 
     Complex eps_at(const Coord& c) const
-      {return s->eps_at(Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
+      {return slab->eps_at(Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
 
     Complex  mu_at(const Coord& c) const
-      {return s->mu_at (Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
+      {return slab->mu_at (Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
 
     Complex get_width() const
       {return d;}
 
     Complex get_height() const
-      {return s->get_width();}
+      {return slab->get_width();}
 
     void find_modes();
 
   protected:
 
-    Slab* s;
+    Slab* slab;
     Complex d;
 };
 

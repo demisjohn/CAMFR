@@ -84,7 +84,8 @@ class Section1D_Mode : public SectionMode
 {
   public:
 
-    Section1D_Mode(Polarisation pol, const Complex& kz, Section1D* geom);
+    Section1D_Mode(Polarisation pol, const Complex& kz, 
+                   SlabMode* m, Section1D* geom);
 
     Field field(const Coord& coord) const;
 
@@ -94,7 +95,10 @@ class Section1D_Mode : public SectionMode
 
   protected:
 
-    Complex fw, bw;
+    void get_fw_bw(const Complex& c, Complex* fw, Complex* bw) const;
+
+    SlabMode* m;
+    Complex fw0, bw0;
 };
 
 

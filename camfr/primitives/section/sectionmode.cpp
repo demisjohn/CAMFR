@@ -12,6 +12,7 @@
 
 #include "sectionmode.h"
 #include "sectionoverlap.h"
+#include "../slab/isoslab/slabmode.h"
 
 using std::vector;
 using std::cout;
@@ -267,9 +268,11 @@ void Section2D_Mode::normalise()
 /////////////////////////////////////////////////////////////////////////////
 
 Section1D_Mode::Section1D_Mode
-  (Polarisation pol, const Complex& kz, Section1D* geom) 
-    : SectionMode(pol, kz, geom) 
+  (Polarisation pol, const Complex& kz, SlabMode* m_, Section1D* geom) 
+    : SectionMode(pol, kz, geom), m(m_)
 {
+  fw0 = 1.0;
+  bw0 = (global_section.leftwall == E_wall) ? -1.0 : 1.0;
 }
 
 
@@ -282,6 +285,64 @@ Section1D_Mode::Section1D_Mode
 
 Field Section1D_Mode::field(const Coord& coord) const 
 {
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = kz;
+
+  Complex fw, bw;
+  get_fw_bw(coord.c1, &fw, &bw);
+
+  // Convert from Section to Slab coordinates.
+
+  Coord slab_coord(coord);
+
+  slab_coord.c1 = coord.c2;
+  slab_coord.c1_limit = coord.c2_limit;
+
+  slab_coord.c2 = 0.0;
+  slab_coord.c2_limit = coord.z_limit;
+
+  slab_coord.z = 0.0;
+  slab_coord.z_limit = coord.c1_limit;
+
+  Field f_slab = m->field(slab_coord);
+
+  // Convert from Slab to Section coordinates.
+
+  Field f;
+
+  f.E1 = fw * f_slab.Ez  -  bw * f_slab.Ez;
+  f.E2 = fw * f_slab.E1  +  bw * f_slab.E2;
+  f.Ez = fw * f_slab.E2  +  bw * f_slab.Ez;
+
+  f.H1 = fw * f_slab.Hz  +  bw * f_slab.Hz;
+  f.H2 = fw * f_slab.H1  -  bw * f_slab.H1;
+  f.Hz = fw * f_slab.H2  -  bw * f_slab.H2;
+
+  global.slab_ky = old_beta;
+
+  return f;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section1D_Mode::get_fw_bw
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Section1D_Mode::get_fw_bw(const Complex& c, 
+                               Complex* fw, Complex* bw) const
+{
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = kz;
+
+  Complex kx = m->get_kz();
+
+  *fw = fw0 * exp(-I*kx*c);
+  *bw = bw0 * exp(+I*kx*c);
+
+  global.slab_ky = old_beta;
 }
 
 

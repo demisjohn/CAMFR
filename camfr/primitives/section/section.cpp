@@ -17,6 +17,7 @@
 #include "sectionoverlap.h"
 #include "../slab/slabmatrixcache.h"
 #include "../slab/isoslab/slaboverlap.h"
+#include "../slab/isoslab/slabmode.h"
 
 using std::vector;
 using std::cout;
@@ -158,6 +159,32 @@ void SectionImpl::calc_overlap_matrices
           disc[k], disc[k+1], &field_II[i-1], &field_II[j-1]);
       }
   }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section::Section
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
+{
+  Slab* slab = dynamic_cast<Slab*>(t.get_wg());
+  Complex d = t.get_d()
+    + I*global_section.left_PML + I*global_section.right_PML;
+
+  if (slab)
+    s = new Section1D(*slab, d);
+  else
+  {
+    py_error("Error: expected a slab to initialise a section.");
+    return;
+  }
+
+  uniform = s->is_uniform();
+  core = s->get_core();
 }
 
 
@@ -964,28 +991,8 @@ void Section2D::find_modes_by_sweep()
 
 void Section1D::find_modes()
 {
-
-  cout << "Section1D.find_modes() not yet implemented." << endl;
-  
-  return;
-
-#if 0
-
-  // Determine reflection coefficients of walls.
-
-  SectionWall* l_wall =  leftwall ?  leftwall : global_section. leftwall;
-  SectionWall* r_wall = rightwall ? rightwall : global_section.rightwall;
-
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1;
-
   // Check values.
 
-  bool analytic = true;
-  if ( ((abs(R_left -1.0) > 1e-10) && (abs(R_left +1.0) > 1e-10)) ||
-       ((abs(R_right-1.0) > 1e-10) && (abs(R_right+1.0) > 1e-10)) )
-    analytic = false;
-  
   if (global.lambda == 0)
   {
     cout << "Error: wavelength not set." << endl;
@@ -998,94 +1005,54 @@ void Section1D::find_modes()
     return;
   }
 
-  // Set contants and clear modeset.
-  
-  const Complex k = 2*pi/global.lambda * core->n();
+  slab->find_modes();
+
+  // Determine reflection coefficients of walls.
+
+  Complex R_left  = global_section. leftwall == E_wall ? -1.0 : 1.0;
+  Complex R_right = global_section.rightwall == E_wall ? -1.0 : 1.0;
+
+  // Clear modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
 
-  // If no analytic solution is available, follow same route as
-  // non-uniform section.
+  // Add modes.
+  
+  const Complex start  = (abs(R_left*R_right-1.0) < 1e-10) ? 0 : pi;
+  unsigned int j_start = (abs(R_left*R_right-1.0) < 1e-10) ? 1 : 0;
 
-  if (!analytic)
+  for (unsigned int i=1; i<=global.N; i++)
   {
-    Section2D tmp = (*core)(get_width()/2.) + (*core)(get_width()/2.);
+    SlabMode* mode = dynamic_cast<SlabMode*>(slab->get_mode(i));
 
-    if (l_wall)
-      tmp.set_left_wall(*l_wall)    if (r_wall)
-      tmp.set_right_wall(*r_wall);
-    
-    tmp.find_modes();
-
-    for (unsigned int i=1; i<=tmp.N(); i++)
+    for (unsigned int j=j_start; j<=global.N+j_start; j++)
     {
-      Section1D_mode *newmode = new 
-        Section1D_mode(global.polarisation,tmp.get_mode(i)->get_kz(),this);
+      Complex kz = sqrt(pow(mode->get_kz0(),2) - pow((start+2*j*pi)/2./d,2));
+
+      if (real(kz) < 0) 
+        kz = -kz;
+
+      if (abs(real(kz)) < 1e-12)
+        if (imag(kz) > 0)
+          kz = -kz;
+    
+      Section1D_Mode *newmode
+        = new Section1D_Mode(slab->get_mode(i)->pol, kz, mode, this);
 
       newmode->normalise();
-
+    
       modeset.push_back(newmode);
     }
-
-    // Remember wavelength and gain these modes were calculated for.
-
-    last_lambda = global.lambda;
-
-    if (global.gain_mat)
-      last_gain_mat = *global.gain_mat;
-
-    return;
   }
 
-  // Use analytical solution available. 
-
-  // TEM mode.
-  
-  if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-                                     && (abs(R_right + 1.0) < 1e-10) )
-    || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-                                     && (abs(R_right - 1.0) < 1e-10) ) )
-  {
-    Section1D_Mode *newmode = new Section1D_Mode(global.polarisation, k, this);
-
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
-  }
-
-  // Other modes.
-  
-  Complex start  = (abs(R_left*R_right-1.0) < 1e-10) ? 0 : pi;
-  unsigned int i = (abs(R_left*R_right-1.0) < 1e-10) ? 1 : 0;
-  
-  while (modeset.size() != global.N)
-  {
-    Complex kz = sqrt(k*k - pow((start+2*i*pi)/2./get_width(), 2));
-
-    if (real(kz) < 0) 
-      kz = -kz;
-
-    if (abs(real(kz)) < 1e-12)
-      if (imag(kz) > 0)
-        kz = -kz;
-    
-    Section1D_Mode *newmode 
-      = new Section1D_Mode(global.polarisation, kz, this);
-
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
-
-    i++;
-  }
+  sort_modes();
+  truncate_N_modes();
 
   // Remember wavelength and gain these modes were calculated for.
 
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
-
-#endif
 }
