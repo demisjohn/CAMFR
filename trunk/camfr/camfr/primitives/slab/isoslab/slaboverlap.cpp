@@ -21,6 +21,37 @@ using std::vector;
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// same
+//
+//  This function is needed to discrimate between calculating a true
+//  normalisation integral and an integral between degenerate modes
+//  in different cores.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+bool same(const Complex& fw_I_l, const Complex& fw_II_l, 
+          const Complex& bw_I_l, const Complex& bw_II_l,
+          const Complex& fw_I_u, const Complex& fw_II_u, 
+          const Complex& bw_I_u, const Complex& bw_II_u)
+{
+  const Real eps = 1e-10;
+
+  if (abs(fw_I_l - fw_II_l) > eps)
+    return false;
+  if (abs(bw_I_l - bw_II_l) > eps)
+    return false;
+  if (abs(fw_I_u - fw_II_u) > eps)
+    return false;
+  if (abs(bw_I_u - bw_II_u) > eps)
+    return false;
+
+  return true;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // overlap
 //  
 /////////////////////////////////////////////////////////////////////////////
@@ -49,7 +80,7 @@ Complex overlap(const SlabMode* mode_I,
   
   // Set variables.
 
-  const Real eps = 1e-10; // Don't choose too low.
+  const Real eps = 1e-6; // Don't choose too low.
 
   const SlabImpl* medium_I  = mode_I ->get_geom();
   const SlabImpl* medium_II = mode_II->get_geom();
@@ -152,8 +183,10 @@ Complex overlap(const SlabMode* mode_I,
     else // normalisation integral (same modes) or degenerate case
     {
       // + f(upper_Min) - f(lower_Plus)
-      
-      term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
+
+      if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
+               fw_I_u, fw_II_u, bw_I_u, bw_II_u))
+        term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
     }
     
     //
@@ -174,7 +207,9 @@ Complex overlap(const SlabMode* mode_I,
     {
       // + f(upper_Min) - f(lower_Plus)
 
-      term2 += C * d * ( fw_I_l * bw_II_l + bw_I_l * fw_II_l );
+      if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
+               fw_I_u, fw_II_u, bw_I_u, bw_II_u))
+        term2 += C * d * ( fw_I_l * bw_II_l + bw_I_l * fw_II_l );
     }
         
   } // End loop over all regions.
@@ -323,7 +358,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
     else // normalisation integral (same modes) or degenerate case
     {
       // + f(upper_Min) - f(lower_Plus)
-      
+
       inc1 += d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
     }
 
@@ -527,7 +562,7 @@ void overlap_reference_modes(cMatrix* O_tt, cMatrix* O_zz,
         else // normalisation integral (same modes) or degenerate case
         {
           // + f(upper_Min) - f(lower_Plus)
-      
+
           term1 += d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );      
         }
     
