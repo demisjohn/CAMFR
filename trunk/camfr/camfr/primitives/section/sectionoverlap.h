@@ -1,4 +1,4 @@
-
+ 
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     sectionoverlap.h
@@ -30,8 +30,8 @@ class SectionMode;     // forward declaration - see sectionmode.h
 class Section2D_Mode;  // forward declaration - see sectionmode.h
 class OverlapMatrices; // forward declaration - see slabmatrixcache.h
 
-Complex overlap_slice(SectionMode* mode_I,
-                      SectionMode* mode_II,
+Complex overlap_slice(const SectionMode* mode_I,
+                      const SectionMode* mode_II,
                       const Complex& z_start,
                       const Complex& z_stop,
                       FieldExpansion* field_I=NULL,
@@ -45,7 +45,8 @@ Complex overlap_numeric(const SectionMode* mode_I,
 Complex overlap_pw(const Section2D_Mode* sec_I_mode, 
                    const Section2D_Mode* sec_II_mode);
 
-
+Complex overlap(const Section2D_Mode* sec_I_mode,
+                const Section2D_Mode* sec_II_mode);
 
 #endif
 

@@ -49,13 +49,35 @@ void SectionImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
 {
+  Section2D* medium_I  = dynamic_cast<Section2D*>(this);
+  Section2D* medium_II = dynamic_cast<Section2D*>(w);
+
+  // Dimensions equal?
+
+  const Real eps = 1e-10; // Don't choose too low.
+  
+  if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
+  {
+    std::ostringstream s;
+    s << "Warning: complex widths don't match: "
+      << medium_I ->get_width() << " and " << medium_II->get_width();
+    py_error(s.str());
+    return;
+  }
+
+  if (abs(medium_I->get_height() - medium_II->get_height()) > eps)
+  {
+    std::ostringstream s;
+    s << "Warning: complex heights don't match: "
+      << medium_I ->get_height() << " and " << medium_II->get_height();
+    py_error(s.str());
+    return;
+  }
+
   // TMP
 
-  if (global_section.mode_correction == false)  
+  //if (global_section.mode_correction == false)  
   {
-    Section2D* medium_I  = dynamic_cast<Section2D*>(this);
-    Section2D* medium_II = dynamic_cast<Section2D*>(w);
-
     *O_I_II = 0.0;  
     *O_II_I = 0.0;
 
@@ -67,42 +89,24 @@ void SectionImpl::calc_overlap_matrices
     for (int i=1; i<=int(medium_I->N()); i++)   
       for (int j=1; j<=int(medium_I->N()); j++)
       { 
-        (*O_I_II)(i,j) = overlap_pw
+        (*O_I_II)(i,j) = overlap
           (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
 
-        (*O_II_I)(i,j) = overlap_pw
+        (*O_II_I)(i,j) = overlap
           (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
         
-        if (O_I_I) (*O_I_I)(i,j) = overlap_pw
+        if (O_I_I) (*O_I_I)(i,j) = overlap
           (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
       
-        if (O_II_II) (*O_II_II)(i,j) = overlap_pw
+        if (O_II_II) (*O_II_II)(i,j) = overlap
          (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
           dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
       }
 
     py_print("Done overlap.");
-    return;
-  }
-
-
-  
-  Section2D* medium_I  = dynamic_cast<Section2D*>(this);
-  Section2D* medium_II = dynamic_cast<Section2D*>(w);
-  
-  // Widths equal?
-
-  const Real eps = 1e-10; // Don't choose too low.
-  
-  if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
-  {
-    std::ostringstream s;
-    s << "Warning: complex widths don't match: "
-      << medium_I ->get_width() << " and " << medium_II->get_width();
-    py_error(s.str());
     return;
   }
 
@@ -1572,15 +1576,6 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
     {
       Complex kz2 = E_(i)/k0/k0;
       Complex kz = sqrt(kz2);
- 
-/*   
-      if (real(kz) < 0) 
-        kz = -kz;
-
-      if (abs(real(kz)) < 1e-12)
-        if (imag(kz) > 0)
-          kz = -kz;
-*/
 
       if (imag(kz) > 0)
         kz = -kz;
@@ -1588,6 +1583,15 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
       if (abs(imag(kz)) < abs(real(kz)))
         if (real(kz) < 0)
           kz = -kz;
+
+      // Compensate for numerical instability in the presence of PML.
+
+      if ((real(kz) > imag(kz)) && (imag(kz) > 1e-8))
+      {
+        std::cout << "Snapping " << kz/2./pi*global.lambda
+                  << " to the real axis" << std::endl;
+        kz = real(kz);
+      }
       
       cVector* Ex = new cVector(MN,fortranArray);
       cVector* Ey = new cVector(MN,fortranArray);
@@ -1599,7 +1603,7 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
       *Hx = eig_big_H(r1,i)/kz/k0*Y0;
       *Hy = eig_big_H(r2,i)/kz/k0*Y0; 
 
-      ModeEstimate est = ModeEstimate(kz2, Ex,Ey, Hx,Hy);
+      ModeEstimate est = ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
     }  
   }
@@ -1688,6 +1692,7 @@ void Section2D::find_modes_from_estimates()
       if (real(sqrt(estimates_0[i].kz2)) < 1.01*max_kz)
         estimates.push_back(estimates_0[i]);
   }
+
   user_estimates.clear();
 
   // Refine estimates.
@@ -1701,28 +1706,46 @@ void Section2D::find_modes_from_estimates()
 
   std::sort(estimates.begin(), estimates.end(), kz2_sorter());
 
+  if (estimates.size() > global.N)
+    estimates.erase(estimates.begin()+global.N, estimates.end());
+
   //for (int i=0; i<estimates.size(); i++)
   //  std::cout << i << " " << sqrt(estimates[i].kz2)/2./pi*global.lambda 
   //            << std::endl;
 
-  // Pass on zeros unrefined.
+  kt_to_neff transform(C0*min_eps_mu);
+  SectionDisp disp(left, right, global.lambda, M2, symmetric);
 
-  if (global_section.mode_correction == false)
+  //if (global_section.mode_correction == false)
   {
-  py_print("Creating plane wave based mode profiles...");
 
   for (unsigned int i=0; i<estimates.size(); i++)
   { 
     Complex kz = sqrt(estimates[i].kz2);
-    
-/*
-    if (real(kz) < 0) 
-      kz = -kz;
 
-    if (abs(real(kz)) < 1e-12)
-      if (imag(kz) > 0)
-        kz = -kz;  
-*/
+    if ((global_section.mode_correction == true) 
+        && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
+    {
+      std::cout << "Refining " << kz/2./pi*global.lambda;
+      
+      Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
+
+      if (imag(kt) < 0) // 45 degree cut?
+        kt = -kt;
+
+      if (abs(imag(kt)) < 1e-12)
+        if (real(kt) > 0)
+          kt = -kt;
+
+      if ((abs(real(kt)) < .001) && (real(kt) < 0))
+        kt -= 2*real(kt);
+
+      Complex kt_new = mueller(disp, kt, 1e-8);
+
+      kz = sqrt(C0*min_eps_mu - kt_new*kt_new);      
+
+      std::cout << " to " << kz/2./pi*global.lambda << std::endl;
+    }    
 
     if (imag(kz) > 0)
       kz = -kz;
@@ -1731,29 +1754,18 @@ void Section2D::find_modes_from_estimates()
       if (real(kz) < 0)
         kz = -kz;
 
-    // Compensate for numerical instability in the presence of PML.
-
-    if ((real(kz) > imag(kz)) && (imag(kz)>0))
-    {
-      std::cout << "Snapping " << kz/2./pi*global.lambda
-                << " to the real axis" << std::endl;
-      kz = real(kz);
-    }
-
-    Section2D_Mode* newmode
-     = new Section2D_Mode(global.polarisation, kz, this,
-                          estimates[i].Ex, estimates[i].Ey,
-                          estimates[i].Hx, estimates[i].Hy);
+    Section2D_Mode* newmode = new 
+      Section2D_Mode(global.polarisation, kz, this,
+                     estimates[i].Ex, estimates[i].Ey,
+                     estimates[i].Hx, estimates[i].Hy, 
+                     global_section.mode_correction);
 
     newmode->normalise();
 
     modeset.push_back(newmode);
   }
 
-  sort_modes();
-
   global.N = modeset.size();
-
   std::cout << "global.N " << global.N << std::endl;
 
   py_print("Done.");
@@ -1797,11 +1809,8 @@ void Section2D::find_modes_from_estimates()
     kt_coarse.push_back(kt);
   }
 
-  kt_to_neff transform(C0*min_eps_mu);
-  SectionDisp disp(left, right, global.lambda, M2, symmetric);
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
-
   f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
 
   // Eliminate false zeros.
 

@@ -108,7 +108,7 @@ class SectionImpl : public MultiWaveguide
     std::vector<Complex> discontinuities;
     std::vector<Slab*> slabs;
 
-    friend Complex overlap_slice(SectionMode*, SectionMode*,
+    friend Complex overlap_slice(const SectionMode*, const SectionMode*,
                                  const Complex&, const Complex&,
                                  FieldExpansion*, FieldExpansion*, 
                                  OverlapMatrices*, int, int);
