@@ -173,4 +173,4 @@ void SlabMatrixCache::clear()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabMatrixCache slabmatrix_cache;
+SlabMatrixCache slabmatrix_cache();
