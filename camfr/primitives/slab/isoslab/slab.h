@@ -57,7 +57,10 @@ class Slab_M : public SlabImpl
     Complex  mu_at(const Coord& coord) const;
 
     Complex get_width() const
-      {return discontinuities[discontinuities.size()-1];}
+      {return discontinuities.back();}
+
+    Complex c1_size() const 
+      {return discontinuities.back();}
     
     void find_modes();
 
@@ -121,6 +124,9 @@ class UniformSlab : public SlabImpl
       {return core->mu();}
 
     Complex get_width() const
+      {return discontinuities[0];}
+
+    Complex c1_size() const 
       {return discontinuities[0];}
 
     void find_modes();

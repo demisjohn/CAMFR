@@ -51,6 +51,9 @@ class Planar : public MonoWaveguide
     void set_theta(Real theta_radians)
       {kt = (2*pi / global.lambda * core->n()) * sin(theta_radians);}
 
+    Complex c1_size() const 
+      {return 0.0;}
+
     void find_modes()
       {mode->kz = calc_kz(); mode->kz_bw = -mode->kz;}
 

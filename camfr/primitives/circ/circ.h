@@ -71,6 +71,8 @@ class Circ_M : public MultiWaveguide
     Circ_M(const std::vector<Complex> &r, const std::vector<Material*> &m)
       : M(m.size()), radius(r), material(m) {}
 
+    Complex c1_size() const {return radius.back();}
+
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
                 Real precision = 1e-10) const;
@@ -194,6 +196,8 @@ class Circ : public MultiWaveguide
     std::vector<Material*> get_materials() const {return c->get_materials();}
     bool contains(const Material& m)       const {return c->contains(m);}
     bool no_gain_present()                 const {return c->no_gain_present();}
+    
+    Complex c1_size() const {return c->c1_size();}
 
     void find_modes() {return c->find_modes();}
     
