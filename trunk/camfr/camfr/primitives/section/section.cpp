@@ -309,7 +309,7 @@ Section::Section(Expression& expression, int M1, int M2)
     leftwall_sc = new E_Wall(*left_ex.get_ext());
   if (global_section.leftwall == H_wall)
     leftwall_sc = new H_Wall(*left_ex.get_ext());
-  left_ex.add_term(Term(*leftwall_sc));  
+  left_ex.add_term(Term(*leftwall_sc));
 
   // Create Section.
 
@@ -742,6 +742,10 @@ void Section2D::find_modes_from_series()
 
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50);
+
+
+  f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
+
 
   // Eliminate false zeros.
 

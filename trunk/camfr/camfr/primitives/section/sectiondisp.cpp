@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 //#include "arscomp.h"
+#include "section.h"
 #include "sectiondisp.h"
 #include "../slab/generalslab.h"
 #include "../slab/slabmatrixcache.h"
@@ -33,6 +34,8 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
                          bool sym)
   : left(&_left), right(&_right), lambda(_lambda), M(_M), symmetric(sym) 
 {
+  // TODO: Rework.
+
   // Determine left slabs.
 
   const vector<Chunk>* l 
@@ -55,7 +58,7 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
   {
     right_slabs.push_back(dynamic_cast<Slab*>((*r)[i].sc->get_inc()));
     right_slabs.push_back(dynamic_cast<Slab*>((*r)[i].sc->get_ext()));
-  }
+  } 
 
   remove_copies(&right_slabs);
 
@@ -63,6 +66,34 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
 
   left_d  = dynamic_cast<StackImpl*>( left->get_sc())->get_thicknesses();
   right_d = dynamic_cast<StackImpl*>(right->get_sc())->get_thicknesses();
+
+  // Determine slabs.
+
+  for (int i=l->size()-1; i>=0; i--)
+  {
+    Complex d_i = (*l)[i].d;
+
+    if (abs(d_i) > 1e-6)
+    {
+      d.push_back(d_i);
+      slabs.push_back(dynamic_cast<Slab*>((*l)[i].sc->get_ext()));
+      //std::cout << slabs.back()->get_core()->n() 
+      //          << " " << d.back() << std::endl;
+    }
+  }
+
+  for (int i=0; i<r->size(); i++)
+  {
+    Complex d_i = (*r)[i].d;
+
+    if (abs(d_i) > 1e-6)
+    {
+      d.push_back(d_i);    
+      slabs.push_back(dynamic_cast<Slab*>((*r)[i].sc->get_ext()));
+      //std::cout << slabs.back()->get_core()->n() 
+      //          << " " << d.back() << std::endl;
+    }
+  }
 
   // Determine minimum refractive index.
 
@@ -113,12 +144,16 @@ Complex SectionDisp::operator()(const Complex& kt)
     if (imag(beta) > 0)
       beta = -beta;
 
+  //std::cout << "beta" << beta << std::endl;
+
   global.slab_ky = beta;
 
   int old_N = global.N;
   global.N = M;
 
-  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_arnoldi();
+  //Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_arnoldi();
+
+  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_lapack2();
 
   global.N = old_N;
   global.slab_ky = old_beta;
@@ -135,7 +170,7 @@ Complex SectionDisp::operator()(const Complex& kt)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::calc_lapack2()
+Complex SectionDisp::calc_lapack3()
 {
   // Calculate eigenvectors.
 
@@ -160,12 +195,34 @@ Complex SectionDisp::calc_lapack2()
   else
     e.reference(eigenvalues_x(Q));
   
-  // Return product of eigenvalues-1..
+  // Return product of eigenvalues-1.
 
   Complex product = 1.0;
+  vector<unsigned int> min_indices;
+/*
+  for (unsigned int k=0; k<30; k++)
+  {
+    int min_index = 1;
+    Real min_distance = 1e200;
+
+    for (int i=1; i<=M; i++)
+      if ( (abs(e(i) - 1.0) < min_distance) &&
+        ( find(min_indices.begin(),min_indices.end(),i) == min_indices.end()))
+      {
+        min_index = i;  
+        min_distance = abs(e(i) - 1.0);
+      }
+
+    min_indices.push_back(min_index);
+    product *= .5*(e(min_index) - 1.0);
+  }
+*/
+
+  //for (unsigned int k=0; k<min_indices.size(); k++)
+  //  std::cout << min_indices[k] << " " << abs(e(min_indices[k]) - 1.0) << std::endl;
 
   for (int i=1; i<=M; i++)
-    product *= e(i) - 1.0;
+    product *= .5*(e(i) - 1.0);
   
   return product;
 }
@@ -202,6 +259,128 @@ Complex SectionDisp::calc_lapack()
       min_index = i;
 
   return e(min_index) - 1.0;
+}
+
+
+
+Complex SectionDisp::calc_lapack2()
+{
+  blitz::Range r1(1,M); blitz::Range r2(M+1,2*M);
+  
+  // Propagate in first medium.
+
+  Complex f=1.0;
+
+  cMatrix T(2*M,2*M,fortranArray); T = 0.0;
+
+  slabs[0]->find_modes();
+  
+  Complex kz_max = slabs[0]->get_mode(M)->get_kz();
+  f *= exp(I*kz_max);
+  for (int i=1; i<=M; i++)
+  {
+    Complex kz_i = slabs[0]->get_mode(i)->get_kz();
+    //Complex kz_max = slabs[0]->get_mode(i)->get_kz();
+
+    T(  i,   i) = exp(I * (-kz_i - kz_max) * d[0]);
+    T(M+i, M+i) = exp(I * (+kz_i - kz_max) * d[0]);
+  }
+  
+  // Loop over other slabs.
+
+  for (unsigned int k=1; k<slabs.size(); k++)
+  {
+    slabs[k]->find_modes();
+    
+    // Cross interface.
+
+    cMatrix O_I_I (M,M,fortranArray); cMatrix O_II_II(M,M,fortranArray);
+    cMatrix O_I_II(M,M,fortranArray); cMatrix O_II_I (M,M,fortranArray);
+
+    slabs[k-1]->calc_overlap_matrices(slabs[k],
+                                      &O_I_II, &O_II_I, &O_I_I, &O_II_II);
+    
+    cMatrix inv_O_II_II(M,M,fortranArray);
+
+    if (global.stability != SVD)
+      inv_O_II_II.reference(invert    (O_II_II));
+    else
+      inv_O_II_II.reference(invert_svd(O_II_II));
+
+    cMatrix P(M,M,fortranArray); 
+    P.reference(multiply(inv_O_II_II, O_I_II, transp, transp));
+
+    cMatrix Q(M,M,fortranArray);
+    Q.reference(multiply(inv_O_II_II, O_II_I));
+
+    cMatrix T_k(2*M,2*M,fortranArray);    
+    T_k(r1,r1) = P+Q;        T_k(r1,r2) = P-Q;
+    T_k(r2,r1) = T_k(r1,r2); T_k(r2,r2) = T_k(r1,r1);
+
+    // Propagate.
+
+    cVector prop(2*M,fortranArray);
+    Complex kz_max = slabs[k]->get_mode(M)->get_kz();
+    f *= exp(I*kz_max);
+    for (int i=1; i<=M; i++)
+    {
+      Complex kz_i = slabs[k]->get_mode(i)->get_kz();
+      //Complex kz_max = slabs[k]->get_mode(i)->get_kz();
+
+      prop(  i) = exp(I * (-kz_i - kz_max) * d[k]);
+      prop(M+i) = exp(I * (+kz_i - kz_max) * d[k]);
+    }
+
+    //std::cout << prop << std::endl;
+
+    for (int i=1; i<=2*M; i++)
+      for (int j=1; j<=2*M; j++)
+        T_k(i,j) *= 0.5 * prop(i);
+    
+    // Combine.
+
+    T.reference(multiply(T_k,T));
+  }
+  
+  // Extract submatrices of T and change sign if appropriate.
+  // TODO: get rid of multiplications.
+
+  cMatrix A(M,M,fortranArray); cMatrix B(M,M,fortranArray);
+  cMatrix C(M,M,fortranArray); cMatrix D(M,M,fortranArray);
+
+  A = T(r1,r1); B = T(r1,r2);
+  C = T(r2,r1); D = T(r2,r2);
+
+  Complex R0 = (global_section. leftwall == E_wall) ? -1.0 : 1.0;
+  Complex Rn = (global_section.rightwall == E_wall) ? -1.0 : 1.0;
+ 
+  cMatrix Q(M,M,fortranArray); Q = (R0*Rn)*A + Rn*B - R0*C - D;
+  
+  // Calculate eigenvectors.
+
+  cVector e(M,fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));
+
+  // return product of eigenvalues.
+/*  
+  Complex product = 1.0;
+  for (int i=1; i<=M; i++)
+    product *= e(i);
+  
+  return product;
+*/
+  // Return smallest eigenvalue.
+
+  int min_index = 1;
+
+  for (int i=2; i<=M; i++)
+    if (abs(e(i)) < abs(e(min_index)))
+      min_index = i;
+
+  return e(min_index);
 }
 
 
