@@ -29,7 +29,7 @@ class grating(unittest.TestCase):
         set_upper_wall(slab_H_wall)
         set_lower_wall(slab_H_wall)
 
-        gp = 0.5*get_lambda()
+        gp = 0.5*get_lambda().real
         s1 = Slab(5*(air(gp/4.) + GaAs(gp/2.) + air(gp/4.))+air(0))
         s1.calc()
         E1 = s1.mode(0).field(Coord(gp/2.,0,0)).E2()
@@ -38,7 +38,7 @@ class grating(unittest.TestCase):
         print E1, "expected", E1_OK
         E1_pass = abs((E1 - E1_OK) / E1_OK) < eps.testing_eps
 
-        gp = 1.0*get_lambda()              
+        gp = 1.0*get_lambda().real              
         s2 = Slab(5*(air(gp/4.) + GaAs(gp/2.) + air(gp/4.))+air(0))
         s2.calc()
         E2 = s2.mode(0).field(Coord(gp/2.,0,0)).E2()
