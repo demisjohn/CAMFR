@@ -13,7 +13,8 @@
 #ifndef SECTIONOVERLAP_H
 #define SECTIONOVERLAP_H
 
-#include "sectionmode.h"
+#include "../../math/linalg/linalg.h"
+#include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -44,6 +45,8 @@ struct SectionCache
 // The list of discontinuities is in the vector disc.
 //
 /////////////////////////////////////////////////////////////////////////////
+
+class SectionMode; // forward declaration - see sectionmode.h
 
 Complex overlap(const SectionMode* mode_I,
                 const SectionMode* mode_II,

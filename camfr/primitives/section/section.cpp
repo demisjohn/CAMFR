@@ -882,7 +882,7 @@ void Section2D::find_modes_from_scratch_by_track()
   {
     cout << "Error: didn't find enough modes ("
          << beta.size() << "/" << global.N << "). " << endl;
-    exit (-1);
+    //exit (-1);
   }
   
   // Create modeset.
