@@ -359,7 +359,7 @@ class Geometry:
                 ys0, ys1 = ys
                 
                 if ys0 < y0:
-                    ys0 = 0     
+                    ys0 = y0     
                 if ys1 > y1:
                     ys1 = y1
 
