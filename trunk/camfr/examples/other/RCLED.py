@@ -7,7 +7,7 @@
 #
 ####################################################################
 
-from camfr_work import *
+from camfr import *
 from cmath import *
 from Numeric import *
 

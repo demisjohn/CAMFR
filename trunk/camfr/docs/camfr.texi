@@ -23,14 +23,14 @@ END-INFO-DIR-ENTRY
 @titlepage
 @sp 10
 @title {CAMFR manual}
-@subtitle {version 1.0}
-@subtitle {September, 2002}
+@subtitle {version 1.1}
+@subtitle {February, 2003}
 @author Peter Bienstman
 
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2001-2002 Peter Bienstman - Ghent University.
+Copyright @copyright{} 2001-2003 Peter Bienstman - Ghent University.
 @end titlepage
 
 @contents 
@@ -1344,7 +1344,7 @@ bottom = Stack(GaAs(.13659) + QW(.00500)                       \
 @group  
 # Define cavity and find laser mode.
 
-cavity = Cavity(top, bottom)
+cavity = Cavity(bottom, top)
 
 cavity.find_mode(.980, .981)
 @end group
@@ -1362,7 +1362,7 @@ We then define two stacks describing these top and bottom part, starting from
 the dashed line. Defining the cavity is as simple as writing
 
 @example
-cavity = Cavity(top, bottom)
+cavity = Cavity(bottom, top)
 @end example
 
 In order to locate a laser mode, we need to vary the wavelength to achieve
@@ -1588,7 +1588,7 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 @group  
   # Cavity
 
-  rcled = Cavity(top,bot)
+  rcled = Cavity(bot,top)
   rcled.set_source(r0, orientation)
 
 @end group
@@ -1660,7 +1660,7 @@ eps = 1e-10
 for spacer in arange(0.130, 0.160, 0.002):
   for r in arange(10.0, 10.0+eps, 2.0):
     for PML in arange(-0.05, -0.05+eps, 0.01):
-      for M in arange(300, 300+eps, 20):
+      for M in arange(300, 301, 20):
         max_rho = r
         resolution = 1e-10
         calc(r, PML, M, max_rho, spacer, resolution)
@@ -3073,7 +3073,7 @@ Constructor:
 
 @itemize @bullet
 @item
-@code{Cavity(Stack top, Stack bottom)} 
+@code{Cavity(Stack bottom, Stack top)} 
 @end itemize
 
 @noindent
@@ -3098,10 +3098,15 @@ for laser modes.)
 @item
 @code{set_source(Coord pos, Coord orientation)}: places a dipole current
 source at the cavity cut at a position @code{pos} and with a vectorial 
-orientation given by @code{orientation}. 
+orientation given by @code{orientation}.
+@item
+@code{set_source(forward, backward)}: places a source at the cavity cut 
+described by the expansion vectors @code{forward} and @code{backward}.
 @item
 @code{field(Coord)}: returns field at given coordinate. Only meaningful if
 a laser mode has been located, or if a source has been explicitly set.
+@item
+@code{n(Coord)}: returns refractive index at given coordinate. 
 @end itemize
 
 
