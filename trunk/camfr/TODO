@@ -1,7 +1,3 @@
--quick test camfr_matlab (flipud?)
-
-
-
 CAMFR 3D:
 
 -revisit calc_global in combination with arnoldi eigensolver.
@@ -21,6 +17,14 @@ CAMFR 3D:
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -speed up nomalisation through cache?
+
+
+
+TWO-STAGE 1D SOLVER
+
+-TEM mode in inv(O_zz)
+-investigate problems for high PML, high mode_surplus 
+
 
 
 MEDIUM TERM:

@@ -2811,9 +2811,13 @@ Member functions:
 @item
 @code{n()}: returns refractive index.
 @item
+@code{set_n()}: sets refractive index.
+@item
 @code{epsr()}: returns relative permittivity.
 @item
 @code{mur()}: returns relative permeability.
+@item
+@code{set_mur()}: returns relative permeability.
 @item
 @code{eps()}: returns permittivity.
 @item
