@@ -23,7 +23,7 @@ class camfr_build_ext(build_ext):
 # Define the camfr extension module.
 
 camfr_extension = Extension(
-    "camfr", ["./camfr/camfr_wrap.cpp"],                              \
+    "camfr_work", ["./camfr/camfr_wrap.cpp"],                          \
     library_dirs=["./camfr",                                          \
                   "../boost_1_25_0/libs/python/src",                     \
                   "../blitz-20001213/lib",                            \
@@ -34,7 +34,7 @@ camfr_extension = Extension(
 
 # Set up the extension.
 
-setup(name="camfr", version="1.0pre",                                 \
+setup(name="camfr_work", version="1.0pre",                                 \
       description="CAvity Modelling FRamework",                       \
       author="Peter Bienstman",                                       \
       author_email="Peter.Bienstman@rug.ac.be",                       \
