@@ -3198,6 +3198,10 @@ component of this mode.
 @item
 @code{fw_bw(z)}: returns a tuple with two vectors containing the forward 
 and backward field expansions at position @code{z}.
+@item
+@code{S_flux(Complex x0, Complex x1, Real eps)}: returns power flux in the
+@code{z}-direction at @code{z=0} between @code{x0} and @code{x1}, calculated 
+with relative precision @code{eps}.
 @end itemize
 
 @noindent
