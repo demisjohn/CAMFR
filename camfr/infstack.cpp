@@ -13,9 +13,6 @@
 #include "infstack.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 // TODO: diag scatterers
 
@@ -81,11 +78,11 @@ void InfStack::calcRT()
       fw = real(mode->get_kz()) > 0.0;
 
       if (fw && (mode->S_flux(0,real(W), 1e-5) < 0))
-        cout << "Unexpected power flow for mode " << mode->get_kz() << endl;
+        py_print("Unexpected power flow for mode");
     }
 
       if (fw && (mode->S_flux(0,real(W), 1e-5) < 0))
-        cout << "Unexpected power flow for mode " << mode->get_kz() << endl;
+        py_print("Unexpected power flow for mode");
 
     if (fw)
     {

@@ -14,9 +14,6 @@
 #include "scatterer.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -31,7 +28,7 @@ void T_scheme
 
   if ( (fw->size() != 1) || (bw->size() != 1) )
   {
-    cerr << "Error: incorrect setting of input fields." << endl;
+    py_error("Error: incorrect setting of input fields.");
     exit (-1);
   }
 
@@ -51,7 +48,7 @@ void T_scheme
     MonoScatterer* s = dynamic_cast<MonoScatterer*>(chunks[k].sc);
     if (!s)
     {
-      cerr << "Error: T-scheme only valid for MonoScatterers." << endl;
+      py_error("Error: T-scheme only valid for MonoScatterers.");
       exit (-1);
     }
 
@@ -66,11 +63,11 @@ void T_scheme
     bw_chunk_end_scaled = (-R12) * fw_chunk_begin_scaled +
                            (1.0) * bw_chunk_begin_scaled;
 
-    if (abs(T21) < 1e-10)
-    {
-      cout << "Warning: small T21: " << T21 << endl;
-      cout << "Possible loss of precision." << endl;
-    }
+    //if (abs(T21) < 1e-10)
+    //{
+    //  cout << "Warning: small T21: " << T21 << endl;
+    //  cout << "Possible loss of precision." << endl;
+    //}
     
     fw_chunk_end_scaled /= T21;
     bw_chunk_end_scaled /= T21;

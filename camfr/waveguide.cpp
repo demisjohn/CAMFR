@@ -14,9 +14,6 @@
 #include "waveguide.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,7 +24,7 @@ using std::endl;
 const Waveguide_length Waveguide::operator()(const Complex& d) const
 {
   if (real(d) < 0)
-    cout << "Warning: negative real length of waveguide." << endl;
+    py_error("Warning: negative real length of waveguide.");
   
   return Waveguide_length(const_cast<Waveguide*>(this),d);
 }
@@ -165,7 +162,7 @@ std::string MultiWaveguide::repr() const
   {
     s << i-1 << " " << get_mode(i)->n_eff(); // i-1: reflect Python offset.
     if (i != N())
-      s << endl;
+      s << std::endl;
   }
   
   return s.str();

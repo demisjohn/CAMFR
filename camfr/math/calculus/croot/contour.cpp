@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <iostream>
 #include "../../../util/cvector.h"
 #include "patterson_z_n.h"
@@ -270,9 +271,12 @@ Contour Contour::adjacent_r() const
   r.set_integrals(tl_cl, -get_integrals(cr_tr));
   r.set_integrals(cl_bl, -get_integrals(br_cr));
 
-  cout << "Extending " << bl << tr << endl;
-    cout << "to " << r.get_bottom_left()
-         << r.get_top_right() << endl;
+  ostringstream s;
+
+  s << "Extending " << bl << tr << endl;
+  s << "to " << r.get_bottom_left() << r.get_top_right();
+
+  py_print(s.str());
 
   return r;
 }
@@ -315,10 +319,14 @@ vector<Contour> Contour::adjacent_ur() const
   new_contours.push_back(u);
   new_contours.push_back(r);
 
-  cout << "Extending " << bl << tr << endl;
+  ostringstream s;
+  
+  s << "Extending " << bl << tr << endl;
   for (unsigned int i=0; i<new_contours.size(); i++)
-    cout << "to " << i << new_contours[i].get_bottom_left()
-         << new_contours[i].get_top_right() << endl;
+    s << "to " << i << new_contours[i].get_bottom_left()
+                    << new_contours[i].get_top_right() << endl;
+
+  py_print(s.str());
 
   return new_contours;
 }
@@ -340,8 +348,12 @@ Contour Contour::double_ur() const
   ur.set_integrals(cl_bl,  get_integrals(tl_cl) + get_integrals(cl_bl));
   ur.set_integrals(bl_bc,  get_integrals(bl_bc) + get_integrals(bc_br));
 
-  cout << "Enlarging initial contour to" << ur.get_bottom_left()
-       << ur.get_top_right() << endl;
+  std::ostringstream s;
+
+  s << "Enlarging initial contour to" << ur.get_bottom_left()
+    << ur.get_top_right();
+
+  py_print(s.str());
 
   return ur;
 }

@@ -10,14 +10,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 #include "minimum.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
        
 /*
  ************************************************************************
@@ -59,7 +57,7 @@ using std::endl;
  * (which does not coincide with a or b) the procedure converges
  * superlinearly at a rate of about 1.324
  *
- * $Id: minimum.cpp,v 1.3 2002-04-15 19:29:17 pbienst Exp $
+ * $Id: minimum.cpp,v 1.4 2002-04-18 21:01:07 pbienst Exp $
  *
  ************************************************************************
  */
@@ -72,14 +70,13 @@ Real brent_minimum(Function1D<Real>& f, Real ax, Real bx, Real eps)
   
   if (eps < 0)
   {
-    cerr << "Tolerance must be positive." << endl;
+    py_error("Tolerance must be positive.");
     exit (-1);
   }
 
   if (ax > bx)
   {
-    cout << "Left end point of the interval should be strictly less "
-         << "than the right one." << endl;
+    py_error("Left end of interval should be less than right one.");
     exit (-1);
   }
   
@@ -179,8 +176,10 @@ Real brent_minimum(Function1D<Real>& f, Real ax, Real bx, Real eps)
     }
   }
 
-  cerr << "Warning: Brent minimiser did not reach requested accuracy "
-       << "in interval [" << ax << "," << bx << "]. " << endl;
+  std::ostringstream s;
+  s << "Warning: Brent minimiser did not reach requested accuracy "
+    << "in interval [" << ax << "," << bx << "]. ";
+  py_error(s.str());
 
   return x;
 }
@@ -200,7 +199,7 @@ vector<Real> brent_minimum(Function1D<Real>& f, vector<Real>& Ax,
 {
   if (Ax.size() != Bx.size())
   {
-    cerr << "Error: Ax and Bx must be the same size." << endl;
+    py_error("Error: Ax and Bx must be the same size.");
     exit (-1);
   }
 
@@ -266,10 +265,14 @@ void bracket_all_minima(Function1D<Real>& f, Real ax, Real bx,
 
   if ( (sec_level > 0) && (int(Ax.size()) != coarse_minima) )
   {
-    cout << "Warning: number of minima with coarse grid different than "
-         << "with fine grid. " << endl;
-    cout << "Step   dx: " << Ax.size() << endl;
-    cout << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_minima << endl;
+    std::ostringstream s;
+
+    s << "Warning: number of minima with coarse grid different than "
+      << "with fine grid. " << std::endl;
+    s << "Step   dx: " << Ax.size() << std::endl;
+    s << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_minima;
+    
+    py_print(s.str());
   }
 }
 
@@ -331,14 +334,18 @@ void bracket_N_minima(Function1D<Real>& f, Real ax, int N,
   }
 
   if (iters >= MAXITER-1)
-    cout << "Warning: maximum iterations " << MAXITER << " reached." << endl;
+    py_error("Warning: maximum iterations reached.");
 
   if ( (sec_level > 0) && (int(Ax.size()) != coarse_minima) )
   {
-    cout << "Warning: number of minima with coarse grid different than "
-         << "with fine grid. " << endl;
-    cout << "Step   dx: " << Ax.size() << endl;
-    cout << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_minima << endl;
+    std::ostringstream s;
+    
+    s << "Warning: number of minima with coarse grid different than "
+      << "with fine grid. " << std::endl;
+    s << "Step   dx: " << Ax.size() << std::endl;
+    s << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_minima;
+    
+    py_print(s.str());
   }
 }
 

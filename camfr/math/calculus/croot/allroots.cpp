@@ -308,9 +308,9 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
 
     if (iters == 200)
     {
-      cout << "Warning: maximum number of iterations reached." << endl
-           << "Try increasing real and/or imaginary part of "
-           << "set_C_upperright." << endl;
+      py_print("Warning: maximum number of iterations reached.");
+      py_print(
+       "Try increasing real and/or imaginary part of set_C_upperright.");
       
       return roots;
     }

@@ -13,9 +13,6 @@
 #include "T_scheme_fields.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -193,7 +190,7 @@ void T_scheme_fields
 
   if (field->size() != 1)
   {
-    cerr << "Error: invalid source fields in T_scheme_fields." << endl;
+    py_error("Error: invalid source fields in T_scheme_fields.");
     exit (-1);
   }
   

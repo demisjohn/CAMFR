@@ -13,6 +13,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <Python.h>
 #include <math.h>
 #include <complex>
 #include <string>
@@ -104,6 +105,18 @@ std::ostream& operator<< (std::ostream& s, const Polarisation& pol);
 #ifdef NO_CXX_ABS
 Real abs(Real x);
 #endif
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// The following functions make sure our output even show up in Python IDE
+// environments.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void py_print(const std::string& s);
+void py_error(const std::string& s);
 
 
 

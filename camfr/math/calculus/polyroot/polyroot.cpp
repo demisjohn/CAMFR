@@ -14,9 +14,6 @@
 #include "polyroot.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -55,7 +52,7 @@ vector<Complex> polyroot(const vector<Complex>& coef)
   F77NAME(cpoly)(coef_r,coef_i,N,root_r,root_i,&error);
 
   if (error)
-    cout << "Warning: polyroot solver did not converge." << endl;
+    py_error("Warning: polyroot solver did not converge.");
 
   delete [] coef_r; delete [] coef_i;
   delete [] root_r, delete [] root_i;

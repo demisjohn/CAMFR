@@ -13,9 +13,6 @@
 #include "bloch.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -294,7 +291,7 @@ void BlochStack::find_modes_diag()
 
     if (!s)
     {
-      cerr << "Error: invalid diagonal stack." << endl;
+      py_error("Error: invalid diagonal stack.");
       exit (-1);
     }
     
@@ -408,14 +405,14 @@ Field BlochMode::field(const Coord& coord) const
   
   if (real(coord.z) > real(geom->get_total_thickness()))
   {
-    cout << "Warning: z-value out of unit cell. Truncating z." << endl;
+    py_print("Warning: z-value out of unit cell. Truncating z.");
     coord2.z = geom->get_total_thickness();
   }
 
   geom->set_interface_field(interface_field);
 
   if (global.field_calc == S_T)
-    cout << "Warning: field_calc S_T can give unstable results." << endl;
+    py_print("Warning: field_calc S_T can give unstable results.");
 
   if ( (global.field_calc == S_S) && (interface_field.size() <= 1) )
   {

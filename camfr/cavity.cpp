@@ -10,14 +10,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <vector>
 #include "cavity.h"
 #include "math/calculus/minimum/minimum.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -66,14 +64,14 @@ Cavity::Cavity(Stack& top_, Stack& bot_)
   if (!(    dynamic_cast<MultiScatterer*>(top->get_sc())
          && dynamic_cast<MultiScatterer*>(bot->get_sc()) ))
   {
-    cerr << "Error: only MultiScatterers allowed in Cavity." << endl;
+    py_error("Error: only MultiScatterers allowed in Cavity.");
     exit (-1);
   }
   
   if (top->get_inc() != bot->get_inc())
   {
-    cerr << "Error: top and bottom half of cavity have different "
-         << "incidence media." << endl;
+    py_error(
+     "Error: top and bottom half of cavity have different incidence media.");
     exit (-1);
   }
 }
@@ -98,8 +96,11 @@ void Cavity::find_modes_in_region
     (sigma_lambda, lambda_start, lambda_stop, Ax, Bx, delta_lambda);
 
   for (unsigned int i=0; i<Ax.size(); i++)
-    cout << "Minimum " << i << " between " << Ax[i]
-         << " and " << Bx[i] << "." << endl;
+  {
+    std::ostringstream s;
+    s << "Minimum " << i << " between " << Ax[i] << " and " << Bx[i] << ".";
+    py_print(s.str());
+  }
   
   // Do a fine search for the minima.
 
@@ -109,15 +110,16 @@ void Cavity::find_modes_in_region
 
   if (Ax.size() == 0)
   {
-    cout << "No minimum found in this region." << endl;
+    py_print("No minimum found in this region.");
     return;
   }
 
   int modes_found = 0;
   for (int i=Ax.size()-1; i>=0; i--)
   {
-    cout << "Looking for mode between " << Ax[i]
-         << " and " << Bx[i] << "." << endl;
+    std::ostringstream s;
+    s << "Looking for mode between " << Ax[i] << " and " << Bx[i] << ".";
+    py_print(s.str());
     
     find_mode(Ax[i], Bx[i],n_imag_start, n_imag_stop, passes);
 
@@ -141,7 +143,7 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
 {  
   if (passes < 1)
   {
-    cout << "Invalid number of passes. Setting it to 1." << endl;
+    py_print("Invalid number of passes. Setting it to 1.");
     passes = 1;
   }
 
@@ -164,9 +166,13 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
 
     // Print diagnostics.
 
-    cout << "Done pass " << i 
-         << ": lambda " << global.lambda 
-         << ", gain "   << global.gain_mat->gain() << endl;
+    std::ostringstream s;
+
+    s << "Done pass " << i 
+      << ": lambda " << global.lambda
+      << ", gain "   << global.gain_mat->gain();
+
+    py_print(s.str());
     
     // Refine intervals and precisions for next pass.
 
@@ -243,11 +249,15 @@ Real Cavity::calc_sigma(int* dominant_mode)
   
   // Print diagnostics.
 
-  cout << "@ " << global.lambda
-       << " " << imag(global.gain_mat->n())
-       << " " << global.gain_mat->gain()
-       << " " << sigma(N)
-       << " " << *dominant_mode << endl;
+  std::ostringstream s;
+
+  s << "@ " << global.lambda
+    << " " << imag(global.gain_mat->n())
+    << " " << global.gain_mat->gain()
+    << " " << sigma(N)
+    << " " << *dominant_mode;
+  
+  py_print(s.str());
   
   current_sigma = sigma(N);
   
