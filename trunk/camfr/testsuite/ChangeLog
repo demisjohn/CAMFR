@@ -1,3 +1,9 @@
+2003-02-28  Peter Bienstman <Peter.Bienstman@rug.ac.be>
+
+	* field.py: New test.
+	* fw_bw.py: Ditto.
+	* slab.py: Ditto.
+
 2003-02-05  Peter Bienstman <Peter.Bienstman@rug.ac.be>
 
 	* stack1.py: New test.
