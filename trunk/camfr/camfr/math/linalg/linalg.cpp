@@ -826,7 +826,7 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
     op_code[0] = 'N';
     vectordata = NULL; 
   }
-
+  
   F77NAME(zggev)("N",op_code,N,A_bis.data(),N,B_bis.data(),N,
                  alpha->data(),beta->data(),NULL,N,vectordata,
                  N,work.data(),work_size*N,work2.data(),info); 

@@ -1003,7 +1003,9 @@ void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
   {    
     FieldExpansion f(interface_field.back().
                      propagate(coord.z-get_total_thickness()));
+    
     *fw = f.fw; *bw = f.bw;
+    
     return;
   }
 
