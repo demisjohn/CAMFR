@@ -374,31 +374,21 @@ std::vector<Complex> mueller
   (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter,
    ComplexFunction* transform, int verbosity)
 {
-  vector<Complex> allroots;
-  
+  // Calculate roots.
+
+  vector<Complex> z1;
   for (unsigned int i=0; i<z0.size(); i++)
   {
-    // Determine which zeros to deflate.
-
-    vector<Complex> deflate;
- 
-    for (unsigned int j=0; j<allroots.size(); j++)
-      if (abs(allroots[j]-z0[i]) < 0.5)
-      {
-        //std::cout << "Deflating " << i << " " << (*transform)(allroots[j]) 
-        //          << std::endl;
-        deflate.push_back(allroots[j]);
-      }
-
-    // Find zero.
-
     bool error = false;
     bool verbose = verbosity == 2;
+    vector<Complex> deflate;
     Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
                                &deflate, maxiter, &error, verbose);
 
     if (error)
       py_error("Mueller solver failed to converge.");
+    else
+      z1.push_back(new_root);
 
     if (verbosity > 0)
     {
@@ -411,13 +401,94 @@ std::vector<Complex> mueller
     
       py_print(s.str());
     }
-
-    if (!error)
-      allroots.push_back(new_root);
   }
 
-  return allroots;
+  // Dectect doubles.
+
+  vector<Complex> z_final;
+  vector<vector<Complex> > duplicates;
+  
+  vector<bool> dealt_with;
+  for (unsigned int i=0; i<z1.size(); i++)
+    dealt_with.push_back(false);
+  
+  for (unsigned int i=0; i<z1.size(); i++)
+  {
+    if (dealt_with[i])
+      continue;
+   
+    int occurrence = 1;
+    for (int j=i+1; j<z1.size(); j++)
+      if (abs(z1[j] - z1[i]) < 1e-6)
+      {
+        occurrence++;
+        dealt_with[j] = true;
+      }
+    
+    if (occurrence == 1)
+      z_final.push_back(z1[i]);
+    else
+    {
+      vector<Complex> duplicates_i;
+      for (int k=0; k<occurrence; k++)
+        duplicates_i.push_back(z1[i]);
+      
+      duplicates.push_back(duplicates_i);
+    }
+  }
+
+  // Deflate doubles.
+
+  for (unsigned int i=0; i<duplicates.size(); i++)
+  {
+    const Complex z_cluster = duplicates[i][0];
+    
+    // Deflate neighbouring zeros.
+    
+    vector<Complex> deflate;
+ 
+    for (unsigned int j=0; j<z_final.size(); j++)
+      if (    (abs(z_final[j]-z_cluster) < 0.5)
+           && (abs(z_final[j]-z_cluster) > 1e-3) )
+      {
+        //std::cout << "Deflating " << i << " " << (*transform)(z_final[j]) 
+        //          << std::endl;
+        deflate.push_back(z_final[j]);
+      }
+
+    z_final.push_back(z_cluster);
+    
+    for (unsigned int j=1; j<duplicates[i].size(); j++)
+    {
+      deflate.push_back(z_cluster);
+      //std::cout << "Deflating " << i << " " << (*transform)(z_cluster)
+      //          << std::endl;
+      
+      bool error = false;
+      bool verbose = verbosity == 2; 
+      int maxiter_i = maxiter * deflate.size();
+      Complex new_root = mueller(f, z_cluster+0.001, z_cluster+.001*I, eps,
+                                 &deflate, maxiter_i, &error, verbose);
+
+      if (error)
+        py_error("Mueller solver failed to converge.");
+      else
+        z_final.push_back(new_root);
+
+      if (verbosity > 0)
+      {
+        std::ostringstream s;
+        if (!transform)
+          s << i << " " << z0[i] << " --> " << new_root;
+        else
+          s << i << " " << (*transform)(z_cluster) << " --> "
+            << (*transform)(new_root);
+    
+        py_print(s.str());
+      }
+    }
+  }
+
+  return z_final;
 }
-
-
 
