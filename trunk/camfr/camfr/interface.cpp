@@ -264,7 +264,7 @@ void DenseInterface::calcRT_non_orth_safe()
 
   cMatrix A(2*N,2*N,fortranArray);
   cMatrix B(2*N,  N,fortranArray);
-  cMatrix X(2*N,N,fortranArray);
+  cMatrix X(2*N,  N,fortranArray);
 
   MultiWaveguide* w1 = dynamic_cast<MultiWaveguide*>(inc);
   MultiWaveguide* w2 = dynamic_cast<MultiWaveguide*>(ext);  
@@ -328,7 +328,7 @@ void DenseInterface::calcRT_non_orth_safe()
 //
 //  Calculates RT when the modes are not orthogonal.
 //  Doesn't do row/column equilibration and uses alternative formulation,
-//  which allows for some shortcuts exploiting the symmetry..
+//  which allows for some shortcuts exploiting the symmetry.
 //
 /////////////////////////////////////////////////////////////////////////////
 
