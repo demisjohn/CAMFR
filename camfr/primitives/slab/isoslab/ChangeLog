@@ -1,5 +1,9 @@
 2002-10-30 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* slab.cpp: Improve detection of non-zero minima.
+
+2002-10-30 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* slab.cpp: Rename left/right to lower/upper.
 	* slabdisp.cpp: Ditto.
 	* slabdisp.h: Ditto.
