@@ -33,7 +33,7 @@ BOOST_INC = /home/pbienst/boost_1_25_0
 
 # location of the Boost library
 
-BOOST_LIB = /home/pbienst/boost_1_25/libs/python/src/libboost_python.a
+BOOST_LIB = /home/pbienst/boost_1_25_0/libs/python/src/libboost_python.a
 
 # Arpack++ header files
 
