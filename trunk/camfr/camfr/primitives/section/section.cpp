@@ -730,13 +730,11 @@ void Section2D::find_modes_from_series()
   {
     Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
 
-    // TODO: check
-
-    if (real(kt) < 0) 
+    if (imag(kt) < 0) 
       kt = -kt;
 
-    if (abs(real(kt)) < 1e-12)
-      if (imag(kt) > 0)
+    if (abs(imag(kt)) < 1e-12)
+      if (real(kt) > 0)
         kt = -kt;
 
     kt_coarse.push_back(kt);
