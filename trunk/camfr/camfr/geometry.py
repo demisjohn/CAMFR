@@ -375,7 +375,8 @@ class Geometry:
         self.shapes.append(s)
         return self
    
-    def to_expression(self, x0, x1, dx, y0, y1, dy, add_flipped=0):
+    def to_expression(self, x0, x1, dx, y0, y1, dy, add_flipped=0,
+                      calc_average=0):
 
         if (x0 > x1) or (y0 > y1):
             print "Error: Invalid boundaries for to_expression."
@@ -478,14 +479,20 @@ class Geometry:
         # Create expression.
 
         e = Expression()
-
+        
+        eps_average = inv_eps_average = 0
+        
         for i in range(len(slabs)):
             
             e_slab = Expression()
+            
             for j in range(len(slabs[i])):
                 
                 chunk_d = slabs[i][j][1] - slabs[i][j][0]                
                 chunk_m = slabs[i][j][2]
+
+                eps_average     +=    chunk_m.epsr() * chunk_d * d[i]
+                inv_eps_average += 1./chunk_m.epsr() * chunk_d * d[i]
                 
                 e_slab.add(chunk_m(chunk_d))
                 
@@ -500,13 +507,19 @@ class Geometry:
             slab_cache.append(s)
             e.add(s(d[i]))
 
+        eps_average     /= (x1-x0) * (y1-y0)
+        inv_eps_average /= (x1-x0) * (y1-y0)        
+
         # Add flipped scatterer.
 
         if add_flipped:
             for i in range(len(slabs)):
                 e.add((slab_cache[-i-1])(d[-i-1]))
 
-        return e
+        if calc_average == False:
+            return e
+        else:
+            return e, eps_average, inv_eps_average
 
 def pretty_print(s):
     for i in range(s.N()):
