@@ -883,6 +883,37 @@ cMatrix fourier_eps_2D_y_x(const vector<Slab*>& slabs,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// rotate_slabs()
+//
+//  Given a sequence of slabs in the x direction, transform it to
+//  a sequence of slabs in the y direction. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void rotate_slabs(const vector<Slab*> slabs, const vector<Complex> disc,
+                  vector<Slab>* slabs_rot,   vector<Complex>* disc_rot)
+{
+  // Create list of discontinuities in the y-direction.
+
+  disc_rot->clear();
+  disc_rot->push_back(0.0);
+  for (int i=0; i<slabs.size(); i++)
+  {
+    vector<Complex> disc_i = slabs[i]->get_discontinuities();
+    
+    for (int j=0; j<disc_i.size(); j++)
+      disc_rot->push_back(disc_i[j]);
+  }
+
+  remove_copies(disc_rot, 1e-9);
+
+  sort(disc_rot->begin(), disc_rot->end(), RealSorter());
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Section2D::find_modes_from_series()
 //
 /////////////////////////////////////////////////////////////////////////////

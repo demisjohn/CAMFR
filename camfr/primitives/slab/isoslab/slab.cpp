@@ -1303,7 +1303,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   kt_to_neff transform(C0*min_eps_mu);
   SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall);
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform, 1);
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform);
 
   // Eliminate false zeros.
 
