@@ -1054,11 +1054,10 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Section.
 
   class_<Section, bases<MultiWaveguide> >
-  ("Section", init<Expression&>())
+  ("Section", init<Expression&, optional<int, int> >())
     .def(init<const Term&>())
-    .def(init<Expression&, int>())
     .def(init<Expression&, Expression&>())
-    .def(init<Expression&, Expression&, int>())
+    .def(init<Expression&, Expression&, int, int>())
     .def("width",  section_width)
     .def("height", section_height)
     .def("eps",    &Section::eps_at)
@@ -1069,7 +1068,7 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap RefSection.
 
   class_<RefSection, bases<MultiWaveguide> >
-  ("RefSection", init<Material&, const Complex&, const Complex&>())
+  ("RefSection", init<Material&, const Complex&, const Complex&, int>())
     ;
 }
 
