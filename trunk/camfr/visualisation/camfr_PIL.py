@@ -295,12 +295,14 @@ def _create_arrow(draw, p, dx, dy):
 #
 ##############################################################################
 
-def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0,
+def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
                         min_area=100000, scale=1):
 
     import MLab
         
     # Scale z and find appropriate colormap.
+
+    z = z_.copy()
     
     zmax = MLab.max(MLab.max(z))
     zmin = MLab.min(MLab.min(z))
@@ -445,7 +447,7 @@ def plot_arrow(px, pz, r_x=0, r_z=0, filename=0):
 #
 ##############################################################################
 
-def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
+def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
     
     import MLab
     
@@ -471,6 +473,8 @@ def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         zmin    = log(zcst)                 # Around -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
 
+        z = z_.copy()
+        
         # Calculate each frame.
         
         for Nr in range(0,frames):
@@ -633,7 +637,7 @@ def _create_color_range(c1=(0,0,0), c2=(255,255,255), ad_last = 0 ):
     if ad_last: colors +=1
 
     return [sum( (c1 + (x*dc).astype(Int))*[1, 0x100, 0x10000] )
-            for x in range(colors)]
+            for x in range(int(colors))]
 
 
 
