@@ -9,8 +9,8 @@ FORCE:
 clean:
 	rm -f *~ core MANIFEST
 	python setup.py clean
-	rm -R build
-	rm -R dist
+	rm -f -R build
+	rm -f -R dist
 	cd camfr ; make clean
 	cd examples ; make clean
 	cd visualisation ; make clean
