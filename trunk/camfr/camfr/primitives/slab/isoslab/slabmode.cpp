@@ -20,30 +20,6 @@ using std::vector;
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// signedsqrt2_
-//
-//   Square root with branch cut at 45 degrees.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex signedsqrt2_(const Complex& kz2)
-{
-  Complex new_kz = sqrt(kz2);
-
-  if (imag(new_kz) > 0)
-    new_kz = -new_kz;
-
-  if (abs(imag(new_kz)) < abs(real(new_kz)))
-    if (real(new_kz) < 0)
-      new_kz = -new_kz;
-
-  return new_kz;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // SlabMode::get_kz()
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -113,7 +89,7 @@ Field SlabMode::field(const Coord& coord_) const
   // Note that cs needs to be in sync with generalslab.cpp.
   
   const Complex sn = global_slab.beta / kz;
-  const Complex cs = signedsqrt2_(1.0 - sn*sn);
+  const Complex cs = slab_signedsqrt(1.0 - sn*sn);
   
   Field field;
 

@@ -11,6 +11,7 @@ CAMFR 1.0:
  - more robust method of calculating Bloch modes (Lieven Vanholme)
    and their field profiles
  - added stack.n(), stack.mu() and stack.eps()
+ - added Poynting vector components field.S1(), field.S2() and field.Sz()
  - Matlab link under Windows is by default enabled and installed
  - better handling of loosely coupled or degenerate waveguides
  - better handling of metals, also metals with purely imaginary refractive

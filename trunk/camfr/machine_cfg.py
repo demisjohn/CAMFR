@@ -16,42 +16,38 @@ f77 = "/home/pbienst/local/bin/g77"
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-fPIC -ftemplate-depth-60 \
+base_flags = "-ftemplate-depth-60 \
 	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
-
-flags = base_flags + "-O3 --param max-inline-insns=600 -march=pentiumpro \
-                       -ffast-math -funroll-loops -fstrict-aliasing -g"
-
-fflags = base_flags
 
 flags_noopt = base_flags
 
-#flags = base_flags
+flags = base_flags + " --param max-inline-insns=600  \
+                       -ffast-math -funroll-loops -fstrict-aliasing -g"
+
+fflags = flags
 
 # Include directories.
 
-include_dirs ="/home/pbienst/blitz-20001213 \
-	       /home/pbienst/boost_cvs/boost \
-	       /home/pbienst/local/include/python2.2 \
-	       /home/pbienst/arpack++/include"
+include_dirs = ["/home/pbienst/blitz-20001213",
+	        "/home/pbienst/boost_cvs/boost",
+	        "/home/pbienst/local/include/python2.2"]
 
-# Temporary workaround waiting for shared lib support in scons.
+# Library directories.
 
-camfrlib = "libcamfr.a"
-dllsuffix = ".so"
-dllcommand = cc + " -shared camfr/camfr_wrap.o \
-	-L/home/pbienst/camfr_work/camfr \
-	-L/home/pbienst/blitz-20001213/lib \
-	-L/opt/intel/mkl/lib/32 \
-	-L/home/pbienst/ARPACK \
-	-lcamfr -lbpl -lblitz -larpack -lmkl_lapack -lmkl_p3 -lguide \
-	-lm -lg2c -lstdc++ -o camfr/_camfr" + dllsuffix
+library_dirs = ["/home/pbienst/blitz-20001213/lib",
+                "/opt/intel/mkl/lib/32",
+                "/home/pbienst/local/lib"]
+
+# Library names.
+
+libs = ["bpl", "blitz", "mkl_lapack", "mkl_p3", "guide", "g2c"]
 
 # Command to strip library of excess symbols:
 
+dllsuffix = ".so"
 strip_command = "strip --strip-unneeded camfr/_camfr" + dllsuffix
 strip_command = ""
 
-# Extra files to copy to installation directory.
+# Extra files to copy into installation directory.
 
 extra_files = []
