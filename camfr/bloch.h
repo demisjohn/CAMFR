@@ -94,6 +94,8 @@ class BlochMode : public Mode
       {return dynamic_cast<MultiWaveguide*>(geom->get_inc())->
          S_flux(interface_field[0], c1_start, c1_stop, eps);}
 
+    Stack* get_geom() const {return geom;}
+
   protected:
 
     Stack* geom;
