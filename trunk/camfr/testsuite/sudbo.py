@@ -24,6 +24,8 @@ class sudbo(unittest.TestCase):
         core = Material(1.5)
         clad = Material(1.0)
 
+        set_section_solver(OS)
+
         set_left_wall(H_wall)
 
         wg = Slab(core(0.25) + clad(0.76-.25))
