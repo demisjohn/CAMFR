@@ -22,7 +22,7 @@
   
 void split_chunks(const vector<Chunk>& chunks,
                   vector<Chunk>* left_chunks, vector<Chunk>* right_chunks,
-                  unsigned int i, Split_type split=after_prop)
+                  unsigned int i, Split_type split)
 {
   // Check values.
 
