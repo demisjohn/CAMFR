@@ -1942,7 +1942,7 @@ as @code{lambda} is a reserved Python keyword.
 @cindex @code{set_N}
 
 @noindent
-@code{set_lambda(int)}: sets the number of modes used in the series expansion.
+@code{set_N(int)}: sets the number of modes used in the series expansion.
 
 @noindent
 @xref{N}.
