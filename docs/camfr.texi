@@ -1780,7 +1780,6 @@ set_N(50)
 # Set geometry parameters
 
 GaAs = Material(3.4)
-wg_m = Material(1.8)
 air  = Material(1.0)
   
 a = .600     # period

@@ -38,7 +38,7 @@ class degenerate(unittest.TestCase):
         E_OK = 19.2559587762
 
         OK = 0
-        
+
         if abs(E0_l) > abs(E0_r): # Mode 0 in left waveguide
             OK =   (abs((E0_l - E_OK) / E_OK) < eps.testing_eps) \
                and (abs((E1_r - E_OK) / E_OK) < eps.testing_eps) \
