@@ -6,6 +6,8 @@ import MLab, pymat
 #
 # Thin wrapper around pymat.
 #
+# Some changes by Ross Stanley.
+#
 ##############################################################################
 
 class Matlab:
@@ -76,6 +78,7 @@ def plot_vector(v):
 #
 # Plot a matrix.
 #
+# Change 'pcolor' to 'imagesc' and reverse x and y
 ##############################################################################
 
 def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
@@ -90,9 +93,9 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
         matlab.put('y', r_y)
 
     if not r_x and not r_y:
-        matlab("pcolor(z)")
+        matlab("imagesc(z)")
     else:
-        matlab("pcolor(y,x,z)")
+        matlab("imagesc(x,y,z)")
    
     if (MLab.min(MLab.min(z)) < 0) and (0 < MLab.max(MLab.max(z))):
         create_bipolar_color_map()
@@ -137,6 +140,7 @@ def create_bipolar_color_map():
 #
 # Creates a movie starting from a complex matrix representing phasors.
 #
+# Change 'pcolor' to 'imagesc' and reverse x and y
 ##############################################################################
 
 def phasormovie(z, r_x=0, r_y=0, filename=0):
@@ -159,9 +163,9 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
         matlab("m = real(z*exp(i*(k/16)*2*pi))")
   
         if not r_x and not r_y:
-            matlab("pcolor(m)")
+            matlab("imagesc(m)")
         else:
-            matlab("pcolor(y,x,m)")
+            matlab("imagesc(x,y,m)")
 
         matlab("caxis(v)")
         
@@ -261,9 +265,10 @@ def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
 #
 # Plot the refractive index profile in a Section.
 #
+# Added default values for filename and colormap
 ##############################################################################
 
-def plot_n_section(stack, r_x, r_y, filename, colormap):
+def plot_n_section(stack, r_x, r_y, filename=0, colormap=whiteblack):
     
     n = zeros([len(r_y),len(r_x)], Float)
 
@@ -314,9 +319,10 @@ def plot_field_waveguide(mode, component, r_x):
 #
 # Plot the field profile in a stack.
 #
+# Added default values for filename and colormap
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
+def plot_field_stack(stack, component, r_x, r_z, filename=0, colormap=0,
                      overlay_n=1, contour=1):
     
     f = zeros([len(r_x),len(r_z)], Float)
@@ -334,9 +340,10 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
 #
 # Plot the field profile of a section mode.
 #
+# Added default values for filename and colormap
 ##############################################################################
 
-def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
+def plot_field_section_mode(mode, component, r_x, r_y, filename=0, colormap=0,
                             overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Float)
@@ -424,5 +431,4 @@ def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
         animate_field_section_mode(o, component, r1, r2, filename)
     else:
         print "Unsupported argument for animate_field."
-
 
