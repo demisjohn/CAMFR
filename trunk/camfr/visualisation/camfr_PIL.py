@@ -444,11 +444,12 @@ def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
 
     if not r2:
         plot_n_waveguide(o, r1)
-    if type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
+    elif type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
         plot_n_stack(o, r1, r2, filename, colormap)
-    if type(o) == Section:
-        plot_n_section(o, r1, r2, filename, colormap)
-
+    elif type(o) == Section:
+        plot_n_section(o, r1, r2, filename, colormap)    
+    else:
+        print "Unsupported argument for plot_n."
 
 
 ##############################################################################
@@ -518,8 +519,10 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
         plot_field_stack(o, component, r1, r2, filename, colormap)
-    elif type(o) == Mode:
+    elif type(o) == SectionMode:
         plot_field_section_mode(o, component, r1, r2, filename, colormap)
+    else:
+        print "Unsupported argument for plot_field."
         
 
 
@@ -529,7 +532,7 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
 #
 ##############################################################################
 
-def animate_field(stack, component, r_x, r_z, filename=0):
+def animate_field_stack(stack, component, r_x, r_z, filename=0):
     
     f = zeros([len(r_x),len(r_z)], Complex)
 
@@ -540,3 +543,38 @@ def animate_field(stack, component, r_x, r_z, filename=0):
 
     phasormovie(f, r_z, r_x, filename)
 
+
+
+##############################################################################
+#
+# Animate the field profile of a section mode.
+#
+##############################################################################
+
+def animate_field_section_mode(mode, component, r_x, r_y, filename=0):
+    
+    f = zeros([len(r_y),len(r_x)], Complex)
+
+    for i_x in range(len(r_x)):
+      for i_y in range(len(r_y)):
+        f[len(r_y)-1-i_y,i_x] = \
+              component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
+
+    phasormovie(f, r_x, r_y, filename)
+
+
+
+##############################################################################
+#
+# Wrapper for animate_field.
+#
+##############################################################################
+
+def animate_field(o, component, r1, r2, filename=0):
+
+    if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
+        animate_field_stack(o, component, r1, r2, filename)
+    elif type(o) == SectionMode:
+        animate_field_section_mode(o, component, r1, r2, filename)
+    else:
+        print "Unsupported argument for animate_field."
