@@ -140,8 +140,8 @@ class Term
     Term() {}
     Term(const Material_length& m_l);
     Term(const Waveguide_length& wg_l);
-    Term(Scatterer& s);
-    Term(Stack& st);
+    Term(const Scatterer& s);
+    Term(const Stack& st);
     Term(const Expression& e, unsigned int N=1);
     ~Term() {}
 

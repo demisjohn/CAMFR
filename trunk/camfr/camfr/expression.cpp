@@ -411,9 +411,9 @@ Term::Term(const Waveguide_length& wg_l)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Term::Term(Scatterer& s)
+Term::Term(const Scatterer& s)
   : type(SCATTERER), mat(NULL), wg(NULL), d(0.0),
-    sc(&s), ex(NULL), N(1), st(NULL) {}
+    sc(const_cast<Scatterer*>(&s)), ex(NULL), N(1), st(NULL) {}
 
 
 
@@ -423,9 +423,9 @@ Term::Term(Scatterer& s)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Term::Term(Stack& st_)
+Term::Term(const Stack& st_)
   : type(STACK_EXPRESSION), mat(NULL), wg(NULL), d(0.0), sc(st_.get_sc()),
-    N(st_.get_no_of_periods()), st(&st_)
+    N(st_.get_no_of_periods()), st(const_cast<Stack*>(&st_))
 {
   ex = new Expression(st_.get_expression());
   Expression::tmp_exprs.store(ex);
