@@ -413,7 +413,6 @@ def plot_field_section_mode(mode, component, r_x, r_y):
 ##############################################################################
 
 def plot_field(o, component, r1, r2=0):
-    print type(o)
     if not r2:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode:
