@@ -1,3 +1,7 @@
+2002-04-18  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Replace type_list by args.
+
 2002-03-20  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* defs.h: Clean up Fortran name handling.

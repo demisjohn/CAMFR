@@ -16,7 +16,6 @@
 // Enums and constants
 // Default arguments
 
-#define BOOST_PYTHON_DYNAMIC_LIB
 #define BOOST_PYTHON_V2
 #define BOOST_PYTHON_SOURCE
 
@@ -33,7 +32,6 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/errors.hpp>
 #include <libs/python/src/converter/builtin_converters.cpp>
-#include <boost/mpl/type_list.hpp>
 
 #include "Numeric/arrayobject.h"
 
@@ -417,7 +415,6 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 {
   using namespace boost::python;
   using namespace boost::python::converter;
-  using boost::mpl::type_list;
   using boost::shared_ptr;
   using boost::python::return_value_policy;
   using boost::python::reference_existing_object;
@@ -544,8 +541,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Coord>("Coord")
-    .def_init(type_list<const Complex&, const Complex&, const Complex&>())
-    //.def_init(type_list<const Complex&, const Complex&, const Complex&,
+    .def_init(args<const Complex&, const Complex&, const Complex&>())
+    //.def_init(args<const Complex&, const Complex&, const Complex&,
     //                          Limit,          Limit,          Limit>())
     .def("__repr__", &Coord::repr)
     );
@@ -581,8 +578,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Material, shared_ptr<Material>, bases<BaseMaterial> >("Material")
-    .def_init(type_list<const Complex&>())
-    .def_init(type_list<const Complex&, const Complex&>()) // TODO: def. arg
+    .def_init(args<const Complex&>())
+    .def_init(args<const Complex&, const Complex&>()) // TODO: def. arg
     .def("__call__", material_to_term)
     .def("n",        &Material::n)
     .def("epsr",     &Material::epsr)
@@ -696,30 +693,30 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<FlippedScatterer, bases<MultiScatterer> >("FlippedScatterer")
-    .def_init(type_list<MultiScatterer&>())
+    .def_init(args<MultiScatterer&>())
     );
 
   // Wrap E_Wall.
 
   camfr.add(
     class_<E_Wall, bases<DiagScatterer> >("E_Wall")
-    .def_init(type_list<Waveguide&>())
+    .def_init(args<Waveguide&>())
     );
 
   // Wrap H_Wall.
 
   camfr.add(
     class_<H_Wall, bases<DiagScatterer> >("H_Wall")
-    .def_init(type_list<Waveguide&>())
+    .def_init(args<Waveguide&>())
     );
 
   // Wrap Expression.
 
   camfr.add(
     class_<Expression>("Expression")
-    .def_init(type_list<>())
-    .def_init(type_list<const Term&>())
-    .def_init(type_list<const Expression&>())
+    .def_init(args<>())
+    .def_init(args<const Term&>())
+    .def_init(args<const Expression&>())
     .def("flatten",  &Expression::flatten)
     .def("inc",  &Expression::get_inc,
          return_value_policy<reference_existing_object>())
@@ -742,9 +739,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Term>("Term")
-    .def_init(type_list<Scatterer&>())
-    .def_init(type_list<Stack&>())
-    .def_init(type_list<const Expression&>())
+    .def_init(args<Scatterer&>())
+    .def_init(args<Stack&>())
+    .def_init(args<const Expression&>())
     .def("inc",  &Term::get_inc,
          return_value_policy<reference_existing_object>())
     .def("ext",  &Term::get_inc,
@@ -762,7 +759,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Stack>("Stack")
-    .def_init(type_list<const Expression&>())
+    .def_init(args<const Expression&>())
     .def("calc",           &Stack::calcRT)
     .def("free",           &Stack::freeRT)
     .def("inc",            &Stack::get_inc,
@@ -801,7 +798,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Cavity>("Cavity")
-    .def_init(type_list<Stack&, Stack&>())
+    .def_init(args<Stack&, Stack&>())
     .def("find_modes_in_region", cavity_find_modes_in_region_3)
     .def("find_modes_in_region", cavity_find_modes_in_region_7)
     .def("find_mode",            cavity_find_mode_2)
@@ -815,7 +812,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<BlochStack, bases<MultiWaveguide> >("BlochStack")
-    .def_init(type_list<const Expression&>())
+    .def_init(args<const Expression&>())
     .def("mode",        blochstack_get_mode,
          return_value_policy<reference_existing_object>())
     .def("length",      &BlochStack::get_total_thickness)
@@ -836,8 +833,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<InfStack, bases<DenseScatterer> >("InfStack")
-    .def_init(type_list<const Expression&>())
-    .def_init(type_list<const Expression&, const Complex&>()) // TMP
+    .def_init(args<const Expression&>())
+    .def_init(args<const Expression&, const Complex&>()) // TMP
     .def("R12", &InfStack::get_R12,
          return_value_policy<reference_existing_object>())
     );
@@ -862,7 +859,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Planar, bases<MonoWaveguide> >("Planar")
-    .def_init(type_list<Material&>())
+    .def_init(args<Material&>())
     .def("set_theta", &Planar::set_theta)
     );
 
@@ -870,8 +867,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Circ, bases<MultiWaveguide> >("Circ")
-    .def_init(type_list<Term&>())
-    .def_init(type_list<Expression&>())
+    .def_init(args<Term&>())
+    .def_init(args<Expression&>())
     );
 
   // Wrap SlabWall.
@@ -885,7 +882,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<SlabWallMixed, bases<SlabWall> >("SlabWallMixed")
-    .def_init(type_list<const Complex&, const Complex&>())
+    .def_init(args<const Complex&, const Complex&>())
     );
 
   //camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
@@ -896,30 +893,30 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<SlabWall_TBC, bases<SlabWall> >("SlabWall_TBC")
-    .def_init(type_list<const Complex&, const Material&>())
+    .def_init(args<const Complex&, const Material&>())
     );
 
   // Wrap SlabWall_PC.
 
   camfr.add(
     class_<SlabWall_PC, bases<SlabWall> >("SlabWall_PC")
-    .def_init(type_list<const Expression&>())
+    .def_init(args<const Expression&>())
     );
 
   // Wrap SlabDisp.
 
   camfr.add(
     class_<SlabDisp, bases<ComplexFunction> >("SlabDisp")
-    .def_init(type_list<Expression&, Real>())
-    .def_init(type_list<Expression&, Real, SlabWall*, SlabWall*>())
+    .def_init(args<Expression&, Real>())
+    .def_init(args<Expression&, Real, SlabWall*, SlabWall*>())
     );
 
   // Wrap Slab.
 
   camfr.add(
     class_<Slab, bases<MultiWaveguide> >("Slab")
-    .def_init(type_list<const Term&>())
-    .def_init(type_list<const Expression&>())
+    .def_init(args<const Term&>())
+    .def_init(args<const Expression&>())
     .def("set_left_wall",  &Slab::set_left_wall)
     .def("set_right_wall", &Slab::set_right_wall)
     .def("width",          &Slab::get_width)
@@ -929,17 +926,17 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<SectionDisp, bases<ComplexFunction> >("SectionDisp")
-    .def_init(type_list<Stack&, Stack&, Real, int>())
+    .def_init(args<Stack&, Stack&, Real, int>())
     );
 
   // Wrap Section.
 
   camfr.add(
     class_<Section, bases<MultiWaveguide> >("Section")
-    .def_init(type_list<const Expression&>())
-    .def_init(type_list<const Expression&, int>())
-    .def_init(type_list<const Expression&, const Expression&>())
-    .def_init(type_list<const Expression&, const Expression&, int>())
+    .def_init(args<const Expression&>())
+    .def_init(args<const Expression&, int>())
+    .def_init(args<const Expression&, const Expression&>())
+    .def_init(args<const Expression&, const Expression&, int>())
     .def("width", &Section::get_width)
     );
 }
