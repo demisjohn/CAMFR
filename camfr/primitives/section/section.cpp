@@ -821,24 +821,27 @@ void Section2D::find_modes_from_series()
   py_print("Done.");
 
   // Test orthogonality.
-/*
-  return;
-
-  cMatrix O(modeset.size(), modeset.size(), fortranArray);
-  overlap_matrices(&O, this, this);
-  std::cout << O << std::endl;
 
   return;
+
+  cMatrix O12(modeset.size(), modeset.size(), fortranArray);
+  cMatrix O21(modeset.size(), modeset.size(), fortranArray);
+  cMatrix O11(modeset.size(), modeset.size(), fortranArray);
+  cMatrix O22(modeset.size(), modeset.size(), fortranArray);
+  calc_overlap_matrices(this, &O12, &O21, &O11, &O22);
+  std::cout << O12 << std::endl;
+
+  //return;
 
   for (unsigned int i=0; i<modeset.size(); i++)
     for (unsigned int j=0; j<modeset.size(); j++)
         std::cout << i << " " << j << " " 
-              << overlap(dynamic_cast<Section2D_Mode*>(modeset[i]),
+              << overlap_numeric(dynamic_cast<Section2D_Mode*>(modeset[i]),
                          dynamic_cast<Section2D_Mode*>(modeset[j]))
                   << std::endl << std::flush;
 
   exit(-1);
-*/
+
 }
 
 
