@@ -3,7 +3,7 @@ include ../make.inc
 OBJS = defs.o material.o coord.o field.o mode.o waveguide.o \
        scatterer.o chunk.o interface.o icache.o expression.o \
        stack.o S_scheme.o T_scheme.o S_scheme_fields.o \
-       T_scheme_fields.o cavity.o bloch.o	
+       T_scheme_fields.o cavity.o bloch.o infstack.o	
 
 libcamfr.a: FORCE
 	$(MAKE) $(OBJS) util math primitives 
@@ -95,6 +95,9 @@ cavity.o: cavity.h cavity.cpp defs.h stack.h material.h
 
 bloch.o: bloch.h bloch.cpp defs.h stack.h
 	$(CC) $(FLAGS) -c bloch.cpp
+
+infstack.o: infstack.h infstack.cpp defs.h stack.h bloch.h
+	$(CC) $(FLAGS) -c infstack.cpp
 
 util: FORCE
 	cd util ; $(MAKE)

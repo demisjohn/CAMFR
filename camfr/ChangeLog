@@ -1,3 +1,8 @@
+2002-02-07  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* infstack.h: New file.
+	* infstack.cpp: Ditto.
+
 2002-02-01  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* stack.cpp: Implement eps_at and mu_at.
