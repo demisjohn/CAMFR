@@ -10,12 +10,13 @@ import unittest
 
 import blazed_grating, substacks, planarTE, planarTM, VCSEL, SpE, \
        PhC_splitter, metal_splitter, expressions, cladding, grating, \
-       degenerate, ADR_solver
+       degenerate, ADR_solver, precision
 
 alltests = unittest.TestSuite((blazed_grating.suite, substacks.suite, 
        planarTE.suite, planarTM.suite, VCSEL.suite, SpE.suite,
        PhC_splitter.suite, metal_splitter.suite, expressions.suite,
-       cladding.suite, grating.suite, degenerate.suite, ADR_solver.suite))
+       cladding.suite, grating.suite, degenerate.suite, ADR_solver.suite,
+       precision.suite))
 
 if __name__ == "__main__":
     r = unittest.TextTestRunner()
