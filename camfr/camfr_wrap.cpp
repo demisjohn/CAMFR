@@ -616,8 +616,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
     .add(
       enum_<Solver>("Solver")
-      .value("ADR",   ADR)
-      .value("track", track)
+      .value("ADR",    ADR)
+      .value("track",  track)
+      .value("series", series)
       )
  
     // Wrap Stability enum.

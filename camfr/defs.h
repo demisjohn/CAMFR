@@ -72,7 +72,7 @@ using std::sqrt;
 typedef double Real;
 typedef std::complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
-typedef enum {ADR, track} Solver;
+typedef enum {ADR, track, series} Solver;
 typedef enum {normal, extra, SVD} Stability;
 typedef enum {T_T, S_T, S_S} Field_calc;  
 typedef enum {GEV, T} Bloch_calc;
@@ -161,7 +161,7 @@ struct Global
     // The material whose gain will be adjusted to get amplitude resonance.
     Material* gain_mat;
 
-    // Complex solver to use: ADR or root tracking.
+    // Complex solver to use: ADR, root tracking, series expansion.
     Solver solver;
     
     // Stability mode: normal, extra matrix equilibration or SVD.
