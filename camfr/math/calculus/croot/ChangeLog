@@ -1,3 +1,10 @@
+2002-04-30  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mueller.h: Add support for multiple roots and for 1 and
+                     3 initial estimates.
+	* meuller.cpp: Ditto.
+	* allroots.cpp: Add support for multiple roots.
+
 2002-03-17  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* patterson_z_n.cpp: Increase portability.
