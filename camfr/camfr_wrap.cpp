@@ -931,8 +931,8 @@ BOOST_PYTHON_MODULE(_camfr)
 
   // Wrap Stack.
 
-  class_<Stack>("Stack", init<const Expression&>())
-    .def(init<const Term&>())
+  class_<Stack>("Stack", init<const Expression&, optional<int> >())
+    .def(init<const Term&, optional<int> >())
     .def("calc",                     &Stack::calcRT)
     .def("free",                     &Stack::freeRT)
     .def("inc",                      &Stack::get_inc,
