@@ -1,7 +1,6 @@
-from Numeric import *
-from MLab import *
 from camfr import *
-import pymat
+from Numeric import *
+import MLab, pymat
 
 ##############################################################################
 #
@@ -36,7 +35,20 @@ def figure():
 def hold_on():
     matlab("hold on")
 
-	
+
+
+##############################################################################
+#
+# Scatter plot.
+#
+##############################################################################
+
+def scatter_plot(x, y):
+    matlab.put("x", array(x))
+    matlab.put("y", array(y)) 
+    matlab("plot(x,y,'o')")
+
+
 
 ##############################################################################
 #
@@ -45,8 +57,18 @@ def hold_on():
 ##############################################################################
 
 def plot_vector(v):
-    matlab.put("v", array(v))
-    matlab("plot(v(:,1),v(:,2))")
+        
+    pass
+    try:
+        is2d = v[0][0]
+        matlab.put("v", array(v))
+        matlab("plot(v(:,1),v(:,2))")
+    except TypeError:
+        w = [] 
+        for i in range(len(v)):
+            w.append([i,v[i]])
+        matlab.put("w", array(w))
+        matlab("plot(w(:,1),w(:,2))")
 
 
 
@@ -56,7 +78,10 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def plot_matrix(z, r_x=0, r_y=0):
+def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
+
+    if filename:
+        print "Saving to file not supported."
     
     matlab.put('z', z)
     if r_x:
@@ -69,7 +94,7 @@ def plot_matrix(z, r_x=0, r_y=0):
     else:
         matlab("pcolor(y,x,z)")
    
-    if (min(min(z)) < 0) and (0 < max(max(z))):
+    if (MLab.min(MLab.min(z)) < 0) and (0 < MLab.max(MLab.max(z))):
         create_bipolar_color_map()
     else:
         matlab("colormap jet")
@@ -114,7 +139,10 @@ def create_bipolar_color_map():
 #
 ##############################################################################
 
-def phasormovie(z, r_x=0, r_y=0):
+def phasormovie(z, r_x=0, r_y=0, filename=0):
+
+    if filename:
+        print "Saving to file not supported."
     
     matlab.put('z', z)
     if r_x:
@@ -150,17 +178,29 @@ def phasormovie(z, r_x=0, r_y=0):
 
 ##############################################################################
 #
+# Backend-independent visualisation functions.
+#
+#  They are duplicated in each backend however, to allow flexible run time
+#  switching of backends.
+#
+##############################################################################
+
+##############################################################################
+#
 # Plot distribution of effective indices in complex plane.
 #
 ##############################################################################
     
 def plot_neff(waveguide):
-    v = []
+    
+    x,y = [],[]
+    
     for i in range(N()):
-	n_eff = waveguide.mode(i).n_eff() 
-	v.append((n_eff.real, n_eff.imag))
-    matlab.put("v", array(v))
-    matlab("plot(v(:,1),v(:,2),'o')")
+	n = waveguide.mode(i).n_eff()
+	x.append(n.real)
+        y.append(n.imag)
+
+    scatter_plot(x,y)
 
 
 
@@ -170,15 +210,15 @@ def plot_neff(waveguide):
 #
 ##############################################################################
 
-def plot_f(f, r_x, r_y):
+def plot_f(f, r_x, r_y, filename=0, colormap=palet):
     
-    fz = zeros([len(r_x),len(r_y)], Float)
+    fz = zeros([len(r_y),len(r_x)], Float)
 
     for i_y in range(len(r_y)):
       for i_x in range(len(r_x)):
-        fz[i_x,i_y] = abs(f(r_x[i_x] + r_y[i_y]*1j))
+        fz[len(r_y)-1-i_y, i_x] = abs(f(r_x[i_x] + r_y[i_y]*1j))
 
-    plot_matrix(fz, r_x, r_y)
+    plot_matrix(fz, r_x, r_y, filename, colormap)
 
 
 
@@ -205,15 +245,15 @@ def plot_n_waveguide(waveguide, r_x):
 #
 ##############################################################################
 
-def plot_n_stack(stack, r_x, r_z):
+def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
     
     n = zeros([len(r_x),len(r_z)], Float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        n[i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+        n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
 
-    plot_matrix(n, r_x, r_z)
+    plot_matrix(n, r_z, r_x, filename, colormap)
 
 
 
@@ -223,17 +263,17 @@ def plot_n_stack(stack, r_x, r_z):
 #
 ##############################################################################
 
-def plot_n_section(stack, r_x, r_y):
+def plot_n_section(stack, r_x, r_y, filename, colormap):
     
     n = zeros([len(r_y),len(r_x)], Float)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
-        n[i_y,i_x] = stack.n(Coord(r_x[i_x], r_y[i_y], 0)).real
+        n[len(r_y)-1-i_y,i_x] = stack.n(Coord(r_x[i_x], r_y[i_y], 0)).real
 
-    plot_matrix(n, r_y, r_x)
+    plot_matrix(n, r_x, r_y, filename, colormap)    
 
-    
+
 
 ##############################################################################
 #
@@ -241,13 +281,14 @@ def plot_n_section(stack, r_x, r_y):
 #
 ##############################################################################
 
-def plot_n(o, r1, r2=0):
+def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
+
     if not r2:
         plot_n_waveguide(o, r1)
-    if type(o) == Stack or type(o) == BlochStack:
-        plot_n_stack(o, r1, r2)
+    if type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
+        plot_n_stack(o, r1, r2, filename, colormap)
     if type(o) == Section:
-        plot_n_section(o, r1, r2)
+        plot_n_section(o, r1, r2, filename, colormap)
 
 
 
@@ -274,15 +315,16 @@ def plot_field_waveguide(mode, component, r_x):
 #
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z):
+def plot_field_stack(stack, component, r_x, r_z, filename, colormap):
     
     f = zeros([len(r_x),len(r_z)], Float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        f[len(r_x)-1-i_x,i_z] = \
+              component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    plot_matrix(f, r_x, r_z)
+    plot_matrix(f, r_z, r_x, filename, colormap)
 
 
 
@@ -292,15 +334,16 @@ def plot_field_stack(stack, component, r_x, r_z):
 #
 ##############################################################################
 
-def plot_field_section_mode(mode, component, r_x, r_y):
+def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap):
     
     f = zeros([len(r_y),len(r_x)], Float)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
-        f[i_y,i_x] = component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
+        f[len(r_y)-1-i_y,i_x] = \
+              component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
 
-    plot_matrix(f, r_y, r_x)  
+    plot_matrix(f, r_x, r_y, filename, colormap)    
 
 
 
@@ -310,14 +353,15 @@ def plot_field_section_mode(mode, component, r_x, r_y):
 #
 ##############################################################################
 
-def plot_field(o, component, r1, r2=0):
+def plot_field(o, component, r1, r2=0, filename=0, colormap=0):
+
     if not r2:
         plot_field_waveguide(o, component, r1)
-    elif type(o) == Stack or type(o) == BlochMode:
-        plot_field_stack(o, component, r1, r2)
+    elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
+        plot_field_stack(o, component, r1, r2, filename, colormap)
     elif type(o) == Mode:
-        plot_field_section_mode(o, component, r1, r2)
-
+        plot_field_section_mode(o, component, r1, r2, filename, colormap)
+        
 
 
 ##############################################################################
@@ -326,13 +370,14 @@ def plot_field(o, component, r1, r2=0):
 #
 ##############################################################################
 
-def animate_field(stack, component, r_x, r_z):
+def animate_field(stack, component, r_x, r_z, filename=0):
     
     f = zeros([len(r_x),len(r_z)], Complex)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        f[len(r_x)-1-i_x,i_z] = \
+              component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    phasormovie(f, r_x, r_z)
+    phasormovie(f, r_z, r_x, filename)
 
