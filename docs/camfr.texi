@@ -1114,6 +1114,7 @@ can be found in @code{examples/other}:
 from camfr import *
 from Numeric import *
 
+set_polarisation(TE)
 set_lambda(1.5)
 set_N(50)
 
@@ -1209,6 +1210,11 @@ outfile.close()
 @cindex line continuation in Python
 Note in this example the use of @code{\} to split up long lines. This is 
 necessary because of the way Python relies on whitespace.
+
+An important note is that CAMFR always uses the polarisation definitions as
+they are conventional in waveguide theory, i.e. TE polarisation corresponds 
+here to the electric field along the rods, out of the plane of the picture. 
+Unfortunately in photonic crystal literature this is called TM polarisation.
 
 Now, we need to find a suitable excitation in order to calculate the field
 profiles in this structure. In other methods like FDTD, we would do this by
