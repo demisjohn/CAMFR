@@ -22,8 +22,6 @@ recommended.
 - the Fortran linear algebra libraries BLAS and LAPACK, which you can get from 
   http://www.netlib.org. If possible however, use a vendor-supplied version 
   for maximum performance.
-- ARPACK and Arpack++, which you also get from Netlib. Note: for Arpack++,
-  a small patch might be required (TODO: check)
 
 Now edit machine_cfg.py to adjust the location of these libraries, as well
 as other machine-dependent parameters and compiler flags. There are some 
