@@ -389,23 +389,19 @@ inline void stack_set_inc_field_plane_wave
 //
 // Functions converting C++ objects to and from Python objects.
 //
-// Note on memory management: as the Blitz ref-counting system might free
-// data that is still in use in the Python environment, we have to make
-// a copy of the array data.
-//
 /////////////////////////////////////////////////////////////////////////////
 
 struct cVector_to_python
 {
   static PyObject* convert(const cVector& c)
-  {
-    char* c_copy = (char*) malloc(c.rows()*sizeof(Complex));
-    memcpy(c_copy, c.data(), c.rows()*sizeof(Complex));
-    
+  {    
     int dim[1]; dim[0] = c.rows();
 
-    PyArrayObject* result = (PyArrayObject*)
-      PyArray_FromDimsAndData(1, dim, PyArray_CDOUBLE, c_copy);
+    PyArrayObject* result 
+      = (PyArrayObject*) PyArray_FromDims(1, dim, PyArray_CDOUBLE);
+
+    for (int i=0; i<c.rows(); i++)
+        *(Complex*)(result->data + i*result->strides[0]) = c(i+1);
 
     return PyArray_Return(result);
   }
@@ -425,8 +421,8 @@ struct register_cVector_from_python
     if (!PyArray_Check(o))
       return NULL;
 
-    PyArrayObject* a = (PyArrayObject*)(o);
-    if ( (a->nd != 1) || (a->dimensions[0] != int(global.N)) )
+    if (    ( ((PyArrayObject*)(o))->nd != 1) 
+         || ( ((PyArrayObject*)(o))->dimensions[0] != int(global.N)) )
       return NULL;
 
     return o;
@@ -437,21 +433,21 @@ struct register_cVector_from_python
     (PyObject* o, boost::python::converter::rvalue_from_python_stage1_data* 
      data)
   {
-    PyArrayObject* a 
-      = (PyArrayObject*) PyArray_Cast((PyArrayObject*)o, PyArray_CDOUBLE);
-
-    cVector c((Complex*) a->data,global.N,blitz::duplicateData,fortranArray);
-
     void* storage = ((
       boost::python::converter::rvalue_from_python_storage<cVector>*)data)
         ->storage.bytes;
 
-    new (storage) cVector((Complex*) a->data, global.N, 
-                          blitz::duplicateData, fortranArray);
+    new (storage) cVector(global.N, fortranArray);
+
+    PyArrayObject* a = (PyArrayObject *)
+      PyArray_ContiguousFromObject(o, PyArray_CDOUBLE, 1, 1);
+
+    for (int i=0; i<global.N; i++)      
+      (*(cVector*)(storage))(i+1) = *(Complex*)(a->data + i*a->strides[0]);
+    
+    Py_DECREF(a);
 
     data->convertible = storage;
-
-    free(a);
   }
 
 };
