@@ -63,6 +63,6 @@ bottom = Stack(GaAs(.13659) + QW(.00500)                       \
   
 # Define cavity and find laser mode.
 
-cavity = Cavity(top, bottom)
+cavity = Cavity(bottom, top)
 
 cavity.find_mode(.980, .981)

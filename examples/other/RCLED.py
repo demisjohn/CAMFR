@@ -7,7 +7,7 @@
 #
 ####################################################################
 
-from camfr import *
+from camfr_work import *
 from cmath import *
 from Numeric import *
 
@@ -60,7 +60,7 @@ def calc(r, PML, M, max_rho, spacer, resolution):
   
   # Cavity
 
-  rcled = Cavity(top,bot)
+  rcled = Cavity(bot,top)
   rcled.set_source(r0, orientation)
 
   # Calculate spontaneous emission rate.
@@ -120,7 +120,7 @@ eps = 1e-10
 for spacer in arange(0.130, 0.160, 0.002):
   for r in arange(10.0, 10.0+eps, 2.0):
     for PML in arange(-0.05, -0.05+eps, 0.01):
-      for M in arange(300, 300+eps, 20):
+      for M in arange(300, 301, 20):
         max_rho = r
         resolution = 1e-10
         calc(r, PML, M, max_rho, spacer, resolution)
