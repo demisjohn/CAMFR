@@ -1,6 +1,6 @@
 include ../../../make.inc
 
-OBJS = sectiondisp.o #section.o sectionmode.o sectionoverlap.o
+OBJS = sectiondisp.o section.o #sectionmode.o sectionoverlap.o
 
 all: $(OBJS)
 	$(MAKE) $(OBJS)

@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "arscomp.h"
 #include "sectiondisp.h"
 #include "../slab/generalslab.h"
 #include "../slab/slabmatrixcache.h"
@@ -22,8 +23,9 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda)
-  : left(&_left), right(&_right), lambda(_lambda) 
+SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
+                         bool sym)
+  : left(&_left), right(&_right), lambda(_lambda), M(_M), symmetric(sym) 
 {
   // Determine left slabs.
 
@@ -63,28 +65,64 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda)
 //
 // SectionDisp::operator()
 //
-///////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////
 
 Complex SectionDisp::operator()(const Complex& beta)
 {
-  // Calculate eigenvectors
-
   counter++;
-  const int N = global.N;
-
+  
   global.lambda = lambda;
   global_slab.beta = beta;
   global.orthogonal = false;
   global.polarisation = TE_TM;
 
+  int old_N = global.N;
+  global.N = M;
+
+  Complex res = (global.eigen_calc == lapack) ? calc_lapack (beta)
+                                              : calc_arnoldi(beta);
+
+  global.N = old_N;
+  global_slab.beta = 0.0;
+
+  return res;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_lapack()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_lapack(const Complex& beta)
+{
+  // Calculate eigenvectors.
+  
+  global.lambda = lambda;
+  global_slab.beta = beta;
+  global.orthogonal = false;
+  global.polarisation = TE_TM;
+
+  int old_N = global.N;
+  global.N = M;
+
   left->calcRT();
-  right->calcRT();
+  if (! symmetric)
+    right->calcRT();
+
+  global.N = old_N;
   
-  cMatrix Q(N,N,fortranArray);
-  Q.reference(multiply( left->as_multi()->get_R12(), 
-                       right->as_multi()->get_R12()));
+  cMatrix Q(M,M,fortranArray);
+  if (! symmetric)
+    Q.reference(multiply( left->as_multi()->get_R12(), 
+                         right->as_multi()->get_R12()));
+  else
+    Q.reference(multiply( left->as_multi()->get_R12(), 
+                          left->as_multi()->get_R12()));
   
-  cVector e(N,fortranArray);
+  cVector e(M,fortranArray);
   if (global.stability == normal)
     e.reference(eigenvalues(Q));
   else
@@ -94,11 +132,101 @@ Complex SectionDisp::operator()(const Complex& beta)
 
   Real min_distance = abs(e(1) - 1.0);
 
-  for (int i=2; i<=N; i++)
+  for (int i=2; i<=M; i++)
     if (abs(e(i) - 1.0) < min_distance)
       min_distance = abs(e(i) - 1.0);
-  
+
   return min_distance;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Multiplier
+//
+//   Auxiliary class for efficient calculation of the product of a vector
+//   with the cavity matrix.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Multiplier
+{
+  public:
+
+    Multiplier(const cMatrix& L_, const cMatrix& R_) 
+      : L(&L_), R(&R_), Q(NULL), counter(0) {}
+
+    ~Multiplier() {delete Q;}
+   
+    void mult(Complex* in, Complex* out) 
+    {
+      counter++;
+      
+      cVector i(in,  global.N, neverDeleteData, fortranArray);
+      cVector o(out, global.N, neverDeleteData, fortranArray); 
+
+      if (counter == global.N)
+      {
+        Q = new cMatrix(global.N, global.N, fortranArray);
+        Q->reference(multiply(*L, *R));
+        for (int k=1; k<=global.N; k++)
+          (*Q)(k,k) -= 1.0;
+      }
+
+      if (counter < global.N)
+        o = multiply(*L, *R, i) - i;
+      else
+        o = multiply(*Q, i);
+    }
+
+  protected:
+
+    int counter;
+    
+    const cMatrix* L;
+    const cMatrix* R;
+
+    cMatrix* Q;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_arnoldi()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_arnoldi(const Complex& beta)
+{
+  left->calcRT();
+  if (! symmetric)
+    right->calcRT();
+
+  Multiplier m (              left->as_multi()->get_R12(),
+                 symmetric ?  left->as_multi()->get_R12()
+                           : right->as_multi()->get_R12());
+
+  int nev = 1;
+  int ncv = 6;
+  double tol = 1e-3;
+  int max_iter = 1000;
+
+  ARCompStdEig<Real, Multiplier> prob
+    (M, nev, &m, &Multiplier::mult, "SM", ncv, tol, max_iter);
+
+  prob.FindEigenvalues();
+
+  if (prob.ConvergedEigenvalues() == 0)
+  {
+    cout << "Warning: Arnoldi solver did not converge for beta "
+         << beta << endl << "Using LAPACK instead. " << endl;
+    
+    return calc_lapack(beta);
+  }
+
+  return abs(prob.Eigenvalue(0));
 }
 
 
@@ -179,4 +307,7 @@ void SectionDisp::set_params(const vector<Complex>& params)
     *right_d[i] = params[params_index++];
   
   lambda = real(params[params_index++]);
+
+   left->freeRT();
+  right->freeRT();
 }
