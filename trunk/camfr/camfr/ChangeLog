@@ -1,5 +1,9 @@
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* field.cpp: Improve memory management.
+
+2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* defs.h: Add pick_sign_k.
 	* defs.cpp: Ditto.
 
