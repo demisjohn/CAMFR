@@ -1,9 +1,8 @@
 
 -get_min_n in slab trace
 -infstack recalc modes, inf*(notation), diagslab
--Section: SymmetricSection, UniformSection, Auto-partitioned section, 
- walls(E, H, TBC, PC), max_n, min_n needed, false zeros, N/M, TEM mode, 
- SectionFlux
+-Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
+ false zeros, nmax=neff_core?, TEM mode, SectionFlux, complex modes
 
 SHORT TERM 
 
@@ -30,6 +29,8 @@ SHORT TERM
 
 MEDIUM TERM:
 
+-speed up M - U1, where U1 is unit matrix
+
 -better handling of decoupled waveguides (Peter)
 -related: check instabilities in bend2, first formulation of rods (Peter)
 -related: PhC waveguide, no symmetry trick: large no of cl periods (Peter)
@@ -46,10 +47,8 @@ MEDIUM TERM:
  Ability to cache field profiles and speed up.
 -stack field on layer discontinuity: speed up by not propagating.
 
--calculate Bloch vectors by using a quadratic eigenvalue problem.
--related: use S_S scheme for Bloch fields
--related: implement Bloch modes for MonoScatterers
--related: speed this up for symmetric structures
+-implement Bloch modes for MonoScatterers
+-speed up Bloch for symmetric structures
 
 -use asymptotic expansions for circular structures
 -more general interactive visualisation of mode profiles (phase, components)
@@ -57,8 +56,6 @@ MEDIUM TERM:
 -integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy?
 -better integration with SciPy?
 -add Python docbook comments
-
--Matlab link under Windows
 
 -dispersion relation of 2D slabs:
    -do not handle left and right walls through expressions
@@ -106,7 +103,6 @@ LOW PRIORITY
 -investigate Airy media
 -test corner effects
 
--check need of find_modes in Transparent Scatterers (Peter)
 -narrower minima in cavity::find_all_modes? (Peter)
 -tilde in S_scheme: return more refs? (Peter)
 -split scaling (Peter)
