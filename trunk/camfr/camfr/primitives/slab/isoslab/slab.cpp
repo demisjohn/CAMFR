@@ -804,7 +804,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
       if (imag(kz) > 0)
         kz = -kz;
 
-    if (real(kt[i]) < 0.0) // Backward mode.
+    if (real(kt[i]) < -1e-6) // Backward mode.
       kz = -kz;
 
     Polarisation pol = global.polarisation;

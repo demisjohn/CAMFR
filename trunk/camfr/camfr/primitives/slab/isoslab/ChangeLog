@@ -1,3 +1,7 @@
+2002-06-05 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * slab.cpp: Make comparison with zero more robust.
+
 2002-05-31 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * slab.cpp: Improve support for complex modes.
