@@ -33,7 +33,7 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 
   set_N(M)
 
-  R = r-PML*1j
+  R = r+PML*1j
   
   metal = Circ(metal_m(R))
   air   = Circ(  air_m(R)) 
@@ -52,8 +52,8 @@ def calc(r, PML, M, max_rho, spacer, resolution):
   open = Cavity(top_open,bot_open)
   open.set_source(r0, orientation)
 
-  c = Coord(0,0,0,Plus,Plus,Plus)
-  ref_rate = (open.field(c).E1()).real
+  c = Coord(0,0,0)
+  ref_rate = (top_open.field(c).E1()).real
   
   # 2-D structure
 

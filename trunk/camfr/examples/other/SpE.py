@@ -30,19 +30,16 @@ for d in arange(0.01, 3.0, 0.05):
 
     # Define cavities.
 
-    top = Stack(air(d/2.) + wall)
-    bot = Stack(air(d/2.) + wall)
-
-    top_open = Stack(air(d/2.) + air(d/2.))
-    bot_open = Stack(air(d/2.) + air(d/2.))
+    half      = Stack(air(d/2.) + wall)
+    half_open = Stack(air(d))
 
     source_pos  = Coord(0,0,0)
     orientation = Coord(1,0,0)
     
-    cav = Cavity(top, bot)
+    cav = Cavity(half, half)
     cav.set_source(source_pos, orientation)
 
-    cav_open = Cavity(top_open, bot_open)
+    cav_open = Cavity(half_open, half_open)
     cav_open.set_source(source_pos, orientation)
 
     # Analytic formula for spontaneous emission rate.
@@ -52,8 +49,8 @@ for d in arange(0.01, 3.0, 0.05):
 
     # Numerical formula as ratio of total emitted powers.
 
-    numeric =   top.     field(Coord(0,0,0)).E1().real   \
-	      / top_open.field(Coord(0,0,0)).E1().real 
+    numeric =   half.     field(Coord(0,0,0)).E1().real   \
+	      / half_open.field(Coord(0,0,0)).E1().real 
 
     print d, exact, numeric
 
