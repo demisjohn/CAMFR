@@ -2520,7 +2520,7 @@ Can be either @code{cos_type} (default) or @code{sin_type}.
 @code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
 negative for absorption. Implements PML boundary conditions. The lower 
 cladding is at @code{x=0}, at the first term in the expression to create a 
-@code{Slab}.
+@code{Slab}. By default, @code{p} is zero.
 
 @noindent
 @xref{set_upper_PML}, @ref{set_circ_PML}.
@@ -2536,7 +2536,7 @@ cladding is at @code{x=0}, at the first term in the expression to create a
 @code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
 negative for absorption. Implements PML boundary conditions. The upper 
 cladding is at  @code{x=slab.width()}, at the last term in the expression to 
-create a @code{Slab}.
+create a @code{Slab}. By default, @code{p} is zero.
 
 @noindent
 @xref{set_lower_PML}, @ref{set_circ_PML}.
@@ -2550,7 +2550,8 @@ create a @code{Slab}.
 @noindent
 @code{set_circ_PML(p)}: gives the cladding of all subsequently defined
 circular waveguides an imaginary thickness of @code{p*1j}, with @code{p} 
-usually negative for absorption. Implements PML boundary conditions. 
+usually negative for absorption. Implements PML boundary conditions. By 
+default, @code{p} is zero. 
 
 @noindent
 @xref{set_lower_PML}, @ref{set_upper_PML}.
@@ -2641,6 +2642,7 @@ calculated.
 @node Field, Material, Coord, Reference guide
 @unnumberedsec @code{Field}
 @cindex @code{Field}
+@cindex Poynting vector
 
 @noindent
 A data structure containing an electromagnetic field at a given location.
@@ -2650,25 +2652,33 @@ Member functions:
 
 @itemize @bullet
 @item
-@code{E1()}: first component of E-field (@code{x} in Cartesian,
-@code{rho} in cylindrical systems).
+@code{E1()}: first component (@code{x} in Cartesian, @code{rho} in 
+cylindrical systems) of @code{E} field.
 @item
-@code{E2()}: second component of E-field (@code{y} in Cartesian,
-@code{phi} in cylindrical systems).
+@code{E2()}: second component (@code{y} in Cartesian, @code{phi} in 
+cylindrical systems) of @code{E} field.
 @item
-@code{Ez()}: @code{z} component of E-field.
+@code{Ez()}: @code{z} component of @code{E} field.
 @item
-@code{H1()}: first component of H-field (@code{x} in Cartesian,
-@code{Ho} in cylindrical systems).
+@code{H1()}: first component (@code{x} in Cartesian, @code{rho} in 
+cylindrical systems) of @code{H} field.
 @item
-@code{H2()}: second component of H-field (@code{y} in Cartesian,
-@code{phi} in cylindrical systems).
+@code{H2()}: second component (@code{y} in Cartesian, @code{phi} in 
+cylindrical systems) of @code{H} field.
 @item
-@code{Hz()}: @code{z} component of H-field.
+@code{Hz()}: @code{z} component of @code{H} field.
 @item
-@code{abs_E()}: magnitude of E-field.
+@code{S1()}: first component (@code{x} in Cartesian, @code{rho} in 
+cylindrical systems) of Poynting vector @code{E x H*}.
 @item
-@code{abs_H()}: magnitude of H-field.
+@code{S2()}: second component (@code{y} in Cartesian, @code{phi} in 
+cylindrical systems) of Poynting vector @code{E x H*}.
+@item
+@code{Sz()}: @code{z} component of Poynting vector @code{E x H*}.
+@item
+@code{abs_E()}: magnitude of @code{E} field.
+@item
+@code{abs_H()}: magnitude of @code{H} field.
 @end itemize
 
 
