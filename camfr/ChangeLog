@@ -1,5 +1,11 @@
 2003-11-17  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* defs.h: Add global.section_solver.
+	* defs.cpp: Ditto.
+	* camfr_wrap.cpp: Ditto.
+
+2003-11-17  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* waveguide.h: Rework eps_at, mu_at.
 	* stack.h: Ditto.
 	* stack.cpp: Ditto.
