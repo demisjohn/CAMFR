@@ -108,6 +108,30 @@ Field Field::operator/ (const Complex& c) const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// FieldExpansion constructors
+//
+//  Note that we copy the cVectors, because that could refer to temporaries.
+//  The assignment operator has copy semantics in Blitz, the copy 
+//  constructor doesn't.
+//  
+/////////////////////////////////////////////////////////////////////////////
+    
+FieldExpansion::FieldExpansion(Waveguide& wg_, cVector& fw_, cVector& bw_)
+  : wg(&wg_), fw(fw_.rows(),fortranArray), bw(bw_.rows(),fortranArray)
+     {fw=fw_; bw=bw_;}
+
+FieldExpansion::FieldExpansion(Waveguide* wg_, cVector& fw_, cVector& bw_)
+  : wg(wg_), fw(fw_.rows(),fortranArray), bw(bw_.rows(),fortranArray) 
+     {fw=fw_; bw=bw_;}
+
+FieldExpansion::FieldExpansion(const FieldExpansion& f)
+  : wg(f.wg), fw(f.fw.rows(),fortranArray), bw(f.bw.rows(),fortranArray)
+     {fw=f.fw; bw=f.bw;}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Field::repr
 //  
 /////////////////////////////////////////////////////////////////////////////
@@ -137,6 +161,7 @@ Field FieldExpansion::field(const Coord& coord) const
   for (unsigned int i=1; i<=wg->N(); i++)
   {
     Field f_i = wg->get_mode(i)->field(coord);
+    
     Complex I_kz_d = I * wg->get_mode(i)->get_kz() * coord.z;
     
     f.E1 += fw(i) * f_i.E1 * exp(-I_kz_d)  +  bw(i) * f_i.E1 * exp(I_kz_d);
@@ -164,17 +189,15 @@ FieldExpansion FieldExpansion::propagate(const Complex& z) const
   cVector fw_c(fw.rows(), fortranArray);
   cVector bw_c(bw.rows(), fortranArray);
   
-  FieldExpansion f(wg, fw_c, bw_c);
-  
   for (unsigned int i=1; i<=wg->N(); i++)
   {
     Complex I_kz_d = I * wg->get_mode(i)->get_kz() * z;
 
     fw_c(i) = fw(i) * exp(-I_kz_d);
-    bw_c(i) = bw(i) * exp( I_kz_d);    
+    bw_c(i) = bw(i) * exp( I_kz_d);
   }
-
-  return f;
+  
+  return FieldExpansion(wg, fw_c, bw_c);
 }
 
 

@@ -88,14 +88,9 @@ class FieldExpansion
 {
   public:
 
-    FieldExpansion(Waveguide& wg_, cVector& fw_, cVector& bw_)
-      : wg(&wg_), fw(fw_), bw(bw_) {}
-
-    FieldExpansion(Waveguide* wg_, cVector& fw_, cVector& bw_)
-      : wg( wg_), fw(fw_), bw(bw_) {}
-
-    FieldExpansion(const FieldExpansion& f)
-      : wg(f.wg), fw(f.fw.copy()), bw(f.bw.copy()) {}
+    FieldExpansion(Waveguide& wg_, cVector& fw_, cVector& bw_);
+    FieldExpansion(Waveguide* wg_, cVector& fw_, cVector& bw_);
+    FieldExpansion(const FieldExpansion& f);
 
     Field field(const Coord& coord) const;
 
