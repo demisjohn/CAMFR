@@ -174,6 +174,12 @@ void Slab_M::find_modes()
 
   if (global.polarisation == TE_TM)
   {
+    const int n = int(global.N/2);
+
+    if (2*n != global.N)
+      cout << "Warning: changing N to even number." << endl;
+
+    global.N = n;
     global.polarisation = TE;
     find_modes();
 
@@ -188,8 +194,10 @@ void Slab_M::find_modes()
 
     global.polarisation = TM;
     find_modes();
+
     modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
 
+    global.N = 2*n;
     global.polarisation = TE_TM;
 
     return;
@@ -756,6 +764,12 @@ void UniformSlab::find_modes()
 {
   if (global.polarisation == TE_TM)
   {
+    const int n = int(global.N/2);
+
+    if (2*n != global.N)
+      cout << "Warning: changing N to even number." << endl;
+
+    global.N = n;
     global.polarisation = TE;
     find_modes_single_pol();
 
@@ -772,6 +786,7 @@ void UniformSlab::find_modes()
     find_modes_single_pol();
     modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
 
+    global.N = 2*n;
     global.polarisation = TE_TM;
 
     return;
