@@ -285,6 +285,11 @@ vector<Complex> mueller_multiple
     if (abs(new_root-z0) > 0.1)
       error = true;
 
+    // Less general, assumes f is even.
+    
+    if (abs(new_root+z0) < eps)
+      error = true;
+
     if (!error)
     {
       roots.push_back(new_root);
@@ -342,6 +347,11 @@ std::vector<Complex> mueller_multiple
                                  &deflate, maxiter_i, &error);
 
       if (abs(new_root-z0[i]) > 0.1)
+        error = true;
+
+      // Less general, assumes f is even.
+
+      if (abs(new_root+z0[i]) < eps)
         error = true;
 
       if (!error)
