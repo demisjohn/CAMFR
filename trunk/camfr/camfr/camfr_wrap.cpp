@@ -218,6 +218,9 @@ inline Complex field_H1(const Field& f) {return f.H1;}
 inline Complex field_H2(const Field& f) {return f.H2;}
 inline Complex field_Hz(const Field& f) {return f.Hz;}
 
+inline Complex planar_static_get_kt(Planar p) {return Planar::get_kt();}
+inline void planar_static_set_kt(Planar p, Complex kt) {Planar::set_kt(kt);}
+
 inline void check_index(int i)
 {
   if ( (i<0) || (i>=int(global.N)) )
@@ -1161,8 +1164,8 @@ BOOST_PYTHON_MODULE(_camfr)
 
   class_<Planar, bases<MonoWaveguide> >("Planar", init<Material&>())
     .def("set_theta", &Planar::set_theta)    
-    .def("set_kt",    &Planar::set_kt)
-    .def("get_kt",    &Planar::get_kt)
+    .def("set_kt",    planar_static_set_kt)
+    .def("get_kt",    planar_static_get_kt)
     ;
 
   // Wrap Circ.
