@@ -1,5 +1,9 @@
 2002-05-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* interface.cpp: Check if widths match.
+
+2002-05-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* waveguide.h: Add c1_size().
 	* bloch.h: Ditto.
 
