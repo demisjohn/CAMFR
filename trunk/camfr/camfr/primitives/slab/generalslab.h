@@ -69,8 +69,8 @@ class SlabImpl : public MultiWaveguide
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
 
-    virtual vector<Complex> get_params() const;
-    virtual void set_params(const vector<Complex>&);
+    virtual vector<Complex> get_params() const = 0;
+    virtual void set_params(const vector<Complex>&) = 0;
 
   protected:
 
@@ -138,6 +138,9 @@ class Slab : public MultiWaveguide
 
     Complex get_width() const {return s->get_width();}
 
+    vector<Complex> get_params() const {return s->get_params();}
+    void set_params(const vector<Complex>& p) {s->set_params(p);}
+
     const FieldExpansion field_from_source
       (const Coord& pos, const Coord& orientation)
         {return s->field_from_source(pos, orientation);}
@@ -150,8 +153,8 @@ class Slab : public MultiWaveguide
     void calc_overlap_matrices
       (MultiWaveguide* w2, cMatrix* O_I_II, cMatrix* O_II_I,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
-      {return s->calc_overlap_matrices(dynamic_cast<Slab*>(w2)->s
-                                       ,O_I_II,O_II_I,O_I_I,O_II_II);}
+      {return s->calc_overlap_matrices(dynamic_cast<Slab*>(w2)->s,
+                                       O_I_II,O_II_I,O_I_I,O_II_II);}
     
     string repr() const {return s->repr();}
     
