@@ -194,7 +194,9 @@ class Stack
 {
   public:
 
-    Stack() : sc(NULL), flat_sc(NULL), inc_field(fortranArray) {}
+    Stack() : sc(NULL), flat_sc(NULL), 
+              inc_field(fortranArray), inc_field_bw(fortranArray) {}
+
     Stack(const Expression& e, unsigned int no_of_periods=1);
     Stack(const Term& t);
     Stack(const Stack& s);

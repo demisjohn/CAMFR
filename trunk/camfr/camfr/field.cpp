@@ -118,11 +118,11 @@ Field Field::operator/ (const Complex& c) const
 
 FieldExpansion::FieldExpansion(Waveguide* wg_, 
                                const cVector& fw_, const cVector& bw_)
-  : wg(wg_), fw(fw_.rows(),fortranArray), bw(bw_.rows(),fortranArray) 
+  : wg(wg_), fw(fw_.shape(),fortranArray), bw(bw_.shape(),fortranArray) 
      {fw=fw_; bw=bw_;}
 
 FieldExpansion::FieldExpansion(const FieldExpansion& f)
-  : wg(f.wg), fw(f.fw.rows(),fortranArray), bw(f.bw.rows(),fortranArray)
+  : wg(f.wg), fw(f.fw.shape(),fortranArray), bw(f.bw.shape(),fortranArray)
      {fw=f.fw; bw=f.bw;}
 
 
