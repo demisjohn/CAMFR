@@ -1,12 +1,10 @@
+-import TkPlotCanvas
+-add note in docs on polarisation convention
 -quick test camfr_matlab (flipud?)
--cvs add gifmaker, pil.pth, del plotutils, camfr_vis.py
-
+-backward mode
 
 
 CAMFR 3D:
-
--define Sections from a single expression + correct left/right PML
--refine estimates using true dispersion relation
 
 -clean up RefSectionMode::field (not used, but still)
 -left/right PML not passed to stack correctly when using 2 expressions
@@ -23,6 +21,7 @@ CAMFR 3D:
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -Complex modes in presence of PML
+-speed up nomalisation through cache?
 
 
 MEDIUM TERM:
@@ -91,6 +90,7 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-Section sorter to mode.h
 -Numeric is imported automatically. Remove from docs and examples.
 -move to uBLAS? (www.genesys-e.org/ublas)
 -build: eliminate as many makefiles as possible
