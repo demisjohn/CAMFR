@@ -30,7 +30,7 @@ periods = 4  # lateral periods
 
 # Define slabs.
 
-inc_wg = Slab(GaAs(3*r) + air(a-4*r+periods*a+cl+PML*1j))
+inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl+PML*1j))
 
 no_rods = Slab(air(a-r+periods*a+cl+PML*1j))
  
