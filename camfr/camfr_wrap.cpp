@@ -254,6 +254,16 @@ inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
   {return dynamic_cast<MultiWaveguide*>(s.get_ext())
      ->S_flux(s.ext_field_expansion(),c1_start,c1_stop,eps);}
 
+inline void cavity_set_current_source(Cavity& c, Coord& pos, Coord& ori) 
+  {c.set_source(pos,ori);}
+
+inline void cavity_set_general_source(Cavity& c,
+                                      const cVector& fw, const cVector& bw) 
+  {c.set_source(fw,bw);}
+
+inline void cavity_set_blochmode_source(Cavity& c, BlochMode& m)
+  {c.set_source(m.fw_field(),m.bw_field());}
+
 inline boost::python::object stack_fw_bw(Stack& s, Real z)
 {
   cVector fw(global.N,fortranArray);
@@ -956,8 +966,11 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("find_mode",      &Cavity::find_mode, cav_find_mode())
     .def("find_all_modes", &Cavity::find_modes_in_region,cav_find_modes())
     .def("sigma",          cavity_calc_sigma)
-    .def("set_source",     &Cavity::set_source)
+    .def("set_source",     cavity_set_current_source)
+    .def("set_source",     cavity_set_general_source)
+    .def("set_source",     cavity_set_blochmode_source)
     .def("field",          &Cavity::field)
+    .def("n",              &Cavity::n_at)
     ;
 
   // Wrap BlochStack.

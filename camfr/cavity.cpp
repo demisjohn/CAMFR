@@ -370,3 +370,40 @@ Field Cavity::field(const Coord& c)
 }
 
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cavity::eps_at
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Cavity::eps_at(const Coord& c) const
+{
+  if (real(c.z) >= 0)
+    return top->eps_at(c);
+
+  Complex z = -c.z;
+  Limit z_limit = (c.z_limit == Plus) ? Min : Plus;
+  return bot->eps_at(Coord(c.c1,c.c2,z,c.c1_limit,c.c2_limit,z_limit));
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cavity::mu_at
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Cavity::mu_at(const Coord& c) const
+{
+  if (real(c.z) >= 0)
+    return top->mu_at(c);
+
+  Complex z = -c.z;
+  Limit z_limit = (c.z_limit == Plus) ? Min : Plus;
+  return bot->mu_at(Coord(c.c1,c.c2,z,c.c1_limit,c.c2_limit,z_limit));
+}
+
+
+
