@@ -89,12 +89,14 @@ class Material : public BaseMaterial
        : i_n(n), i_mur(mur)
        {if (i_mur != 1.0) std::cout << "Magnetic material" << std::endl;}
      
-     const Complex    n() const {return i_n;}
-     const Complex epsr() const {return i_n * i_n;}
-     const Complex  mur() const {return i_mur;}
-     const Complex  eps() const {return i_n * i_n * eps0;}
-     const Complex   mu() const {return i_mur * mu0;}
-           Real    gain() const {return 4*imag(i_n)*pi/(global.lambda * 1e-4);}
+     const Complex      n() const {return i_n;}
+     const Complex   epsr() const {return i_n * i_n;}
+     const Complex    mur() const {return i_mur;}
+     const Complex    eps() const {return i_n * i_n * eps0;}
+     const Complex     mu() const {return i_mur * mu0;}
+     const Complex eps_mu() const {return i_n * i_n * eps0 * i_mur * mu0;}
+
+     Real gain() const {return 4*imag(i_n)*pi/(global.lambda * 1e-4);}
 
      void set_n(Complex n)        {i_n   = n;}
      void set_mur(Complex mur)    {i_mur = mur;}   
