@@ -85,7 +85,7 @@ Complex overlap(const SlabMode* mode_I,
     for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
       local_disc.push_back(medium_II->discontinuities[k]);
 
-    remove_copies(&local_disc, 1e-6);
+    remove_copies(&local_disc, 1e-9);
 
     sort(local_disc.begin(), local_disc.end(), RealSorter());
 
@@ -153,7 +153,7 @@ Complex overlap(const SlabMode* mode_I,
     {
       // + f(upper_Min) - f(lower_Plus)
       
-      term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );      
+      term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
     }
     
     //

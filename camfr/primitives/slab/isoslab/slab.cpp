@@ -18,6 +18,7 @@
 #include "slabmode.h"
 #include "slaboverlap.h"
 #include "../slabmatrixcache.h"
+#include "../../planar/planar.h"
 #include "../../../math/calculus/calculus.h"
 
 using std::vector;
@@ -267,7 +268,6 @@ void Slab_M::find_modes()
       old_kt.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
 
     vector<Complex> kt(find_kt(old_kt));
-
     build_modeset(kt);  
   }
 
@@ -688,7 +688,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   }
 
   remove_elems(&kt_lossless, Complex(0.0), eps_copies);
-
+  
   bool degenerate = kt_lossless.size() > kt_lossless_single.size();
 
   for (unsigned int i=0; i<kt_complex.size(); i++)
@@ -696,7 +696,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     kt_lossless.push_back(kt_complex[i]);
     kt_lossless.push_back(-real(kt_complex[i])+I*imag(kt_complex[i]));
   }
-  
+
   vector<Complex> kt, forbidden;
   forbidden.push_back(Complex(0.0));
   if (global.chunk_tracing && !degenerate)
@@ -762,7 +762,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       || ( (global.polarisation == TE) && (abs(R_lower - 1.0) < 1e-10)
                                        && (abs(R_upper - 1.0) < 1e-10) ) )
       kt.insert(kt.begin(), 0);
-
+  
   return kt;
 }
 
@@ -775,7 +775,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
-{ 
+{
   // Set constants.
 
   SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
@@ -1186,14 +1186,21 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-struct sorter
+struct kz_sorter
 {
-    bool operator()(const Complex& beta_a, const Complex& beta_b)
-    {
-      return ( real(beta_a*beta_a) < real(beta_b*beta_b) ); // highest index
-      //return ( real(beta_a) > real(beta_b) ); // highest index
-      //return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
-    }
+    bool operator()(const Complex& kz_a, const Complex& kz_b)
+    {return ( real(kz_a*kz_a) > real(kz_b*kz_b) );}
+};
+
+struct kz2_sorter
+{
+    bool operator()(const Complex& kz2_a, const Complex& kz2_b)
+      {return ( real(kz2_a) > real(kz2_b) );}
+};
+
+struct kt_sorter
+{   bool operator()(const Complex& kt_a, const Complex& kt_b)
+      {return ( real(kt_a*kt_a) < real(kt_b*kt_b) );}
 };
 
 struct kt_to_neff : ComplexFunction
@@ -1266,7 +1273,12 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
     //if (real(sqrt(kz2[i])) < 1.2*max_kz)
       kz2_coarse.push_back(kz2[i]);
 
-  std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
+  std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
+
+  //for (unsigned int i=0; i<kz2.size(); i++)
+  //  std::cout << "raw sorted" << i << " " 
+  //            << sqrt(kz2_coarse[i])/2./pi*global.lambda 
+  //            << kz2_coarse[i] << std::endl;
   
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
@@ -1314,7 +1326,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M::build_modeset(const vector<Complex>& kt)
+void Slab_M::build_modeset(vector<Complex>& kt)
 {
   // Clear old modeset.
 
@@ -1336,11 +1348,186 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
   
   const Real C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
 
-  // Create new modeset.
+  // Create Planars.
+
+  vector<Planar> planars;
+  for (unsigned int i=0; i<materials.size(); i++)
+    planars.push_back(Planar(*materials[i]));
+
+  // Determine walls.
+
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
+
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
+
+  MonoScatterer* l_boundary;
+  if (abs(R_lower - (-1.0)) < 1e-9)
+    l_boundary = new E_Wall_Mono(planars[0]);
+  else if (abs(R_lower - 1.0) < 1e-9)
+    l_boundary = new H_Wall_Mono(planars[0]);
+  else
+  {
+    py_error("Unsupported wall type in Slab_M::build_modeset.");
+    exit (-1);
+  }
+
+  MonoScatterer* u_boundary;
+  if (abs(R_upper - (-1.0)) < 1e-9)
+    u_boundary = new E_Wall_Mono(planars.back());
+  else if (abs(R_upper - 1.0) < 1e-9)
+    u_boundary = new H_Wall_Mono(planars.back());
+  else
+  {
+    py_error("Unsupported wall type in Slab_M::build_modeset.");
+    exit (-1);
+  }
+
+  // Find cores and create Planar stacks for layers to the left and right
+  // of each core.
+
+  vector<int>   core_index;
+  vector<Stack> lower_stacks;
+  vector<Stack> upper_stacks;
   
-  bool calc_fw = true;
+  for (unsigned int i=0; i<materials.size(); i++)
+  {
+    // Is this layer a core?
+
+    bool is_core = false;
+    
+    if (i == 0)
+    {
+      if (real(materials[i]->eps_mu()) > real(materials[i+1]->eps_mu()))
+        is_core = true;
+    }
+    else if (i == materials.size()-1)    
+    {
+      if (real(materials[i]->eps_mu()) > real(materials[i-1]->eps_mu()))
+        is_core = true;
+    }
+    else
+    {   
+      if (    (real(materials[i]->eps_mu()) > real(materials[i-1]->eps_mu()))
+           && (real(materials[i]->eps_mu()) > real(materials[i+1]->eps_mu())) )
+        is_core = true;
+    }
+
+    // If so, create lower and upper stacks.
+
+    if (is_core)
+    {
+      core_index.push_back(i);
+
+      // Lower stack.
+
+      Expression lower_ex;        
+      lower_ex += Term(planars[i](thicknesses[i]/2.));
+      for (int j=i-1; j>=0; j--)
+        lower_ex += Term(planars[j](thicknesses[j]));
+      lower_ex += Term(*l_boundary);
+      lower_stacks.push_back(Stack(lower_ex));
+
+      // Upper stack.
+
+      Expression upper_ex;
+      upper_ex += Term(planars[i](thicknesses[i]/2.)); 
+      for (int j=i+1; j<materials.size(); j++)
+        upper_ex += Term(planars[j](thicknesses[j]));
+      upper_ex += Term(*u_boundary);
+      upper_stacks.push_back(Stack(upper_ex));
+
+      //std::cout << "lower" << lower_ex << std::endl;
+      //std::cout << "upper" << upper_ex << std::endl;  
+    }
+  }
+
+  // Find candidate cores to calculate modes from.
+  
+  std::sort(kt.begin(), kt.end(), kt_sorter());
+  vector<vector<int> > best_cores;
+  
   for (unsigned int i=0; i<kt.size(); i++)
   {
+    vector<Real> error_i;
+    Real best_error;;
+    for (unsigned int j=0; j<core_index.size(); j++)
+    {
+      Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
+    
+      if (real(kz) < 0) 
+        kz = -kz;
+
+      if (abs(real(kz)) < abs(imag(kz))) // Prefer lossy modes.
+        if (imag(kz) > 0)
+          kz = -kz;
+
+      Planar::set_kt(kz);
+
+      lower_stacks[j].calcRT();
+      upper_stacks[j].calcRT();
+
+      Real error = abs(lower_stacks[j].R12(0,0)*upper_stacks[j].R12(0,0)-1.0);
+      
+      error_i.push_back(error);
+
+      if (j==0)
+        best_error = error;
+
+      if (error < best_error)
+        best_error = error;
+
+      //std::cout << kz/2./pi*global.lambda 
+      //          << " " << i << " " << j << " " << error 
+      //          << std::endl << std::flush;
+    }
+
+    vector<int> best_cores_i;
+    for (unsigned int j=0; j<core_index.size(); j++)
+      if (abs(error_i[j] - best_error) < 1e-6)
+        best_cores_i.push_back(j);
+
+    //std::cout << "bestcores_i";
+    //for (int k=0; k<best_cores_i.size(); k++)
+    //  std::cout << " " << best_cores_i[k];
+    //std::cout << std::endl;
+
+    best_cores.push_back(best_cores_i);
+  }
+
+  // Create new modeset.
+
+  bool calc_fw = true; // To be removed.
+  int offset = 0;
+
+  for (unsigned int i=0; i<kt.size(); i++)
+  {
+    // Pick best core from candidates.
+
+    int core;
+
+    if (best_cores[i].size() == 1)
+    {
+      core = best_cores[i][0];
+      offset = 0;
+    }
+    else
+    {
+      if (offset >= best_cores[i].size())
+        offset = 0;
+      
+      core = best_cores[i][offset++];
+    }
+
+    //Complex neff = sqrt(C*min_eps_mu - kt[i]*kt[i])/2./pi*global.lambda;
+    //std::cout << "Mode " << i << " " << neff << " : ";
+    //for (int j=0; j<best_cores[i].size(); j++)
+    //  std::cout << best_cores[i][j] << " ";
+    //std::cout << " : " << core << std::endl << std::flush;
+
+    // Calculate kz.
+
     Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
@@ -1350,12 +1537,21 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
       if (imag(kz) > 0)
         kz = -kz;
 
+    // Create mode.
+
     Polarisation pol = global.polarisation;
     if (global.polarisation == TE_TM)
       pol = ( i < int(global.N/2) ) ? TE : TM;
-    
+
     calc_fw = !calc_fw;
-    Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
+
+    Slab_M_Mode *newmode;
+
+    if (global.eigen_calc == arnoldi) // Old method.
+      newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
+    else
+      newmode = new Slab_M_Mode(pol, kz, kt[i], this,
+                                lower_stacks[core], upper_stacks[core]);
 
     //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda
     //          << " " << pol << " " << calc_fw << std::endl;
@@ -1383,6 +1579,11 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
       modeset.push_back(dummy);
     }
   }
+
+  // Clean up.
+
+  delete l_boundary;
+  delete u_boundary;
 
   // Remember wavelength and gain these modes were calculated for.
 
