@@ -386,7 +386,15 @@ std::vector<Complex> mueller
                                &deflate, maxiter, &error, verbose);
 
     if (error)
-      py_error("Mueller solver failed to converge.");
+    {
+      std::ostringstream s;
+      s << "Mueller solver failed to converge for ";
+      if (!transform)
+        s << z0[i] << ".";
+      else
+        s << (*transform)(z0[i]) << ".";      
+      py_print(s.str());
+    }
     else
       z1.push_back(new_root);
 
