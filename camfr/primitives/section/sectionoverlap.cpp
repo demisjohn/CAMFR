@@ -389,7 +389,35 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
 Complex overlap_pw(const Section2D_Mode* sec_I_mode, 
                    const Section2D_Mode* sec_II_mode)
 {
-  return 1.0;
+  Complex result = 0.0;
+
+  const int M = global_section.M;
+  const int N = global_section.N;
+
+  const Complex W = sec_I_mode->get_geom()->get_width();
+  const Complex H = sec_I_mode->get_geom()->get_height();
+
+  cVector* Ex = sec_I_mode ->Ex;
+  cVector* Ey = sec_I_mode ->Ey;
+  cVector* Hx = sec_II_mode->Hx;
+  cVector* Hy = sec_II_mode->Hy;  
+
+  for (Real m=-M; m<=M; m+=1.0)
+    for (Real n=-N; n<=N; n+=1.0)
+    {
+      int i1 = int(( m+M+1) + ( n+N)*(2*M+1));
+      int i2 = int((-m+M+1) + (-n+N)*(2*M+1));
+
+      result += (*Ex)(i1)*(*Hy)(i2) - (*Ey)(i1)*(*Hx)(i2);
+    }
+
+  //Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
+
+  //if (abs(numeric - W*H*result) > 1e-4)
+  //  std::cout << "overlap " << numeric << " " << W*H*result 
+  //            << " " << numeric-W*H*result << std::endl;
+
+  return W*H*result;
 }
 
 

@@ -1651,8 +1651,6 @@ void Section2D::find_modes_from_estimates()
 
   // Refine estimates.
 
-  py_print("Refining estimates...");
-
   /*
   if (sort == highest_index)
     std::sort(estimates.begin(), estimates.end(), index_sorter());
@@ -1662,15 +1660,14 @@ void Section2D::find_modes_from_estimates()
 
   std::sort(estimates.begin(), estimates.end(), kz2_sorter());
 
-  for (int i=0; i<estimates.size(); i++)
-    std::cout << i << " " << sqrt(estimates[i].kz2)/2./pi*global.lambda 
-              << std::endl;
-
-  if (estimates.size() > global.N+5)
-    estimates.erase(estimates.begin()+global.N+5, estimates.end());
+  //for (int i=0; i<estimates.size(); i++)
+  //  std::cout << i << " " << sqrt(estimates[i].kz2)/2./pi*global.lambda 
+  //            << std::endl;
 
   // Pass on zeros unrefined.
 
+  if (global_section.mode_correction == false)
+  {
   py_print("Creating plane wave based mode profiles...");
 
   for (unsigned int i=0; i<estimates.size(); i++)
@@ -1695,15 +1692,29 @@ void Section2D::find_modes_from_estimates()
   }
 
   sort_modes();
-  truncate_N_modes(); 
+
+  global.N = modeset.size();
 
   py_print("Done.");
 
   return;
-  
 
+  // Test orthogonality.
+
+  cMatrix O12(estimates.size(), estimates.size(), fortranArray);
+  cMatrix O21(estimates.size(), estimates.size(), fortranArray);
+  cMatrix O11(estimates.size(), estimates.size(), fortranArray);
+  cMatrix O22(estimates.size(), estimates.size(), fortranArray);
+  calc_overlap_matrices(this, &O12, &O21, &O11, &O22);
+  std::cout << O11 << std::endl;
+  std::cout << O12 << std::endl;
+
+  return;
+  }
 
   // Refine zeros using transcendental function.
+
+  py_print("Refining estimates...");
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<estimates.size(); i++)
@@ -1746,6 +1757,9 @@ void Section2D::find_modes_from_estimates()
   // Create modeset.
 
   py_print("Creating mode profiles...");
+
+  if (estimates.size() > global.N+5)
+    estimates.erase(estimates.begin()+global.N+5, estimates.end());
 
   for (unsigned int i=0; i<kt.size(); i++)
   { 
