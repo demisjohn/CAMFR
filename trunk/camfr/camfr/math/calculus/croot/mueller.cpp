@@ -15,9 +15,53 @@
 #include <iostream>
 using namespace std;
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // mueller
+//
+//  Create two other estimates by varying real and imaginary part of
+//  initial estimate until the function values are different enough.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex mueller(ComplexFunction& f, const Complex& a,
+                Real eps, const vector<Complex>* prev_zeros,
+                int maxiter, bool *errorptr, bool verbose)
+{
+  const Real min_difference = 1e-6;
+  
+  const Complex fa = f(a);
+  
+  Complex b = a;
+  Real increment = eps;
+  do
+  {
+    b += increment;
+    increment *= 2.0;
+  }
+  while (abs((f(b) - fa)/fa) < min_difference);
+
+
+  Complex c = a;
+  increment = eps ;
+  do
+  {
+    c += increment*I;
+    increment *= 2.0;
+  }
+  while (abs((f(c) - fa)/fa) < min_difference);
+  
+  return mueller(f, a, b, c, eps, prev_zeros, maxiter, errorptr, verbose);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// mueller
+//
+//  Supply two estimates, and create the third from Newton's method.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -83,6 +127,39 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     return a;
   }
 
+  // Call classic Mueller solver.
+
+  return mueller(f, a, b, z1, eps, prev_zeros, maxiter, errorptr, verbose);
+  
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// mueller
+//
+//  'Classic' version, with three initial estimates.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
+                const Complex& c,
+                Real eps, const vector<Complex>* prev_zeros,
+                int maxiter, bool *errorptr, bool verbose)
+{
+  Complex z3 =   a;  Complex z2 =   b;  Complex z1 = c;
+  Complex f3 = f(a); Complex f2 = f(b);
+
+  if (prev_zeros) // Deflate them.
+    for (unsigned int i=0; i<prev_zeros->size(); i++)
+    {
+      f3 /= (a - (*prev_zeros)[i]);
+      f2 /= (b - (*prev_zeros)[i]);      
+    }
+
+  Complex dz23 = (f2 - f3) / (z2 - z3);
+
   // Iterate.
 
   bool converged = false;
@@ -102,6 +179,9 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     
     if (abs(f1) > 1e4*(abs(f2)+abs(f3)))
     {
+      if (verbose)
+        cout << "Error increased dramatically." << endl;
+      
       converged = false;
       break;
     }
@@ -159,9 +239,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     else
     {
       cout << "The Mueller solver failed to converge." << endl;
-      cout << "Initial value of a = " << a << endl;
-      cout << "Initial value of b = " << b << endl;
-      cout << "Result             = " << z1 << endl;
+      cout << "Returned estimate  = " << z1 << endl;
     }
 
   if (errorptr)
@@ -169,3 +247,98 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
   
   return z1;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// mueller_multiple
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> mueller_multiple
+  (ComplexFunction& f, const Complex& z0, Real eps, int maxiter)
+{
+  vector<Complex> roots;
+  roots.push_back(z0);
+
+  bool error = false;
+  do
+  {
+    Complex new_root = mueller(f, z0+0.001, z0+.001*I, eps, 
+                               &roots, maxiter, &error);
+
+    if (abs(new_root-z0) > 0.1)
+      error = true;
+
+    if (!error)
+      roots.push_back(new_root);
+  }
+  while (!error);
+  
+  return roots;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// mueller_multiple
+//
+/////////////////////////////////////////////////////////////////////////////
+
+std::vector<Complex> mueller_multiple
+ (ComplexFunction& f, const std::vector<Complex>& z0, Real eps, int maxiter)
+{
+  // Create clustered vector of zeros.
+
+  vector<vector<Complex> > roots;
+  for (unsigned int i=0; i<z0.size(); i++)
+  {
+    vector<Complex> roots_i;
+    roots_i.push_back(z0[i]);
+    roots.push_back(roots_i);
+  }
+  
+  for (unsigned int i=0; i<z0.size(); i++)
+  {
+    // Determine which zeros to deflate.
+
+    vector<Complex> deflate;
+    for (unsigned int j=0; j<z0.size(); j++)
+      if (abs(z0[j]-z0[i]) < 0.5)
+        deflate.insert(deflate.end(), roots[j].begin(), roots[j].end());    
+
+    // Look for degenerate zeros.
+    
+    int maxiter_i = maxiter * deflate.size();
+    bool error = false;
+    do
+    {
+      Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, 1e-12,
+                                 &deflate, maxiter_i, &error);
+
+      if (abs(new_root-z0[i]) > 0.1)
+        error = true;
+
+      if (!error)
+      {
+        deflate.push_back(new_root);
+        roots[i].push_back(new_root);
+        maxiter_i += maxiter_i;
+      }
+    }
+    while (!error);
+  }
+
+  // Return all zeros.
+
+  vector<Complex> allroots;
+
+  for (unsigned int i=0; i<roots.size(); i++)
+    allroots.insert(allroots.end(), roots[i].begin(), roots[i].end());
+
+  return allroots;
+}
+
+

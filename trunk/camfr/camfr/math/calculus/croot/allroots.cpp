@@ -113,13 +113,18 @@ vector<Complex> roots_contour(const Contour& contour,
     bool error = false;
     
     Complex root = mueller(*contour.get_f(), roots1[i], roots1[i]+.001,
-                           1e-15, &roots2, 50, &error);
+                           1e-14, &roots2, 50, &error);
 
     if (error)
       continue;
 
     if (contour.encloses(root))
-      roots2.push_back(root);
+    {
+      vector<Complex> multiple_roots 
+        = mueller_multiple(*contour.get_f(), root);
+      roots2.insert(roots2.end(),multiple_roots.begin(),multiple_roots.end());
+    }
+    
   }
   
   return roots2;      
