@@ -1,6 +1,11 @@
+2003-03-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* cavity.h: Reorder arguments.
+	* cavity.cpp: Ditto.
+
 2003-02-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* camfr_wrap.cpp. Added Material::set_n and set_mur.
+	* camfr_wrap.cpp: Added Material::set_n and set_mur.
 
 2003-02-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
