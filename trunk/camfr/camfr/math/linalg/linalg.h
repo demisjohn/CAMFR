@@ -68,7 +68,7 @@ cMatrix herm_conj(const cMatrix& A);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// replaces a square matrix A by its transpose or hermitian conjugate
+// Replaces a square matrix A by its transpose or hermitian conjugate.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,7 @@ void herm_conj_self(cMatrix* A);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// matrix with vector multiplication: multiply(A,x)
+// Matrix with vector multiplication: multiply(A,x).
 //  
 /////////////////////////////////////////////////////////////////////////////
 
@@ -89,7 +89,7 @@ cVector multiply(const cMatrix& A, const cVector& x, Op a=nrml);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// matrix multiplications: multiply(A,B)
+// Matrix multiplications: multiply(A,B)
 //                         multiply(Op(A),Op(B))
 //                         multiply(A,B,C)
 //                         multiply(A,B,C,D)
@@ -115,7 +115,7 @@ inline cVector multiply(const cMatrix& A, const cMatrix& B, const cVector& x)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// returns solution X of system of linear equations A*X=B
+// Returns solution X of system of linear equations A*X=B.
 //
 //   B can contain more than one column.  
 //   Note: don't use explicit matrix inversion here, since that is slower.
@@ -137,7 +137,7 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// computes eigenvalues and/or eigenvectors of matrix A
+// Computes eigenvalues and/or eigenvectors of matrix A.
 //
 //   The i-th column of matrix 'eigenvectors' corresponds to the i-th
 //   eigenvalue.
@@ -153,8 +153,8 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors=NULL);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// computes eigenvalues and/or eigenvectors of the generalized 
-// eigenproblem Ax = lambda Bx, where lambda = alpha / beta
+// Computes eigenvalues and/or eigenvectors of the generalized 
+// eigenproblem Ax = lambda Bx, where lambda = alpha / beta.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -166,7 +166,7 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// computes the SVD decomposition U.Sigma.Vh of matrix A
+// Computes the SVD decomposition U.Sigma.Vh of matrix A.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -176,7 +176,7 @@ rVector svd(const cMatrix& A, cMatrix* Vh=NULL, cMatrix* U=NULL);
      
 /////////////////////////////////////////////////////////////////////////////
 //
-// inverts a matrix.
+// Inverts a matrix.
 //
 //   Note: mostly not needed explicitly. Use routines to solve a linear
 //   system instead, since that is faster.
@@ -194,17 +194,20 @@ cMatrix invert_svd(const cMatrix& A);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// determinant
+// Determinant.
+//
+//   See LAPACK user guide for details on banded storage.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex determinant(const cMatrix& A);
+Complex determinant     (const cMatrix& A);
+Complex determinant_band(const cMatrix& A, int rows, int kl, int ku);
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// do LU decomposition of matrix A.
+// Do LU decomposition of matrix A.
 //
 //   Low level routine. Mostly not needed to use explicitly.
 //
@@ -216,7 +219,7 @@ void LU(const cMatrix& A, cMatrix* LU, iVector* P);
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// solve linear system op(A)*X=B starting from LU decomposition of A.
+// Solve linear system op(A)*X=B starting from LU decomposition of A.
 //
 //   op = nrml, transp or herm
 //

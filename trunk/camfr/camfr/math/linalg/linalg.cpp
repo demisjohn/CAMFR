@@ -1143,14 +1143,81 @@ Complex determinant(const cMatrix& A)
   for (int i=1; i<=N; i++)
     determinant *= LU_(i,i);
 
-  // Calcute sign change due to permutations.
+  // Calculate sign change due to permutations.
 
-  int changed = 0;
+  int swaps = 0;
   for (int i=1; i<=N; i++)
     if (P(i) != i)
-      changed++;
+      swaps++;
+
+  bool odd_swaps = 2*int(swaps/2) != swaps;
+ 
+  return odd_swaps ? -determinant : determinant;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Determinant of a band matrix A.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+extern "C" void F77NAME(zgbtrf)
+  (const int&,const int&,const int&,const int&,const Complex*,const int&,
+   const int*,int&);
+
+Complex determinant_band(const cMatrix& A, int rows, int kl, int ku)
+{
+  // Create permutation vector.
+
+  const int cols = A.columns();
+
+  const int P_size = ( (rows < cols) ? rows : cols );
+  iVector P(P_size,fortranArray);
+
+  // Make room for multipliers.
+
+  cMatrix Ab(kl+1+ku+kl,cols,fortranArray);
+  for (int i=1; i<=A.rows(); i++)
+    for (int j=1; j<=A.columns(); j++)
+      Ab(kl+i,j) = A(i,j);
+
+  // Calculate LU decomposition.
   
-  int swaps = int(changed/2);
+  int info;
+  int LDAb = kl+1+ku+kl;
+
+  F77NAME(zgbtrf)(rows,cols,kl,ku,Ab.data(),LDAb,P.data(),info);
+
+  if (info < 0)
+  {
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
+    exit (-1);
+  }
+
+  if (info > 0)
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
+
+  // Calculate determinant.
+
+  Complex determinant = 1.0;
+  for (int i=1; i<=cols; i++)
+    determinant *= Ab(kl+ku+1,i);  
+
+  // Calculate sign change due to permutations.
+
+  int swaps = 0;
+  for (int i=1; i<=P_size; i++)
+    if (P(i) != i)
+      swaps++;
+
   bool odd_swaps = 2*int(swaps/2) != swaps;
   
   return odd_swaps ? -determinant : determinant;
@@ -1202,7 +1269,6 @@ void LU(const cMatrix& A, cMatrix* LU, iVector* P)
     py_error(s.str());
   }
 }
-
 
 
 
