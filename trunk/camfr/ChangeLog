@@ -4,6 +4,9 @@ CAMFR 1.0:
    tp three times faster than CAMFR 0.9.
  - more robust method of calculating Bloch modes (Lieven Vanholme)
    emd their field profiles.
+ - better handling loosely coupled or degenerate waveguides.
+ - better handling of metals, also metals with purely imaginary refractive
+   index.
  - new way of defining complicated structures using geometric shapes and
    automatic discretisation
  - CAMFR now runs reliably under graphical IDE environments like Idle
@@ -12,7 +15,7 @@ CAMFR 1.0:
  - Matlab link under Windows is by default enabled and installed.
  - various documentation updates and minor bugfixes
  - alpha: new root finder, waveguides with 2D cross-section
- - semi infitinie stack
+ - semi-infinite stack
 
 CAMFR 0.9:
 
