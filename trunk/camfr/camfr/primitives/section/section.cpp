@@ -606,7 +606,10 @@ void Section2D::find_modes()
 struct sorter
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
-      {return ( real(beta_a) > real(beta_b) );}
+    {
+      // return ( real(beta_a) > real(beta_b) ); // highest index
+      return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+    }
 };
 
 struct kt_to_neff : ComplexFunction
