@@ -25,6 +25,8 @@
 
 -band calculation with fixed k_t
 
+-averaging of eps
+
 -remove f,zabs debug code from slabmode.cpp
 -document field_calc_heuristic
 

@@ -41,7 +41,8 @@ library_dirs = ["/opt/intel/mkl/lib/32"]
 
 # Library names.
 
-libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
+#libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p3", "guide", "g2c"]
+libs = ["boost_python", "blitz", "mkl_lapack", "mkl_def", "guide", "g2c"]
 #libs = ["boost_python", "blitz", "mkl_lapack", "mkl_ia32", "guide", "g2c"]
 #libs = ["boost_python", "blitz", "lapack", "f77blas", "cblas", "atlas", "g2c"]
 
