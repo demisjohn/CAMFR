@@ -348,7 +348,7 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
     if (real(kx_i) < 0)
       kx_i = -kx_i;
 
-    if (abs(real(kx_i)) < 1e-10)
+    if (abs(real(kx_i)) < 1e-8)
       if (imag(kx_i) > 0)
         kx_i = -kx_i;
     
@@ -521,8 +521,9 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
     bw.back() = 0.0;
   }
   
+  //std::cout << "n_eff " << kz/2./pi*global.lambda << std::endl;
   //for (unsigned int i=0; i<fw.size(); i++)
-  //  std::cout << i << kx[i] << fw[i] << bw[i] << std::endl;
+  //  std::cout << i  << fw[i] << bw[i] << std::endl;
   //std::cout << std::endl;
 }
 
