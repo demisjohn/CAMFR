@@ -754,6 +754,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     BlochMode_.def(&BlochMode::fw_field, "fw_field");
     BlochMode_.def(&BlochMode::bw_field, "bw_field");
+    BlochMode_.def(&BlochMode::S_flux,   "S_flux");
 
     // Wrap RealFunction.
 

@@ -76,6 +76,10 @@ class BlochMode : public Mode
     cVector fw_field() const {return interface_field[0].fw;}
     cVector bw_field() const {return interface_field[0].bw;}    
 
+    Real S_flux(Real c1_start, Real c1_stop, Real eps=1e-10) const
+      {return dynamic_cast<MultiWaveguide*>(geom->get_inc())->
+         S_flux(interface_field[0], c1_start, c1_stop, eps);}
+
   protected:
 
     Stack* geom;
