@@ -10,8 +10,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef CIRCMODE_H
-#define CIRCMODE_H
+#ifndef SLABMODE_H
+#define SLABMODE_H
 
 #include <vector>
 #include "../../../mode.h"
