@@ -1,3 +1,10 @@
+2003-02-17 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.h: Add series solver.
+	* slab.cpp: Ditto.
+	* slaboverlap.cpp: Ditto.
+	* slaboverlap.h: Ditto.
+
 2003-01-31 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.cpp: Make insensitive to whether E_wall is explicitly set.

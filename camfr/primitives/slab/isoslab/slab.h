@@ -37,7 +37,7 @@ class Slab_M : public SlabImpl
   public:
 
     Slab_M() {}
-    Slab_M(const Expression& expression);  
+    Slab_M(const Expression& expression, int M_series=0);  
     Slab_M(const Slab_M& slab);
     ~Slab_M() {}
 
@@ -75,6 +75,7 @@ class Slab_M : public SlabImpl
     std::vector<Complex> find_kt_from_scratch_by_ADR();
     std::vector<Complex> find_kt_from_scratch_by_track();
     std::vector<Complex> find_kt_by_sweep(std::vector<Complex>& old_kt);
+    std::vector<Complex> find_kt_from_series();
 
     void build_modeset(const std::vector<Complex>& kt);
 
@@ -82,6 +83,8 @@ class Slab_M : public SlabImpl
     
     std::vector<Material*> materials;
     std::vector<Complex>   thicknesses;
+
+    int M_series;
 
     friend class Slab_M_Mode;
     friend class UniformSlab;

@@ -29,7 +29,8 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Slab_M::Slab_M(const Expression& expression)
+Slab_M::Slab_M(const Expression& expression, int M_series_) 
+  : M_series(M_series_)
 {
   Expression ex = expression.flatten();
   Complex current_x = 0.0;
@@ -337,17 +338,16 @@ vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
   // combination, use these as an initial estimate, else find them
   // from scratch.
 
-  vector<Complex> kt;
+  if (global.solver == series)
+    return find_kt_from_series();
 
   if (global.sweep_from_previous && (modeset.size() >= global.N))
-      kt = find_kt_by_sweep(old_kt);
-  else
-    if (global.solver == ADR)
-      kt = find_kt_from_scratch_by_ADR();
-    else
-      kt = find_kt_from_scratch_by_track();
+    return find_kt_by_sweep(old_kt);
 
-  return kt;
+  if (global.solver == ADR)
+    return find_kt_from_scratch_by_ADR();
+
+  return find_kt_from_scratch_by_track();
 }
 
 
@@ -795,6 +795,172 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Slab_M::find_kt_from_series
+//
+/////////////////////////////////////////////////////////////////////////////
+
+struct sorter
+{
+    bool operator()(const Complex& beta_a, const Complex& beta_b)
+    {
+      //return ( real(beta_a) > real(beta_b) ); // highest index
+      return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+    }
+};
+
+struct kt_to_neff : ComplexFunction
+{
+  Complex C;
+
+  kt_to_neff(const Complex& C_) : C(C_) {}
+
+  Complex operator()(const Complex& kt)
+    {return sqrt(C - kt*kt)/2./pi*global.lambda;}
+};
+
+std::vector<Complex> Slab_M::find_kt_from_series()
+{
+  // Set constants.
+
+  const int n = M_series ? M_series : int(global.N * global.mode_surplus);
+  const Real omega = 2*pi/global.lambda * c;
+ 
+  // Find min eps mu.
+
+  Complex min_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
+
+  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  // Calc overlap matrices.
+
+  int old_N = global.N;
+  global.N = n;
+
+  Material ref_mat(1.0);
+  UniformSlab ref(get_width(),ref_mat);
+  ref.find_modes();
+
+  global.N = old_N;
+
+  cMatrix O_tt(n,n,fortranArray);
+
+  cMatrix O_zz(fortranArray);
+  if (global.polarisation == TM)
+    O_zz.resize(n,n);
+
+  overlap_reference_modes(&O_tt, &O_zz, ref, *this);
+
+  // Calculate coarse estimates.
+
+  cMatrix E(n,n,fortranArray);
+
+  if (global.polarisation == TE)
+  { 
+    E = O_tt;
+    
+    for (int i=1; i<=n; i++)
+    {
+      SlabMode* TE_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
+   
+      const Complex factor = omega * TE_i->get_kz();
+      for (int j=1; j<=n; j++)
+        E(i,j) *= factor;
+
+      E(i,i) -= pow(TE_i->kx_at(Coord(0,0,0)), 2);
+    }
+  }
+  else
+  {
+    cMatrix inv_O_zz(n,n,fortranArray);
+    inv_O_zz.reference(invert_svd(O_zz));
+
+    const Complex omega_3_mu_eps 
+      = pow(omega,3) * ref_mat.eps() * ref_mat.mu();
+    
+    cMatrix T(n,n,fortranArray);
+    for (int i=1; i<=n; i++)
+    {
+      SlabMode* TM_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
+      Complex kz_i   = TM_i->get_kz();
+      Complex kt_i_2 = pow(TM_i->kx_at(Coord(0,0,0)),2);
+
+      if (abs(kz_i) < 1e-6)
+        py_print("WARNING: reference mode close to cutoff!");
+
+      for (int j=1; j<=n; j++)
+      {
+        SlabMode* TM_j = dynamic_cast<SlabMode*>(ref.get_mode(j));
+        Complex kz_j   = TM_j->get_kz();
+        Complex kt_j_2 = pow(TM_j->kx_at(Coord(0,0,0)),2);
+
+        T(i,j) = kt_i_2/kz_i * inv_O_zz(i,j) * kt_j_2/kz_j;
+      }
+
+      T(i,i) += omega_3_mu_eps / kz_i;
+    }
+
+     E.reference(multiply(T, O_tt));
+  }
+
+  cVector kz2(n,fortranArray);
+  kz2 = eigenvalues(E);
+
+  // Refine estimates.
+
+  vector<Complex> kz2_coarse;
+  for (unsigned int i=1; i<=n; i++)
+    kz2_coarse.push_back(kz2(i));
+
+  std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
+  kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+
+  vector<Complex> kt_coarse;
+  for (unsigned int i=0; i<kz2_coarse.size(); i++)
+  {
+    Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
+
+    if (imag(kt) < 0) 
+      kt = -kt;
+
+    if (abs(imag(kt)) < 1e-10)
+      if (real(kt) > 0)
+        kt = -kt;
+
+    kt_coarse.push_back(kt);
+  }
+
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
+
+  kt_to_neff transform(C0*min_eps_mu);
+  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall);
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform, 1);
+
+  // Eliminate false zeros.
+
+  for (unsigned int i=0; i<materials.size(); i++)
+  {
+    Complex kt_i = sqrt(C0*(real(materials[i]->eps_mu())-min_eps_mu));
+
+    remove_elems(&kt,  kt_i, 1e-6);
+    remove_elems(&kt, -kt_i, 1e-6);
+  }
+
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Slab_M::build_modeset
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -831,7 +997,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     if (real(kz) < 0) 
       kz = -kz;
 
-    if (abs(real(kz)) < 1e-12)
+    if (abs(real(kz)) < 1e-10)
       if (imag(kz) > 0)
         kz = -kz;
 
