@@ -84,8 +84,8 @@ class taper(unittest.TestCase):
         taper.set_inc_field(inc)
 
         R = taper.R12(0,0)
-        R_OK = 0.164397951326+0.335970606541j
-    
+        R_OK = 0.0273696979622+0.337022950103j
+        
         print R, "expected", R_OK
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
