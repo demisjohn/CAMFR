@@ -1,7 +1,7 @@
 CAMFR 3D:
 
 
--Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D
+-Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D, kz=0
 -free slabmatrixcache?
 -generalise cache to work with different M in each section.
 -auto-partitioned section,

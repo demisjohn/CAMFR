@@ -80,6 +80,9 @@ class SlabImpl : public MultiWaveguide
     void fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
                           const std::vector<Complex>& disc);
 
+    std::vector<Complex> get_discontinuities() const 
+      {return discontinuities;}
+
   protected:
 
     SlabWall* lowerwall; // NULL means use wall from global_slab.
@@ -148,6 +151,9 @@ class Slab : public MultiWaveguide
 
     std::vector<Complex> get_params() const {return s->get_params();}
     void set_params(const std::vector<Complex>& p) {s->set_params(p);}
+
+    std::vector<Complex> get_discontinuities() const 
+      {return s->get_discontinuities();}
 
     const FieldExpansion field_from_source
       (const Coord& pos, const Coord& orientation)
