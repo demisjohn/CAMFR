@@ -24,7 +24,8 @@ Global global={0,0,TE,0,track,normal,100,1,0.01,100,100,Complex(1,1),false,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const string Pol_string[] = {"unknown", "TEM", "TE", "TM", "HE", "EH"};
+const string Pol_string[] 
+  = {"unknown", "TEM", "TE", "TM", "HE", "EH", "TE_TM"};
 
 ostream& operator<< (ostream& s, const Polarisation& pol)
 {

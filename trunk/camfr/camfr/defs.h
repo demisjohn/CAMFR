@@ -50,8 +50,8 @@ typedef enum {T_T, S_T, S_S} Field_calc;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-typedef enum {unknown, TEM, TE, TM, HE, EH} Polarisation;
-extern const string Pol_string[10];
+typedef enum {unknown, TEM, TE, TM, HE, EH, TE_TM} Polarisation;
+extern const string Pol_string[11];
 ostream& operator<< (ostream& s, const Polarisation& pol);
 
 

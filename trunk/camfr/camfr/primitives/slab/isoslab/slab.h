@@ -121,6 +121,10 @@ class UniformSlab : public SlabImpl
       {return discontinuities[0];}
 
     void find_modes();
+
+  protected:
+
+    void find_modes_single_pol();
 };
 
 

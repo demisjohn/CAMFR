@@ -67,10 +67,10 @@ Field SlabMode::field(const Coord& coord_) const
     field.H2 = 0.0;
     field.Hz = C * ( right_x - left_x) * kx;
   }
-  else
+  else 
   { 
     const Complex C = 1.0 / (k0*c) / geom->eps_at(coord);
-
+ 
     field.H1 = 0.0;
     field.H2 = right_x - left_x;
     field.Hz = 0.0;

@@ -1,0 +1,4 @@
+2001-10-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * slab.cpp: Add support fow TE_TM polarisation.
+	* slab.h: Ditto.

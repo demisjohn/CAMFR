@@ -1,0 +1,6 @@
+2001-10-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * defs.h: Add support fow TE_TM polarisation.
+	* defs.cpp: Ditto.
+	* camfr_wrap.cpp: Ditto.
+

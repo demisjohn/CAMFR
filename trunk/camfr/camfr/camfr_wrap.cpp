@@ -417,7 +417,7 @@ BOOST_PYTHON_MODULE_INIT(camfr)
     // Splash screen.
     
     cout << endl
-         << "CAMFR 0.9 - "
+         << "CAMFR 1.0pre - "
          << "Copyright (C) 1998-2001 Peter Bienstman - Ghent University."
          << endl << endl;
 
@@ -450,7 +450,8 @@ BOOST_PYTHON_MODULE_INIT(camfr)
     camfr.add(make_ref(TE),      "TE");
     camfr.add(make_ref(TM),      "TM");
     camfr.add(make_ref(HE),      "HE");
-    camfr.add(make_ref(EH),      "EH");
+    camfr.add(make_ref(EH),      "EH");    
+    camfr.add(make_ref(TE_TM),   "TE_TM");
 
     // Wrap Fieldtype enum.
 
