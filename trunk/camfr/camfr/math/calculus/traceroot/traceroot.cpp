@@ -19,6 +19,7 @@
 
 using std::vector;
 using std::string;
+using std::arg;
 
 #include "../../../util/vectorutil.h"
 #include "../../../util/cvector.h"
