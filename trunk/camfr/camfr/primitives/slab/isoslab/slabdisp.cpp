@@ -65,7 +65,7 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
-    Complex eps_mu =eps [i]*mu[i];
+    Complex eps_mu = eps [i]*mu[i];
     
     if (real(eps_mu) < real(eps_mu_min))
       eps_mu_min = eps_mu;
@@ -104,7 +104,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
-    Complex eps_mu =eps [i]*mu[i];
+    Complex eps_mu = eps [i]*mu[i];
     
     if (real(eps_mu) < real(eps_mu_min))
       eps_mu_min = eps_mu;
