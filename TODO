@@ -1,4 +1,4 @@
--document set_backward, make test for test suite
+-phasar2.py
 -plot doesn't work for Circ waveguide
 -free_temps: slab_cache = []
 
