@@ -158,6 +158,9 @@ class MultiWaveguide : public Waveguide
 
     void sort_modes()
       {sort(modeset.begin(), modeset.end(), modesorter());}
+
+    void sort_modes_bloch()
+      {sort(modeset.begin(), modeset.end(), modesorter_bloch());}
       
     void sort_modes_BDM()
       {sort(modeset.begin(), modeset.end(), modesorter_BDM());}

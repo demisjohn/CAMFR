@@ -1,5 +1,11 @@
 2002-02-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* mode.h: Add support for better sorting of Bloch modes.
+	* waveguide.h: Ditto.
+	* bloch.cpp: Ditto.
+
+2002-02-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* infstack.cpp: Clean up.
 
 2002-02-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

@@ -133,7 +133,7 @@ void BlochStack::find_modes_T()
   }
 
   brillouin_eliminate_modes();
-  sort_modes();
+  sort_modes_bloch();
 }
 
 
@@ -234,7 +234,7 @@ void BlochStack::find_modes_GEV()
   } 
 
   brillouin_eliminate_modes(); 
-  sort_modes(); 
+  sort_modes_bloch(); 
 } 
 
 
@@ -352,7 +352,7 @@ void BlochStack::find_modes_diag()
   }
 
   brillouin_eliminate_modes();
-  sort_modes();
+  sort_modes_bloch();
 }
 
 
