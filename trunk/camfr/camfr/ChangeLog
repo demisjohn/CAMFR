@@ -1,5 +1,9 @@
 2003-04-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* camfr_wrap.cpp: Add various width() functions.
+
+2003-04-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* camfr_wrap.cpp: Add Cavity::bot_stack and top_stack.
 	* cavity.h: Ditto.
 
