@@ -24,7 +24,7 @@ END-INFO-DIR-ENTRY
 @sp 10
 @title {CAMFR manual}
 @subtitle {version 1.0}
-@subtitle {June, 2002}
+@subtitle {August, 2002}
 @author Peter Bienstman
 
 @page
@@ -40,7 +40,7 @@ Copyright @copyright{} 2001-2002 Peter Bienstman - Ghent University.
 * Introduction::                
 * Tutorial::                    
 * Modelling optical devices::   
-* Using visualisation toolkits with CAMFR::  
+* Visualisation::               
 * Reference guide::             
 * Index::                       
 
@@ -68,7 +68,7 @@ Modelling optical devices
 * General excitations for slabs::  
 * Tips for troubleshooting problems::  
 
-Using visualisation toolkits with CAMFR
+Visualisation
 
 * Tk toolkit::                  
 * Matlab interface::            
@@ -117,6 +117,12 @@ Reference guide
 * Planar::                      
 * Circ::                        
 * Slab::                        
+* plot_vector::                 
+* plot_matrix::                 
+* plot_n_eff::                  
+* plot_n::                      
+* plot_field::                  
+* animate_field::               
 
 @end detailmenu
 @end menu
@@ -1047,7 +1053,7 @@ list at the top level in the source code.
 
 @page
 
-@node Modelling optical devices, Using visualisation toolkits with CAMFR, Tutorial, top
+@node Modelling optical devices, Visualisation, Tutorial, top
 @chapter Modelling optical devices
 
 In this chapter, we will build upon the basic concepts introduced in the
@@ -2041,42 +2047,23 @@ behaviour now, include @code{from __future__ import division} at the top
 of your scripts.
 @page
 
-@node Using visualisation toolkits with CAMFR, Reference guide, Modelling optical devices, top
-@chapter Using visualisation toolkits with CAMFR
+@node Visualisation, Reference guide, Modelling optical devices, top
+@chapter Visualisation
 
-@cindex visualisation toolkits
+@cindex visualisation
 
 Because Python is very well suited as a glue language, it is extremely easy
 to integrate a visualisation toolkit with Python bindings into a CAMFR
 simulation.
 
-There are a number of such toolkits:
+The default toolkit used in CAMFR is based on Tk, which is standard in almost
+every Python distribution. It is however possible to use a different backend 
+for visualisation, e.g. Matlab if this program is installed on your system.
 
-@itemize @bullet
-@item
-The standard Tk widget set, which is included with almost all Python 
-distributions
-@item
-PyMat, the Matlab Python bindings. These come bundled with the Windows version
-of CAMFR, but can also be downloaded from 
-@uref{http://claymore.engineer.gvsu.edu/~steriana/Python/pymat.html}
-@item
-ScyGraphica from @uref{http://scigraphica.sourcefourge.net}
-@item
-KMatplot from @uref{http://kmatplot.sourcefourge.net}
-@item
-PLplot from @uref{http://plplot.sourcefourge.net}
-@item
-VTK from @uref{http://public.kitware.com}
-@item
-DISLIN from @uref{http://www.linmpi.mpg.de/dislin}
-@item
-...
-@end itemize
-
-In this chapter, we will only illustrate these concepts with the Tk toolkit
-and the Matlab bindings, but the user is of course free to use any toolkit
-she likes.
+The interface to these toolkits is the same, they only differ on how they
+present the actual graphical output. The matlab wrapper also includes the
+possibility to pass data to and from Matlab for additional processing, as
+well as the option to write Matlab code from inside a Python script.
 
 @page
 
@@ -2085,50 +2072,80 @@ she likes.
 * Matlab interface::            
 @end menu
 
-@node Tk toolkit, Matlab interface, Using visualisation toolkits with CAMFR, Using visualisation toolkits with CAMFR
+@node Tk toolkit, Matlab interface, Visualisation, Visualisation
 @section Tk toolkit
 
-CAMFR comes with a thin wrapper around some Tk plotting 
-facilities, which are based on code from Scientific Python, which has its
-homepage at
-@uref{http://starship.python.net/crew/hinsen/scientific.html}. The necessary
-code from Scientific Python is included within the CAMFR distribution, while
-Tk is standard on most Python distributions (consult your system 
-administrator if in doubt).
+CAMFR comes standard with a thin wrapper around some Tk plotting 
+facilities, which are partly based on code from Scientific Python, 
+@uref{http://starship.python.net/crew/hinsen/scientific.html}. 
 
-These plotting facilities are accessed with @code{from camfr_tk import *}.
-
-The following functions in this module are very convenient in interactive mode,
-in order to inspect modes and field profiles of eigenmodes:
-
-@code{plot_neff(waveguide)} will plot the distribution of eigenmodes in the 
-complex effective index plane. 
-
-To plot the field profile of a mode, use code like this:
+The following code illustrates some of these plotting routines:
 
 @example
-plot_field(waveguide, modeindex, lambda f : f.E2().real)
+@group
+#!/usr/bin/env python
+
+####################################################################
+#
+# Simple visualisation example.
+#
+####################################################################
+
+from camfr import *
+
+set_lambda(1)
+set_N(50)
+set_polarisation(TE)
+
+# Define materials.
+
+GaAs = Material(3.5)
+air  = Material(1.0)
+
+# Define waveguide.
+
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+slab = Slab(air(2) + GaAs(0.5) + air(2))
+
+slab.calc()
+
+@end group
+@group
+# Visualise.
+
+r_x = arange(1.0, 3.5, 0.01)
+
+print "Plotting mode distribution (close window to continue)"
+plot_neff(slab)
+
+print "Plotting E field (close window to continue)"
+plot_field(slab.mode(0), lambda f : f.E2().real, r_x)
+
+print "Plotting H field (close window to continue)"
+plot_field(slab.mode(0), lambda f : f.H2().real, r_x)
+
+print "Plotting refractive index profile (close window to continue)"
+plot_n(slab, r_x)
+@end group
 @end example
 
-This will plot the real component of @code{E2} of a mode with a given index. 
-Note the use of Python's lambda functions: little anonymous functions which
-in this case will be called on a @code{Field} object. This greatly increases
-the flexibility of the @code{plot_field} function: e.g. to plot the absolute
-value one would write @code{lambda f : abs(f.E2()**2)}.
-
-Optionally, @code{plot_field} can have a fourth argument, which
-is the number of steps used. This parameter defaults to 100.
-
-Finally, @code{def plot_n(waveguide, steps=100)} will plot the refractive 
-index profile of the waveguide. 
+Note the use of Python's lambda functions to indicate which field component to
+plot. Lambda functions are little anonymous functions which in this case will 
+be called on a @code{Field} object. This greatly increases the flexibility of 
+the @code{plot_field} function: e.g. to plot the absolute value one would 
+write @code{lambda f : abs(f.E2()**2)}.
 
 In all these plots, you can zoom by dragging a rectangle in the window. 
 Also, left clicking and dragging under the horizontal axis will print the
-corresponding coordinates.
+corresponding coordinates. Note that these functions are also very handy in
+interactive mode, to quickly inspect modes and their field profiles.
 
-The previous functions are mainly functions meant to be used
-during interactive sessions. We will now illustrate how we can use custom 
-plotting in our own simulations (examples from the chapter can be found in the
+@page
+
+The next example illustrates how we can use custom plotting in our own 
+simulations (examples from the chapter can be found in the
 @code{visualisation/examples/} directory).
 
 @example
@@ -2137,12 +2154,11 @@ plotting in our own simulations (examples from the chapter can be found in the
 
 ####################################################################
 #
-# Illustrates plotting from Tk.
+# Illustrates custom plotting.
 #
 ####################################################################
 
 from camfr import *
-from camfr_tk import *
 from Numeric import *
 
 set_lambda(1)
@@ -2192,19 +2208,88 @@ plotting it @code{plot_vector(v)}.
 
 @page
 
-@node Matlab interface,  , Tk toolkit, Using visualisation toolkits with CAMFR
+This example shows how to inspect the refractive index of a stack, as well 
+as how to plot and animate field profiles in a stack:
+
+@example
+@group
+#! /usr/bin/env python
+
+####################################################################
+#
+# Illustrates 2D plotting.
+#
+####################################################################
+
+from camfr import *
+from Numeric import *
+
+set_N(40)
+set_lambda(1.55)
+
+# Define materials.
+
+GaAs = Material(3.5)
+air  = Material(1.0)
+
+# Define geometry.
+
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+wg  = Slab(air(2.0) + GaAs(0.2) + air(2.0))
+gap = Slab(air(4.2))
+
+s = Stack(wg(0) + gap(1) + wg(0))
+
+@end group
+@group
+# Do some plotting.
+
+r_x = arange( 1.5, 2.8, 0.05)
+r_z = arange(-1.0, 2.0, 0.05)
+
+plot_n(s, r_x, r_z)
+
+inc = zeros(N())
+inc[0] = 1
+s.set_inc_field(inc)
+
+plot_field(s, lambda f : f.E2().real, r_x, r_z)
+
+animate_field(s, lambda f : f.E2(), r_x, r_z)
+@end group
+@end example
+
+This code is pretty self-explanatory. Once again, ranges are used to specify
+the area to be plotted and the resolutions. Lambda functions take care of 
+determining which field component is to be plotted.
+
+Important to note is that @code{animate_field} requires a complex number to
+work correctly, so the full complex field component needs to be used rather
+than e.g. the real part.
+
+Note that instead of a @code{Stack}, one can also pass a 
+@code{BlochStack.mode} to @code{animate_field}.
+
+Finally, the 2D equivalent of @code{plot_vector(v)} is @code{plot_matrix(z)}.
+
+@page
+
+@node Matlab interface,  , Tk toolkit, Visualisation
 @section Matlab interface
 
 @cindex Matlab interface
 
-Similar to @code{camfr_tk.py}, there is a wrapper @code{camfr_matlab.py} which
-uses Matlab for visualisation. 
+The wrapper which uses Matlab for visualisation has to be imported explicitly:
+@code{from camfr_matlab import *}.
 
-@code{camfr_matlab} supports all the same functions as @code{camfr_tk}, like
-@code{plot_neff}, @code{plot_E1} and friends, @code{plot_n} and 
-@code{plot_vector}. Contrary to its Tk equivalent, this last function can
-even be used inside a loop in order to give visual feedback on the progress
-of the simulation. (This is not possible with the current Tk widget, as it
+@code{camfr_matlab} supports all the same functions as the de default Tk 
+routines, like @code{plot_neff}, @code{plot_field}, @code{plot_n}, 
+@code{plot_vector}, ... . 
+Contrary to its Tk equivalent, this last function can even be used inside a 
+loop in order to give visual feedback on the progress of the simulation. 
+(This is not possible with the current Tk widget, as it
 requires closing the window before a new plot can be made.)  
 
 Additionally, the @code{camfr_matlab} module can be used to pass data to and 
@@ -2277,7 +2362,7 @@ raw_input("Press <enter> to continue")
 
 @page
 
-@node Reference guide, Index, Using visualisation toolkits with CAMFR, top
+@node Reference guide, Index, Visualisation, top
 @chapter Reference guide
 
 @noindent
@@ -2327,6 +2412,12 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * Planar::                      
 * Circ::                        
 * Slab::                        
+* plot_vector::                 
+* plot_matrix::                 
+* plot_n_eff::                  
+* plot_n::                      
+* plot_field::                  
+* animate_field::               
 @end menu
 
 @node set_lambda, get_lambda, Reference guide, Reference guide
@@ -3270,7 +3361,7 @@ Member functions: same as @code{Waveguide}.
 
 
 
-@node Slab,  , Circ, Reference guide
+@node Slab, plot_vector, Circ, Reference guide
 @unnumberedsec @code{Slab}
 @cindex @code{Slab}
 @cindex boundary conditions for slabs
@@ -3308,6 +3399,85 @@ for this slab. Possible choices for SlabWall include @code{slab_E_wall} and
 @noindent
 @xref{Waveguide}.
 
+
+@node plot_vector, plot_matrix, Slab, Reference guide
+@unnumberedsec @code{plot_vector}
+@cindex @code{plot_vector}
+
+@noindent
+@code{plot_vector(v)}: makes a 1D plot of a vector. @code{v} is a list of
+@code{(x,y)}-pairs. The actual display is dependent on which visualisation
+backend is loaded.
+
+
+
+@node plot_matrix, plot_n_eff, plot_vector, Reference guide
+@unnumberedsec @code{plot_matrix}
+@cindex @code{plot_matrix}
+
+@noindent
+@code{plot_matrix(z)}: makes a 2D colour plot of a matrix. @code{z} is a 
+Numerical Python matrix. The actual display is dependent on which visualisation
+backend is loaded.
+
+
+
+@node plot_n_eff, plot_n, plot_matrix, Reference guide
+@unnumberedsec @code{plot_n_eff}
+@cindex @code{plot_n_eff}
+
+@noindent
+@code{plot_n_eff(waveguide)}: plots the distribution of the propagation 
+constants of a waveguide in the complex plane. The actual display is dependent
+on which visualisation backend is loaded.
+
+
+
+@node plot_n, plot_field, plot_n_eff, Reference guide
+@unnumberedsec @code{plot_n}
+@cindex @code{plot_n}
+
+@noindent
+This function comes in two forms: @code{plot_n(waveguide, r_x)} and 
+@code{plot_n(stack, r_x, r_z)}, to plot either the 1D index distribution in
+a waveguide or the 2D index distribution in a Cartesian stack. @code{r_x} and 
+@code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying which 
+interval to plot and with which resolution. @code{x} is the transverse 
+direction, @code{z} the propagation direction. The actual display is dependent
+on which visualisation backend is loaded.
+
+
+
+@node plot_field, animate_field, plot_n, Reference guide
+@unnumberedsec @code{plot_field}
+@cindex @code{plot_field}
+
+@noindent
+This function comes in two forms: @code{plot_field(waveguide, component, r_x)}
+and  @code{plot_field(stack, component, r_x, r_z)}, to plot either the 1D 
+field profile in a waveguide or the 2D field profile in a Cartesian stack.
+@code{component} is a function operating on a @code{Field} object specifying
+which field component to plot, e.g. @code{lambda f : f.E2().real}. 
+@code{r_x} and @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) 
+specifying which  interval to plot and with which resolution. @code{x} is the 
+transverse  direction, @code{z} the propagation direction. The actual display
+is dependent on which visualisation backend is loaded.
+
+
+
+@node animate_field,  , plot_field, Reference guide
+@unnumberedsec @code{animate_field}
+@cindex @code{animate_field}
+
+@noindent
+@@code{animate_field(stack, component, r_x, r_z)}: animates the 2D field 
+profile in a Cartesian stack. @code{component} is a function operating on a 
+@code{Field} object specifying which (complex) field component to plot, e.g. 
+@code{lambda f : f.E2()}. @code{r_x} and @code{r_z} are range objects 
+(e.g @code{arange(x0, x1, dx)}) specifying which  interval to plot and with 
+which resolution. @code{x} is the transverse  direction, @code{z} the
+propagation direction. The actual display is dependent on which visualisation 
+backend is loaded.
 
 
 @node Index,  , Reference guide, top

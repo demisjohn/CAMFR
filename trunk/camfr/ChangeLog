@@ -10,6 +10,8 @@ CAMFR 1.0:
    period
  - more robust method of calculating Bloch modes (Lieven Vanholme)
    and their field profiles
+ - integrated plotting and animation routines for field profiles in a stack
+   (Lieven Vanholme)
  - added stack.n(), stack.mu() and stack.eps()
  - added Poynting vector components field.S1(), field.S2() and field.Sz()
  - Matlab link under Windows is by default enabled and installed

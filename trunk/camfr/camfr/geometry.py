@@ -440,6 +440,7 @@ class Geometry:
                 e_slab.add(chunk_m(chunk_d))
                 
             s = Slab(e_slab)
+   
             slab_cache.append(s)
             e.add(s(d[i]))
 
