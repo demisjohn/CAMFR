@@ -882,7 +882,7 @@ class StackPlot:
     def _quit(self, mesage=0):
         import sys    
         self.PLAY = 0
-        self.window.master.destroy().
+        self.window.master.destroy()
 
    ###########################################################################
    #
