@@ -31,8 +31,8 @@ class Cache
     
     ~Cache() {}
     
-    typedef std::map<Key, Value>::const_iterator const_iter;
-    typedef std::map<Key, Value>::      iterator       iter;
+    typedef typename std::map<Key, Value>::const_iterator const_iter;
+    typedef typename std::map<Key, Value>::      iterator       iter;
     
     bool lookup(const Key& key, Value* value) const
       {
