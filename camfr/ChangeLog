@@ -1,6 +1,10 @@
+2003-01-28  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Fix BlochStack.length().
+
 2003-01-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* camfr_wrap.cpp: Add SectionMode.n()
+	* camfr_wrap.cpp: Add SectionMode.n().
 
 2003-01-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 

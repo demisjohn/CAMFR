@@ -266,7 +266,7 @@ inline boost::python::object stack_fw_bw(Stack& s, Real z)
 
 inline Real stack_length(Stack& s) 
   {return real(s.get_total_thickness());}
-inline Real blochstack_length(Stack& bs) 
+inline Real blochstack_length(BlochStack& bs) 
   {return real(bs.get_total_thickness());} 
 inline Real slab_width(Slab& s)
   {return real(s.get_width());}
