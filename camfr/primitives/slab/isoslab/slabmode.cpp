@@ -216,9 +216,9 @@ Complex safe_mult_(const Complex& a, const Complex& b)
 /////////////////////////////////////////////////////////////////////////////
 
 void Slab_M_Mode::calc_left_right(bool calc_fw)
-{
+{ 
   const Slab_M* slab = dynamic_cast<const Slab_M*>(geom);
-    
+  
   const Complex k0_2 = pow(2*pi/global.lambda, 2);
   
   // Determine walls.
@@ -319,7 +319,7 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
 
     // After a core region, reset the scaling.
 
-    if ( real(mat1->eps()*mat1->mu()) > real(mat2->eps()*mat2->mu()) )
+    if ( real(mat1->eps_mu()) > real(mat2->eps_mu()) )
     {
       fw_chunk_end_scaled = safe_mult_(fw_chunk_end_scaled, exp(scaling));
       bw_chunk_end_scaled = safe_mult_(bw_chunk_end_scaled, exp(scaling));

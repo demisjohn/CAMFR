@@ -68,7 +68,7 @@ Slab_M::Slab_M(const Expression& expression)
 
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
-    if ( abs(materials[i]->n()) > abs(materials[core_index]->n()) )
+    if ( real(materials[i]->eps_mu()) > real(materials[core_index]->eps_mu()) )
       core_index = i;
 
   core = materials[core_index];
@@ -291,12 +291,12 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
 
   // Find min and max refractive index of structure.
 
-  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
-  Complex max_eps_mu = materials[0]->eps()*materials[0]->mu();
+  Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
-    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
+    Complex eps_mu = materials[i]->eps_mu();
     
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
@@ -342,8 +342,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Complex kt_i 
-      = sqrt(C*(materials[i]->eps()*materials[i]->mu() - min_eps_mu));
+    Complex kt_i = sqrt(C*(materials[i]->eps_mu() - min_eps_mu));
     
     remove_elems(&kt,     kt_i,      eps_copies);
     remove_elems(&kt,    -kt_i,      eps_copies);
@@ -405,12 +404,12 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   // Find min and max refractive index of lossless structure.
 
-  Real min_eps_mu_lossless=real(materials[0]->eps())*real(materials[0]->mu());
-  Real max_eps_mu_lossless=real(materials[0]->eps())*real(materials[0]->mu());
+  Real min_eps_mu_lossless = real(materials[0]->eps_mu());
+  Real max_eps_mu_lossless = real(materials[0]->eps_mu());
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
-    Real eps_mu_lossless = real(materials[i]->eps())*real(materials[i]->mu());
+    Real eps_mu_lossless = real(materials[i]->eps_mu());
     
     if (eps_mu_lossless < min_eps_mu_lossless)
       min_eps_mu_lossless = eps_mu_lossless;
@@ -473,8 +472,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   remove_elems(&kt_prop_lossless, 0.0, eps_copies);
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Real kt_i = sqrt(abs(C*(real(materials[i]->eps())*real(materials[i]->mu()) 
-                        - min_eps_mu_lossless)));
+    Real kt_i = sqrt(abs(C*(real(materials[i]->eps_mu())
+                               - min_eps_mu_lossless)));
 
     remove_elems(&kt_prop_lossless,  kt_i, eps_copies);
     remove_elems(&kt_prop_lossless, -kt_i, eps_copies);
@@ -567,8 +566,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Complex kt_i = sqrt(C*(real(materials[i]->eps())*real(materials[i]->mu())
-                         - min_eps_mu_lossless));
+    Complex kt_i = sqrt(C*(real(materials[i]->eps_mu())-min_eps_mu_lossless));
 
     remove_elems(&kt_lossless,  kt_i, eps_copies);
     remove_elems(&kt_lossless, -kt_i, eps_copies);
@@ -622,9 +620,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
     for (unsigned int i=0; i<materials.size(); i++)
     {
-      Complex kt_i 
-        = sqrt(C*(   materials[i]->eps()*materials[i]->mu()) 
-                   - disp.get_min_eps_mu());
+      Complex kt_i = sqrt(C*(materials[i]->eps_mu() - disp.get_min_eps_mu()));
 
       remove_elems(&kt_complex,  kt_i, eps_copies);
       remove_elems(&kt_complex, -kt_i, eps_copies);
@@ -715,11 +711,11 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
 
   // Find minimum eps mu.
 
-  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
+  Complex min_eps_mu = materials[0]->eps_mu();
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
-    Complex eps_mu = materials[i]->eps()*materials[i]->mu();
+    Complex eps_mu = materials[i]->eps_mu();
     
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
@@ -816,7 +812,7 @@ void Slab_M::set_params(const vector<Complex>& params)
 
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
-    if ( real(materials[i]->n()) > real(materials[core_index]->n()) )
+    if ( real(materials[i]->eps_mu()) > real(materials[core_index]->eps_mu()) )
       core_index = i;
 
   core = materials[core_index];
