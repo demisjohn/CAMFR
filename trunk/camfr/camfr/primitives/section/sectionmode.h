@@ -36,6 +36,8 @@ class SectionMode : public Mode
 
     SectionImpl* get_geom() const {return geom;}
 
+    virtual void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
+
     virtual void normalise() = 0;
 
   protected:
@@ -58,6 +60,8 @@ class Section2D_Mode : public SectionMode
     Section2D_Mode(Polarisation pol, const Complex& kz, Section2D* geom);
 
     Field field(const Coord& coord) const;
+
+    void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
     
     void normalise();
 
@@ -82,6 +86,8 @@ class Section1D_Mode : public SectionMode
     Section1D_Mode(Polarisation pol, const Complex& kz, Section1D* geom);
 
     Field field(const Coord& coord) const;
+
+    void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
 
     void normalise();
 };
