@@ -49,6 +49,7 @@
 #include "primitives/slab/isoslab/slabdisp.h"
 #include "primitives/section/section.h"
 #include "primitives/section/sectiondisp.h"
+#include "primitives/section/refsection.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1064,5 +1065,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("mu",     &Section::mu_at)
     .def("n",      &Section::n_at)
     ;
+
+  // Wrap RefSection.
+
+  class_<RefSection, bases<MultiWaveguide> >
+  ("RefSection", args<Material&, const Complex&, const Complex&>())
+    ; 
 }
 
