@@ -45,6 +45,7 @@ struct SectionGlobal
     Mode_correction mode_correction;
     int M;
     int N;
+    bool keep_all_estimates;
 };
 
 extern SectionGlobal global_section;
