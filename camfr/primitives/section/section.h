@@ -271,8 +271,8 @@ class Section2D : public SectionImpl
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
-    std::vector<ModeEstimate> estimate_kz2_omar_schuenemann();
-    std::vector<ModeEstimate> estimate_kz2_fourier();
+    std::vector<ModeEstimate*> estimate_kz2_omar_schuenemann();
+    std::vector<ModeEstimate*> estimate_kz2_fourier();
 
     std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.
