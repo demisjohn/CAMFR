@@ -593,8 +593,8 @@ struct loss_sorter // Remove?
 
 struct kz2_sorter
 {
-    bool operator()(const ModeEstimate& a, const ModeEstimate& b)
-      {return ( real(a.kz2) > real(b.kz2) );}
+    bool operator()(const ModeEstimate* a, const ModeEstimate* b)
+      {return ( real(a->kz2) > real(b->kz2) );}
 };
 
 struct kt_to_neff : ComplexFunction
@@ -615,7 +615,7 @@ struct kt_to_neff : ComplexFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<ModeEstimate> Section2D::estimate_kz2_omar_schuenemann()
+vector<ModeEstimate*> Section2D::estimate_kz2_omar_schuenemann()
 {
   int n = M1/2;
 
@@ -700,11 +700,11 @@ vector<ModeEstimate> Section2D::estimate_kz2_omar_schuenemann()
 
   // Return estimates.
 
-  vector<ModeEstimate> estimates;
+  vector<ModeEstimate*> estimates;
   
   for (int i=1; i<=kz2.rows(); i++)
   {
-    ModeEstimate est = ModeEstimate(kz2(i));
+    ModeEstimate* est = new ModeEstimate(kz2(i));
     estimates.push_back(est);
   }  
     
@@ -993,7 +993,7 @@ struct IndexConvertor
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<ModeEstimate> Section2D::estimate_kz2_fourier()
+vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 {
 #if 0
   vector<Complex> disc;  
@@ -1551,7 +1551,7 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
   
   // Return estimates.
 
-  vector<ModeEstimate> estimates;
+  vector<ModeEstimate*> estimates;
 
   blitz::Range r1(1,MN); blitz::Range r2(MN+1,2*MN);
 
@@ -1604,43 +1604,24 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
       *Hx = eig_big_H(r1,i)/kz/k0*Y0;
       *Hy = eig_big_H(r2,i)/kz/k0*Y0; 
 
-      ModeEstimate est = ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
+      ModeEstimate* est = new ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
     }  
   }
 
-  std::sort(estimates.begin(), estimates.end(), kz2_sorter()); 
+  std::sort(estimates.begin(), estimates.end(), kz2_sorter());
 
-  if (TEM == false)
-    estimates.erase(estimates.end()-4,estimates.end());
-  else
-    estimates.erase(estimates.end()-3,estimates.end());
-
+  if (estimates.size() > 4)
+    for (int i=0; i<(TEM ? 3 : 4); i++)
+    {
+      delete estimates.back();
+      estimates.erase(estimates.end()-1);
+    }
+  
   return estimates;
 }
 
 
-struct modesorter_tmp
-{
-    bool operator()(const Mode* a, const Mode* b)
-    {      
-      std::cout << a << " "<< b << std::endl << std::flush;
-
-      if ( (a->pol == TE) && (b->pol != TE) )
-        return true;
-
-      if ( (a->pol == TM) && (b->pol != TM) )
-        return false;
-
-      std::cout << a->get_kz() << " "<< b->get_kz() << std::endl << std::flush;
-      
-
-      const Complex kz_a = a->get_kz();
-      const Complex kz_b = b->get_kz();
-      
-      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
-    }
-};
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1679,14 +1660,14 @@ void Section2D::find_modes_from_estimates()
 
   // Get estimates.
 
-  vector<ModeEstimate> estimates;
+  vector<ModeEstimate*> estimates;
 
   if (user_estimates.size() != 0) // User provided estimates.
   {
     for (unsigned int i=0; i<user_estimates.size(); i++)
     {
-      ModeEstimate est 
-        = ModeEstimate(pow(2*pi/global.lambda*user_estimates[i], 2));
+      ModeEstimate* est 
+        = new ModeEstimate(pow(2*pi/global.lambda*user_estimates[i], 2));
       estimates.push_back(est);
     } 
   }
@@ -1703,7 +1684,7 @@ void Section2D::find_modes_from_estimates()
 
     Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
 
-    vector<ModeEstimate> estimates_0;   
+    vector<ModeEstimate*> estimates_0;   
 
     if (global_section.section_solver == OS)
       estimates_0 = estimate_kz2_omar_schuenemann();  
@@ -1711,29 +1692,31 @@ void Section2D::find_modes_from_estimates()
       estimates_0 = estimate_kz2_fourier();
 
     for (unsigned int i=0; i<estimates_0.size(); i++)
-      if (real(sqrt(estimates_0[i].kz2)) < 1.01*max_kz)
+      if (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz)
         estimates.push_back(estimates_0[i]);
   }
 
   user_estimates.clear();
+  while (estimates.size() > global.N)
+  {
+    delete estimates.back();
+    estimates.erase(estimates.end()-1);
+  }
 
   // Split off modes to be corrected.
-
-  if (estimates.size() > global.N)
-    estimates.erase(estimates.begin()+global.N, estimates.end());
 
   vector<Complex> kt_coarse;
 
   for (unsigned int i=0; i<estimates.size(); i++)
   { 
-    Complex kz = sqrt(estimates[i].kz2);
+    Complex kz = sqrt(estimates[i]->kz2);
 
     // Mode to be corrected.
 
     if ((global_section.mode_correction == true)
        && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
     {    
-      Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
+      Complex kt = sqrt(C0*min_eps_mu - estimates[i]->kz2);
 
       if (imag(kt) < 0) // 45 degree cut?
         kt = -kt;
@@ -1757,9 +1740,9 @@ void Section2D::find_modes_from_estimates()
           kz = -kz;
 
       Section2D_Mode* newmode = new 
-        Section2D_Mode(global.polarisation, kz, this,
-                       estimates[i].Ex, estimates[i].Ey,
-                       estimates[i].Hx, estimates[i].Hy, 
+        Section2D_Mode(TE_TM, kz, this,
+                       estimates[i]->Ex, estimates[i]->Ey,
+                       estimates[i]->Hx, estimates[i]->Hy, 
                        false);
 
       newmode->normalise();
@@ -1805,20 +1788,19 @@ void Section2D::find_modes_from_estimates()
       if (imag(kz) > 0)
         kz = -kz;
 
-    Section2D_Mode* newmode
-     = new Section2D_Mode(global.polarisation,kz,this);
+    Section2D_Mode* newmode = new Section2D_Mode(TE_TM,kz,this);
 
     newmode->normalise();
 
     modeset.push_back(newmode);
   }
 
-  //for (int i=0; i<modeset.size();i++)
-  //  std::cout << i <<"  " << modeset[i] << " " <<modeset[i]->get_kz() << std::endl << std::flush;
+  // Free estimates.
 
-  //TMP
-  //sort_modes();
-  //std::sort(modeset.begin(), modeset.end(), modesorter_tmp());
+  for (int i=0; i<estimates.size(); i++)
+    delete estimates[i];
+
+  sort_modes();
 
   py_print("Done.");
 
@@ -1888,7 +1870,7 @@ void Section2D::find_modes_by_sweep()
       if (imag(kz) > 0)
         kz = -kz;
     
-    Section2D_Mode *newmode = new Section2D_Mode(global.polarisation,kz,this);
+    Section2D_Mode *newmode = new Section2D_Mode(TE_TM,kz,this);
       
     newmode->normalise();
 
@@ -1975,7 +1957,7 @@ void Section1D::find_modes()
       if (abs(kz-2*pi/global.lambda*core->n()) > 1e-6)
       {
         Section1D_Mode *newmode
-          = new Section1D_Mode(slab->get_mode(i)->pol, kz, mode, this);
+          = new Section1D_Mode(TE_TM, kz, mode, this);
 
         newmode->normalise();
     
