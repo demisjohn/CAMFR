@@ -13,32 +13,6 @@
 #include <iostream>
 #include "polyroot.h"
 
-using namespace std;
-
-#ifndef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
-#ifndef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-#ifndef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
-
-#define FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-
-#endif
-#endif
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
-#define cpoly_F  cpoly
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-#define cpoly_F  cpoly_
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
-#define cpoly_F  cpoly__
-#endif
-
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // polyroot
@@ -49,7 +23,7 @@ using namespace std;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void cpoly_F(Real*,Real*,int&,Real*,Real*,int*);
+extern "C" void F77NAME(cpoly)(Real*,Real*,int&,Real*,Real*,int*);
 
 vector<Complex> polyroot(const vector<Complex>& coef)
 {
@@ -73,7 +47,7 @@ vector<Complex> polyroot(const vector<Complex>& coef)
 
   // Call Fortan routine.
 
-  cpoly_F(coef_r,coef_i,N,root_r,root_i,&error);
+  F77NAME(cpoly)(coef_r,coef_i,N,root_r,root_i,&error);
 
   if (error)
     cout << "Warning: polyroot solver did not converge." << endl;

@@ -31,6 +31,36 @@ using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Fortran linkage naming convention.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
+#ifndef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
+#ifndef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
+
+#define FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
+
+#endif
+#endif
+#endif
+
+#ifdef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
+#define F77NAME(x) x
+#endif
+
+#ifdef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE 
+#define F77NAME(x) x ## _
+#endif
+
+#ifdef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
+#define F77NAME(x) x ## __
+#endif
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // typedefs
 //
 /////////////////////////////////////////////////////////////////////////////
