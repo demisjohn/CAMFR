@@ -558,8 +558,8 @@ struct sorter
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
     {
-      // return ( real(beta_a) > real(beta_b) ); // highest index
-      return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+      return ( real(beta_a) > real(beta_b) ); // highest index
+      //return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
     }
 };
 
@@ -584,7 +584,7 @@ void Section2D::find_modes_from_series()
 
   M1 = 2*n;
 
-  // Find min eps mu.
+  // Find min and max eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
   Complex max_eps_mu = materials[0]->eps_mu();
