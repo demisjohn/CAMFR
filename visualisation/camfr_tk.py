@@ -14,8 +14,8 @@ palet       = 3
 ##############################################################################
 
 def create_window_and_draw(drawobject):
-    
-    from TkPlotCanvas import *
+
+    from TkPlotCanvas import Frame, PlotCanvas, TOP, SUNKEN, BOTH, YES
     
     window = Frame()
     window.pack(fill=BOTH, expand=YES)

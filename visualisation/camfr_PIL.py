@@ -21,7 +21,7 @@ formats = ['.gif', '.GIF', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP',
 
 def create_window_and_draw(drawobject):
     
-    from TkPlotCanvas import *
+    from TkPlotCanvas import Frame, PlotCanvas, TOP, SUNKEN, BOTH, YES
     
     window = Frame()
     window.pack(fill=BOTH, expand=YES)
