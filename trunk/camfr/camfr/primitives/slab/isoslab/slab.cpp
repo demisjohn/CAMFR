@@ -836,7 +836,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
       if (imag(kz) > 0)
         kz = -kz;
 
-    if (global.polarisation == TM) // Temporary kludge.
+    if (global.backward_modes) // Temporary kludge.
       if (real(kt[i]) < -1e-6) // Backward mode.
         kz = -kz;
 
