@@ -171,12 +171,12 @@ Complex SlabDisp::operator()(const Complex& kt)
     const Real sign = (global.polarisation == TE) ? 1 : -1;
   
     // Cross the interface.
-    
-    fw_chunk_end_scaled =        (1.0+a)/2.0 * fw_chunk_begin_scaled +
-                          sign * (1.0-a)/2.0 * bw_chunk_begin_scaled;
 
-    bw_chunk_end_scaled = sign * (1.0-a)/2.0 * fw_chunk_begin_scaled +
-                                 (1.0+a)/2.0 * bw_chunk_begin_scaled;
+    fw_chunk_end_scaled =        (1.0+a)*0.5 * fw_chunk_begin_scaled +
+                          sign * (1.0-a)*0.5 * bw_chunk_begin_scaled;
+
+    bw_chunk_end_scaled = sign * (1.0-a)*0.5 * fw_chunk_begin_scaled +
+                                 (1.0+a)*0.5 * bw_chunk_begin_scaled;
 
     // Propagate in medium and scale along the way, by
     // factoring out and discarding the positive exponentials.
