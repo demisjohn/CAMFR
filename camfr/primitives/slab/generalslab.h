@@ -32,6 +32,7 @@ struct SlabGlobal
     Real      upper_PML;
     SlabWall* lowerwall; // NULL: electric wall.
     SlabWall* upperwall;
+    Real      eta_ASR;
 };
 
 extern SlabGlobal global_slab;
