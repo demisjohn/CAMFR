@@ -32,7 +32,7 @@ class taper(unittest.TestCase):
 
         set_lower_wall(slab_H_wall)
 
-        PML = -0.1
+        set_upper_PML(-0.1)
 
         wg_width = 1 # in units of a
         taper_length = 4 # in units of a
@@ -59,19 +59,17 @@ class taper(unittest.TestCase):
         dy = a/20.
 
         e = Expression(g.to_expression(-2*r-2*a,     z_periods*a, dx,
-                                           0,    (x_periods+1)*a, dy,
-                                           0, PML))
+                                           0,    (x_periods+1)*a, dy))
 
         s = Stack(e)
 
         e_inf = Expression(g.to_expression(z_periods*a - a, z_periods*a, dx,\
-                                                    0,  (x_periods+1)*a, dy,\
-                                                    0, PML))
+                                                    0,  (x_periods+1)*a, dy))
             
         s_inf = InfStack(e_inf)
 
         rx = arange(0.0, (x_periods+1)*a, a/10.)
-        rz = arange(0.0, s.length().real, a/10.)
+        rz = arange(0.0, s.length(),      a/10.)
 
         taper = Stack(e + s_inf)
 
@@ -89,7 +87,9 @@ class taper(unittest.TestCase):
 
         free_tmps()
 
-        set_lower_wall(slab_E_wall) 
+        set_lower_wall(slab_E_wall)
+
+        set_upper_PML(0)
        
         self.failUnless(R_pass)
 

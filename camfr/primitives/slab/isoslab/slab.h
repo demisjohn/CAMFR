@@ -62,9 +62,6 @@ class Slab_M : public SlabImpl
     Complex c1_size() const 
       {return discontinuities.back();}
 
-    Real get_imag_start_thickness() const
-      {return imag(thicknesses[0]);}
-
     void find_modes();
 
     std::vector<Complex> get_params() const;
@@ -131,9 +128,6 @@ class UniformSlab : public SlabImpl
 
     Complex c1_size() const 
       {return discontinuities[0];}
-
-    Real get_imag_start_thickness() const
-      {return .5*imag(discontinuities[0]);}
 
     void find_modes();
 

@@ -23,20 +23,18 @@ r = .150/2.0 # rod radius
 
 set_lower_wall(slab_H_wall)
 
-PML = 0
-
 cl = 0       # air cladding
 periods = 4  # lateral periods
 
 # Define slabs.
 
-inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl+PML*1j))
+inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl))
 
-no_rods = Slab(air(a-r+periods*a+cl+PML*1j))
+no_rods = Slab(air(a-r+periods*a+cl))
  
 cen = Slab(  air(a-r)                                               \
            + periods*(GaAs(2*r) + air(a-2*r))                       \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Calculate semi-infinite stack.
 

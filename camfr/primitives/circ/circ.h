@@ -33,6 +33,7 @@ typedef enum {cos_type, sin_type} Fieldtype;
 
 struct CircGlobal
 {
+    Real PML;
     int order; 
     Fieldtype fieldtype;
 };

@@ -24,11 +24,12 @@ class SpE(unittest.TestCase):
         set_lambda(1)
         set_circ_order(1)
         set_circ_field_type(cos_type)
+        set_circ_PML(-0.5)
 
         # Define waveguide and wall.
 
         air_m = Material(1.0)
-        air = Circ(air_m(10-0.5j))
+        air = Circ(air_m(10))
 
         wall = E_Wall(air)
 
@@ -60,6 +61,8 @@ class SpE(unittest.TestCase):
         eta_pass = abs((eta - eta_OK) / eta_OK) < eps.testing_eps
 
         free_tmps()
+
+        set_circ_PML(0)
        
         self.failUnless(eta_pass)
 

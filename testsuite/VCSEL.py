@@ -21,6 +21,7 @@ class VCSEL(unittest.TestCase):
         set_N(100)
         set_circ_order(1)
 	set_sweep_from_previous(1)
+        set_circ_PML(-0.1)
 
         # Define materials.
 
@@ -38,7 +39,7 @@ class VCSEL(unittest.TestCase):
         # Define geometry parameters
 
         r = 4.0
-        d_cladding = 4.0 - 0.1j
+        d_cladding = 4.0
  
         d_GaAs   = .06949
         d_AlGaAs = .07963
@@ -90,6 +91,8 @@ class VCSEL(unittest.TestCase):
         free_tmps()
 
         set_sweep_from_previous(0)
+
+        set_circ_PML(0)
 
         self.failUnless(wavelength_pass and gain_pass)
 

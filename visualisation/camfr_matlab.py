@@ -43,16 +43,15 @@ def plot_neff(waveguide):
 
 def plot_field(waveguide, mode, function, steps=100):
     v = []
-    PML = waveguide.get_imag_start_thickness()
     for i in range(steps):
-	x = i * waveguide.width().real / (1.0 * steps)
-	v.append((x,function(waveguide.mode(mode).field(Coord(x+PML*1j,0,0)))))
+	x = i * waveguide.width() / (1.0 * steps)
+	v.append((x,function(waveguide.mode(mode).field(Coord(x,0,0)))))
     plot_vector(v)
     
 def plot_n(waveguide, steps=100):
     v = []
     for i in range(steps):
-	x = i * waveguide.width().real / (1.0*steps)
+	x = i * waveguide.width() / (1.0*steps)
 	v.append((x, abs(waveguide.n(Coord(x, 0, 0)))))
     plot_vector(v)
 

@@ -28,8 +28,10 @@ set_gain_material(gain_m)
 
 # Define geometry parameters
 
+set_circ_PML(-0.1)
+
 r = 4.0
-d_cladding = 4.0 - 0.1j
+d_cladding = 4.0
  
 d_GaAs   = .06949
 d_AlGaAs = .07963

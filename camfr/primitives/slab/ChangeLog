@@ -1,3 +1,8 @@
+2002-07-15 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.h: Major change in the way PML is defined.
+	* generalslab.cpp: Ditto.
+
 2002-06-03 Lieven Vanholme <Lieven.Vanholme@rug.ac.be>
 
 	* generalslab.h: Support for expanding arbitrary functions in

@@ -33,13 +33,13 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 
   set_N(M)
 
-  R = r+PML*1j
+  set_circ_PML(PML)
   
-  metal = Circ(metal_m(R))
-  air   = Circ(  air_m(R)) 
-  GaAs  = Circ( GaAs_m(R))
-  QW    = Circ(   QW_m(R))
-  AlOx  = Circ( AlOx_m(R))
+  metal = Circ(metal_m(r))
+  air   = Circ(  air_m(r)) 
+  GaAs  = Circ( GaAs_m(r))
+  QW    = Circ(   QW_m(r))
+  AlOx  = Circ( AlOx_m(r))
 
   # Reference bulk emitter
 

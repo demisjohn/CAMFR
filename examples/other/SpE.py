@@ -18,8 +18,10 @@ set_circ_field_type(cos_type)
 
 # Define waveguide and wall.
 
+set_circ_PML(-0.5)
+
 air_m = Material(1.0)
-air = Circ(air_m(10-0.5j))
+air = Circ(air_m(10))
 air.calc()
 
 wall = E_Wall(air)

@@ -33,7 +33,7 @@ class infstack(unittest.TestCase):
 
         x_periods = 5
 
-        PML = 0.1
+        set_upper_PML(-0.1)
 
         inc_wg_width = 0.5
 
@@ -42,13 +42,13 @@ class infstack(unittest.TestCase):
         # Define Slabs.
 
         crystal = Slab(GaAs(r) + air(a-2*r) \
-               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0-1j*PML))
+               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0))
 
         wg_1 = Slab(air(a-r) \
-               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0-1j*PML))
+               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0))
 
         wg_2 = Slab(GaAs(r_wg) + air(a-r_wg-r) \
-               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0-1j*PML))
+               + x_periods*(GaAs(2*r) + air(a-2*r)) + air(0))
 
         no_crystal = Slab(air(crystal.width()))
 
@@ -73,7 +73,9 @@ class infstack(unittest.TestCase):
 
         free_tmps()
 
-        set_lower_wall(slab_E_wall) 
+        set_lower_wall(slab_E_wall)
+
+        set_upper_PML(0)
        
         self.failUnless(R_pass)
 

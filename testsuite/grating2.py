@@ -30,8 +30,6 @@ class grating2(unittest.TestCase):
         d_air = 4.5
         d_sub = 5
 
-        pml = 0.2
-
         set_N(70)
   
         # Define materials.

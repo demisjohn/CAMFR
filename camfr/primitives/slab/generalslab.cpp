@@ -31,7 +31,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabGlobal global_slab = {NULL, NULL, 0.0};
+SlabGlobal global_slab = {0.0, 0.0, NULL, NULL, 0.0};
 
 
 
@@ -45,20 +45,18 @@ class SlabFlux : public RealFunction
 {
   public:
 
-    SlabFlux(const FieldExpansion& fe_) : fe(fe_) 
-      {PML = dynamic_cast<Slab*>(fe.wg)->get_imag_start_thickness();}
+    SlabFlux(const FieldExpansion& fe_) : fe(fe_) {}
 
     Real operator()(const Real& x)
     {
       counter++;
-      Field f=fe.field(Coord(x+PML*I,0,0));
+      Field f=fe.field(Coord(x,0,0));
       return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
     }
 
   protected:
 
     FieldExpansion fe;
-    Real PML;
 };
 
 
@@ -317,22 +315,20 @@ class OverlapFunction : public ComplexFunction
 {
   public:
 
-    OverlapFunction(SlabMode* m_, ComplexFunction* f_) : m(m_), f(f_)
-      {PML = m->get_geom()->get_imag_start_thickness();}
+    OverlapFunction(SlabMode* m_, ComplexFunction* f_) : m(m_), f(f_) {}
 
     Complex operator()(const Complex& x)
     {
       counter++;
 
       if (m->pol == TE)
-        return -(*f)(x) * m->field(Coord(x+PML*I,0,0)).H1;
+        return -(*f)(x) * m->field(Coord(x,0,0)).H1;
       else
-        return  (*f)(x) * m->field(Coord(x+PML*I,0,0)).E1;
+        return  (*f)(x) * m->field(Coord(x,0,0)).E1;
     }
 
   protected:
 
-    Real PML;
     SlabMode* m;
     ComplexFunction* f;
 };
@@ -396,7 +392,8 @@ Slab::Slab(const Expression& ex)
   if (e.get_size() == 1)
   {
     Material* m = dynamic_cast<Material*>(e.get_term(0)->get_mat());
-    Complex   d = e.get_term(0)->get_d();
+    Complex   d = e.get_term(0)->get_d() 
+      + I*global_slab.left_PML + I*global_slab.right_PML;
     
     if (!m)
     {
@@ -424,7 +421,7 @@ Slab::Slab(const Expression& ex)
 Slab::Slab(const Term& t)
 {
   Material* m = dynamic_cast<Material*>(t.get_mat());
-  Complex   d = t.get_d();
+  Complex   d = t.get_d() + I*global_slab.left_PML + I*global_slab.right_PML;
 
   if (!m)
   {

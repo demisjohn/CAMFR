@@ -44,7 +44,7 @@ Complex signedsqrt2_(const Complex& kz2)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// SlabMode::field
+// SlabMode::get_kz()
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +80,7 @@ Field SlabMode::field(const Coord& coord_) const
   // Check and coerce input.
 
   Coord coord(coord_);
+  coord.c1 = coord_.c1 + I*global_slab.left_PML;
 
   const Real x = real(coord.c1);
   const Real d = real(geom->get_width());

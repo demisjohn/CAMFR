@@ -23,7 +23,10 @@ class gaussian(unittest.TestCase):
         GaAs = Material(3.5)
         air  = Material(1.0)
 
-        slab1 = Slab(air(2-.1j)+ GaAs(1)+ air(2-.1j))
+        set_lower_PML(-0.1)
+        set_upper_PML(-0.1)
+        
+        slab1 = Slab(air(2)+ GaAs(1)+ air(2))
         slab2 = Slab(air(slab1.width()))
 	
         s = Stack(slab1(0)+slab2(0))
@@ -38,6 +41,9 @@ class gaussian(unittest.TestCase):
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         free_tmps()
+
+        set_lower_PML(0)
+        set_upper_PML(0)
            
         self.failUnless(T_pass)
 

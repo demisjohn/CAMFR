@@ -147,6 +147,30 @@ inline void set_circ_order(int n)
 inline void set_circ_fieldtype(long f)
   {global_circ.fieldtype = Fieldtype(f);}
 
+inline void set_lower_PML(Real PML)
+{
+  if (PML > 0)
+    py_print("Warning: gain in PML.");
+
+  global_slab.left_PML = PML;
+}
+
+inline void set_upper_PML(Real PML)
+{
+  if (PML > 0)
+    py_print("Warning: gain in PML.");
+
+  global_slab.right_PML = PML;
+}
+
+inline void set_circ_PML(Real PML)
+{
+  if (PML > 0)
+    py_print("Warning: gain in PML.");
+
+  global_circ.PML = PML;
+}
+
 inline void set_left_wall(SlabWall* w)
   {py_print("Warning: CAMFR <1.0 set_left_wall replaced by set_lower_wall.");}
 
@@ -226,6 +250,15 @@ inline Real stack_inc_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
 inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
   {return dynamic_cast<MultiWaveguide*>(s.get_ext())
      ->S_flux(s.ext_field_expansion(),c1_start,c1_stop,eps);}
+
+inline Real stack_length(Stack& s) 
+  {return real(s.get_total_thickness());}
+inline Real blochstack_length(Stack& bs) 
+  {return real(bs.get_total_thickness());} 
+inline Real slab_width(Slab& s)
+  {return real(s.get_width());}
+inline Real section_width(Section& s)
+  {return real(s.get_width());}
 
 
 
@@ -455,6 +488,9 @@ Term material_to_term(BaseMaterial& m, const Complex& d)
 {
   if (real(d) < 0)
     py_print("Warning: negative real length of material.");
+
+  if(abs(imag(d)) > 0)
+    py_error("Error: complex thickness deprecated in CAMFR 1.0.");
   
   return Term(m(d));
 } 
@@ -463,6 +499,9 @@ Term waveguide_to_term(Waveguide& w, const Complex& d)
 {
   if (real(d) < 0)
     py_print("Warning: negative real length of waveguide.");
+
+  if(abs(imag(d)) > 0)
+    py_error("Error: complex thickness deprecated in CAMFR 1.0.");
   
   return Term(w(d));
 }
@@ -507,10 +546,10 @@ EX_PLUS_TERM(Scatterer)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex stack_lateral_S_flux(Stack& s, const Complex& c)
+Complex stack_lateral_S_flux(Stack& s, Real c)
   {return s.lateral_S_flux(c);}
 
-Complex stack_lateral_S_flux_2(Stack& s, const Complex& c, int k)
+Complex stack_lateral_S_flux_2(Stack& s, Real c, int k)
   {std::vector<Complex> S_k; s.lateral_S_flux(c, &S_k); return S_k[k];}
 
 Real cavity_calc_sigma(Cavity& c)
@@ -686,6 +725,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("set_right_wall",             set_right_wall)
     .def("set_upper_wall",             set_upper_wall)
     .def("set_lower_wall",             set_lower_wall)
+    .def("set_upper_PML",              set_upper_PML)
+    .def("set_lower_PML",              set_lower_PML)
+    .def("set_circ_PML",               set_circ_PML)
     .def("set_beta",                   set_beta)
     .def("free_tmps",                  free_tmps);
 
@@ -693,7 +735,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   camfr.add(
     class_<Coord>("Coord")
-    .def_init(args<const Complex&, const Complex&, const Complex&>())
+    .def_init(args<const Real&, const Real&, const Real&>())
     //.def_init(args<const Complex&, const Complex&, const Complex&,
     //                          Limit,          Limit,          Limit>())
     .def("__repr__", &Coord::repr)
@@ -774,7 +816,6 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("bw_mode",  waveguide_get_bw_mode,
          return_value_policy<reference_existing_object>())
     .def("calc",     &Waveguide::find_modes)
-    .def("get_imag_start_thickness", &Waveguide::get_imag_start_thickness)
     .def("__repr__", &Waveguide::repr)
     .def("__call__", waveguide_to_term)
     );
@@ -923,7 +964,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
          return_value_policy<reference_existing_object>())
     .def("ext",                      &Stack::get_ext,
          return_value_policy<reference_existing_object>())
-    .def("length",                   &Stack::get_total_thickness)
+    .def("length",                   stack_length)
     .def("set_inc_field",            stack_set_inc_field)
     .def("set_inc_field",            stack_set_inc_field_2)
     .def("set_inc_field_function",   stack_set_inc_field_function)
@@ -976,7 +1017,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def_init(args<const Expression&>())
     .def("mode",        blochstack_get_mode,
          return_value_policy<reference_existing_object>())
-    .def("length",      &BlochStack::get_total_thickness)
+    .def("length",      blochstack_length)
     .def("beta_vector", &BlochStack::get_beta_vector)
     .def("__repr__",    &BlochStack::repr)
     );
@@ -1077,9 +1118,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     class_<Slab, bases<MultiWaveguide> >("Slab")
     .def_init(args<const Term&>())
     .def_init(args<const Expression&>())
-    .def("set_left_wall",     &Slab::set_left_wall)
-    .def("set_right_wall",    &Slab::set_right_wall)
-    .def("width",             &Slab::get_width)
+    .def("set_lower_wall",    &Slab::set_left_wall)
+    .def("set_upper_wall",    &Slab::set_right_wall)
+    .def("width",             slab_width)
     .def("expand_field",      slab_expand_field)
     .def("expand_gaussian",   slab_expand_gaussian) 
     .def("expand_plane_wave", slab_expand_plane_wave)
@@ -1100,7 +1141,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def_init(args<const Expression&, int>())
     .def_init(args<const Expression&, const Expression&>())
     .def_init(args<const Expression&, const Expression&, int>())
-    .def("width", &Section::get_width)
+    .def("width", section_width)
     );
 }
 

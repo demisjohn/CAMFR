@@ -27,8 +27,10 @@ class blazed_grating(unittest.TestCase):
         guide_thickness = .200
         groove_depth = 0.060
         d = 0.5
-        PML = 0.05
-
+        
+        set_lower_PML(-0.05)
+        set_upper_PML(-0.05)
+        
         # Grating parameters.
 
         no_of_grooves = 20
@@ -50,12 +52,12 @@ class blazed_grating(unittest.TestCase):
 
         # 1-D slab structures.
 
-        waveguide = Slab(substrate(d-PML*1j) + guiding(guide_thickness) \
-                         + air(d-PML*1j))
+        waveguide = Slab(substrate(d) + guiding(guide_thickness) \
+                         + air(d))
 
-        etched = Slab(substrate(d-PML*1j) + \
+        etched = Slab(substrate(d) + \
                       guiding(guide_thickness - groove_depth) \
-                      + air(groove_depth + d - PML*1j))
+                      + air(groove_depth + d))
 
         # Left side of paralellogram.
 
@@ -65,9 +67,9 @@ class blazed_grating(unittest.TestCase):
 
         for n in range(1,steps):
             delta_x = groove_depth*(steps-n)/steps
-            slice = Slab(substrate(d - PML*1j)                  \
+            slice = Slab(substrate(d)                           \
                  + guiding(guide_thickness - delta_x)           \
-                 + air(delta_x + d - PML*1j) )
+                 + air(delta_x + d) )
             slices.append(slice)
             l_expr.add(slice(a/steps))
 
@@ -78,11 +80,11 @@ class blazed_grating(unittest.TestCase):
         r_expr = Expression()
 
         for n in range(1,steps):
-            slice = Slab(  substrate(d-PML*1j)                  \
+            slice = Slab(  substrate(d)                         \
                  + guiding(guide_thickness - groove_depth)      \
                  + air(groove_depth*n/steps)                    \
                  + guiding(groove_depth*(steps - n)/steps)      \
-                 + air(d - PML*1j))      
+                 + air(d))      
             slices.append(slice)
             r_expr.add(slice(a/steps))
 
@@ -112,6 +114,9 @@ class blazed_grating(unittest.TestCase):
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         free_tmps()
+
+        set_lower_PML(0)
+        set_upper_PML(0)
 
         self.failUnless(R_pass and T_pass)
 
