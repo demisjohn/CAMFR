@@ -1,3 +1,7 @@
+2004-04-15  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* field.cpp: Detect and fix overflow.
+
 2004-04-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* camfr_wrap.cpp: Lambda can now be complex.
