@@ -36,7 +36,7 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,snap,0,0,false,0.5};
+SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,none,0,0,false,0.5};
 
 
 
@@ -1101,6 +1101,9 @@ void Section2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
   const Complex k0 = 2*pi/global.lambda;
   bool extend = true;
 
+  const Real p = global_section.PML_fraction;
+  Complex p_d = 0.5; // TMP
+
   // Construct data structures for fourier analysis.
 
   vector<Complex> disc_x(discontinuities);
@@ -1138,10 +1141,6 @@ void Section2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
     }
 
     // Add lower PML
-
-    const Real p = global_section.PML_fraction;
-
-    Complex p_d = 0.5; // TMP
 
     if (abs(global_slab.lower_PML) > 1e-12)
     {
@@ -1188,6 +1187,74 @@ void Section2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
     f_mu_1 .push_back(f_mu_1_i);    
     f_mu_2 .push_back(f_mu_2_i);   
     f_mu_3 .push_back(f_mu_3_i);
+  }
+
+  // Add left PMl.
+
+  if (abs(global_section.left_PML) > 1e-12)
+  {
+    Complex d = disc_x[1];
+    disc_x.insert(disc_x.begin()+1, p_d);
+
+    vector<Complex> f_eps_1_i, f_eps_2_i, f_eps_3_i;
+    vector<Complex>  f_mu_1_i,  f_mu_2_i,  f_mu_3_i;
+
+    Complex a = 1. + global_section.left_PML / p_d * I;
+
+    for (int j=0; j<disc_y[0].size()-1; j++)
+    {
+      f_eps_1_i.push_back(f_eps_1[0][j]*a);
+      f_eps_2_i.push_back(f_eps_2[0][j]*a);
+      f_eps_3_i.push_back(f_eps_3[0][j]*a);
+      
+      f_mu_1_i .push_back( f_mu_1[0][j]*a);
+      f_mu_2_i .push_back( f_mu_2[0][j]*a);
+      f_mu_3_i .push_back( f_mu_3[0][j]*a);
+    }
+    
+    disc_y.insert(disc_y.begin(), disc_y[0]);
+
+    f_eps_1.insert(f_eps_1.begin(), f_eps_1_i);
+    f_eps_2.insert(f_eps_2.begin(), f_eps_2_i);
+    f_eps_3.insert(f_eps_3.begin(), f_eps_3_i);
+  
+    f_mu_1 .insert(f_mu_1 .begin(), f_mu_1_i);    
+    f_mu_2 .insert(f_mu_2 .begin(), f_mu_2_i);   
+    f_mu_3 .insert(f_mu_3 .begin(), f_mu_3_i);
+  }
+
+  // Add right PMl.
+
+  if (abs(global_section.right_PML) > 1e-12)
+  {
+    Complex d = disc_x[disc_x.size()-1] - disc_x[disc_x.size()-2];
+    disc_x.insert(disc_x.end()-1, disc_x.back() - p_d);
+
+    vector<Complex> f_eps_1_i, f_eps_2_i, f_eps_3_i;
+    vector<Complex>  f_mu_1_i,  f_mu_2_i,  f_mu_3_i;
+
+    Complex a = 1. + global_section.right_PML / p_d * I;
+
+    for (int j=0; j<disc_y.back().size()-1; j++)
+    {
+      f_eps_1_i.push_back(f_eps_1.back()[j]*a);
+      f_eps_2_i.push_back(f_eps_2.back()[j]*a);
+      f_eps_3_i.push_back(f_eps_3.back()[j]*a);
+      
+      f_mu_1_i .push_back( f_mu_1.back()[j]*a);
+      f_mu_2_i .push_back( f_mu_2.back()[j]*a);
+      f_mu_3_i .push_back( f_mu_3.back()[j]*a);
+    }
+    
+    disc_y.push_back(disc_y.back());
+
+    f_eps_1.push_back(f_eps_1_i);
+    f_eps_2.push_back(f_eps_2_i);
+    f_eps_3.push_back(f_eps_3_i);
+  
+    f_mu_1 .push_back( f_mu_1_i);    
+    f_mu_2 .push_back( f_mu_2_i);   
+    f_mu_3 .push_back( f_mu_3_i);
   }
 
   // Construct fourier matrices.
@@ -1366,15 +1433,24 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     exit(-1);
   }
 
+  // Create eigenproblem.
+
+  bool PML_present =  (    (abs(global_slab.lower_PML)    > 1e-12)
+                        || (abs(global_slab.upper_PML)    > 1e-12)
+                        || (abs(global_section.left_PML)  > 1e-12)
+                        || (abs(global_section.right_PML) > 1e-12) );
+
   cMatrix F(2*MN,2*MN,fortranArray);
   cMatrix G(2*MN,2*MN,fortranArray);
 
   if (global_section.section_solver == NT)
     create_FG_NT(&F, & G, M, N, alpha0, beta0);
+  else if (     (global_section.section_solver == L_anis) 
+            || ((global_section.section_solver == L) && PML_present) )
+    create_FG_li_biaxial(&F, & G, M, N, real(alpha0), real(beta0));
   else if (global_section.section_solver == L)
     create_FG_li(&F, & G, M, N, alpha0, beta0);
-  else if (global_section.section_solver == L_anis)
-    create_FG_li_biaxial(&F, & G, M, N, real(alpha0), real(beta0));
+
 
   cMatrix FG(2*MN,2*MN,fortranArray);  
   FG.reference(multiply(F,G));
@@ -1719,9 +1795,9 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   std::sort(estimates.begin(), estimates.end(), kz2_sorter());
 
-  for (int i=0; i<estimates.size(); i++)
-    std::cout << "sorted " << i << " " << sqrt(estimates[i]->kz2)/k0 
-              << std::endl;
+  //for (int i=0; i<estimates.size(); i++)
+  //  std::cout << "sorted " << i << " " << sqrt(estimates[i]->kz2)/k0 
+  //            << std::endl;
 
   if (estimates.size() > 4)
     for (int i=0; i<(TEM ? 3 : 4); i++)
