@@ -25,10 +25,10 @@ class camfr_build_ext(build_ext):
 camfr_extension = Extension(
     "camfr", ["./camfr/camfr_wrap.cpp"],                              \
     library_dirs=["./camfr",                                          \
-                  "../boost_cvs/libs/python/src",                     \
+                  "../boost_1_25_0/libs/python/src",                     \
                   "../blitz-20001213/lib",                            \
                   "/usr/local/intel/mkl/LIB"],                        \
-    include_dirs=["camfr", "../boost_cvs","../blitz-20001213"],       \
+    include_dirs=["camfr", "../boost_1_25_0","../blitz-20001213"],       \
     libraries=["camfr", "boost_python", "blitz", "mkl32_lapack",      \
                "mkl32_p3", "m", "g2c", "stdc++"] )
 

@@ -25,15 +25,15 @@ LAPACK = /usr/local/intel/mkl/LIB/libmkl32_lapack.a \
 
 # location of the Python header files
 
-PYTHON = /home/pbienst/gnu/include/python2.1
+PYTHON = /home/pbienst/local/include/python2.1
 
 # location of the Boost library include files
 
-BOOST_INC = /home/pbienst/boost_cvs
+BOOST_INC = /home/pbienst/boost_1_25_0
 
 # location of the Boost library
 
-BOOST_LIB = /home/pbienst/boost_cvs/libs/python/src
+BOOST_LIB = /home/pbienst/boost_1_25/libs/python/src
 
 # location of the math libraries (usually -lm, but can be replaced by
 # other routines to improve performance)
