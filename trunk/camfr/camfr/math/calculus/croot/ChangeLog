@@ -1,3 +1,8 @@
+2002-03-17  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* patterson_z_n.cpp: Increase portability.
+	* roottest.cpp: Ditto.
+
 2002-03-14  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mueller.cpp: Make too slowly varying function no longer fatal.

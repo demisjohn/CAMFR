@@ -68,8 +68,14 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
   #include "patterson_coeff.cpp"
 
   // Define constants and workspace containing previous function evaluations.
-  
-  Complex work[18][M+1], fz[M+1], acum[M+1], result[M+1];
+
+  Complex* work[18];
+  for (unsigned int i=0; i<18; i++)
+    work[i] = new Complex[M+1];
+
+  Complex* fz     = new Complex[M+1];
+  Complex* acum   = new Complex[M+1];
+  Complex* result = new Complex[M+1];
   
   // Apply 1-point Gauss formula (midpoint rule).
 
@@ -112,7 +118,8 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
   int ip=1; // Index in coefficient array 'p'.
   int jh=0;
 
-  Complex prev_result[M+1], prev_acum[M+1];
+  Complex* prev_result = new Complex[M+1];
+  Complex* prev_acum   = new Complex[M+1];
   
   for (int k=2; k<=max_k; k++)
   {
@@ -195,18 +202,7 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
       if (error_ptr)
         *error_ptr = false;
 
-      if (abs_error)
-      {
-        abs_error->clear();
-        for (unsigned int n=0; n<=M; n++)
-          abs_error->push_back(delta*(result[n]-prev_result[n]));
-      }
-
-      vector<Complex> final;
-      for (unsigned int n=0; n<=M; n++)
-        final.push_back(delta*result[n]);
-      
-      return final;
+      goto final;
     }
   }
 
@@ -214,6 +210,10 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
 
   if (error_ptr)
     *error_ptr = true;
+
+  // Finalise.
+
+  final:
 
   if (abs_error)
   {
@@ -225,6 +225,15 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
   vector<Complex> final;
   for (unsigned int n=0; n<=M; n++)
     final.push_back(delta*result[n]);
+
+  for (unsigned int i=0; i<18; i++)
+    delete [] work[i];
+
+  delete [] fz;
+  delete [] acum;
+  delete [] result;
+  delete [] prev_result;
+  delete [] prev_acum;    
 
   return final;
 }

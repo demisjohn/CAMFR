@@ -13,7 +13,8 @@
 #ifndef SLABOVERLAP_H
 #define SLABOVERLAP_H
 
-#include "slabmode.h"
+#include "../../../math/linalg/linalg.h"
+#include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -45,11 +46,13 @@ struct SlabCache
 //
 /////////////////////////////////////////////////////////////////////////////
 
+class SlabMode; // fw declaration - see slabmode.h
+
 Complex overlap(const SlabMode* mode_I,
                 const SlabMode* mode_II,
                 const SlabCache* cache=NULL,
                 const vector<Complex>* disc=NULL,
-                int i=0, int j=0,  int I_index=0, int II_index=0);
+                int i=0, int j=0, int I_index=0, int II_index=0);
 
 
 

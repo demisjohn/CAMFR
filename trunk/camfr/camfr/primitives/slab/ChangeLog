@@ -1,3 +1,9 @@
+2002-03-18 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.cpp: Improve portability.
+	* generalslab.h: Ditto.
+	* slabmatrixcache.cpp: Ditto.
+
 2002-03-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.cpp: Change branch cut.

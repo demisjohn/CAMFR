@@ -18,6 +18,7 @@
 #include "../../material.h"
 #include "../../coord.h"
 #include "../../expression.h"
+#include "circoverlap.h"
 #include "circdisp.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -118,9 +119,9 @@ class Circ_M : public MultiWaveguide
     friend class Circ_2_Mode;
     friend class Circ_1_Mode;
     friend Complex overlap(const Circ_M_Mode*, const Circ_M_Mode*,
-                           const CircCache* c=NULL,
-                           const vector<Complex>* v=NULL,
-                           int=0, int=0, int=0, int=0);
+                           const CircCache* c,
+                           const vector<Complex>* v,
+                           int, int, int, int);
 };
 
 

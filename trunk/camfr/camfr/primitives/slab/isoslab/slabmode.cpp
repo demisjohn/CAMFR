@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "../../planar/planar.h"
+#include "slaboverlap.h"
 #include "slabwall.h"
 #include "slabmode.h"
 
