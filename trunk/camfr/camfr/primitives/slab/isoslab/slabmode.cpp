@@ -123,10 +123,10 @@ Field SlabMode::field(const Coord& coord_) const
     {
       field.E2 *= -field.Ez * sn / sqrt(cs);
       field.Ez *= cs / sqrt(cs);
+      field.E1 /= sqrt(cs);
  
       field.Hz *= field.H2 * sn / sqrt(cs);
       field.H2 *= cs / sqrt(cs);
-      field.H1 /= sqrt(cs);
     }
   }
 
