@@ -78,8 +78,8 @@ vector<Complex> polyroot(const vector<Complex>& coef)
   if (error)
     cout << "Warning: polyroot solver did not converge." << endl;
 
-  delete coef_r; delete coef_i;
-  delete root_r, delete root_i;
+  delete [] coef_r; delete [] coef_i;
+  delete [] root_r, delete [] root_i;
 
   // Return results.
 
