@@ -311,9 +311,9 @@ vector<Contour> Contour::adjacent_ur() const
 
   vector<Contour> new_contours;
 
-  new_contours.push_back(r);
-  new_contours.push_back(u);
   new_contours.push_back(ur);
+  new_contours.push_back(u);
+  new_contours.push_back(r);
 
   cout << "Extending " << bl << tr << endl;
   for (unsigned int i=0; i<new_contours.size(); i++)

@@ -1,0 +1,5 @@
+2002-02-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* allroots.cpp: Don't give up prematurely.
+	* contour.cpp: Reorder contours.
+
