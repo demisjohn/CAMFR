@@ -145,9 +145,7 @@ class Section : public MultiWaveguide
     Mode* get_fw_mode(int i) const {return s->get_fw_mode(i);}
     Mode* get_bw_mode(int i) const {return s->get_bw_mode(i);}
     
-    Complex eps_at(const Coord& co) const {return s->eps_at(co);}
-    Complex  mu_at(const Coord& co) const {return s-> mu_at(co);}
-    Complex   n_at(const Coord& co) const {return sqrt(eps_at(co)/eps0);}  
+    Material* material_at(const Coord& co) const {return s->material_at(co);}
     
     int N() const {return s->N();}
 
@@ -219,8 +217,7 @@ class Section2D : public SectionImpl
 
     bool no_gain_present() const;
 
-    Complex eps_at(const Coord& coord) const;
-    Complex  mu_at(const Coord& coord) const;
+    Material* material_at(const Coord& coord) const;
 
     Complex get_width() const
       {return left.get_total_thickness() + right.get_total_thickness();}
@@ -289,11 +286,8 @@ class Section1D : public SectionImpl
     bool no_gain_present() const
       {return slab->no_gain_present();}
 
-    Complex eps_at(const Coord& c) const
-      {return slab->eps_at(Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
-
-    Complex  mu_at(const Coord& c) const
-      {return slab->mu_at (Coord(c.c2, 0.0, 0.0, c.c2_limit, Plus, Plus));}
+    Material* material_at(const Coord& c) const
+      {return slab->material_at(Coord(c.c2,0.0,0.0, c.c2_limit,Plus,Plus));}
 
     Complex get_width() const
       {return d;}
