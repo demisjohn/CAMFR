@@ -72,13 +72,13 @@ class infstack(unittest.TestCase):
 
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
-        free_tmps()
-
         set_lower_wall(slab_E_wall)
 
         set_upper_PML(0)
        
         self.failUnless(R_pass)
+
+        free_tmps()
 
 suite = unittest.makeSuite(infstack, 'test')        
 

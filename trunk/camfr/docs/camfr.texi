@@ -360,16 +360,17 @@ parentheses.) Similarly, the imaginary component can be extracted with
 @cindex Python, invoking scripts
 
 The Python script can be executed in a number of ways. You can type 
-@code{python tutorial1.py}, or you can just suffice by typing 
+@code{python tutorial1.py}, or under Unix you can just suffice by typing 
 @code{tutorial1.py}, provided the first line of your script contains  
 @code{#!/usr/bin/env python} and the script file's executable bit is set (with 
-@code{chmod +x tutorial1.py}).
+@code{chmod +x tutorial1.py}). (Note: all of these command need to be typed in 
+on the system prompt, not on the Python prompt.)
 
 Regardless of the invocation method, the output that will be printed out will
 look something like this:
 
 @example
-CAMFR 1.0 - Copyright (C) 1998-2002 Peter Bienstman - Ghent University.
+CAMFR 1.1 - Copyright (C) 1998-2003 Peter Bienstman - Ghent University.
 
 (21.3499038707+0j)
 (3.07668661368+0j)
