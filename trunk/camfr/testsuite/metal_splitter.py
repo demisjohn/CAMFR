@@ -27,7 +27,7 @@ class metal_splitter(unittest.TestCase):
         # Set geometry parameters
 
         GaAs = Material(3.5)
-        met  = Material(10j)
+        met  = Material(-10j)
         air  = Material(1.0)
   
         a = .600     # period
