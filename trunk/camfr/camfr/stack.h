@@ -240,11 +240,15 @@ class Stack
     void get_interface_field(      std::vector<FieldExpansion>* field);
 
     Complex lateral_S_flux(const Complex& c1, std::vector<Complex>* S_k=NULL);
-
-    Complex eps_at(const Coord& coord) const;
-    Complex  mu_at(const Coord& coord) const;
-    Complex   n_at(const Coord& coord) const
-      {return sqrt(eps_at(coord)/eps0);}  
+   
+    Material* material_at(const Coord& coord) const;
+  
+    Complex eps_at(const Coord& coord) const
+      {return material_at(coord)->eps();}  
+    virtual Complex  mu_at(const Coord& coord) const
+      {return material_at(coord)->mu();}  
+    Complex n_at(const Coord& coord) const      
+      {return material_at(coord)->n();}
 
     // Easier interface to get R and T matrix elements.
 

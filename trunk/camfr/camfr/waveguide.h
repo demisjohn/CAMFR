@@ -70,12 +70,15 @@ class Waveguide
     Material* get_core() const {return core;}
 
     virtual Complex c1_size() const = 0;
-    
-    virtual Complex eps_at(const Coord& coord) const = 0;
-    virtual Complex  mu_at(const Coord& coord) const = 0;
 
-    Complex n_at(const Coord& coord) const 
-      {return sqrt(eps_at(coord)/eps0);}  
+    virtual Material* material_at(const Coord& coord) const = 0;  
+  
+    Complex eps_at(const Coord& coord) const
+      {return material_at(coord)->eps();}  
+    virtual Complex  mu_at(const Coord& coord) const
+      {return material_at(coord)->mu();}  
+    Complex n_at(const Coord& coord) const      
+      {return material_at(coord)->n();}
     
     virtual bool  operator==(const Waveguide& w)   const = 0;
     virtual std::vector<Material*> get_materials() const = 0;
