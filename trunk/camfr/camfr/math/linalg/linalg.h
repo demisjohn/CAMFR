@@ -2,11 +2,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     linalg.h
-// Author:   Peter.Bienstman@rug.ac.be
-// Date:     19980901
-// Version:  1.0
+// Authors:  Peter.Bienstman@rug.ac.be, Lieven.Vanholme@rug.ac.be
+// Date:     20020207
+// Version:  1.1
 //
-// Copyright (C) 1998 Peter Bienstman - Ghent University
+// Copyright (C) 1998-2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -148,6 +148,19 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B);
 
 cVector eigenvalues  (const cMatrix& A, cMatrix* eigenvectors=NULL);
 cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors=NULL);
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// computes eigenvalues and/or eigenvectors of the generalized 
+// eigenproblem Ax = lambda Bx, where lambda = alpha / beta
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
+                     cVector* alpha, cVector* beta,
+                     cMatrix* eigenvectors=NULL);
 
 
 

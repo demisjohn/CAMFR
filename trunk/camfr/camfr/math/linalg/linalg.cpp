@@ -2,11 +2,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     linalg.cpp
-// Author:   Peter.Bienstman@rug.ac.be
-// Date:     19980901
-// Version:  1.0
+// Authors:  Peter.Bienstman@rug.ac.be, Lieven.Vanholme@rug.ac.be
+// Date:     20020207
+// Version:  1.1
 //
-// Copyright (C) 1998,1999 Peter Bienstman - Ghent University
+// Copyright (C) 1998-2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +29,7 @@
 #define zgesvx_F zgesvx
 #define zgeev_F  zgeev
 #define zgeevx_F zgeevx
+#define zggev_F  zggev
 #define zgesvd_F zgesvd
 #define zgetri_F zgetri
 #define zgetrf_F zgetrf
@@ -44,6 +45,7 @@
 #define zgesvx_F zgesvx_
 #define zgeev_F  zgeev_
 #define zgeevx_F zgeevx_
+#define zggev_F  zggev_
 #define zgesvd_F zgesvd_
 #define zgetri_F zgetri_
 #define zgetrf_F zgetrf_
@@ -59,6 +61,7 @@
 #define zgesvx_F zgesvx__
 #define zgeev_F  zgeev__
 #define zgeevx_F zgeevx__
+#define zggev_F  zggev__
 #define zgesvd_F zgesvd__
 #define zgetri_F zgetri__
 #define zgetrf_F zgetrf__
@@ -683,6 +686,7 @@ cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors=NULL)
 }
 
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Computes eigenvalues and/or eigenvectors of matrix A. (expert driver)
@@ -765,6 +769,105 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors=NULL)
   //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
   
   return eigenvalues;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////// 
+// 
+// computes eigenvalues and/or eigenvectors of the generalized 
+// eigenproblem Ax = lambda Bx, where lambda = alpha / beta
+// 
+///////////////////////////////////////////////////////////////////////////// 
+ 
+extern "C" void zggev_F(const char*,const char*,const int&,const Complex*, 
+                        const int&,const Complex*,const int&,
+                        const Complex*,const Complex*,const Complex*,
+                        const int&,const Complex*,const int&,
+                        const Complex*,const int&,const Real*,int&);
+
+void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
+                     cVector* alpha, cVector* beta,
+                     cMatrix* eigenvectors=NULL) 
+{
+  // Check dimensions.
+
+  int N  = A.rows();
+
+  if (N != A.columns()) 
+  {
+    cerr << "Error: A matrix is not square." << endl;
+    exit (-1); 
+  }
+
+  if (N != B.columns()) 
+  {
+    cerr << "Error: A matrix has a different dimension than B." << endl;
+    exit (-1);
+  }
+
+  if (N != B.rows())
+  {
+    cerr << "Error: B matrix is not square." << endl;
+    exit (-1);
+  } 
+
+  // Make copy of matrix, since LAPACK overwrites them.
+
+  cMatrix A_bis(N,N,fortranArray); A_bis = A;
+  cMatrix B_bis(N,N,fortranArray); B_bis = B;
+
+  // Make sure input vectors and matrices are the correct size.
+
+  alpha->resize(N);
+   beta->resize(N);
+
+  if (eigenvectors)
+    eigenvectors->resize(N,N);
+
+  // Create workspace.
+
+  const int work_size = 33; // Variable to improve performance. 
+  cVector work (work_size*N,fortranArray); 
+  rVector work2(8*N,fortranArray); // Fixed. 
+
+  // Calculate eigenvalues/vectors. 
+
+  int info; 
+  char op_code[] = " "; 
+  Complex* vectordata; 
+
+  if (eigenvectors) 
+  {
+    op_code[0] = 'V';
+    vectordata = eigenvectors->data();
+  } 
+  else 
+  {
+    op_code[0] = 'N';
+    vectordata = NULL; 
+  }
+
+  zggev_F("N",op_code,N,A_bis.data(),N,B_bis.data(),N,
+          alpha->data(),beta->data(),NULL,N,vectordata,
+          N,work.data(),work_size*N,work2.data(),info); 
+
+  if (info < 0) 
+  { 
+    cerr << "Error: bad value for argument " << -info << endl; 
+    exit (-1); 
+  } 
+
+  if ((info > 0) && (info <= N))
+    cout << "The QZ iteration failed. "
+         << "No eigenvectors have been calculated, "
+         << "but alpha(j) and beta(j) should be "
+         << "correct for j=" << info+1 << ",..., " << N; 
+
+  if (info > N) 
+    cout << "Warning: " << info << " eigenvalue(s) did not converge." << endl;
+
+  //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
 }
 
 
