@@ -155,6 +155,32 @@ Field FieldExpansion::field(const Coord& coord) const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// FieldExpansion::propagate
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+FieldExpansion FieldExpansion::propagate(const Complex& z) const
+{
+  cVector fw_c(fw.rows(), fortranArray);
+  cVector bw_c(bw.rows(), fortranArray);
+  
+  FieldExpansion f(wg, fw_c, bw_c);
+  
+  for (unsigned int i=1; i<=wg->N(); i++)
+  {
+    Complex I_kz_d = I * wg->get_mode(i)->get_kz() * z;
+
+    fw_c(i) = fw(i) * exp(-I_kz_d);
+    bw_c(i) = bw(i) * exp( I_kz_d);    
+  }
+
+  return f;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // FieldExpansion::operator*
 //  
 /////////////////////////////////////////////////////////////////////////////
