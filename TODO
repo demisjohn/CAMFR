@@ -21,6 +21,8 @@
 
 CAMFR 3D:
 
+-implement Ez, Hz in plane wave modes
+-use blas for overlap calculations
 -same mode sorter as 1d?
 -windows memory leak
 -revisit calc_global in combination with arnoldi eigensolver.
