@@ -26,9 +26,15 @@ using std::endl;
 /////////////////////////////////////////////////////////////////////////////
 
 Section2D_Mode::Section2D_Mode
-  (Polarisation pol, const Complex& kz, Section2D* geom) 
-    : SectionMode(pol, kz, geom) 
+  (Polarisation pol, const Complex& kz, Section2D* geom,
+   cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_)
+     : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_)
 {
+  // TMP
+
+  if (global_section.mode_correction == false)
+    return;
+  
   // Initialise.
 
   int old_N = global.N;
@@ -93,12 +99,60 @@ Section2D_Mode::Section2D_Mode
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Section2D_Mode::~Section2D_Mode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Section2D_Mode::~Section2D_Mode()
+{
+  delete Ex;
+  delete Ey;
+  delete Hx;
+  delete Hy;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Section2D_Mode::field
 //
 /////////////////////////////////////////////////////////////////////////////
 
 Field Section2D_Mode::field(const Coord& coord) const 
 {
+  // TMP
+
+  if (global_section.mode_correction == false)
+  {
+    Field f;
+
+    const int M = global_section.M;
+    const int N = global_section.N;
+
+    const Complex W = get_geom()->get_width();
+    const Complex H = get_geom()->get_height();
+    
+    for (Real m=M; m<=M; m+=1.0)
+      for (Real n=-N; n<=N; n+=1.0)
+      {
+        int i1 = int((m+M+1) + (n+N)*(2*M+1));
+
+        // TODO: alpha0, beta0
+
+        Complex expon = exp(I*2.*pi*(m/W/2.*coord.c1 + n/H/2.*coord.c2));
+
+        f.E1 += (*Ex)(i1)*expon;
+        f.E2 += (*Ey)(i1)*expon;
+        f.H1 += (*Hx)(i1)*expon;
+        f.H2 += (*Hy)(i1)*expon;
+      }
+
+    f.Ez = f.Hz = -666.0; // TMP.
+
+    return f;
+  }
+
   // Initialise.
 
   Section2D* section = dynamic_cast<Section2D*>(geom);
@@ -237,6 +291,20 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
 void Section2D_Mode::normalise() 
 {
+  // TMP
+
+  if (global_section.mode_correction == false)
+  {
+    Complex norm = sqrt(overlap_pw(this, this));
+
+    *Ex /= norm;
+    *Ey /= norm;
+    *Hx /= norm;
+    *Hy /= norm;
+
+    return;
+  }
+  
   vector<Complex> disc(geom->get_disc());
   disc.insert(disc.begin(), 0.0);
   

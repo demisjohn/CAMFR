@@ -42,6 +42,8 @@ struct SectionGlobal
     bool guided_only; // TMP variable?
     Section_solver section_solver;
     bool mode_correction;
+    int M;
+    int N;
 };
 
 extern SectionGlobal global_section;
@@ -200,7 +202,7 @@ inline std::ostream& operator<<(std::ostream& s, const Section& section)
 
 struct ModeEstimate
 {
-    ModeEstimate(const Complex& kz2_, 
+    ModeEstimate(const Complex& kz2_,
                  cVector* Ex_=0, cVector* Ey_=0, 
                  cVector* Hx_=0, cVector* Hy_=0)
       : kz2(kz2_), kt(0,.0), kt_refined(0.0), 
