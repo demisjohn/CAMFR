@@ -26,8 +26,10 @@ class rods(unittest.TestCase):
         a = .600 # period
         r = .100 # rod radius
 
-        PML = 0.1
-        d_clad = a - 1j*PML
+        set_upper_PML(-0.1)
+        set_lower_PML(-0.1)
+        
+        d_clad = a
 
         periods = 5
 
@@ -51,6 +53,9 @@ class rods(unittest.TestCase):
         mode99_pass = abs((n_eff_99-n_eff_99_OK)/n_eff_99_OK) < eps.testing_eps
         
         free_tmps()
+
+        set_upper_PML(0)
+        set_lower_PML(0)
 
         self.failUnless(mode98_pass and mode99_pass)
 

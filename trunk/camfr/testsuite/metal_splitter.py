@@ -34,8 +34,6 @@ class metal_splitter(unittest.TestCase):
 
         set_lower_wall(slab_H_wall)
 
-        PML = 0.0
-
         cl = 0 # air cladding
 
         periods = 3  # periods above outer waveguide
@@ -43,7 +41,7 @@ class metal_splitter(unittest.TestCase):
 
         # Define slabs.
 
-        no_rods = Slab(air(a-r+(sections+1+periods)*a+cl-PML*1j))
+        no_rods = Slab(air(a-r+(sections+1+periods)*a+cl))
 
         inc_wg = Slab(GaAs(a/2.)+ air(no_rods.width()-a/2.))
 
@@ -51,7 +49,7 @@ class metal_splitter(unittest.TestCase):
  
         cen = Slab(  air(a-r)                                        \
            + (sections+1+periods)*(met(2*r) + air(a-2*r))            \
-           + air(cl-PML*1j) )
+           + air(cl) )
 
         # Outer arms.
  
@@ -59,13 +57,13 @@ class metal_splitter(unittest.TestCase):
            + sections*(met(2*r) + air(a-2*r))                        \
 	   + air(a)                                                  \
            + periods*(met(2*r) + air(a-2*r))                         \
-           + air(cl-PML*1j) )
+           + air(cl) )
 
         # Vertical section.
 
         ver = Slab(  air(a-r + (sections+1)*a)                       \
            + periods*(met(2*r) + air(a-2*r) )                        \
-           + air(cl-PML*1j) )
+           + air(cl) )
 
         # Calculate splitter.
 

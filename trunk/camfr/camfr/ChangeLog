@@ -1,5 +1,11 @@
 2002-07-15  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* camfr_wrap.cpp: major change in the way PML is defined.
+	* geometry.py: Ditto.
+	* waveguide.h: Ditto.
+
+2002-07-15  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* camfr_wrap.cpp: replace set_left/right_wall by 
 	  set_lower/upper_wall.
 

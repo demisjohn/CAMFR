@@ -22,8 +22,11 @@ air  = Material(1.0)
 
 # Define waveguide sections.
 
-normal = Slab(air(2.0 - 0.1j) + GaAs(0.5) + air(2.0 - 0.1j))
-thick  = Slab(air(1.9 - 0.1j) + GaAs(0.7) + air(1.9 - 0.1j))
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+normal = Slab(air(2.0) + GaAs(0.5) + air(2.0))
+thick  = Slab(air(1.9) + GaAs(0.7) + air(1.9))
 
 # Calculate reflection of the fundamental mode for different 
 # lengths of the central thick section.

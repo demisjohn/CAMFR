@@ -46,11 +46,24 @@ Slab_M::Slab_M(const Expression& expression)
 
     Complex thickness = ex.get_term(i)->get_d();
 
+    if (i == 0)
+      thickness += I*global_slab.left_PML;
+
+    if (i == ex.get_size()-1)
+      thickness += I*global_slab.right_PML;
+
     // Combine two succesive terms containing the same material.
 
     if ( (i+1 < ex.get_size()) && (m == ex.get_term(i+1)->get_mat()) )
     {
       thickness += ex.get_term(i+1)->get_d();
+    
+      if (i+1 == 0)
+        thickness += I*global_slab.left_PML;
+
+      if (i+1 == ex.get_size()-1)
+        thickness += I*global_slab.right_PML;
+      
       i++;
     }
 

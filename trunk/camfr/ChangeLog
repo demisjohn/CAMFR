@@ -21,6 +21,16 @@ CAMFR 1.0:
  - various documentation updates and minor bugfixes
  - more graceful handling of user errors
 
+Important to note if you are upgrading from a pre 1.0 version of CAMFR are
+the following changes:
+
+ - set_left_wall and set_right_wall are replaced by set_lower_wall and 
+   set_upper_wall respectively
+ - imaginary thicknesses and coordinates are deprecated: PML is set by
+   set_lower_PML, set_upper_PML and set_circ_PML
+
+
+
 CAMFR 0.9:
 
  - initial public release

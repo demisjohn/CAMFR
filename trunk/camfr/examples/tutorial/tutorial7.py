@@ -12,8 +12,10 @@ set_lambda(1)
 set_N(20)
 set_polarisation(TE)
 
-w   =  5.0  # width of waveguide
-PML = -0.1
+w = 5.0  # width of waveguide
+
+set_upper_PML(-0.1)
+set_lower_PML(-0.1)
 
 # Define parabolic refractive index profile.
 
@@ -35,10 +37,7 @@ for i in range(steps):
     x = i * w / steps
     m = Material(index(x + 0.5 * w / steps))
     materials.append(m)
-    if (i == 0) | (i == steps-1):
-	d = w / steps + PML*1j
-    else:
-	d = w / steps
+    d = w / steps
     expr.add(m(d))
 
 slab = Slab(expr)

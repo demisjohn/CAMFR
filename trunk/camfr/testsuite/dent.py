@@ -26,10 +26,13 @@ class dent(unittest.TestCase):
 
 	spot_size = 0.001
 
-        wg = Slab(clad(6-.25j) + core(0.22) + clad(6-.25j))
+        set_upper_PML(-0.25)
+        set_lower_PML(-0.25)
+
+        wg = Slab(clad(6) + core(0.22) + clad(6))
         gap = Slab(air(wg.width()))
-        notch = Slab(clad(6-.25j) + air(spot_size) \
-                      + core(0.22-spot_size) + clad(6-.25j))
+        notch = Slab(clad(6) + air(spot_size) \
+                      + core(0.22-spot_size) + clad(6))
 
         s = Stack(wg(0) + notch(spot_size) + gap(0.28) + wg(0))
 
@@ -42,6 +45,9 @@ class dent(unittest.TestCase):
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()
+
+        set_upper_PML(0)
+        set_lower_PML(0)
            
         self.failUnless(R_pass)
 

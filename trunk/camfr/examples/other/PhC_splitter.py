@@ -23,8 +23,6 @@ r = .150/2.0 # rod radius
 
 set_lower_wall(slab_H_wall)
 
-PML = 0
-
 cl = 0 # air cladding
 
 periods = 3  # periods above outer waveguide
@@ -32,19 +30,19 @@ sections = 1 # intermediate 90 deg sections
 
 # Define slabs.
 
-no_rods = Slab(air(a-r+(sections+1+periods)*a+cl+PML*1j))
+no_rods = Slab(air(a-r+(sections+1+periods)*a+cl))
 
 # Central waveguide.
  
 cen = Slab(  air(a-r)                                               \
            + (sections+1+periods)*(GaAs(2*r) + air(a-2*r))          \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Vertical section.
 
 ver = Slab(  air(a-r + (sections+1)*a)                              \
            + periods*(GaAs(2*r) + air(a-2*r) )                      \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Outer arms.
  
@@ -52,7 +50,7 @@ arm = Slab(  GaAs(r) + air(a-2*r)                                   \
            + sections*(GaAs(2*r) + air(a-2*r))                      \
 	   + air(a)                                                 \
            + periods*(GaAs(2*r) + air(a-2*r))                       \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Find lowest order waveguide mode.
 
@@ -80,8 +78,8 @@ print "R", splitter.R12(0,0)
 
 outfile = open("splitter.out", 'w')
 
-for x in arange(0.000, no_rods.width().real - cl - a, a/20.):
-    for z in arange(0.000, splitter.length().real, a/20.):
+for x in arange(0.000, no_rods.width() - cl - a, a/20.):
+    for z in arange(0.000, splitter.length(), a/20.):
         print >> outfile, abs(splitter.field(Coord(x, 0, z)).E2()),
     print >> outfile
 

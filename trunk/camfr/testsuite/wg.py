@@ -24,7 +24,10 @@ class wg(unittest.TestCase):
         air = Material(1)
         mat = Material(3)
 
-        wg = Slab(air(2-.1j)+mat(1)+air(2-.1j))
+        set_upper_PML(-0.1)
+        set_lower_PML(-0.1)
+
+        wg = Slab(air(2)+mat(1)+air(2))
         wg.calc()
 
         n =  wg.mode(0).n_eff()
@@ -34,6 +37,9 @@ class wg(unittest.TestCase):
         n_pass = abs((n - n_OK) / n_OK) < eps.testing_eps
 
         free_tmps()
+
+        set_upper_PML(0)
+        set_lower_PML(0)
        
         self.failUnless(n_pass)
 

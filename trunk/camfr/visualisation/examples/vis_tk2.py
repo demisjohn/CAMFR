@@ -21,23 +21,23 @@ air  = Material(1.0)
 
 # Define slabs.
 
-PML = -0.1
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
 
-space = Slab(air(4 + 2*PML*1j))
+space = Slab(air(4))
 
 # Loop over width.
 
 v = [] # To keep track of the data points.
 
 for W in arange(0.100, 0.200, 0.005):
-    slab = Slab(air(2 + PML*1j - W/2.0) + GaAs(W)  \
-              + air(2 + PML*1j - W/2.0))
+    slab = Slab(air(2 - W/2.0) + GaAs(W) + air(2 - W/2.0))
     stack = Stack(space(0) + slab(0.5) + space(0))
     stack.calc()
 
     print W
 
-    v.append((W,abs(stack.R12(1,1))))
+    v.append((W,abs(stack.R12(0,0))))
 
     free_tmps()
 

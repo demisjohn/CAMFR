@@ -30,7 +30,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-CircGlobal global_circ = {1, cos_type};
+CircGlobal global_circ = {0.0, 1, cos_type};
 
 
 
@@ -1079,7 +1079,7 @@ Circ::Circ(const Expression& ex)
   if (e.get_size() == 1)
   {
     Material* m = dynamic_cast<Material*>(e.get_term(0)->get_mat());
-    Complex   d = e.get_term(0)->get_d();
+    Complex   d = e.get_term(0)->get_d() + I*global_circ.PML;
     
     c = new Circ_1(d, *m);
   }
@@ -1089,7 +1089,7 @@ Circ::Circ(const Expression& ex)
     Complex   d1 = e.get_term(0)->get_d();
 
     Material* m2 = dynamic_cast<Material*>(e.get_term(1)->get_mat());
-    Complex   d2 = e.get_term(1)->get_d();
+    Complex   d2 = e.get_term(1)->get_d() + I*global_circ.PML;
 
     c = new Circ_2(d1, *m1, d1+d2, *m2);
   }
@@ -1111,7 +1111,7 @@ Circ::Circ(const Expression& ex)
 Circ::Circ(const Term& t)
 {
   Material* m = dynamic_cast<Material*>(t.get_mat());
-  Complex   d = t.get_d();
+  Complex   d = t.get_d() + I*global_circ.PML;
 
   if (!m)
   {

@@ -318,9 +318,6 @@ def average_slabs(slabs, i0, i1):
 #   the values of dx and dy. Setting dy to zero will result in no slices
 #   being combined, unless they are identical.
 #
-#   The user can specify PML_bot and PML_top, which will be used as the
-#   imaginary parts for the thicknesses at y=y0 and y=y1 respectively.
-#
 ############################################################################
 
 slab_cache = []
@@ -338,8 +335,7 @@ class Geometry:
         self.shapes.append(s)
         return self
    
-    def to_expression(self, x0, x1, dx, y0, y1, dy, PML_bot, PML_top,
-                      add_flipped=0):
+    def to_expression(self, x0, x1, dx, y0, y1, dy, add_flipped=0):
 
         slabs = []
         
@@ -438,12 +434,7 @@ class Geometry:
             e_slab = Expression()
             for j in range(len(slabs[i])):
                 
-                chunk_d = slabs[i][j][1] - slabs[i][j][0]
-                if j == 0:
-                    chunk_d += PML_bot*1j
-                if j == len(slabs[i]) - 1:
-                    chunk_d += PML_top*1j
-                
+                chunk_d = slabs[i][j][1] - slabs[i][j][0]                
                 chunk_m = slabs[i][j][2]
                 
                 e_slab.add(chunk_m(chunk_d))
