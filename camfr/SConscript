@@ -2,13 +2,9 @@ Import('env', 'env_noopt')
 
 # Build some files without optimisation.
 
-_o = env['OBJSUFFIX']
-
-env_noopt.SharedObject(target = 'defs'+_o, 
-	               source = 'defs.cpp')
-
-env_noopt.SharedObject(target = 'limits'+_o,
-	               source = 'math/bessel/slatec/limits.c')
+noopt = []
+noopt.append(env_noopt.SharedObject(source = 'defs.cpp'))
+noopt.append(env_noopt.SharedObject(source = 'math/bessel/slatec/limits.c'))
 
 # Contruct names of all Fortran files.
 
@@ -66,6 +62,5 @@ env.SharedLibrary(target = '_camfr',
 		      'primitives/section/section.cpp',
 		      'primitives/section/sectionmode.cpp',
 		      'primitives/section/sectiondisp.cpp',
-		      'primitives/section/sectionoverlap.cpp',
-		      'defs'+_o, 'math/bessel/slatec/limits'+_o]
-		      + fortran_files)
+		      'primitives/section/sectionoverlap.cpp']
+		      + noopt + fortran_files)
