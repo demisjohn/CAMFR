@@ -84,6 +84,7 @@ void SectionImpl::calc_overlap_matrices
           dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
       }
 
+    py_print("Done overlap.");
     return;
   }
 
