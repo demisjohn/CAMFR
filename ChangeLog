@@ -1,4 +1,4 @@
-CAMFR 1.1:
+CAMFR 1.1 (2003-03-05):
 
  - improved stability for Slabs
  - inc_S_flux and ext_S_flux are now much faster
