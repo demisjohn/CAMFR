@@ -268,9 +268,6 @@ vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
     else
       kt = find_kt_from_scratch_by_track();
 
-  if (kt.size() > global.N)
-    kt.erase(kt.begin()+global.N, kt.end());
-
   return kt;
 }
 
@@ -317,14 +314,25 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   Real Re = real(global.C_upperright);
   Real Im = imag(global.C_upperright);
 
-  Complex lowerleft (-0.1,      -0.1);
-  Complex upperright( Re*max_kt, Im*max_kt);
-
-  lowerleft = -upperright;
+  ExpandDirection dir;
+  Complex lowerleft, upperright;
+  if (real(min_eps_mu) > 0) // No metals.
+  {
+    lowerleft  = Complex(-0.1,      -0.1);
+    upperright = Complex( Re*max_kt, Im*max_kt);
+    dir = ur;
+  }
+  else
+  {
+    lowerleft  = Complex(-0.1,      -Im*max_kt);
+    upperright = Complex( Re*max_kt, 0.1);
+    dir = dr;
+  }
 
   SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
   unsigned int zeros = global.N + 2 + materials.size();
-  vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright);
+  vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright,
+                               1e-4, 1e-4, 4, dir);
   
   //cout << "Calls to slab dispersion relation : "<<disp.times_called()<<endl;
   
@@ -465,8 +473,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   remove_elems(&kt_prop_lossless, 0.0, eps_copies);
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Real kt_i = sqrt(C*(  real(materials[i]->eps())*real(materials[i]->mu()) 
-                        - min_eps_mu_lossless));
+    Real kt_i = sqrt(abs(C*(real(materials[i]->eps())*real(materials[i]->mu()) 
+                        - min_eps_mu_lossless)));
 
     remove_elems(&kt_prop_lossless,  kt_i, eps_copies);
     remove_elems(&kt_prop_lossless, -kt_i, eps_copies);
