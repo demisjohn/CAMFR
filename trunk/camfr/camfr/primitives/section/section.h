@@ -20,6 +20,8 @@
 
 #include "sectiondisp.h" // TMP
 
+typedef enum {lowest_loss, highest_index} Sort_type;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // STRUCT: SectionGlobal
@@ -66,6 +68,9 @@ class SectionImpl : public MultiWaveguide
     virtual Complex get_width()  const = 0;
     virtual Complex get_height() const = 0;
     virtual Complex c1_size()    const {return get_width();}
+
+    virtual void set_sorting(Sort_type s) {}
+    virtual void set_estimate(const Complex& c) {}
 
     int get_M1() const {return M1;}
     int get_M2() const {return M2;}
@@ -130,6 +135,9 @@ class Section : public MultiWaveguide
     std::vector<Material*> get_materials() const {return s->get_materials();}
     bool contains(const Material& m)       const {return s->contains(m);}
     bool no_gain_present()                 const {return s->no_gain_present();}
+
+    void set_sorting(Sort_type sort)    {s->set_sorting(sort);}
+    void set_estimate(const Complex& c) {s->set_estimate(c);}
 
     void find_modes() {return s->find_modes();}
     
@@ -219,7 +227,10 @@ class Section2D : public SectionImpl
 
     Complex get_height() const
       {return slabs[0]->get_width();}
-    
+
+    void set_sorting (Sort_type sort_)  {sort = sort_;}
+    void set_estimate(const Complex& c) {user_estimates.push_back(c);}
+
     void find_modes();
 
   protected:
@@ -229,10 +240,15 @@ class Section2D : public SectionImpl
 
     bool symmetric;
 
+    Sort_type sort;
+
     void find_modes_from_series();
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
+    cVector estimate_kz2();
+
+    std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.
     std::vector<Material*> materials;
 
