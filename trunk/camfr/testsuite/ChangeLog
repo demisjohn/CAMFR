@@ -1,3 +1,7 @@
+2003-08-06  Peter Bienstman <Peter.Bienstman@ugent.be>
+
+	* sudbo.py: New test.
+
 2003-08-01  Peter Bienstman <Peter.Bienstman@ugent.be>
 
 	* slab2.py: New test.
