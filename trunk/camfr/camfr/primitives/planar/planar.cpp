@@ -29,7 +29,10 @@ Complex Planar::kt = 0.0;
 /////////////////////////////////////////////////////////////////////////////
 
 Planar::Planar(Material& m) : MonoWaveguide(&m)
-{ 
+{
+  if (global.N == 0)
+    global.N = 1;
+
   // Create dummy mode and update it in calc_kz.
 
   mode = new PlanarMode(TE, 0.0, 0.0, 0.0, 0.0, *this);
@@ -62,8 +65,6 @@ void Planar::set_theta(Complex theta_radians)
 
 Complex Planar::calc_kz() const
 {
-  global.N = 1;
-
   // Calculate kz.
 
   Complex k  = 2.0*pi / global.lambda * core->n() * sqrt(core->mur());
