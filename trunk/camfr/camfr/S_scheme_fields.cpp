@@ -438,7 +438,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
 
   cVector fw0(1,fortranArray); fw0 = (*field)[0].fw;
   cVector bw0(1,fortranArray); bw0 = (*field)[0].bw;
-  
+
   // Loop over chunks.
 
   for (unsigned int k=0; k<chunks.size(); k++)
@@ -466,7 +466,10 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
     
     vector<Chunk> right_chunks;
     for (unsigned int j=k+1; j<chunks.size(); j++)
+    {
       right_chunks.push_back(chunks[j]);
+      chunks[j].sc->calcRT(); // Transparent scatterer isn't auto-calculateded.
+    }
 
     cVector bw_prop(1,fortranArray);
     if (right_chunks.size() != 0)

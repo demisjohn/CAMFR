@@ -157,7 +157,7 @@ void calc_tilde(const Chunk& chunk,
   // No propagation needed?
 
   DiagScatterer* s = dynamic_cast<DiagScatterer*>(chunk.sc);
-  
+
   if (abs(chunk.d) == 0)
   {
     *r12 = s->get_diag_R12(); *r21 = s->get_diag_R21();
@@ -264,16 +264,16 @@ void S_scheme(const vector<Chunk>& chunks, DiagScatterer* result)
 
 void calc_tilde(const Chunk& chunk,
                 Complex* r12, Complex* r21, Complex* t12, Complex* t21)
-{ 
+{
   // No propagation needed?
 
   MonoScatterer* s = dynamic_cast<MonoScatterer*>(chunk.sc);
-  
+
   if (abs(chunk.d) == 0)
   {
     *r12 = s->get_R12(); *r21 = s->get_R21();
     *t12 = s->get_T12(); *t21 = s->get_T21();
-    
+
     return;
   }
 
