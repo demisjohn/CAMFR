@@ -378,7 +378,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           //st << "Mueller didn't converge on final search for " 
           //   << (*newest)[i];
           final = (*newest)[i];
-          py_print(st.str());
+          //py_print(st.str());
         }
 
         if (s)
