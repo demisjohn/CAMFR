@@ -56,6 +56,8 @@ MEDIUM TERM:
 -better integration with SciPy?
 -add Python docbook comments
 
+-Try to eliminate need for O_II_I in interface.cpp
+
 -making stripping of executable dependent on debug switches
 
 -Python: make Stack + Term, ... work without explicit Term() conversion.
