@@ -233,6 +233,16 @@ cMatrix LU_solve(const cMatrix& LU, const iVector& P,
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Write cMatrix to a text file that cab be read in by Matlab.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void write_to_textfile(const std::string& filename, const cMatrix& A);
+
+
+
 #endif
 
 

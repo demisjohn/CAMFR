@@ -1,3 +1,8 @@
+2004-08-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * linalg.h: Add write_to_textfile.
+	* linalg.cpp: Ditto.
+
 2003-01-24  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * linalg.h: Add determinant_band.
