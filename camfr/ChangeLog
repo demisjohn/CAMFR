@@ -5,7 +5,7 @@
 
 2005-02-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
-	* material.h: Add UniaxialMaterial.
+	* material.h: Add BiaxialMaterial.
 	* camfr_wrap.cpp: Ditto.
 
 2005-02-02  Pieter Dumon  <Pieter.Dumon@UGent.be>

@@ -132,7 +132,7 @@ inline std::ostream& operator<<(std::ostream& s, const Material& m)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: UniaxialMaterial
+// CLASS: BiaxialMaterial
 //
 //   Material with a diagonal eps and mu tensor.
 //
@@ -140,16 +140,16 @@ inline std::ostream& operator<<(std::ostream& s, const Material& m)
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-class UniaxialMaterial : public Material
+class BiaxialMaterial : public Material
 {
   public:
 
-     UniaxialMaterial(const Complex& epsr_1, 
-                      const Complex& epsr_2, 
-                      const Complex& epsr_3,
-                      const Complex& mur_1, 
-                      const Complex& mur_2, 
-                      const Complex& mur_3) : Material(sqrt(epsr_1))
+     BiaxialMaterial(const Complex& epsr_1,
+                     const Complex& epsr_2,
+                     const Complex& epsr_3,
+                     const Complex& mur_1,
+                     const Complex& mur_2,
+                     const Complex& mur_3) : Material(sqrt(epsr_1))
        {i_epsr[0] = epsr_1; i_epsr[1] = epsr_2; i_epsr[2] = epsr_3;
          i_mur[0] =  mur_1;  i_mur[1] =  mur_2;  i_mur[2] =  mur_3;}
 
@@ -165,7 +165,7 @@ class UniaxialMaterial : public Material
        {return !(*this == m);}
 
      std::string repr() const
-       {std::ostringstream s; s << "Uniaxial material"; return s.str();}
+       {std::ostringstream s; s << "Biaxial material"; return s.str();}
      
   protected:
 
@@ -173,7 +173,7 @@ class UniaxialMaterial : public Material
      Complex i_mur[3];
 };
 
-inline std::ostream& operator<<(std::ostream& s, const UniaxialMaterial& m)
+inline std::ostream& operator<<(std::ostream& s, const BiaxialMaterial& m)
   {return s << m.repr() << std::endl;}
 
 
