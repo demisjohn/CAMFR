@@ -54,5 +54,4 @@ strip_command = "strip --strip-unneeded camfr/_camfr" + dllsuffix
 
 # Extra files to copy into installation directory.
 
-#extra_files = [("doc", ["docs/camfr.pdf"])]
 extra_files = []
