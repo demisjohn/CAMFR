@@ -254,7 +254,7 @@ Section::Section(Expression& expression, int M1, int M2)
   //
 
   if (expression.get_size() == 1)
-  {
+  { 
     Slab* slab = dynamic_cast<Slab*>(expression.get_term(0)->get_wg());
     Complex d = expression.get_term(0)->get_d() 
       + I*global_section.left_PML + I*global_section.right_PML;
@@ -331,6 +331,10 @@ Section::Section(Expression& expression, int M1, int M2)
 
   Slab* slab0 = dynamic_cast<Slab*>(ex.get_term(max_eps_i)->get_wg());
   Complex d0 = ex.get_term(max_eps_i)->get_d()/2.;
+
+  if (max_eps_i == 1)
+    d0 += I*global_section.left_PML;
+
   left_ex += Term((*slab0)(d0));
 
   for (int i=max_eps_i-1; i>=0; i--)
@@ -357,7 +361,6 @@ Section::Section(Expression& expression, int M1, int M2)
   // Create Section.
 
   s = new Section2D(left_ex, right_ex, M1, M2);
-
   uniform = s->is_uniform();
   core = s->get_core();
 }
