@@ -133,7 +133,7 @@ Field Section2D_Mode::field(const Coord& coord) const
     const Complex W = get_geom()->get_width();
     const Complex H = get_geom()->get_height();
     
-    for (Real m=M; m<=M; m+=1.0)
+    for (Real m=-M; m<=M; m+=1.0)
       for (Real n=-N; n<=N; n+=1.0)
       {
         int i1 = int((m+M+1) + (n+N)*(2*M+1));
@@ -147,6 +147,7 @@ Field Section2D_Mode::field(const Coord& coord) const
         f.H1 += (*Hx)(i1)*expon;
         f.H2 += (*Hy)(i1)*expon;
       }
+    
 
     f.Ez = f.Hz = -666.0; // TMP.
 
