@@ -12,8 +12,6 @@
 
 // TODO
 //
-// Try implicit conversions (note: const arg for constructor required)
-//   implicitly_convertible<Stack,Term>();
 // Enums and constants
 // Default arguments
 
@@ -22,16 +20,11 @@
 #include <boost/python/module.hpp>
 #include <boost/python/class.hpp>
 #include <boost/python/operators.hpp>
-#include <boost/python/object/value_holder.hpp>
-#include <boost/python/object/pointer_holder.hpp>
-#include <boost/python/object/class.hpp>
-#include <boost/python/converter/rvalue_from_python_data.hpp>
-#include <boost/python/reference_existing_object.hpp>
-#include <boost/python/copy_const_reference.hpp>
-#include <boost/python/return_value_policy.hpp>
 #include <boost/python/implicit.hpp>
-#include <boost/python/errors.hpp>
 #include <boost/python/call.hpp>
+#include <boost/python/return_value_policy.hpp>
+#include <boost/python/reference_existing_object.hpp>
+#include <boost/python/converter/rvalue_from_python_data.hpp>
 
 #include "Numeric/arrayobject.h"
 
@@ -418,8 +411,6 @@ struct cVector_to_python
   }
 };
 
-
-
 struct register_cVector_from_python
 {
 
@@ -465,24 +456,19 @@ struct register_cVector_from_python
 
 };
 
-
-
 struct cMatrix_to_python
 {
   static PyObject* convert(const cMatrix& c)
   {
-    int dim[2]; dim[0] = global.N; dim[1] = global.N;
-
-    cMatrix c_bak(global.N,global.N,fortranArray); c_bak = c.copy();
+    int dim[2]; dim[0] = c.rows(); dim[1] = c.columns();
   
-    PyArrayObject* result = (PyArrayObject*)
-      PyArray_FromDimsAndData(2, dim, PyArray_CDOUBLE, (char*) c_bak.data());
-
-    // Reflect Fortran storage orders.
-
-    int tmp = result->strides[0];
-    result->strides[0] = result->strides[1];
-    result->strides[1] = tmp;
+    PyArrayObject* result 
+      = (PyArrayObject*) PyArray_FromDims(2, dim, PyArray_CDOUBLE);
+    
+    for (int i=0; i<c.rows(); i++)
+      for (int j=0; j<c.columns(); j++)
+        *(Complex*)(result->data + i*result->strides[0] + j*result->strides[1])
+          = c(i+1,j+1);
 
     return PyArray_Return(result);
   }
@@ -583,10 +569,6 @@ extern PyTypeObject PyArray_Type;
 BOOST_PYTHON_MODULE_INIT(_camfr)
 {
   using namespace boost::python;
-  using namespace boost::python::converter;
-  using boost::shared_ptr;
-  using boost::python::return_value_policy;
-  using boost::python::reference_existing_object;
 
   implicitly_convertible<Scatterer,Term>();
   implicitly_convertible<Stack,Term>();
@@ -758,7 +740,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   // Wrap Material.
 
   camfr.add(
-    class_<Material, shared_ptr<Material>, bases<BaseMaterial> >("Material")
+    class_<Material, bases<BaseMaterial> >("Material")
     .def_init(args<const Complex&>())
     .def_init(args<const Complex&, const Complex&>()) // TODO: def. arg
     .def("__call__", material_to_term)
@@ -899,7 +881,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("flatten",  &Expression::flatten)
     .def("inc",  &Expression::get_inc,
          return_value_policy<reference_existing_object>())
-    .def("ext",  &Expression::get_inc,
+    .def("ext",  &Expression::get_ext,
          return_value_policy<reference_existing_object>())
     .def("__repr__", &Expression::repr)
     .def("add",      &Expression::operator+=)
@@ -919,7 +901,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def_init(args<const Expression&>())
     .def("inc",  &Term::get_inc,
          return_value_policy<reference_existing_object>())
-    .def("ext",  &Term::get_inc,
+    .def("ext",  &Term::get_ext,
          return_value_policy<reference_existing_object>())
     .def("__repr__", &Term::repr)
     .def(self + self)
