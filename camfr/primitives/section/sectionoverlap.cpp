@@ -241,16 +241,16 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   { 
     SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
 
-    Complex sn_II = kz_II / mode_II->get_kz0();
-    Complex cs_II = slab_signedsqrt(1.0 - sn_II*sn_II);
+    Complex sn_II = mode_II->get_sin();
+    Complex cs_II = mode_II->get_cos();
 
     if (slab_II.get_mode(jj)->pol != TM)
       for (int ii=1; ii<=sec_I_M; ii++)
       {
         SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
 
-        Complex sn_I = kz_I / mode_I->get_kz0();
-        Complex cs_I = slab_signedsqrt(1.0 - sn_I*sn_I);
+        Complex sn_I = mode_I->get_sin();
+        Complex cs_I = mode_I->get_cos();
 
         // Integration over x.
 
@@ -303,16 +303,16 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   {
     SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
 
-    Complex sn_I = kz_I / mode_I->get_kz0();
-    Complex cs_I = slab_signedsqrt(1.0 - sn_I*sn_I);
+    Complex sn_I = mode_I->get_sin();
+    Complex cs_I = mode_I->get_cos();
 
     if (mode_I->pol != TE)
       for (int jj=1; jj<=sec_II_M; jj++)
       {
         SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
 
-        Complex sn_II = kz_II / mode_II->get_kz0();
-        Complex cs_II = slab_signedsqrt(1.0 - sn_II*sn_II);
+        Complex sn_II = mode_II->get_sin();
+        Complex cs_II = mode_II->get_cos();
 
         // Integration over x.
 

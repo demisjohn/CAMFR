@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include "refsection.h"
+#include "../slab/isoslab/slabwall.h"
 
 using std::vector;
 using std::sort;
@@ -179,12 +180,15 @@ void RefSection::find_modes()
   const Complex k2 = pow(2*pi/global.lambda * m->n(), 2);
 
   // Create TE and TM modes.
+
+  Complex Rl = global_slab.lowerwall ? global_slab.lowerwall->get_R12() : -1.0;
+  Complex Ru = global_slab.upperwall ? global_slab.upperwall->get_R12() : -1.0;
   
   Complex kx0 = (global_section.leftwall == E_wall) ? 0.0 : pi/2.;
-  Complex ky0 = (global_slab.lowerwall   == NULL)   ? 0.0 : pi/2.;
+  Complex ky0 = (   abs(Rl - (-1.0))     <  1e-6)   ? 0.0 : pi/2.;
 
   Complex x_offset = (global_section.rightwall == E_wall) ? 0.0 : pi/2.;
-  Complex y_offset = (global_slab.upperwall    == NULL)   ? 0.0 : pi/2.;  
+  Complex y_offset = (    abs(Ru - (-1.0))     <  1e-6)   ? 0.0 : pi/2.;
 
   vector<RefSectionMode*> TE_modes, TM_modes;
   

@@ -249,6 +249,8 @@ Section::Section(Expression& expression, int M1, int M2)
     }
   }
 
+  std::cout << "Core" << ex.get_term(max_eps_i)->get_wg()->get_core()->n() << std::endl;
+
   // Create right hand side expression.
 
   Expression right_ex;
@@ -715,7 +717,9 @@ void Section2D::find_modes_from_series()
   std::sort(kz2_coarse.begin(), kz2_coarse.end(),sorter());
 
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
-    std::cout << "coarse" << i << " " << kz2_coarse[i] << std::endl;
+    std::cout << "coarse" << i << " " << kz2_coarse[i] 
+              << sqrt(kz2_coarse[i])/2./pi*global.lambda
+              << sqrt(C0*min_eps_mu - kz2_coarse[i]) << std::endl;
 
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
@@ -737,16 +741,18 @@ void Section2D::find_modes_from_series()
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50);
 
-
   f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
-
   // Eliminate false zeros.
+
+  // TODO: beta's of all sections are parasitic zeros.
 
   for (unsigned int i=1; i<=left.get_inc()->N(); i++)
   {
     Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
     Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
+
+    std::cout << "False" << kt_i << std::endl;
 
     remove_elems(&kt,  kt_i, 1e-6);
     remove_elems(&kt, -kt_i, 1e-6);
