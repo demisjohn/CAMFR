@@ -2,13 +2,12 @@
 
 ####################################################################
 #
-# Illustrates 2D plotting from Tk.
+# Illustrates 2D.
 #
 ####################################################################
 
 from camfr import *
 from Numeric import *
-from camfr_tk import *
 
 set_N(40)
 set_lambda(1.55)

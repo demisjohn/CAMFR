@@ -2,12 +2,11 @@
 
 ####################################################################
 #
-# Illustrates plotting from Tk.
+# Illustrates custom plotting.
 #
 ####################################################################
 
 from camfr import *
-from camfr_tk import *
 from Numeric import *
 
 set_lambda(1)

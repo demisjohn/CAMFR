@@ -2,12 +2,11 @@
 
 ####################################################################
 #
-# Simple example of the visualisation based on the Tk toolkit.
+# Simple visualisation example.
 #
 ####################################################################
 
 from camfr import *
-from camfr_tk import *
 
 set_lambda(1)
 set_N(50)
