@@ -1,5 +1,10 @@
 2002-11-28  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* expression.h: Add remove_term_front.
+	* expression.cpp: Ditto.
+
+2002-11-28  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* S_scheme_fields.cpp: Improve detection of Diag and Mono.
 
 2002-11-26  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
