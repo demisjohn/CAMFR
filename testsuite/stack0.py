@@ -11,7 +11,7 @@ from camfr_work import *
 import unittest, eps
 
 class stack0(unittest.TestCase):
-    def testSpE(self):
+    def teststack0(self):
         
         """Stack0"""
 
@@ -37,7 +37,7 @@ class stack0(unittest.TestCase):
         s.calc()
         
         E = s.field(Coord(0.5,0,0.5)).E2()
-        E_OK =  37.3792383401-24.3729597789j
+        E_OK = 37.3792383401-24.3729597789j
         
         print E, "expected", E_OK
         

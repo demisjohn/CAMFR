@@ -71,7 +71,7 @@ class VCSEL(unittest.TestCase):
   
         # Define cavity and find laser mode.
 
-        cavity = Cavity(top, bottom)
+        cavity = Cavity(bottom, top)
 
         cavity.find_mode(.9803, .9804)
 
