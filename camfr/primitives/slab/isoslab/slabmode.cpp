@@ -192,12 +192,25 @@ Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz,
 /////////////////////////////////////////////////////////////////////////////
 
 Complex safe_mult_(const Complex& a, const Complex& b)
-{
-  if (    (abs(a) < global.unstable_exp_threshold)
-       || (abs(b) < global.unstable_exp_threshold) )
-    return 0.0;
+{  
+  Real threshold = pow(global.unstable_exp_threshold, 2);
+
+  if ( (abs(a) > .1) && (abs(b) > .1) )
+  {
+    if (    (abs(a) < global.unstable_exp_threshold)
+         || (abs(b) < global.unstable_exp_threshold) )
+      return 0.0;
+    else
+      return a*b;
+  }
   else
-    return a*b;
+  {
+    if (    (abs(a) < threshold * abs(b))
+         || (abs(b) < threshold * abs(a)) )
+      return 0.0;
+    else
+      return a*b;
+  }
 }
 
 
@@ -405,18 +418,19 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
 
   if (abs(R_wall_l) < 1e-10)
   {
-     left[0] =  left[1] = 0;
-    right[0] = right[1] = 0;
+     left[0] =  left[1] = 0.0;
+    right[0] = right[1] = 0.0;
   }
   
   if (abs(R_wall_r) < 1e-10)
   {
-     left.back() = 0;
-    right.back() = 0;
+     left.back() = 0.0;
+    right.back() = 0.0;
   }
   
   //for (unsigned int i=0; i<left.size(); i++)
   //  std::cout << i << left[i] << right[i] << std::endl;
+  //std::cout << std::endl;
 }
 
 
