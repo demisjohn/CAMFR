@@ -1,3 +1,7 @@
+2002-07-26  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* infstack.py: Fix forward detection.
+
 2002-07-19  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* camfr_wrap.cpp: Upgrade to new Boost version.

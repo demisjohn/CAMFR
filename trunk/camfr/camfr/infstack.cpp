@@ -78,18 +78,12 @@ void InfStack::calcRT()
     Real S = mode->S_flux(0,real(inc->c1_size()), 0.1);
 
     if (fw && (S < 0) && (abs(S) > 1e-3) )
-    {
-      std::ostrstream s;
-      s << "Warning: unexpected power flow for fw mode "
-        << mode->get_kz() << " : " << S;
-      py_print(s.str());
+    { 
+      fw = false;
     }
     else if (!fw && (S > 0) && (abs(S) > 1e-3) )
     {
-      std::ostrstream s;
-      s << "Warning: unexpected power flow for bw mode "
-        << mode->get_kz() << " : " << S;
-      py_print(s.str());
+      fw = true;
     }
         
     if (fw)
