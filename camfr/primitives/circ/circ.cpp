@@ -631,7 +631,7 @@ void Circ_M::calc_overlap_matrices
   for (unsigned int k=0; k<medium_II->radius.size(); k++)
     disc.push_back(medium_II->radius[k]);
 
-  remove_copies(&disc, 1e-6);
+  remove_copies(&disc, 1e-9);
     
   sort(disc.begin(), disc.end(), RealSorter());
 
