@@ -15,6 +15,7 @@ CAMFR 1.0:
  - better handling of loosely coupled or degenerate waveguides
  - better handling of metals, also metals with purely imaginary refractive
    index
+ - more flexible way of plotting field profiles of modes
  - CAMFR now runs reliably under graphical IDE environments like Idle
    or ActiveState's PythonWin
  - various documentation updates and minor bugfixes
