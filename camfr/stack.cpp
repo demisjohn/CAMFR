@@ -411,7 +411,7 @@ void DenseStack::freeRT()
   DenseScatterer::freeRT();
   
   for (unsigned int i=0; i<chunks.size(); i++)
-    dynamic_cast<DenseScatterer*>(chunks[i].sc)->freeRT();
+    chunks[i].sc->freeRT();
 }
 
 
@@ -486,7 +486,7 @@ void DiagStack::freeRT()
   DiagScatterer::freeRT();
   
   for (unsigned int i=0; i<chunks.size(); i++)
-    dynamic_cast<DiagScatterer*>(chunks[i].sc)->freeRT();
+    chunks[i].sc->freeRT();
 }
 
 
