@@ -54,7 +54,7 @@ class SlabImpl : public MultiWaveguide
 { 
   public:
 
-    SlabImpl() : lowerwall(NULL), upperwall(NULL) {}
+    SlabImpl() : lowerwall(NULL), upperwall(NULL), dummy(0) {}
     ~SlabImpl();
 
     void set_lower_wall(SlabWall& lower) {lowerwall=&lower;}
@@ -85,7 +85,12 @@ class SlabImpl : public MultiWaveguide
     std::vector<Complex> get_discontinuities() const 
       {return discontinuities;}
 
+    void set_dummy(bool b) {dummy = b;}
+    bool is_dummy() const {return dummy;}
+
   protected:
+
+    bool dummy;
 
     SlabWall* lowerwall; // NULL means use wall from global_slab.
     SlabWall* upperwall;
@@ -180,6 +185,9 @@ class Slab : public MultiWaveguide
     SlabImpl* get_impl() const {return s;}
     
     std::string repr() const {return s->repr();}
+
+    void set_dummy(bool b) {s->set_dummy(b);}
+    bool is_dummy() const {return s->is_dummy();}
     
   protected:
 
@@ -188,8 +196,6 @@ class Slab : public MultiWaveguide
 
 inline std::ostream& operator<<(std::ostream& s, const Slab& slab)
   {return s << slab.repr();}
-
-Complex slab_signedsqrt(const Complex& kz2);
 
 
 

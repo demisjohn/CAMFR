@@ -84,30 +84,6 @@ Real SlabImpl::S_flux(const FieldExpansion& f,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// slab_signedsqrt
-//
-//   Square root with branch cut at 45 degrees.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex slab_signedsqrt(const Complex& kz2)
-{
-  Complex new_kz = sqrt(kz2);
-
-  if (imag(new_kz) > 0)
-    new_kz = -new_kz;
-
-  if (abs(imag(new_kz)) < abs(real(new_kz)))
-    if (real(new_kz) < 0)
-      new_kz = -new_kz;
-  
-  return new_kz;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // SlabImpl::disc_intersect
 //
 //   Make sorted list of evaluation points for field cache.
@@ -248,22 +224,16 @@ void SlabImpl::calc_overlap_matrices
 
   for (int i=1; i<=int(N); i++)
   {
-    Complex kz0_I  
-      = dynamic_cast<SlabMode*>(medium_I ->get_mode(i))->get_kz0();
-    Complex kz0_II 
-      = dynamic_cast<SlabMode*>(medium_II->get_mode(i))->get_kz0();
+    SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_I ->get_mode(i));
+    SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_II->get_mode(i));   
     
-    sin_I (i) = global.slab_ky / kz0_I;
-    sin_II(i) = global.slab_ky / kz0_II;
+    sin_I (i) = mode_I ->get_sin(); cos_I (i) = mode_I ->get_cos();
+    sin_II(i) = mode_II->get_sin(); cos_II(i) = mode_II->get_cos();
 
-    // Note that cos needs to be in sync with the ones in slabmode.cpp.
+    //std::cout << i <<cos_I (i) << cos_I(i)*mode_I->get_kz0() 
+    //          <<cos_II (i) << cos_II(i)*mode_II->get_kz0() << std::endl;
 
-    cos_I (i) 
-      = slab_signedsqrt((1.0 - sin_I (i) * sin_I (i))*kz0_I * kz0_I) / kz0_I;
-    cos_II(i) 
-      = slab_signedsqrt((1.0 - sin_II(i) * sin_II(i))*kz0_II*kz0_II) / kz0_II;
-
-    //std::cout << i <<sin_I (i) << sin_II (i)<<cos_I (i) << cos_II (i)
+    // std::cout << i <<sin_I (i) << sin_II (i)<<cos_I (i) << cos_II (i)
     //          << sqrt(cos_I (i)) << sqrt(cos_II (i)) << std::endl;
   }
 

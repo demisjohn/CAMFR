@@ -1,6 +1,10 @@
+2002-12-20 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.cpp: Break out signed_sqrt to slabmode.
+
 2002-12-12 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* generalslab.cpp: apply signed_sqrt to kz, not to cos..
+	* generalslab.cpp: Apply signed_sqrt to kz, not to cos.
 
 2002-11-27 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
