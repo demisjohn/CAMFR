@@ -1,5 +1,9 @@
 2003-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* slabmode.cpp: Speed up.
+
+2003-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* slabmode.cpp: Reduce zero threshold.
 
 2003-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>

@@ -204,13 +204,11 @@ Field SlabMode::field(const Coord& coord_) const
 
   // Calculate total field.
   
-  const Complex sn = get_sin();
-  const Complex cs = get_cos();
-  
   Field field;
 
   if (pol == TE)
   {
+
     const Complex C = 1.0 / (k0*c) / geom->mu_at(coord);
         
     field.E1 = 0.0;
@@ -223,6 +221,9 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global.slab_ky) > 1e-6)
     {
+      Complex sn = get_sin();
+      Complex cs = get_cos();
+
       field.Ez  = -field.E2 * sn / sqrt(cs);
       field.E2 *= cs / sqrt(cs);
  
@@ -245,6 +246,9 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global.slab_ky) > 1e-6)
     {
+      Complex sn = get_sin();
+      Complex cs = get_cos();
+
       field.E2  = field.Ez * sn / sqrt(cs);
       field.Ez *= cs / sqrt(cs);
       field.E1 /= sqrt(cs);
