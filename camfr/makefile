@@ -13,7 +13,7 @@ libcamfr.a: FORCE
 	math/calculus/polyroot/*.o math/calculus/croot/*.o \
 	math/calculus/quadrature/*.o \
 	primitives/planar/*.o primitives/slab/*.o \
-	primitives/slab/isoslab/*.o \
+	primitives/slab/isoslab/*.o primitives/section/*.o \
 	primitives/circ/*.o math/bessel/*.o math/bessel/slatec/*.o
 	$(RANLIB) libcamfr.a
 

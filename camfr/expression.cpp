@@ -458,6 +458,15 @@ Term::Term(const Expression& e, unsigned int N_=1)
     st = new Stack(e, N);
     sc = st->get_sc();
     Expression::tmp_stacks.store(st);
+
+    if (global.solver == track)
+      for (unsigned int i=0; i<e.get_size(); i++)
+        if (abs(imag(e.get_term(i)->get_d())) > 1e-6)
+        {
+          cerr << "Error: complex inner thickness not supported "
+               << "by this solver." << endl;
+          exit (-1);
+        }
   }
 }
 

@@ -35,6 +35,7 @@
 #include "primitives/slab/isoslab/slab.h"
 #include "primitives/slab/isoslab/slabwall.h"
 #include "primitives/slab/isoslab/slabdisp.h"
+#include "primitives/section/sectiondisp.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -424,7 +425,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     
     cout << endl
          << "CAMFR 1.0pre - "
-         << "Copyright (C) 1998-2001 Peter Bienstman - Ghent University."
+         << "Copyright (C) 1998-2002 Peter Bienstman - Ghent University."
          << endl << endl;
 
     // Wrap Limit enum.
@@ -827,7 +828,8 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     SlabDisp_.declare_base(ComplexFunction_);
 
     SlabDisp_.def(constructor<Expression&, Real>());
-    SlabDisp_.def(constructor<Expression&, Real, SlabWall*, SlabWall*>());    
+    SlabDisp_.def(constructor<Expression&, Real, SlabWall*, SlabWall*>());
+    SlabDisp_.def(&SlabDisp::operator(), "__call__"); // tmp   
 
     // Wrap Slab.
 
@@ -841,6 +843,14 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     Slab_.def(&Slab::get_width,         "width");
     Slab_.def(&Slab::repr,              "__repr__"); // tmp
     Slab_.def(waveguide_to_term,        "__call__"); // tmp
+
+    // Wrap SectionDisp.
+
+    class_builder<SectionDisp> SectionDisp_(camfr, "SectionDisp");
+    SectionDisp_.declare_base(ComplexFunction_);
+
+    SectionDisp_.def(constructor<Stack&, Stack&, Real>());
+    SectionDisp_.def(&SectionDisp::operator(), "__call__"); // tmp
   }
   catch(...)
   {

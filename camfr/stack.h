@@ -252,6 +252,7 @@ class Stack
     // Low level functions.
     
     Scatterer*   get_sc()            const {return sc;}
+    Scatterer*   get_flat_sc()       const {return flat_sc;}
     Expression   get_expression()    const {return expression;}
     unsigned int get_no_of_periods() const {return no_of_periods;}
 
