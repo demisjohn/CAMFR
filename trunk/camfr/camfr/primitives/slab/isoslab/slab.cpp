@@ -576,7 +576,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   vector<Complex> kt_lossless_single = kt_lossless;
   if (global.degenerate)
-    kt_lossless = mueller_multiple(disp, kt_lossless_single);
+    kt_lossless = mueller_multiple(disp, kt_lossless_single, 1e-12, 100);
   for (unsigned int i=0; i<kt_lossless.size(); i++)
   {
     if (abs(real(kt_lossless[i])) < abs(imag(kt_lossless[i])))
