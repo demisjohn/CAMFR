@@ -102,7 +102,7 @@ vector<Complex> roots_contour(const Contour& contour,
 
   // Refine them using mueller solver with deflation.
 
-  vector<Complex> roots2;
+  vector<Complex> roots2, deflate;
   for (unsigned int i=0; i<roots1.size(); i++)
   {
     // If the estimate is far outside the contour, don't bother.
@@ -113,16 +113,34 @@ vector<Complex> roots_contour(const Contour& contour,
     bool error = false;
     
     Complex root = mueller(*contour.get_f(), roots1[i], roots1[i]+.001,
-                           1e-14, &roots2, 50, &error);
+                           1e-14, &deflate, 50, &error);
 
     if (error)
       continue;
+
+    // If the estimate converges to a root outside of the contour,
+    // deflate it and try again.
+
+    if (!contour.encloses(root))
+    {      
+      vector<Complex> outside_roots = mueller_multiple(*contour.get_f(), root);
+      deflate.insert(deflate.end(),outside_roots.begin(),outside_roots.end());
+      
+      root = mueller(*contour.get_f(), roots1[i], roots1[i]+.001,
+                     1e-14, &deflate, 50, &error);
+    }
     
     if (contour.encloses(root))
-    {
+    {      
       vector<Complex> multiple_roots 
-        = mueller_multiple(*contour.get_f(), root);
-      roots2.insert(roots2.end(),multiple_roots.begin(),multiple_roots.end());
+        = mueller_multiple(*contour.get_f(),root,1e-14,&deflate);
+
+      for (unsigned int j=0; j<multiple_roots.size(); j++)
+        if (contour.encloses(multiple_roots[j]))
+        {
+          roots2.push_back(multiple_roots[j]);
+          deflate.push_back(multiple_roots[j]);
+        }
     }
     
   }
@@ -155,18 +173,24 @@ vector<Complex> allroots_contour(const Contour& c)
   
   vector<Complex> roots = roots_contour(c, c.contour_integrals());
 
+  bool OK = true;
+
   vector<Complex> subroots;
   for (unsigned int i_=0; i_<4; i_++)
   {
     Subcontour i = Subcontour(i_);
     vector<Complex> subroots_i
       = roots_contour(c.subcontour(i), c.subcontour_integrals(i));
+
+    if (subroots_i.size() > 0.8*N_max)
+      OK = false;
+    
     subroots.insert(subroots.end(), subroots_i.begin(), subroots_i.end());
   }
 
   // If roots contains the same values as subroots, we are done.
 
-  if (roots.size() == subroots.size())
+  if (OK && (roots.size() == subroots.size()) )
   {
     Sorter sorter;
 
