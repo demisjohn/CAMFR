@@ -56,6 +56,21 @@ class MatrixPlotCanvas(Frame):
     	self.rubberband = None
     	self.rectangle  = None
 
+
+    ##########################################################################
+    #
+    # write
+    #
+    #  writes a text on the canvas.
+    #
+    ##########################################################################
+
+    def write(self, Text):
+        self.canvas.create_text(60,100,
+                                font="Arial 20 bold underline",text=Text)
+        self.canvas.update()
+
+
     ##########################################################################
     #
     # draw
@@ -85,6 +100,7 @@ class MatrixPlotCanvas(Frame):
         
         self.canvas.create_image(self.xborder, self.yborder,
                                  image=self.myImage, anchor=Tkinter.NW)
+        
         self.canvas.update()
 
     ##########################################################################
@@ -98,7 +114,6 @@ class MatrixPlotCanvas(Frame):
     def _mousePressed(self,event):
         self.startx = self.canvas.canvasx(event.x)
         self.starty = self.canvas.canvasy(event.y)
-
 
     ##########################################################################
     #
@@ -129,7 +144,7 @@ class MatrixPlotCanvas(Frame):
     # canvas. At the end, the rubberband should only be part of the image.
     #
     ##########################################################################
-   
+
     def _mouseRelease(self,event):
         """
         (imgx0,imgy0)-----------|

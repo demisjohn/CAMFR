@@ -46,6 +46,7 @@ class SlabPlot:
         self.plRange = (0, self.width)
 
         # Make widgets.
+        self._makeMenuBar()
         self.makeSlider()
         self.makePlotWindows()
         cf = self.makeChooseField()
@@ -53,6 +54,8 @@ class SlabPlot:
         self.makeValuesField()
 
         # Griding.
+        self.window.master.config(menu=self.menuBar)
+        
         cf.grid(row=3,rowspan=2, column=1, sticky=N)
         self.plotFrame.grid(row=0,rowspan=2,column=1, columnspan=2, sticky=NW)
         wb.grid(row=4,column=2)
@@ -61,6 +64,28 @@ class SlabPlot:
 
         self.window.mainloop()
 
+
+   ###########################################################################
+   #
+   # Menubar
+   #
+   ###########################################################################
+
+   def _makeMenuBar(self):
+        self.menuBar = Menu()
+        
+        fileMenu = Menu(self.menuBar,tearoff=0)
+        fileMenu.add_command( label="Quit",
+                              command = self.window.quit)
+
+        configMenu = Menu(self.menuBar,tearoff=0)
+        configMenu.add_checkbutton( label='show effective index distribution',
+                                    command = self.changeViewMode)
+   
+        self.menuBar.add_cascade( label="File",   menu=fileMenu)
+        self.menuBar.add_cascade( label="Config", menu=configMenu)
+
+
    ###########################################################################
    #
    # Builds the two canvases.
@@ -68,7 +93,7 @@ class SlabPlot:
    # And a canvas that gives all the different modes 'd'.
    #
    ###########################################################################
-
+   
    def makePlotWindows(self):
         
         self.plotFrame = Frame()
@@ -102,13 +127,9 @@ class SlabPlot:
    def makeWorkButtons(self):
 
         wB = Frame ()
-        viewB  = Button(wB, text='More',  command = self.changeViewMode)
-        clearB = Button(wB, text='Reset', command = self.resetPlot)
-        quitB  = Button(wB, text='Quit',  command = self.window.quit)
+        clearB = Button(wB, text='Reset Zoom', command = self.resetPlot)
 
-        viewB.pack(side = LEFT)
         clearB.pack(side = LEFT)
-        quitB.pack(side = LEFT)
         
         return wB
 
@@ -260,6 +281,7 @@ class SlabPlot:
             czi     = Checkbutton(fF, text="Hz.i",    variable=self.varZi,
                                   command=self.draw, padx=0, pady=0,
                                   foreground=self.colors[1])
+            cEr.select()
         else:
             cEr     = Checkbutton(fF, text="E1.r",    variable=self.varEr,
                                   command=self.draw, padx=0, pady=0,
@@ -279,6 +301,7 @@ class SlabPlot:
             czi     = Checkbutton(fF, text="Ez.i",    variable=self.varZi,
                                   command=self.draw, padx=0, pady=0,
                                   foreground=self.colors[1])
+            cHr.select()
 
         cNr      = Checkbutton(fF, text="n.r",     variable=self.varNr,
                                command=self.draw, padx=0, pady=0,
@@ -287,7 +310,7 @@ class SlabPlot:
                                command=self.draw, padx=0, pady=0,
                                foreground=self.colors[1])
 
-        cEr.select()
+        
 
         cEr.grid(row=0, column=0, padx=0, pady=0, sticky=W)
         cEi.grid(row=0, column=1, padx=0, pady=0, sticky=W)
@@ -394,16 +417,20 @@ class SlabPlot:
 
 class PlotCanvasXY(PlotCanvas):
     
-    def __init__(self, master, width, height, background='white', **attr):
+   def __init__(self, master, width, height, background='white', **attr):
 
-        if attr.has_key('giveXY'):
+         if attr.has_key('giveXY'):
             self.giveXY = attr['giveXY']
             del attr['giveXY']
 
-        apply(PlotCanvas.__init__,
+         apply(PlotCanvas.__init__,
               (self, master, width, height, background), attr)
+         
+         #enables mouse selecting
+         self.canvas.bind('<ButtonRelease-1>', self._mouseRelease2)
 
-    def _showValue(self, event):
+
+   def _showValue(self, event):
         scale, shift = self.transformation
         x       = self.canvas.canvasx(event.x)
         y       = self.canvas.canvasy(event.y)
@@ -411,4 +438,16 @@ class PlotCanvasXY(PlotCanvas):
         point   = (point-shift)/scale
         self.giveXY(point)
 
-        
+   ###########################################################################
+   #
+   #  _mouseRelease2 covers _mouseRelease and enables object selecting
+   #  with the left mouse button
+   #   
+   ###########################################################################
+
+   def _mouseRelease2(self, event):
+      if ( (self.startx == self.canvas.canvasx(event.x)) and
+           (self.starty == self.canvas.canvasy(event.y))):
+         self._showValue(event)
+      else:
+         self._mouseRelease(event)

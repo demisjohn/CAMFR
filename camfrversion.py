@@ -1,1 +1,1 @@
-camfr_version = "CAMFR 1.2"
+camfr_version = "1.2"
