@@ -25,22 +25,30 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> operator+(const vector<Complex>& a, const vector<Complex>& b);
-vector<Complex>& operator+=(vector<Complex>& a, const vector<Complex>& b);
+std::vector<Complex> operator+(const std::vector<Complex>& a, 
+                               const std::vector<Complex>& b);
 
-vector<Complex> operator-(const vector<Complex>& a, const vector<Complex>& b);
-vector<Complex>& operator-=(vector<Complex>& a, const vector<Complex>& b);
+std::vector<Complex>& operator+=(std::vector<Complex>& a, 
+                                 const std::vector<Complex>& b);
 
-vector<Complex> operator*(const Complex& c, const vector<Complex>& v);
-vector<Complex> operator*(const vector<Complex>& v, const Complex& c);
-vector<Complex>& operator*=(vector<Complex>& v, const Complex& c);
+std::vector<Complex> operator-(const std::vector<Complex>& a, 
+                               const std::vector<Complex>& b);
 
-vector<Complex> operator/(const vector<Complex>& v, const Complex& c);
-vector<Complex>& operator/=(vector<Complex>& v, const Complex& c);
+std::vector<Complex>& operator-=(std::vector<Complex>& a, 
+                                 const std::vector<Complex>& b);
 
-vector<Complex> operator-(const vector<Complex>& a);
+std::vector<Complex> operator*(const Complex& c, 
+                               const std::vector<Complex>& v);
+
+std::vector<Complex> operator*(const std::vector<Complex>& v,const Complex& c);
+std::vector<Complex>& operator*=(std::vector<Complex>& v, const Complex& c);
+
+std::vector<Complex> operator/(const std::vector<Complex>& v,const Complex& c);
+std::vector<Complex>& operator/=(std::vector<Complex>& v, const Complex& c);
+
+std::vector<Complex> operator-(const std::vector<Complex>& a);
   
-Real abs(const vector<Complex>& v);
+Real abs(const std::vector<Complex>& v);
 
 
 

@@ -12,6 +12,11 @@
 
 #include "bloch.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // BlochStack::BlochStack
@@ -84,7 +89,7 @@ void BlochStack::find_modes_T()
 
   cMatrix E(2*N,2*N,fortranArray);
   
-  Range r1(1,N); Range r2(N+1,2*N);
+  blitz::Range r1(1,N); blitz::Range r2(N+1,2*N);
 
   E(r1,r1) = A; E(r1,r2) = B;
   E(r2,r1) = C; E(r2,r2) = D;
@@ -172,7 +177,7 @@ void BlochStack::find_modes_GEV()
   cMatrix A(2*N,2*N,fortranArray); 
   cMatrix B(2*N,2*N,fortranArray); 
 
-  Range r1(1,N); Range r2(N+1,2*N); 
+  blitz::Range r1(1,N); blitz::Range r2(N+1,2*N); 
 
   A(r1,r1) = T12; A(r1,r2) = R21; 
   A(r2,r1) = 0.0; A(r2,r2) =  U1;

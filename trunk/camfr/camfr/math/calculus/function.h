@@ -26,15 +26,15 @@ template<class T> class Function1D
 {
   public:
 
-    Function1D<T>()                   {counter=0;}
-    Function1D<T>(const vector<T>& p) {counter=0; set_params(p);}
+    Function1D<T>()                        {counter=0;}
+    Function1D<T>(const std::vector<T>& p) {counter=0; set_params(p);}
     virtual ~Function1D<T>()          {}
     
     virtual T operator()(const T& t) = 0; // should contain 'counter++'
     int times_called() {return counter;}
 
-    virtual vector<T> get_params() const             {vector<T> t; return t;}
-    virtual void      set_params  (const vector<T>&) {}
+    virtual std::vector<T> get_params() const {std::vector<T> t; return t;}
+    virtual void           set_params  (const  std::vector<T>&) {}
   
   protected:
 

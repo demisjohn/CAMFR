@@ -3,18 +3,38 @@
 //
 // File:          camfr_wrap.cpp
 // Author:        Peter.Bienstman@rug.ac.be
-// Date:          20010705
-// Version:       1.0
+// Date:          20020403
+// Version:       2.0
 //
-// Copyright (C) 2001 Peter Bienstman - Ghent University
+// Copyright (C) 2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <string>
-#include <iostream>
-#include <stdexcept>
-#include "boost/python/class_builder.hpp"
+// TODO
+//
+// Try implicit conversions (note: const arg for constructor required)
+// Enums and constants
+// Default arguments
+
+#define BOOST_PYTHON_DYNAMIC_LIB
+#define BOOST_PYTHON_V2
+#define BOOST_PYTHON_SOURCE
+
+#include <boost/python/module.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/type_from_python.hpp>
+#include <boost/python/object/value_holder.hpp>
+#include <boost/python/object/pointer_holder.hpp>
+#include <boost/python/object/class.hpp>
+#include <boost/python/reference_existing_object.hpp>
+#include <boost/python/copy_const_reference.hpp>
+#include <boost/python/return_value_policy.hpp>
+#include <boost/python/to_python_converter.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/errors.hpp>
+#include <libs/python/src/converter/builtin_converters.cpp>
+#include <boost/mpl/type_list.hpp>
+
 #include "Numeric/arrayobject.h"
 
 #include "defs.h"
@@ -45,10 +65,6 @@
 // The wrappers are created with the Boost library.
 //
 /////////////////////////////////////////////////////////////////////////////
-
-using namespace std;
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -137,17 +153,7 @@ inline void set_right_wall(SlabWall* w)
 inline void set_beta(const Complex& beta)
   {global_slab.beta = beta;}
 
-template class boost::python::enum_as_int_converters<Limit>;
-template class boost::python::enum_as_int_converters<Solver>;
-template class boost::python::enum_as_int_converters<Stability>;
-template class boost::python::enum_as_int_converters<Field_calc>;
-template class boost::python::enum_as_int_converters<Bloch_calc>;
-template class boost::python::enum_as_int_converters<Eigen_calc>;
-template class boost::python::enum_as_int_converters<Polarisation>;
-template class boost::python::enum_as_int_converters<Fieldtype>;
-
-inline Complex mode_kz (const Mode& m) {return m.get_kz();}
-inline Complex mode_pol(const Mode& m) {return m.pol;}
+inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
 inline Complex field_E2(const Field& f) {return f.E2;}
@@ -218,97 +224,77 @@ inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
 //
 // Note on memory management: as the Blitz ref-counting system might free
 // data that is still in use in the Python environment, we have to make
-// a copy of the array data. However, we do this only for vectors. For
-// matrices, the problem does not occur in practice and the copying
-// would incur more overhead.
+// a copy of the array data.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOST_PYTHON_BEGIN_CONVERSION_NAMESPACE
+using boost::python::to_python_converter;
 
-PyObject* to_python(cVector& c)
+struct cVector_to_python : to_python_converter<cVector, cVector_to_python>
 {
-  char* copy = (char*) malloc(c.rows()*sizeof(Complex));
-  memcpy(copy, c.data(), c.rows()*sizeof(Complex));                    
-  
-  int dim[1]; dim[0] = c.rows();
-  
-  PyArrayObject* result = (PyArrayObject*)
-    PyArray_FromDimsAndData(1, dim, PyArray_CDOUBLE, copy);
+  static PyObject* convert(const cVector& c)
+  {
+    char* c_copy = (char*) malloc(c.rows()*sizeof(Complex));
+    memcpy(c_copy, c.data(), c.rows()*sizeof(Complex));
+    
+    int dim[1]; dim[0] = c.rows();
 
-  return PyArray_Return(result);
-}
+    PyArrayObject* result = (PyArrayObject*)
+      PyArray_FromDimsAndData(1, dim, PyArray_CDOUBLE, c_copy);
 
-PyObject* to_python(const cVector& c)
-  {return to_python(const_cast<cVector&>(c));}
+    return PyArray_Return(result);
+  }
+};
 
-cVector from_python(PyObject* o, type<const cVector&>)
+
+namespace boost { namespace python { namespace converter { namespace {
+
+struct cVector_from_python
 {
-  if (!PyArray_Check(o))
+  static unaryfunc* get_slot(PyObject* o)
   {
-    PyErr_SetString(PyExc_ValueError, "expected numerical array.");
-    throw argument_error();
+    return &py_object_identity;
   }
-
-  PyArrayObject* a = (PyArrayObject*) PyArray_Cast
-    ((PyArrayObject*) o, PyArray_CDOUBLE);
-
-  if ( (a->nd != 1) || (a->dimensions[0] != int(global.N)) )
+    
+  static cVector extract(PyObject* o)
   {
-    PyErr_SetString(PyExc_ValueError, "array has wrong dimensions.");
-    throw argument_error();
+    PyArrayObject* a 
+      = (PyArrayObject*) PyArray_Cast((PyArrayObject*)o, PyArray_CDOUBLE);
+
+    if ( (a->nd != 1) || (a->dimensions[0] != int(global.N)) )
+    {
+      PyErr_SetString(PyExc_ValueError, "array has wrong dimensions.");
+      throw boost::python::argument_error();
+    }
+  
+    return cVector((Complex*) a->data,global.N,
+                   blitz::neverDeleteData,fortranArray);
   }
+};
+
+}}}} // namespace boost::python::converter
+
+
+struct cMatrix_to_python : to_python_converter<cMatrix, cMatrix_to_python>
+{
+  static PyObject* convert(const cMatrix& c)
+  {
+    int dim[2]; dim[0] = global.N; dim[1] = global.N;
+
+    cMatrix c_bak(global.N,global.N,fortranArray); c_bak = c.copy();
   
-  return cVector((Complex*) a->data, global.N, neverDeleteData, fortranArray);
-}
+    PyArrayObject* result = (PyArrayObject*)
+      PyArray_FromDimsAndData(2, dim, PyArray_CDOUBLE, (char*) c_bak.data());
 
-PyObject* to_python(cMatrix& c)
-{ 
-  int dim[2]; dim[0] = global.N; dim[1] = global.N;
+    // Reflect Fortran storage orders.
 
-  cMatrix c_bak; c_bak = c.copy();
-  
-  PyArrayObject* result = (PyArrayObject*)
-    PyArray_FromDimsAndData(2, dim, PyArray_CDOUBLE, (char*) c_bak.data());
+    int tmp = result->strides[0];
+    result->strides[0] = result->strides[1];
+    result->strides[1] = tmp;
 
-  // Reflect Fortran storage orders.
-
-  int tmp = result->strides[0];
-  result->strides[0] = result->strides[1];
-  result->strides[1] = tmp;
-
-  return PyArray_Return(result);
-}
-
-PyObject* to_python(const cMatrix& c)
-  {return to_python(const_cast<cMatrix&>(c));}
-
-PyObject* to_python(Material* m)
-  {return python_extension_class_converters<Material>::smart_ptr_to_python(m);}
-
-PyObject* to_python(const Material* m)
-  {return to_python(const_cast<Material*>(m));}
-
-PyObject* to_python(Mode* m)
-  {return python_extension_class_converters<Mode>::smart_ptr_to_python(m);}
-
-PyObject* to_python(const Mode* m)
-  {return to_python(const_cast<Mode*>(m));}
-
-PyObject* to_python(BlochMode* m)
-  {return python_extension_class_converters<BlochMode>
-     ::smart_ptr_to_python(m);}
-
-PyObject* to_python(const BlochMode* m)
-  {return to_python(const_cast<BlochMode*>(m));}
-
-PyObject* to_python(Waveguide* wg) {return
-   python_extension_class_converters<Waveguide>::smart_ptr_to_python(wg);}
-
-PyObject* to_python(const Waveguide* wg)
-  {return to_python(const_cast<Waveguide*>(wg));}
-
-BOOST_PYTHON_END_CONVERSION_NAMESPACE
+    return PyArray_Return(result);
+  }
+};
 
 
 
@@ -325,7 +311,7 @@ BOOST_PYTHON_END_CONVERSION_NAMESPACE
 Term material_to_term(BaseMaterial& m, const Complex& d)
 {
   if (real(d) < 0)
-    cout << "Warning: negative real length of material." << endl;
+    std::cout << "Warning: negative real length of material." << std::endl;
   
   return Term(m(d));
 } 
@@ -333,7 +319,7 @@ Term material_to_term(BaseMaterial& m, const Complex& d)
 Term waveguide_to_term(Waveguide& w, const Complex& d)
 {
   if (real(d) < 0)
-    cout << "Warning: negative real length of waveguide." << endl;
+    std::cout << "Warning: negative real length of waveguide." << std::endl;
   
   return Term(w(d));
 }
@@ -355,10 +341,10 @@ TERM_PLUS_TERM(Scatterer,  const Expression)
 TERM_PLUS_TERM(Scatterer,  const Term)
 TERM_PLUS_TERM(Scatterer,  Scatterer)
   
-#define EX_PLUS_TERM(t) const Expression& \
+#define EX_PLUS_TERM(t) const Expression \
  operator+(const Expression& L, t& R) {return L + Term(R);}
 
-#define EX_PLUS_TERM_F(t) (const Expression& (*) (const Expression&, t&)) \
+#define EX_PLUS_TERM_F(t) (const Expression (*) (const Expression&, t&)) \
       &operator+
   
 EX_PLUS_TERM(Stack)
@@ -378,7 +364,7 @@ Complex stack_lateral_S_flux(Stack& s, const Complex& c)
   {return s.lateral_S_flux(c);}
 
 Complex stack_lateral_S_flux_2(Stack& s, const Complex& c, int k)
-  {vector<Complex> S_k; s.lateral_S_flux(c, &S_k); return S_k[k];}
+  {std::vector<Complex> S_k; s.lateral_S_flux(c, &S_k); return S_k[k];}
 
 Real cavity_calc_sigma(Cavity& c)
   {return c.calc_sigma();}
@@ -406,11 +392,10 @@ void cavity_find_mode_5
   return
     c.find_mode(lambda_start, lambda_stop, n_imag_start, n_imag_stop, passes); 
 }
-
 void cavity_set_source(Cavity& c, Coord& pos, Coord& orientation)
   {c.set_source(pos,orientation);}
 
-void stack_set_inc_field(Stack& s, const cVector& f) 
+void stack_set_inc_field(Stack& s, const cVector& f)
   {s.set_inc_field(f);}
 
 void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b) 
@@ -424,509 +409,538 @@ void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOST_PYTHON_MODULE_INIT(camfr_work)
-{
-  try
-  {
-     boost::python::module_builder camfr("camfr_work");
+#undef PyArray_Type
+extern PyTypeObject PyArray_Type;
 
-    import_array();
-    
-    // Splash screen.
-    
-    cout << endl
-         << "CAMFR 1.0pre - "
-         << "Copyright (C) 1998-2002 Peter Bienstman - Ghent University."
-         << endl << endl;
+
+BOOST_PYTHON_MODULE_INIT(_camfr)
+{
+  using namespace boost::python;
+  using namespace boost::python::converter;
+  using boost::mpl::type_list;
+  using boost::shared_ptr;
+  using boost::python::return_value_policy;
+  using boost::python::reference_existing_object;
+
+  import_array();
+
+  cVector_to_python();
+  cMatrix_to_python();
+
+  slot_rvalue_from_python<cVector, cVector_from_python>();
+
+  module camfr("_camfr");
+
+#if 0
 
     // Wrap Limit enum.
-    
-    camfr.add(boost::python::make_ref(Plus), "Plus");
-    camfr.add(boost::python::make_ref(Min),  "Min");
-    
-    // Wrap Solver enum.
-    
-    camfr.add(boost::python::make_ref(ADR),   "ADR");
-    camfr.add(boost::python::make_ref(track), "track");
 
+  camfr
+ 
+    .add(
+      enum_<Limit>("Limit")
+      .value("Plus", Plus)
+      .value("Min",  Min)
+      )
+
+    // Wrap Solver enum.
+
+    .add(
+      enum_<Solver>("Solver")
+      .value("ADR",   ADR)
+      .value("track", track)
+      )
+ 
     // Wrap Stability enum.
-    
-    camfr.add(boost::python::make_ref(normal), "normal");
-    camfr.add(boost::python::make_ref(extra),  "extra");
-    camfr.add(boost::python::make_ref(SVD),    "SVD");
+
+    .add(
+      enum_<Stability>("Stability")
+      .value("normal", ADR)
+      .value("extra",  track)
+      .value("SVD",    SVD)
+      )
 
     // Wrap Field_calc enum.
-    
-    camfr.add(boost::python::make_ref(T_T), "T_T");
-    camfr.add(boost::python::make_ref(S_T), "S_T");
-    camfr.add(boost::python::make_ref(S_S), "S_S");
+
+    .add(
+      enum_<Field_calc>("Field_calc")
+      .value("T_T", T_T)
+      .value("S_T", S_T)
+      .value("S_S", S_S)
+      )
 
     // Wrap Bloch_calc enum.
 
-    camfr.add(boost::python::make_ref(GEV), "GEV");
-    camfr.add(boost::python::make_ref(T),   "T");
+    .add(
+      enum_<Bloch_calc>("Bloch_calc")
+      .value("GEV", GEV)
+      .value("T",   T)
+      )
 
     // Wrap Eigen_calc enum.
 
-    camfr.add(boost::python::make_ref(lapack),  "lapack");
-    camfr.add(boost::python::make_ref(arnoldi), "arnoldi");
+    .add(
+      enum_<Eigen_calc>("Eigen_calc")
+      .value("lapack",  lapack)
+      .value("arnoldi", arnoldi)
+      )
 
     // Wrap Polarisation enum.
-    
-    camfr.add(boost::python::make_ref(unknown), "unknown");
-    camfr.add(boost::python::make_ref(TEM),     "TEM");
-    camfr.add(boost::python::make_ref(TE),      "TE");
-    camfr.add(boost::python::make_ref(TM),      "TM");
-    camfr.add(boost::python::make_ref(HE),      "HE");
-    camfr.add(boost::python::make_ref(EH),      "EH");    
-    camfr.add(boost::python::make_ref(TE_TM),   "TE_TM");
+
+    .add(
+      enum_<Polarisation>("Polarisation")
+      .value("unknown", unknown)
+      .value("TEM",     TEM)
+      .value("TE",      TE)
+      .value("TM",      TM)
+      .value("HE",      HE)
+      .value("EH",      EH)
+      .value("TE_TM",   TE_TM)
+      )
 
     // Wrap Fieldtype enum.
 
-    camfr.add(boost::python::make_ref(cos_type), "cos_type");
-    camfr.add(boost::python::make_ref(sin_type), "sin_type");    
-
-    // Wrap getters and setters for global parameters.
-      
-    camfr.def(set_lambda,                 "set_lambda");
-    camfr.def(get_lambda,                 "get_lambda");
-    camfr.def(set_N,                      "set_N");
-    camfr.def(get_N,                      "N");
-    camfr.def(set_polarisation,           "set_polarisation");
-    camfr.def(set_gain_material,          "set_gain_material");
-    camfr.def(set_solver,                 "set_solver");
-    camfr.def(set_stability,              "set_stability");
-    camfr.def(set_precision,              "set_precision");
-    camfr.def(set_precision_enhancement,  "set_precision_enhancement");
-    camfr.def(set_dx_enhanced,            "set_dx_enhanced");
-    camfr.def(set_precision_rad,          "set_precision_rad");
-    camfr.def(set_C_upperright,           "set_C_upperright");
-    camfr.def(set_sweep_from_previous,    "set_sweep_from_previous");
-    camfr.def(set_sweep_steps,            "set_sweep_steps");
-    camfr.def(set_eps_trace_coarse,       "set_eps_trace_coarse");
-    camfr.def(set_chunk_tracing,          "set_chunk_tracing");
-    camfr.def(set_unstable_exp_threshold, "set_unstable_exp_threshold");
-    camfr.def(set_field_calc,             "set_field_calc");
-    camfr.def(set_bloch_calc,             "set_bloch_calc");
-    camfr.def(set_eigen_calc,             "set_eigen_calc");
-    camfr.def(set_orthogonal,             "set_orthogonal");
-    camfr.def(set_circ_order,             "set_circ_order");
-    camfr.def(set_circ_fieldtype,         "set_circ_field_type");
-    camfr.def(set_left_wall,              "set_left_wall");
-    camfr.def(set_right_wall,             "set_right_wall");
-    camfr.def(set_beta,                   "set_beta");
-    camfr.def(free_tmps,                  "free_tmps");
-
-    // Wrap Coord.
-
-    boost::python::class_builder<Coord> Coord_(camfr, "Coord");
-
-    Coord_.def(boost::python::constructor
-               <const Complex&, const Complex&, const Complex&>());
-    Coord_.def(boost::python::constructor
-               <const Complex&, const Complex&, const Complex&,
-                      Limit,          Limit,          Limit>());
-    Coord_.def(&Coord::repr, "__repr__");
-
-    // Wrap Field.
-
-    boost::python::class_builder<Field> Field_(camfr, "Field");
-
-    Field_.def(field_E1,      "E1");
-    Field_.def(field_E2,      "E2");
-    Field_.def(field_Ez,      "Ez");
-    Field_.def(field_H1,      "H1");
-    Field_.def(field_H2,      "H2");
-    Field_.def(field_Hz,      "Hz");
-    Field_.def(&Field::abs_E, "abs_E");
-    Field_.def(&Field::abs_H, "abs_H");
-    Field_.def(&Field::repr,  "__repr__");
-
-    // Wrap FieldExpansion.
-
-    boost::python::class_builder<FieldExpansion> 
-      FieldExpansion_(camfr, "FieldExpansion");
-    
-    FieldExpansion_.def(&FieldExpansion::field, "field");
-    FieldExpansion_.def(&FieldExpansion::repr,  "__repr__");
-    
-    // Wrap Material_length.
-
-    boost::python::class_builder<Material_length>
-      Material_length_(camfr, "Material_length");
-    
-    // Wrap BaseMaterial.
-
-    boost::python::class_builder<BaseMaterial> 
-      BaseMaterial_(camfr, "BaseMaterial");
-
-    BaseMaterial_.def(&material_to_term, "__call__");
-    
-    // Wrap Material.
-
-    boost::python::class_builder<Material> Material_(camfr, "Material");
-    Material_.declare_base(BaseMaterial_);
-    Material_.def(&material_to_term, "__call__");
-    
-    Material_.def(boost::python::constructor<const Complex&>());
-    Material_.def(boost::python::constructor<const Complex&,const Complex&>());
-    Material_.def(&Material::n,    "n");
-    Material_.def(&Material::epsr, "epsr");
-    Material_.def(&Material::mur,  "mur");
-    Material_.def(&Material::eps,  "eps");
-    Material_.def(&Material::mu,   "mu");
-    Material_.def(&Material::gain, "gain");
-    Material_.def(&Material::repr, "__repr__");
-
-    // Wrap Waveguide_length.
-
-    boost::python::class_builder<Waveguide_length>
-      Waveguide_length_(camfr, "Waveguide_length");
-    
-    // Wrap Waveguide.
-
-    boost::python::class_builder<Waveguide> Waveguide_(camfr, "Waveguide");
-
-    Waveguide_.def(&Waveguide::get_core,    "core");
-    Waveguide_.def(&Waveguide::eps_at,      "eps");
-    Waveguide_.def(&Waveguide::mu_at,       "mu");
-    Waveguide_.def(&Waveguide::n_at,        "n");   
-    Waveguide_.def(&Waveguide::N,           "N");
-    Waveguide_.def(waveguide_get_mode,      "mode");
-    Waveguide_.def(waveguide_get_fw_mode,   "fw_mode");
-    Waveguide_.def(waveguide_get_bw_mode,   "bw_mode");
-    Waveguide_.def(&Waveguide::find_modes,  "calc");
-    Waveguide_.def(&Waveguide::repr,        "__repr__");    
-    Waveguide_.def(&waveguide_to_term,      "__call__");
-
-    // Wrap MultiWaveguide.
-
-    boost::python::class_builder<MultiWaveguide> 
-      MultiWaveguide_(camfr, "MultiWaveguide");
-
-    MultiWaveguide_.declare_base(Waveguide_);
-
-    MultiWaveguide_.def(&MultiWaveguide::field_from_source,
-                                                       "field_from_source");
-    MultiWaveguide_.def(&waveguide_to_term,            "__call__"); // tmp
-    
-    // Wrap MonoWaveguide.
-
-    boost::python::class_builder<MonoWaveguide> 
-      MonoWaveguide_(camfr, "MonoWaveguide");
-
-    MonoWaveguide_.declare_base(Waveguide_);
-    MonoWaveguide_.def(&waveguide_to_term, "__call__"); // tmp  
-
-    // Wrap Mode.
-
-    boost::python::class_builder<Mode> Mode_(camfr, "Mode");
-
-    Mode_.def(&Mode::field,    "field");
-    Mode_.def(&Mode::n_eff,    "n_eff");
-    Mode_.def(mode_kz,         "kz");
-    Mode_.def(mode_pol,        "pol");
-    Mode_.def(&Mode::repr,     "__repr__");
-
-    // Wrap Scatterer.
-
-    boost::python::class_builder<Scatterer> Scatterer_(camfr, "Scatterer");
-
-    Scatterer_.def(&Scatterer::calcRT,  "calc");
-    Scatterer_.def(&Scatterer::freeRT,  "free");
-    Scatterer_.def(&Scatterer::get_inc, "inc");
-    Scatterer_.def(&Scatterer::get_ext, "ext");
-    Scatterer_.def(TERM_PLUS_TERM_F(Scatterer, const Term),       "__add__");
-    Scatterer_.def(TERM_PLUS_TERM_F(Scatterer, Stack),            "__add__");
-    Scatterer_.def(TERM_PLUS_TERM_F(Scatterer, const Expression), "__add__");
-    Scatterer_.def(TERM_PLUS_TERM_F(Scatterer, Scatterer),        "__add__");
-    
-    // Wrap MultiScatterer.
-
-    boost::python::class_builder<MultiScatterer> 
-      MultiScatterer_(camfr, "MultiScatterer");
-    MultiScatterer_.declare_base(Scatterer_);
-
-    // Wrap DenseScatterer.
-
-    boost::python::class_builder<DenseScatterer> 
-      DenseScatterer_(camfr, "DenseScatterer");
-    DenseScatterer_.declare_base(MultiScatterer_);
-
-    // Wrap DiagScatterer.
-
-    boost::python::class_builder<DiagScatterer> 
-      DiagScatterer_(camfr, "DiagScatterer");
-    DiagScatterer_.declare_base(MultiScatterer_);
-
-    // Wrap MonoScatterer.
-
-    boost::python::class_builder<MonoScatterer> 
-      MonoScatterer_(camfr, "MonoScatterer");
-    MonoScatterer_.declare_base(Scatterer_);
-
-    // Wrap FlippedScatterer.
-
-    boost::python::class_builder<FlippedScatterer>
-      FlippedScatterer_(camfr, "FlippedScatterer");
-    FlippedScatterer_.declare_base(MultiScatterer_);
-
-    FlippedScatterer_.def(boost::python::constructor<MultiScatterer&>());
-
-    // Wrap E_Wall.
-
-    boost::python::class_builder<E_Wall> E_Wall_(camfr, "E_Wall");
-    E_Wall_.declare_base(DiagScatterer_);   
-
-    E_Wall_.def(boost::python::constructor<Waveguide&>());
-      
-    // Wrap H_Wall.
-
-    boost::python::class_builder<H_Wall> H_Wall_(camfr, "H_Wall");
-    H_Wall_.declare_base(DiagScatterer_);
-    
-    H_Wall_.def(boost::python::constructor<Waveguide&>());
-
-    // Wrap Expression.
-
-    boost::python::class_builder<Expression> Expression_(camfr, "Expression");
-
-    Expression_.def(boost::python::constructor<>());
-    Expression_.def(boost::python::constructor<const Term&>());
-    Expression_.def(boost::python::constructor<const Expression&>());
-    Expression_.def(&Expression::flatten,             "flatten");
-    Expression_.def(&Expression::repr,                "__repr__");
-    Expression_.def(&Expression::operator+=,          "add"); // todo: iadd
-    Expression_.def(EX_PLUS_TERM_F(const Term),       "__add__");
-    Expression_.def(EX_PLUS_TERM_F(Stack),            "__add__");
-    Expression_.def(EX_PLUS_TERM_F(const Expression), "__add__");
-    Expression_.def(EX_PLUS_TERM_F(Scatterer),        "__add__");
-    Expression_.def(boost::python::operators<boost::python::op_mul>(), 
-                    boost::python::right_operand<unsigned int>());
-    Expression_.def(boost::python::operators<boost::python::op_mul>(),  
-                    boost::python::left_operand<unsigned int>());
-    
-    // Wrap Term.
-
-    boost::python::class_builder<Term> Term_(camfr, "Term");
-    
-    Term_.def(boost::python::constructor<Scatterer&>());
-    Term_.def(boost::python::constructor<Stack&>());
-    Term_.def(boost::python::constructor<const Expression&>());
-    Term_.def(&Term::get_inc, "inc");
-    Term_.def(&Term::get_ext, "ext");
-    Term_.def(&Term::repr,    "__repr__");
-    Term_.def(TERM_PLUS_TERM_F(const Term, const Term),       "__add__");
-    Term_.def(TERM_PLUS_TERM_F(const Term, Stack),            "__add__");
-    Term_.def(TERM_PLUS_TERM_F(const Term, const Expression), "__add__");
-    Term_.def(TERM_PLUS_TERM_F(const Term, Scatterer),        "__add__");
-    Term_.def(boost::python::operators<boost::python::op_mul>(), 
-              boost::python::right_operand<unsigned int>());
-    Term_.def(boost::python::operators<boost::python::op_mul>(),  
-              boost::python::left_operand<unsigned int>());    
-    
-    // Wrap Stack.
-    
-    boost::python::class_builder<Stack> Stack_(camfr, "Stack");
-    
-    Stack_.def(boost::python::constructor<const Expression&>());
-    Stack_.def(&Stack::calcRT,              "calc");
-    Stack_.def(&Stack::freeRT,              "free");
-    Stack_.def(&Stack::get_inc,             "inc");
-    Stack_.def(&Stack::get_ext,             "ext");
-    Stack_.def(&Stack::get_total_thickness, "length");
-    Stack_.def(stack_set_inc_field,         "set_inc_field");
-    Stack_.def(stack_set_inc_field_2,       "set_inc_field");
-    Stack_.def(&Stack::get_inc_field,       "inc_field");
-    Stack_.def(&Stack::get_refl_field,      "refl_field");
-    Stack_.def(&Stack::get_trans_field,     "trans_field");
-    Stack_.def(stack_inc_S_flux,            "inc_S_flux");
-    Stack_.def(stack_ext_S_flux,            "ext_S_flux");    
-    Stack_.def(&Stack::field,               "field");
-    Stack_.def(stack_lateral_S_flux,        "lateral_S_flux");
-    Stack_.def(stack_lateral_S_flux_2,      "lateral_S_flux");
-    Stack_.def(&Stack::eps_at,              "eps");
-    Stack_.def(&Stack::mu_at,               "mu");
-    Stack_.def(&Stack::n_at,                "n");
-    Stack_.def(stack_get_R12,               "R12");
-    Stack_.def(stack_get_R21,               "R21");
-    Stack_.def(stack_get_T12,               "T12");
-    Stack_.def(stack_get_T21,               "T21");
-    Stack_.def(stack_R12,                   "R12");
-    Stack_.def(stack_R21,                   "R21");
-    Stack_.def(stack_T12,                   "T12");
-    Stack_.def(stack_T21,                   "T21");
-    
-    Stack_.def(TERM_PLUS_TERM_F(Stack, const Term),       "__add__");
-    Stack_.def(TERM_PLUS_TERM_F(Stack, Stack),            "__add__");
-    Stack_.def(TERM_PLUS_TERM_F(Stack, const Expression), "__add__");
-    Stack_.def(TERM_PLUS_TERM_F(Stack, Scatterer),        "__add__");
-    
-    // Wrap Cavity.
-
-    boost::python::class_builder<Cavity> Cavity_(camfr, "Cavity");
-
-    Cavity_.def(boost::python::constructor<Stack&, Stack&>());
-    Cavity_.def(cavity_find_modes_in_region_3, "find_modes_in_region");
-    Cavity_.def(cavity_find_modes_in_region_7, "find_modes_in_region");
-    Cavity_.def(cavity_find_mode_2,            "find_mode");
-    Cavity_.def(cavity_find_mode_5,            "find_mode");
-    Cavity_.def(cavity_calc_sigma,             "sigma");
-    Cavity_.def(cavity_set_source,             "set_source");
-    Cavity_.def(&Cavity::field,                "field");
-
-    // Wrap BlochStack.
-
-    boost::python::class_builder<BlochStack> BlochStack_(camfr, "BlochStack");
-    BlochStack_.declare_base(MultiWaveguide_);
-
-    BlochStack_.def(boost::python::constructor<const Expression&>());
-    BlochStack_.def(blochstack_get_mode,              "mode");
-    BlochStack_.def(&BlochStack::get_total_thickness, "length");
-    BlochStack_.def(&BlochStack::get_beta_vector,     "beta_vector");
-    BlochStack_.def(&BlochStack::repr,                "__repr__");
-    
-    // Wrap BlochMode.
-
-    boost::python::class_builder<BlochMode> BlochMode_(camfr, "BlochMode");
-    BlochMode_.declare_base(Mode_);
-
-    BlochMode_.def(&BlochMode::fw_field, "fw_field");
-    BlochMode_.def(&BlochMode::bw_field, "bw_field");
-    BlochMode_.def(&BlochMode::S_flux,   "S_flux");
-
-    // Wrap InfStack.
-
-    boost::python::class_builder<InfStack> InfStack_(camfr, "InfStack");
-    InfStack_.declare_base(DenseScatterer_);
-
-    InfStack_.def(boost::python::constructor<const Expression&>());
-    InfStack_.def(boost::python::constructor
-                  <const Expression&,const Complex&>()); // tmp
-    InfStack_.def(&InfStack::get_R12,  "R12");
-
-    // Wrap RealFunction.
-
-    boost::python::class_builder<RealFunction> 
-      RealFunction_(camfr, "RealFunction");
-
-    RealFunction_.def(&RealFunction::times_called, "times_called");
-    RealFunction_.def(&RealFunction::operator(),   "__call__");
-
-    // Wrap ComplexFunction.
-
-    boost::python::class_builder<ComplexFunction> 
-      ComplexFunction_(camfr, "ComplexFunction");
-
-    ComplexFunction_.def(&ComplexFunction::times_called, "times_called");
-    ComplexFunction_.def(&ComplexFunction::operator(),   "__call__");
-
-    // Wrap Planar.
-
-    boost::python::class_builder<Planar> Planar_(camfr, "Planar");
-    Planar_.declare_base(MonoWaveguide_);
-    
-    Planar_.def(boost::python::constructor<Material&>());
-    Planar_.def(&Planar::set_theta, "set_theta");
-    Planar_.def(&Planar::repr,     "__repr__"); // tmp
-    Planar_.def(waveguide_to_term, "__call__"); // tmp 
-    
-    // Wrap Circ.
-
-    boost::python::class_builder<Circ> Circ_(camfr, "Circ");
-    Circ_.declare_base(MultiWaveguide_);
-    
-    Circ_.def(boost::python::constructor<const Term&>());
-    Circ_.def(boost::python::constructor<const Expression&>());    
-    Circ_.def(&Circ::repr,       "__repr__"); // tmp
-    Circ_.def(waveguide_to_term, "__call__"); // tmp
-
-    // Wrap SlabWall.
-
-    boost::python::class_builder<SlabWall> SlabWall_(camfr, "SlabWall");
-
-    SlabWall_.def(&SlabWall::get_R12, "R");
-
-    // Wrap SlabWallMixed.
-
-    boost::python::class_builder<SlabWallMixed> 
-      SlabWallMixed_(camfr, "SlabWallMixed");
-    SlabWallMixed_.declare_base(SlabWall_);
-
-    SlabWallMixed_.def(boost::python::constructor
-                       <const Complex&, const Complex&>());
-
-    // Wrap SlabWall_TBC.
-
-    boost::python::class_builder<SlabWall_TBC> 
-      SlabWall_TBC_(camfr, "SlabWall_TBC");
-    SlabWall_TBC_.declare_base(SlabWall_);
-
-    SlabWall_TBC_.def(boost::python::constructor
-                      <const Complex&, const Material&>());
-
-    camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
-    camfr.add(boost::python::make_ref(slab_H_wall),    "slab_H_wall");
-    camfr.add(boost::python::make_ref(slab_open_wall), "slab_open_wall");
-
-    // Wrap SlabWall_PC.
-
-    boost::python::class_builder<SlabWall_PC> 
-      SlabWall_PC_(camfr, "SlabWall_PC");
-    SlabWall_PC_.declare_base(SlabWall_);
-
-    SlabWall_PC_.def(boost::python::constructor<const Expression&>());
-
-    // Wrap SlabDisp.
-
-    boost::python::class_builder<SlabDisp> SlabDisp_(camfr, "SlabDisp");
-    SlabDisp_.declare_base(ComplexFunction_);
-
-    SlabDisp_.def(boost::python::constructor<Expression&, Real>());
-    SlabDisp_.def(boost::python::constructor
-                  <Expression&, Real, SlabWall*, SlabWall*>());
-    SlabDisp_.def(&SlabDisp::operator(), "__call__"); // tmp   
-
-    // Wrap Slab.
-
-    boost::python::class_builder<Slab> Slab_(camfr, "Slab");
-    Slab_.declare_base(MultiWaveguide_);
-
-    Slab_.def(boost::python::constructor<const Term&>());
-    Slab_.def(boost::python::constructor<const Expression&>());
-
-    Slab_.def(&Slab::set_left_wall,  "set_left_wall");
-    Slab_.def(&Slab::set_right_wall, "set_right_wall");
-    Slab_.def(&Slab::get_width,      "width");
-    Slab_.def(&Slab::repr,           "__repr__"); // tmp
-    Slab_.def(waveguide_to_term,     "__call__"); // tmp
-
-    // Wrap SectionDisp.
-
-    boost::python::class_builder<SectionDisp> 
-      SectionDisp_(camfr, "SectionDisp");
-    SectionDisp_.declare_base(ComplexFunction_);
-
-    SectionDisp_.def(boost::python::constructor<Stack&, Stack&, Real, int>());
-    SectionDisp_.def(&SectionDisp::operator(), "__call__"); // tmp
-
-    // Wrap Section.
-
-    boost::python::class_builder<Section> Section_(camfr, "Section");
-    Section_.declare_base(MultiWaveguide_);
-
-    Section_.def(boost::python::constructor<const Expression&>());
-    Section_.def(boost::python::constructor<const Expression&,int>());
-    Section_.def(boost::python::constructor
-                 <const Expression&,const Expression&>());
-    Section_.def(boost::python::constructor
-                 <const Expression&,const Expression&,int>());
-
-    Section_.def(&Section::get_width, "width");
-    Section_.def(&Section::repr,      "__repr__"); // tmp
-  }
-  catch(...)
-  {
-    //handle_exception();
-  }
+    .add(
+      enum_<Fieldtype>("Fieldtype")
+      .value("cos_type", cos_type)
+      .value("sin_type", sin_type)
+      );
+
+#endif
+
+  // Wrap getters and setters for global parameters.   
+
+  camfr
+    .def("set_lambda",                 set_lambda)
+    .def("get_lambda",                 get_lambda)
+    .def("set_N",                      set_N)
+    .def("N",                          get_N)
+    .def("set_polarisation",           set_polarisation)
+    .def("set_gain_material",          set_gain_material)
+    .def("set_solver",                 set_solver)
+    .def("set_stability",              set_stability)
+    .def("set_precision",              set_precision)
+    .def("set_precision_enhancement",  set_precision_enhancement)
+    .def("set_dx_enhanced",            set_dx_enhanced)
+    .def("set_precision_rad",          set_precision_rad)
+    .def("set_C_upperright",           set_C_upperright)
+    .def("set_sweep_from_previous",    set_sweep_from_previous)
+    .def("set_sweep_steps",            set_sweep_steps)
+    .def("set_eps_trace_coarse",       set_eps_trace_coarse)
+    .def("set_chunk_tracing",          set_chunk_tracing)
+    .def("set_unstable_exp_threshold", set_unstable_exp_threshold)
+    .def("set_field_calc",             set_field_calc)
+    .def("set_bloch_calc",             set_bloch_calc)
+    .def("set_eigen_calc",             set_eigen_calc)
+    .def("set_orthogonal",             set_orthogonal)
+    .def("set_circ_order",             set_circ_order)
+    .def("set_circ_field_type",        set_circ_fieldtype)
+    .def("set_left_wall",              set_left_wall)
+    .def("set_right_wall",             set_right_wall)
+    .def("set_beta",                   set_beta)
+    .def("free_tmps",                  free_tmps);
+
+  // Wrap Coord.
+
+  camfr.add(
+    class_<Coord>("Coord")
+    .def_init(type_list<const Complex&, const Complex&, const Complex&>())
+    //.def_init(type_list<const Complex&, const Complex&, const Complex&,
+    //                          Limit,          Limit,          Limit>())
+    .def("__repr__", &Coord::repr)
+    );
+
+  // Wrap Field.
+
+  camfr.add(
+    class_<Field>("Field")
+    .def("E1",       field_E1)
+    .def("E2",       field_E2)
+    .def("Ez",       field_Ez)
+    .def("H1",       field_H1)
+    .def("H2",       field_H2)
+    .def("Hz",       field_Hz)
+    .def("abs_E",    &Field::abs_E)
+    .def("abs_H",    &Field::abs_H)
+    .def("__repr__", &Field::repr)
+    );
+
+  // Wrap FieldExpansion.
+
+  camfr.add(
+    class_<FieldExpansion>("FieldExpansion")
+    .def("field",    &FieldExpansion::field)
+    .def("__repr__", &FieldExpansion::repr)
+    );
+
+  // Wrap BaseMaterial.
+
+  camfr.add(class_<BaseMaterial, boost::noncopyable>("BaseMaterial"));
+
+  // Wrap Material.
+
+  camfr.add(
+    class_<Material, shared_ptr<Material>, bases<BaseMaterial> >("Material")
+    .def_init(type_list<const Complex&>())
+    .def_init(type_list<const Complex&, const Complex&>()) // TODO: def. arg
+    .def("__call__", material_to_term)
+    .def("n",        &Material::n)
+    .def("epsr",     &Material::epsr)
+    .def("mur",      &Material::mur)
+    .def("eps",      &Material::eps)
+    .def("mu",       &Material::mu)
+    .def("gain",     &Material::gain)
+    .def("__repr__", &Material::repr)
+    );
+
+  // Wrap Material_length.
+
+  camfr.add(class_<Material_length>("Material_length"));
+
+  // Wrap Mode.
+
+  camfr.add(
+    class_<Mode>("Mode")
+    .def("field",    &Mode::field)
+    .def("n_eff",    &Mode::n_eff)
+    .def("kz",       &Mode::get_kz)
+    .def("pol",      mode_pol)
+    .def("__repr__", &Mode::repr)
+    );
+
+  // Wrap Waveguide.
+  
+  camfr.add(
+    class_<Waveguide, boost::noncopyable>("Waveguide")
+    .def("core",     &Waveguide::get_core,
+         return_value_policy<reference_existing_object>())
+    .def("eps",      &Waveguide::eps_at)
+    .def("mu",       &Waveguide::mu_at)
+    .def("n",        &Waveguide::n_at)
+    .def("N",        &Waveguide::N)
+    .def("mode",     waveguide_get_mode,
+         return_value_policy<reference_existing_object>())
+    .def("fw_mode",  waveguide_get_fw_mode,
+         return_value_policy<reference_existing_object>())
+    .def("bw_mode",  waveguide_get_bw_mode,
+         return_value_policy<reference_existing_object>())
+    .def("calc",     &Waveguide::find_modes)
+    .def("__repr__", &Waveguide::repr)
+    .def("__call__", waveguide_to_term)
+    );
+
+  // Wrap Waveguide_length.
+
+  camfr.add(class_<Waveguide_length>("Waveguide_length"));
+
+  // Wrap MultiWaveguide.
+
+  camfr.add(
+    class_<MultiWaveguide, bases<Waveguide>, boost::noncopyable>
+    ("MultiWaveguide")
+    .def("field_from_source", &MultiWaveguide::field_from_source)
+    );
+
+  // Wrap MonoWaveguide.
+
+  camfr.add(
+    class_<MonoWaveguide, bases<Waveguide>, boost::noncopyable>
+    ("MonoWaveguide")
+    );
+
+  // Wrap Scatterer.
+
+  camfr.add(
+    class_<Scatterer, boost::noncopyable>("Scatterer")
+    .def("calc", &Scatterer::calcRT)
+    .def("free", &Scatterer::freeRT)
+    .def("inc",  &Scatterer::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("ext",  &Scatterer::get_ext,
+         return_value_policy<reference_existing_object>())
+    .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Term))
+    .def("__add__", TERM_PLUS_TERM_F(Scatterer, Stack))
+    .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Expression))
+    .def("__add__", TERM_PLUS_TERM_F(Scatterer, Scatterer))
+    );
+
+  // Wrap MultiScatterer.
+
+  camfr.add(
+    class_<MultiScatterer, bases<Scatterer>, boost::noncopyable>
+    ("MultiScatterer")
+    );
+
+  // Wrap DenseScatterer.
+
+  camfr.add(
+    class_<DenseScatterer, bases<MultiScatterer>, boost::noncopyable>
+    ("DenseScatterer")
+    );
+
+  // Wrap DiagScatterer.
+
+  camfr.add(
+    class_<DiagScatterer, bases<MultiScatterer>, boost::noncopyable>
+    ("DiagScatterer")
+    );
+
+  // Wrap MonoScatterer.
+  
+  camfr.add(
+    class_<MonoScatterer, bases<Scatterer>, boost::noncopyable>
+    ("MonoScatterer")
+    );
+
+  // Wrap FlippedScatterer.
+
+  camfr.add(
+    class_<FlippedScatterer, bases<MultiScatterer> >("FlippedScatterer")
+    .def_init(type_list<MultiScatterer&>())
+    );
+
+  // Wrap E_Wall.
+
+  camfr.add(
+    class_<E_Wall, bases<DiagScatterer> >("E_Wall")
+    .def_init(type_list<Waveguide&>())
+    );
+
+  // Wrap H_Wall.
+
+  camfr.add(
+    class_<H_Wall, bases<DiagScatterer> >("H_Wall")
+    .def_init(type_list<Waveguide&>())
+    );
+
+  // Wrap Expression.
+
+  camfr.add(
+    class_<Expression>("Expression")
+    .def_init(type_list<>())
+    .def_init(type_list<const Term&>())
+    .def_init(type_list<const Expression&>())
+    .def("flatten",  &Expression::flatten)
+    .def("inc",  &Expression::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("ext",  &Expression::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("__repr__", &Expression::repr)
+    .def("add",      &Expression::operator+=)
+    .def("__iadd__", &Expression::operator+=)
+    .def("__add__",  EX_PLUS_TERM_F(const Term))
+    .def("__add__",  EX_PLUS_TERM_F(Stack))
+    .def("__add__",  EX_PLUS_TERM_F(const Expression))
+    .def("__add__",  EX_PLUS_TERM_F(Scatterer))
+    .def("__rmul__",
+         (const Term (*) (const Expression&, unsigned int)) &operator*)
+    .def("__mul__",
+         (const Term (*) (const Expression&, unsigned int)) &operator*)
+    );
+
+  // Wrap Term.
+
+  camfr.add(
+    class_<Term>("Term")
+    .def_init(type_list<Scatterer&>())
+    .def_init(type_list<Stack&>())
+    .def_init(type_list<const Expression&>())
+    .def("inc",  &Term::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("ext",  &Term::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("__repr__", &Term::repr)
+    .def("__add__",  TERM_PLUS_TERM_F(const Term, const Term))
+    .def("__add__",  TERM_PLUS_TERM_F(const Term, Stack))
+    .def("__add__",  TERM_PLUS_TERM_F(const Term, const Expression))
+    .def("__add__",  TERM_PLUS_TERM_F(const Term, Scatterer))
+    .def("__rmul__", (const Term (*) (const Term&, unsigned int)) &operator*)
+    .def("__mul__",  (const Term (*) (const Term&, unsigned int)) &operator*)
+    );
+
+  // Wrap Stack.
+
+  camfr.add(
+    class_<Stack>("Stack")
+    .def_init(type_list<const Expression&>())
+    .def("calc",           &Stack::calcRT)
+    .def("free",           &Stack::freeRT)
+    .def("inc",            &Stack::get_inc,
+         return_value_policy<reference_existing_object>())
+    .def("ext",            &Stack::get_ext,
+         return_value_policy<reference_existing_object>())
+    .def("length",         &Stack::get_total_thickness)
+    .def("set_inc_field",  stack_set_inc_field)
+    .def("set_inc_field",  stack_set_inc_field_2)
+    .def("inc_field",      &Stack::get_inc_field)
+    .def("refl_field",     &Stack::get_refl_field)
+    .def("trans_field",    &Stack::get_trans_field)
+    .def("inc_S_flux",     stack_inc_S_flux)
+    .def("ext_S_flux",     stack_ext_S_flux)
+    .def("field",          &Stack::field)
+    .def("lateral_S_flux", stack_lateral_S_flux)
+    .def("lateral_S_flux", stack_lateral_S_flux_2)
+    .def("eps",            &Stack::eps_at)
+    .def("mu",             &Stack::mu_at)
+    .def("n",              &Stack::n_at)
+    .def("R12",            stack_get_R12)
+    .def("R21",            stack_get_R21)
+    .def("T12",            stack_get_T12)
+    .def("T21",            stack_get_T21)
+    .def("R12",            stack_R12)
+    .def("R21",            stack_R21)
+    .def("T12",            stack_T12)
+    .def("T21",            stack_T21)
+    .def("__add__", TERM_PLUS_TERM_F(Stack, const Term))
+    .def("__add__", TERM_PLUS_TERM_F(Stack, Stack))
+    .def("__add__", TERM_PLUS_TERM_F(Stack, const Expression))
+    .def("__add__", TERM_PLUS_TERM_F(Stack, Scatterer))
+    );
+
+  // Wrap Cavity.
+
+  camfr.add(
+    class_<Cavity>("Cavity")
+    .def_init(type_list<Stack&, Stack&>())
+    .def("find_modes_in_region", cavity_find_modes_in_region_3)
+    .def("find_modes_in_region", cavity_find_modes_in_region_7)
+    .def("find_mode",            cavity_find_mode_2)
+    .def("find_mode",            cavity_find_mode_5)
+    .def("sigma",                cavity_calc_sigma)
+    .def("set_source",           cavity_set_source)
+    .def("field",                &Cavity::field)
+    );
+
+  // Wrap BlochStack.
+
+  camfr.add(
+    class_<BlochStack, bases<MultiWaveguide> >("BlochStack")
+    .def_init(type_list<const Expression&>())
+    .def("mode",        blochstack_get_mode,
+         return_value_policy<reference_existing_object>())
+    .def("length",      &BlochStack::get_total_thickness)
+    .def("beta_vector", &BlochStack::get_beta_vector)
+    .def("__repr__",    &BlochStack::repr)
+    );
+
+  // Wrap BlochMode.
+
+  camfr.add(
+    class_<BlochMode, bases<Mode> >("BlochMode")
+    .def("fw_field", &BlochMode::fw_field)
+    .def("bw_field", &BlochMode::bw_field)
+    .def("S_flux",   &BlochMode::S_flux)
+    );
+
+  // Wrap InfStack.
+
+  camfr.add(
+    class_<InfStack, bases<DenseScatterer> >("InfStack")
+    .def_init(type_list<const Expression&>())
+    .def_init(type_list<const Expression&, const Complex&>()) // TMP
+    .def("R12", &InfStack::get_R12,
+         return_value_policy<reference_existing_object>())
+    );
+
+  // Wrap RealFunction.
+  
+  camfr.add(
+    class_<RealFunction, boost::noncopyable>("RealFunction")
+    .def("times_called", &RealFunction::times_called)
+    .def("__call__",     &RealFunction::operator())
+    );
+
+  // Wrap ComplexFunction.
+
+  camfr.add(
+    class_<ComplexFunction, boost::noncopyable>("RealFunction")
+    .def("times_called", &ComplexFunction::times_called)
+    .def("__call__",     &ComplexFunction::operator())
+    );
+
+  // Wrap Planar.
+
+  camfr.add(
+    class_<Planar, bases<MonoWaveguide> >("Planar")
+    .def_init(type_list<Material&>())
+    .def("set_theta", &Planar::set_theta)
+    );
+
+  // Wrap Circ.
+
+  camfr.add(
+    class_<Circ, bases<MultiWaveguide> >("Circ")
+    .def_init(type_list<Term&>())
+    .def_init(type_list<Expression&>())
+    );
+
+  // Wrap SlabWall.
+
+  camfr.add(
+    class_<SlabWall, boost::noncopyable>("SlabWall")
+    .def("R", &SlabWall::get_R12)
+    );
+
+  // Wrap SlabWallMixed.
+
+  camfr.add(
+    class_<SlabWallMixed, bases<SlabWall> >("SlabWallMixed")
+    .def_init(type_list<const Complex&, const Complex&>())
+    );
+
+  //camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
+  //camfr.add(boost::python::make_ref(slab_H_wall),    "slab_H_wall");
+  //camfr.add(boost::python::make_ref(slab_open_wall), "slab_open_wall");
+
+  // Wrap SlabWall_TBC.
+
+  camfr.add(
+    class_<SlabWall_TBC, bases<SlabWall> >("SlabWall_TBC")
+    .def_init(type_list<const Complex&, const Material&>())
+    );
+
+  // Wrap SlabWall_PC.
+
+  camfr.add(
+    class_<SlabWall_PC, bases<SlabWall> >("SlabWall_PC")
+    .def_init(type_list<const Expression&>())
+    );
+
+  // Wrap SlabDisp.
+
+  camfr.add(
+    class_<SlabDisp, bases<ComplexFunction> >("SlabDisp")
+    .def_init(type_list<Expression&, Real>())
+    .def_init(type_list<Expression&, Real, SlabWall*, SlabWall*>())
+    );
+
+  // Wrap Slab.
+
+  camfr.add(
+    class_<Slab, bases<MultiWaveguide> >("Slab")
+    .def_init(type_list<const Term&>())
+    .def_init(type_list<const Expression&>())
+    .def("set_left_wall",  &Slab::set_left_wall)
+    .def("set_right_wall", &Slab::set_right_wall)
+    .def("width",          &Slab::get_width)
+    );
+
+  // Wrap SectionDisp.
+
+  camfr.add(
+    class_<SectionDisp, bases<ComplexFunction> >("SectionDisp")
+    .def_init(type_list<Stack&, Stack&, Real, int>())
+    );
+
+  // Wrap Section.
+
+  camfr.add(
+    class_<Section, bases<MultiWaveguide> >("Section")
+    .def_init(type_list<const Expression&>())
+    .def_init(type_list<const Expression&, int>())
+    .def_init(type_list<const Expression&, const Expression&>())
+    .def_init(type_list<const Expression&, const Expression&, int>())
+    .def("width", &Section::get_width)
+    );
 }
+

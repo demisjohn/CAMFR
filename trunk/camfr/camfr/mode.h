@@ -59,7 +59,7 @@ class Mode
      
      bool operator==(const Mode& rhs) const;
 
-     string repr() const;
+     std::string repr() const;
 
      Polarisation pol;
      
@@ -74,8 +74,8 @@ class Mode
      friend class Planar;
 };
 
-inline ostream& operator<<(ostream& s, const Mode& mode)
-  {return s << mode.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Mode& mode)
+  {return s << mode.repr() << std::endl;}
 
 
 

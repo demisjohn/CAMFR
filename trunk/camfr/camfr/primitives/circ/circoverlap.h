@@ -54,8 +54,8 @@ class Circ_M_Mode; // forward declation -- see circmode.h
 Complex overlap(const Circ_M_Mode* mode_I,
                 const Circ_M_Mode* mode_II,
                 const CircCache* cache=NULL,
-                const vector<Complex>* disc=NULL,
-                int i=0, int j=0,  int I_index=0, int II_index=0);
+                const std::vector<Complex>* disc=NULL,
+                int i=0, int j=0, int I_index=0, int II_index=0);
 
 
 

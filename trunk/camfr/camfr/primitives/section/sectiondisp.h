@@ -34,8 +34,8 @@ class SectionDisp : public ComplexFunction
 
     Complex operator()(const Complex& beta);
 
-    vector<Complex> get_params() const;
-    void set_params(const vector<Complex>&);
+    std::vector<Complex> get_params() const;
+    void set_params(const std::vector<Complex>&);
     
   protected:
 
@@ -48,11 +48,11 @@ class SectionDisp : public ComplexFunction
 
     bool symmetric;
 
-    vector<Slab*> left_slabs;
-    vector<Slab*> right_slabs;  
+    std::vector<Slab*> left_slabs;
+    std::vector<Slab*> right_slabs;  
 
-    vector<Complex*> left_d;
-    vector<Complex*> right_d;
+    std::vector<Complex*> left_d;
+    std::vector<Complex*> right_d;
     
     Real lambda;
 

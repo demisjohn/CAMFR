@@ -35,7 +35,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 void T_scheme_fields
-  (const vector<Chunk>& chunks, vector<FieldExpansion>* field);
+  (const std::vector<Chunk>& chunks, std::vector<FieldExpansion>* field);
 
 
 

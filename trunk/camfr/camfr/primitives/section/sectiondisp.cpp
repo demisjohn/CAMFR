@@ -10,12 +10,18 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "arscomp.h"
+//#include "arscomp.h"
 #include "sectiondisp.h"
 #include "../slab/generalslab.h"
 #include "../slab/slabmatrixcache.h"
-#include "../../util/vectorutil.h"
 #include "../../math/linalg/linalg.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
+#include "../../util/vectorutil.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -209,8 +215,8 @@ class Multiplier
     {
       counter++;
       
-      cVector i(in,  global.N, neverDeleteData, fortranArray);
-      cVector o(out, global.N, neverDeleteData, fortranArray); 
+      cVector i(in,  global.N, blitz::neverDeleteData, fortranArray);
+      cVector o(out, global.N, blitz::neverDeleteData, fortranArray); 
 
       if (counter == global.N)
       {
@@ -246,6 +252,7 @@ class Multiplier
 
 Complex SectionDisp::calc_arnoldi(const Complex& beta)
 {
+/*
   left->calcRT();
   if (! symmetric)
     right->calcRT();
@@ -273,6 +280,7 @@ Complex SectionDisp::calc_arnoldi(const Complex& beta)
   }
 
   return prob.Eigenvalue(0);
+*/
 }
 
 

@@ -36,9 +36,9 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void S_scheme(const vector<Chunk>& chunks, DenseScatterer* result);
-void S_scheme(const vector<Chunk>& chunks,  DiagScatterer* result);
-void S_scheme(const vector<Chunk>& chunks,  MonoScatterer* result);
+void S_scheme(const std::vector<Chunk>& chunks, DenseScatterer* result);
+void S_scheme(const std::vector<Chunk>& chunks,  DiagScatterer* result);
+void S_scheme(const std::vector<Chunk>& chunks,  MonoScatterer* result);
 
 
 

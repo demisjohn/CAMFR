@@ -37,11 +37,11 @@ bool Mode::operator== (const Mode& rhs) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-string Mode::repr() const
+std::string Mode::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
-  s << pol << " " << setw(7) << kz;
+  s << pol << " " << std::setw(7) << kz;
 
   Complex kt = sqrt( pow(2*pi/global.lambda, 2) - kz*kz);
 

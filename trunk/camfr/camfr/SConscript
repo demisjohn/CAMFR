@@ -1,0 +1,73 @@
+Import("env", "env_noopt")
+
+# Contruct names of all Fortran files.
+
+fortran_files = "math/calculus/polyroot/jenkins_traub.f "
+
+slatec = "dyairy.f xerhlt.f zbesh.f zlog.f zuni1.f d1mach.f dbesy1.f \
+	  fdump.f xermsg.f zbesj.f zmlri.f zuni2.f dbesy.f i1mach.f xerprn.f \
+	  zbesy.f zmlt.f zunik.f d9b0mp.f dbsynu.f initds.f xersve.f zbinu.f \
+	  zrati.f zunk1.f d9b1mp.f dcsevl.f j4save.f xgetua.f zbknu.f \
+	  zs1s2.f zunk2.f d9lgmc.f dgamlm.f zabs.f zbuni.f zseri.f zuoik.f \
+	  dasyjy.f dgamln.f zacai.f zbunk.f zshch.f zwrsk.f dbesj0.f dgamma.f \
+	  zacon.f zdiv.f zsqrt.f dbesj1.f djairy.f zairy.f zexp.f zuchk.f \
+	  dbesj.f dlngam.f xercnt.f zasyi.f zkscl.f zunhj.f dbesy0.f"
+
+slatec_names = slatec.split()
+for i in range(len(slatec_names)):
+  fortran_files += "math/bessel/slatec/" + slatec_names[i] + " "
+
+# Build CAMFR library.
+
+_o = env['OBJSUFFIX']
+
+env_noopt.Object(target = "defs"+_o, source = "defs.cpp")
+
+env_noopt.Object(target = "math/bessel/slatec/limits"+_o, 
+		 source = "math/bessel/slatec/limits.c")
+
+env.Object(target = "camfr_wrap"+_o, source = "camfr_wrap.cpp")
+
+env.Library(target = "camfr", \
+	    source = "material.cpp coord.cpp field.cpp mode.cpp \
+		      waveguide.cpp scatterer.cpp chunk.cpp interface.cpp \
+		      icache.cpp expression.cpp stack.cpp S_scheme.cpp \
+		      T_scheme.cpp S_scheme_fields.cpp T_scheme_fields.cpp \
+	              cavity.cpp bloch.cpp infstack.cpp \
+		      util/cvector.cpp \
+	              util/index.cpp \
+		      util/stringutil.cpp \
+		      util/tracesorter.cpp \
+		      math/bessel/bessel.cpp \
+		      math/linalg/linalg.cpp \
+		      math/calculus/root/root.cpp \
+	              math/calculus/croot/allroots.cpp \
+	              math/calculus/croot/contour.cpp \
+   		      math/calculus/croot/patterson_z_n.cpp \
+	              math/calculus/croot/mueller.cpp \
+		      math/calculus/polyroot/polyroot.cpp \
+		      math/calculus/traceroot/traceroot.cpp \
+		      math/calculus/quadrature/patterson.cpp \
+		      math/calculus/quadrature/patterson_quad.cpp \
+		      math/calculus/minimum/minimum.cpp \
+		      primitives/planar/planar.cpp \
+		      primitives/circ/circ.cpp \
+		      primitives/circ/circmode.cpp \
+		      primitives/circ/circdisp.cpp  \
+		      primitives/circ/circoverlap.cpp \
+		      primitives/slab/generalslab.cpp \
+		      primitives/slab/slabmatrixcache.cpp \
+		      primitives/slab/isoslab/slab.cpp \
+		      primitives/slab/isoslab/slaboverlap.cpp \
+		      primitives/slab/isoslab/slabdisp.cpp \
+		      primitives/slab/isoslab/slabwall.cpp \
+                      primitives/slab/isoslab/slabmode.cpp \
+		      primitives/section/section.cpp \
+		      primitives/section/sectionmode.cpp \
+		      primitives/section/sectiondisp.cpp \
+		      defs"+_o + " math/bessel/slatec/limits"+_o + " " +
+		      fortran_files)
+
+env.Command("camfr"+env['DLLSUFFIX'], 
+	    "camfr_wrap"+_o + " " + env['CAMFRLIB'],
+	    env['DLLCOMMAND'])

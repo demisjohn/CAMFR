@@ -12,6 +12,10 @@
 
 #include "S_scheme.h"
 
+using std::cout;
+using std::endl;
+using std::vector;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // calc_tilde
@@ -52,7 +56,7 @@ void calc_tilde(const Chunk& chunk,
   }
   else
   {
-    firstIndex i; secondIndex j;
+    blitz::firstIndex i; blitz::secondIndex j;
 
     *r12 =           (s->get_R12());
     *r21 = prop(i) * (s->get_R21())(i,j) * prop(j);

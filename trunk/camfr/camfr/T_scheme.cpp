@@ -13,6 +13,11 @@
 #include "T_scheme.h"
 #include "scatterer.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // T_scheme for monoscatterers.

@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 unsigned int index_lookup(const Complex& x, Limit limit,
-                          const vector<Complex>& x_table)
+                          const std::vector<Complex>& x_table)
 {
   for (unsigned int i=0; i<x_table.size(); i++)
   {

@@ -1,0 +1,72 @@
+# This Python script contains all the machine dependent settings
+# needed during the build process.
+
+# Compilers to be used.
+
+cc  = "icl"
+cxx = "icl"
+f77 = "ifl"
+
+# Compiler flags.
+#
+# Note: for the Fortran name definition you can define one of the following
+#       preprocessor macros:
+#
+#           FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
+#           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
+#           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
+
+# compiler flags to test: /Oa /Gr /Oy /Qip(o)(-wg)
+# profiling: /Qprof_gen , run , /Qprof_use
+
+flags_base = "/nologo  /GR /GX /MD -Qoption,cpp,--new_for_init \
+	-Qprof_dir D:\camfr\camfr -DNDEBUG \
+	-DFORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES"
+
+flags_noopt = flags_base + " /Od /Ob0"
+flags       = flags_base + " /QxK /O3"
+fflags      = flags_base + " /Qlowercase /4L132"
+
+# Include directories.
+
+include_dirs ="D:/blitz-20001213 \
+	       D:/boost_cvs/boost \
+	       C:/progra~1/python22/include \
+	       D:/arpack++/include"
+
+# Temporary workaround waiting for shared lib support in scons.
+
+camfrlib = "camfr.lib"
+dllsuffix = ".pyd"
+dllcommand = "xilink /DLL /nologo /INCREMENTAL:NO /LIBPATH:./camfr \
+	/LIBPATH:D:/blitz-20001213/lib \
+	/LIBPATH:C:/progra~1/intel/mkl/ia32/lib \
+	/LIBPATH:C:/progra~1/compiler60/ia32/lib \
+	/LIBPATH:C:/progra~1/python22/libs \
+        /LIBPATH:D:/boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic \
+	camfr/camfr_wrap.obj camfr.lib bpl.lib \
+	python22.lib blitz.lib mkl_c.lib mkl_lapack.lib mkl_p3.lib libf90.lib \
+	/OUT:_camfr.pyd /IMPLIB:_camfr.lib /EXPORT:init_camfr /NODEFAULTLIB:libc.lib "
+
+# Command to strip library of excess symbols.
+
+strip_command = ""
+
+# Extra files to copy to installation directory.
+
+# TODO: figure out how to use Windows absolute paths.
+
+extra_files = [ \
+   "../boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
+   "../pymat/pymat.pyd",
+   "../libs/mkl_support.dll",
+   "../libs/mkl_p3.dll",
+   "../libs/mkl_lapack32.dll",
+   "../libs/msvcr70.dll"
+   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_support.dll",
+   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_p3.dll",
+   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_lapack32.dll",
+   #"C:/windows/system32/msvcr70.dll"
+   ]
+
+

@@ -33,7 +33,7 @@ Planar::Planar(Material& m) : MonoWaveguide(&m)
   // Create mode and set E_cst and H_cst to get correct results in the
   // generalised Fresnel formulas (interface.cpp).
   // 'mode' is deleted in ~MonoWaveguide.
-
+  
   Complex kz = calc_kz();
   
   mode = (global.polarisation == TE)

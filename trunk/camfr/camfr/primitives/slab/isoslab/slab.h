@@ -44,11 +44,12 @@ class Slab_M : public SlabImpl
     Slab_M& operator= (const Slab_M& slab);
     bool  operator==(const Waveguide& w) const;
 
-    vector<Material*> get_materials() const
+    std::vector<Material*> get_materials() const
       {return materials;}
     
     bool contains(const Material& m) const
-      {return find(materials.begin(), materials.end(), &m) != materials.end();}
+      {return std::find(materials.begin(), materials.end(), &m) 
+         != materials.end();}
 
     bool no_gain_present() const;
 
@@ -65,22 +66,22 @@ class Slab_M : public SlabImpl
     
     void find_modes();
 
-    vector<Complex> get_params() const;
-    void set_params(const vector<Complex>&);
+    std::vector<Complex> get_params() const;
+    void set_params(const std::vector<Complex>&);
 
   protected:
 
-    vector<Complex> find_kt(vector<Complex>& old_kt);
-    vector<Complex> find_kt_from_scratch_by_ADR();
-    vector<Complex> find_kt_from_scratch_by_track();
-    vector<Complex> find_kt_by_sweep(vector<Complex>& old_kt);
+    std::vector<Complex> find_kt(std::vector<Complex>& old_kt);
+    std::vector<Complex> find_kt_from_scratch_by_ADR();
+    std::vector<Complex> find_kt_from_scratch_by_track();
+    std::vector<Complex> find_kt_by_sweep(std::vector<Complex>& old_kt);
 
-    void build_modeset(const vector<Complex>& kt);
+    void build_modeset(const std::vector<Complex>& kt);
 
-    vector<Complex> params; // Last parameters of dispersion relation.
+    std::vector<Complex> params; // Last parameters of dispersion relation.
     
-    vector<Material*> materials;
-    vector<Complex>   thicknesses;
+    std::vector<Material*> materials;
+    std::vector<Complex>   thicknesses;
 
     friend class Slab_M_Mode;
     friend class UniformSlab;
@@ -109,8 +110,8 @@ class UniformSlab : public SlabImpl
     bool operator==(const Waveguide& w) const
       {return *core == *(w.get_core());}
     
-    vector<Material*> get_materials() const
-      {vector<Material*> m; m.push_back(core); return m;}
+    std::vector<Material*> get_materials() const
+      {std::vector<Material*> m; m.push_back(core); return m;}
     
     bool contains(const Material& m) const
       {return *core == m;}
@@ -129,13 +130,13 @@ class UniformSlab : public SlabImpl
 
     void find_modes();
 
-    vector<Complex> get_params() const;
-    void set_params(const vector<Complex>&);
+    std::vector<Complex> get_params() const;
+    void set_params(const std::vector<Complex>&);
 
   protected:
 
-    vector<Complex> find_kt();
-    void build_modeset(vector<Complex>& kt);
+    std::vector<Complex> find_kt();
+    void build_modeset(std::vector<Complex>& kt);
 };
 
 

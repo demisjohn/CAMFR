@@ -15,9 +15,21 @@
 #include <iomanip>
 #include "traceroot.h"
 #include "../croot/mueller.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "../../../util/vectorutil.h"
 #include "../../../util/cvector.h"
 #include "../../../util/stringutil.h"
+
+#ifdef _WIN32
+#define ISNAN isnan_
+#else
+#define ISNAN isnan
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -170,7 +182,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     for (unsigned int i=0; !trouble && i<zeros_try.size(); i++)
     
     if ( valid[i] &&
-         ( isnan(real(zeros_try[i])) || isnan(imag(zeros_try[i])) ) )
+         ( ISNAN(real(zeros_try[i])) || ISNAN(imag(zeros_try[i])) ) )
         {
           //cout << "NaN detected in zero " << i << endl; 
           trouble       = true;

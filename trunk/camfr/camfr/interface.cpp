@@ -13,6 +13,11 @@
 #include "interface.h"
 #include "primitives/slab/generalslab.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DenseInterface::get_materials
@@ -77,8 +82,8 @@ void DenseInterface::calcRT_safe()
 {
   // Set constants and calculate overlap matrices.
 
-  firstIndex  i;
-  secondIndex j;
+  blitz::firstIndex  i;
+  blitz::secondIndex j;
 
   const int N = global.N;
 
@@ -167,8 +172,8 @@ void DenseInterface::calcRT_fast()
 { 
   // Set constants and calculate overlap matrices.
 
-  firstIndex  i;
-  secondIndex j;
+  blitz::firstIndex  i;
+  blitz::secondIndex j;
 
   const int N = global.N;
 
@@ -257,7 +262,7 @@ void DenseInterface::calcRT_non_orth_safe()
 
   const int N = global.N;
 
-  Range r1(1,N); Range r2(N+1,2*N);
+  blitz::Range r1(1,N); blitz::Range r2(N+1,2*N);
 
   cMatrix O_I_II (N,N,fortranArray);
   cMatrix O_II_I (N,N,fortranArray);
@@ -340,7 +345,7 @@ void DenseInterface::calcRT_non_orth_fast()
 
   const int N = global.N;
 
-  Range r1(1,N); Range r2(N+1,2*N);
+  blitz::Range r1(1,N); blitz::Range r2(N+1,2*N);
 
   cMatrix O_I_II (N,N,fortranArray);
   cMatrix O_II_I (N,N,fortranArray);

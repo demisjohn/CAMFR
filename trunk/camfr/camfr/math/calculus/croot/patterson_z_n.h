@@ -48,11 +48,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> patterson_z_n(ComplexFunction& f,
-                              const Complex& a, const Complex& b, int M,
-                              Real eps, Real mu, bool* error_ptr=NULL,
-                              unsigned int max_k=8,
-                              vector<Complex>* abs_error=NULL);
+std::vector<Complex> patterson_z_n
+  (ComplexFunction& f, const Complex& a, const Complex& b, int M,
+   Real eps, Real mu, bool* error_ptr=NULL, unsigned int max_k=8,
+   std::vector<Complex>* abs_error=NULL);
 
 
 
@@ -68,9 +67,9 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> patterson_quad_z_n(ComplexFunction& f,
-                                   const Complex& a, const Complex& b, int M,
-                                   Real eps, Real mu, unsigned int max_k=8);
+std::vector<Complex> patterson_quad_z_n
+  (ComplexFunction& f, const Complex& a, const Complex& b, int M,
+   Real eps, Real mu, unsigned int max_k=8);
 
 
 

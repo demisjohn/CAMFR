@@ -58,13 +58,13 @@ class Coord
 
     bool operator< (const Coord&) const;
 
-    string repr() const; 
+    std::string repr() const; 
 };
 
 inline Coord operator*(const Complex& c, const Coord& co) {return co*c;}
 
-inline ostream& operator<<(ostream& s, const Coord& c)
-  {return s << c.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Coord& c)
+  {return s << c.repr() << std::endl;}
 
 
 

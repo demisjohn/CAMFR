@@ -33,8 +33,8 @@ class SlabDisp : public Function1D<Complex>
     SlabDisp(const Expression& ex,    Real lambda,
              SlabWall* leftwall=NULL, SlabWall* rightwall=NULL);
 
-    SlabDisp(const vector<Material*>& materials,
-             const vector<Complex>&   thicknesses,
+    SlabDisp(const std::vector<Material*>& materials,
+             const std::vector<Complex>&   thicknesses,
              Real lambda, SlabWall* leftwall=NULL, SlabWall* rightwall=NULL);
 
     ~SlabDisp() {}
@@ -44,15 +44,15 @@ class SlabDisp : public Function1D<Complex>
 
     Complex get_min_eps_mu() const {return min_eps_mu;}
 
-    vector<Complex> get_params() const;
+    std::vector<Complex> get_params() const;
     
-    void set_params(const vector<Complex>& params);
+    void set_params(const std::vector<Complex>& params);
     
   protected:
 
-    vector<Complex> thicknesses;
-    vector<Complex> eps;
-    vector<Complex> mu;
+    std::vector<Complex> thicknesses;
+    std::vector<Complex> eps;
+    std::vector<Complex> mu;
     
     Real lambda;
 

@@ -37,8 +37,8 @@ Real brent_root(Function1D<Real>& f, Real ax, Real bx, Real eps=1e-13);
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Real> brent_root(Function1D<Real>& f, vector<Real>& Ax,
-                        vector<Real>& Bx, Real eps=1e-13);
+std::vector<Real> brent_root(Function1D<Real>& f, std::vector<Real>& Ax,
+                             std::vector<Real>& Bx, Real eps=1e-13);
 
 
 
@@ -54,8 +54,8 @@ vector<Real> brent_root(Function1D<Real>& f, vector<Real>& Ax,
 /////////////////////////////////////////////////////////////////////////////
 
 void bracket_all_roots(Function1D<Real>& f, Real ax, Real bx,
-                       vector<Real>& Ax,vector<Real>& Bx, Real dx,
-                       int sec_level=0);
+                       std::vector<Real>& Ax, std::vector<Real>& Bx, 
+                       Real dx, int sec_level=0);
 
 
 
@@ -70,8 +70,9 @@ void bracket_all_roots(Function1D<Real>& f, Real ax, Real bx,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void bracket_N_roots(Function1D<Real>& f, Real ax, int N, vector<Real>& Ax,
-                     vector<Real>& Bx, Real dx, int sec_level=0);
+void bracket_N_roots(Function1D<Real>& f, Real ax, int N, 
+                     std::vector<Real>& Ax, std::vector<Real>& Bx, 
+                     Real dx, int sec_level=0);
 
 
 
@@ -86,8 +87,9 @@ void bracket_N_roots(Function1D<Real>& f, Real ax, int N, vector<Real>& Ax,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Real> brent_all_roots(Function1D<Real>& f, Real ax, Real bx, Real dx,
-                             Real eps=1e-13, int sec_level=0);
+std::vector<Real> brent_all_roots
+  (Function1D<Real>& f, Real ax, Real bx, Real dx,
+   Real eps=1e-13, int sec_level=0);
 
 
 
@@ -102,8 +104,8 @@ vector<Real> brent_all_roots(Function1D<Real>& f, Real ax, Real bx, Real dx,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Real> brent_N_roots(Function1D<Real>& f, Real ax, int N, Real dx,
-                           Real eps=1e-13, int sec_level=0);
+std::vector<Real> brent_N_roots(Function1D<Real>& f, Real ax, int N, Real dx,
+                                Real eps=1e-13, int sec_level=0);
 
 
 
@@ -118,9 +120,9 @@ vector<Real> brent_N_roots(Function1D<Real>& f, Real ax, int N, Real dx,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Real> brent_refine_roots(Function1D<Real>& f, vector<Real>& x,
-                                Real delta_x, Real dx,
-                                Real eps=1e-13, int sec_level=0);
+std::vector<Real> brent_refine_roots
+  (Function1D<Real>& f, std::vector<Real>& x, Real delta_x, Real dx,
+   Real eps=1e-13, int sec_level=0);
 
 
 

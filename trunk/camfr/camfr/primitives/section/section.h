@@ -38,7 +38,7 @@ class SectionImpl : public MultiWaveguide
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
                 Real precision = 1e-10) const
-      {cout << "Not yet implemented." << endl; return -99999;}
+      {std::cout << "Not yet implemented." << std::endl; return -99999;}
 
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
@@ -66,10 +66,10 @@ class Section : public MultiWaveguide
     Section(const Term& t);    
     ~Section() {delete s;}
 
-    bool operator==(const Waveguide& w) const {return this == &w;}
-    vector<Material*> get_materials()   const {return s->get_materials();}
-    bool contains(const Material& m)    const {return s->contains(m);}
-    bool no_gain_present()              const {return s->no_gain_present();}
+    bool operator==(const Waveguide& w)    const {return this == &w;}
+    std::vector<Material*> get_materials() const {return s->get_materials();}
+    bool contains(const Material& m)       const {return s->contains(m);}
+    bool no_gain_present()                 const {return s->no_gain_present();}
 
     void find_modes() {return s->find_modes();}
     
@@ -100,15 +100,15 @@ class Section : public MultiWaveguide
       {return s->calc_overlap_matrices(dynamic_cast<Section*>(w2)->s,
                                        O_I_II,O_II_I,O_I_I,O_II_II);}
     
-    string repr() const {return s->repr();}
+    std::string repr() const {return s->repr();}
     
   protected:
 
     SectionImpl* s;
 };
 
-inline ostream& operator<<(ostream& s, const Section& slab)
-  {return s << slab.repr();}
+inline std::ostream& operator<<(std::ostream& s, const Section& section)
+  {return s << section.repr();}
 
 
 
@@ -136,11 +136,12 @@ class Section2D : public SectionImpl
     bool operator== (const Waveguide& w) const
       {return (this == &w);}
 
-    vector<Material*> get_materials() const 
+    std::vector<Material*> get_materials() const 
       {return materials;}    
 
     bool contains(const Material& m) const
-      {return find(materials.begin(), materials.end(), &m) != materials.end();}
+      {return std::find(materials.begin(), materials.end(), &m) 
+         != materials.end();}
 
     bool no_gain_present() const;
 
@@ -168,8 +169,8 @@ class Section2D : public SectionImpl
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
-    vector<Complex> params; // Last parameters of dispersion relation.
-    vector<Material*> materials;
+    std::vector<Complex> params; // Last parameters of dispersion relation.
+    std::vector<Material*> materials;
 };
 
 
@@ -195,7 +196,7 @@ class Section1D : public SectionImpl
     bool operator== (const Waveguide& w) const
       {return this == &w;}
     
-    vector<Material*> get_materials() const
+    std::vector<Material*> get_materials() const
       {return s->get_materials();}
     
     bool contains(const Material& m) const

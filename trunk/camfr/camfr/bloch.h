@@ -30,15 +30,26 @@ class BlochStack : public MultiWaveguide
 
     BlochStack(const Expression& e);
     
-    Complex eps_at(const Coord& coord) const {return stack.eps_at(coord);}
-    Complex  mu_at(const Coord& coord) const {return stack. mu_at(coord);}
+    Complex eps_at(const Coord& coord) const 
+      {return stack.eps_at(coord);}
 
-    bool operator==(const Waveguide& w) const {return &w==this;}
-    vector<Material*>   get_materials() const {return stack.get_materials();}
-    bool    contains(const Material& m) const {return stack.contains(m);}
-    bool              no_gain_present() const {return stack.no_gain_present();}
+    Complex  mu_at(const Coord& coord) const 
+      {return stack. mu_at(coord);}
 
-    Complex get_total_thickness() const {return stack.get_total_thickness();}
+    bool operator==(const Waveguide& w) const 
+      {return &w==this;}
+
+    std::vector<Material*> get_materials() const
+      {return stack.get_materials();}
+
+    bool contains(const Material& m) const 
+      {return stack.contains(m);}
+
+    bool no_gain_present() const 
+      {return stack.no_gain_present();}
+
+    Complex get_total_thickness() const 
+      {return stack.get_total_thickness();}
 
     void find_modes();
 
@@ -86,7 +97,7 @@ class BlochMode : public Mode
 
     Stack* geom;
 
-    mutable vector<FieldExpansion> interface_field;
+    mutable std::vector<FieldExpansion> interface_field;
 };
 
 

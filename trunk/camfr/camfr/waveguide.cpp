@@ -13,6 +13,11 @@
 #include <sstream>
 #include "waveguide.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Waveguide::operator()
@@ -152,9 +157,9 @@ void MultiWaveguide::truncate_N_modes(int N)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-string MultiWaveguide::repr() const
+std::string MultiWaveguide::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
   for (int i=1; i<=N(); i++)
   {

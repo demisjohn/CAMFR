@@ -96,8 +96,8 @@ class blazed_grating(unittest.TestCase):
         
         blazed.calc()
 
-        R = abs(pow(blazed.R12(0,0), 2))
-        T = abs(pow(blazed.T12(0,0), 2))
+        R = pow(abs(blazed.R12(0,0)), 2)
+        T = pow(abs(blazed.T12(0,0)), 2)
 
         R_OK = 0.400333359695
         T_OK = 0.204851452350

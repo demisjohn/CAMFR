@@ -12,6 +12,11 @@
 
 #include "sectionmode.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Section2D_Mode::Section2D_Mode

@@ -112,8 +112,8 @@ class Circ_2_open : public ComplexFunction
 
     Complex operator()(const Complex& kr2);
 
-    vector<Complex> get_params() const;
-    void            set_params(const vector<Complex>&);
+    std::vector<Complex> get_params() const;
+    void set_params(const std::vector<Complex>&);
     
   protected:
 
@@ -153,8 +153,8 @@ class Circ_2_closed : public ComplexFunction
 
     Complex operator()(const Complex& kr2);
 
-    vector<Complex> get_params() const;
-    void            set_params(const vector<Complex>&);
+    std::vector<Complex> get_params() const;
+    void set_params(const std::vector<Complex>&);
         
   protected:
 

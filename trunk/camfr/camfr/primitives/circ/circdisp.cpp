@@ -14,6 +14,11 @@
 #include "circdisp.h"
 #include "circ.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Circular geometry, 2 materials, open system.

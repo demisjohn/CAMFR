@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> polyroot(const vector<Complex>& coef);
+std::vector<Complex> polyroot(const std::vector<Complex>& coef);
 
 
 

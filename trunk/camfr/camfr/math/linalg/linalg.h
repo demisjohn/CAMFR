@@ -16,17 +16,17 @@
 #include "../../defs.h"
 #include "blitz/array.h"
 
-using namespace blitz;
+typedef blitz::Array<Complex,1> cVector;
+typedef blitz::Array<Complex,2> cMatrix;
+typedef blitz::Array<Complex,3> cHyperM;
+typedef blitz::Array<Real,1>    rVector;
+typedef blitz::Array<Real,2>    rMatrix;
+typedef blitz::Array<Real,3>    rHyperM;
+typedef blitz::Array<int,1>     iVector;
+typedef blitz::Array<int,2>     iMatrix;
+typedef blitz::Array<int,3>     iHyperM;
 
-typedef Array<Complex,1> cVector;
-typedef Array<Complex,2> cMatrix;
-typedef Array<Complex,3> cHyperM;
-typedef Array<Real,1>    rVector;
-typedef Array<Real,2>    rMatrix;
-typedef Array<Real,3>    rHyperM;
-typedef Array<int,1>     iVector;
-typedef Array<int,2>     iMatrix;
-typedef Array<int,3>     iHyperM;
+using blitz::fortranArray;
 
 typedef enum{nrml, transp, herm} Op;
 

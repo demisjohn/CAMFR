@@ -96,14 +96,14 @@ class Expression
     bool            is_mono() const;
     Waveguide*      get_inc() const;
     Waveguide*      get_ext() const;
-    string             repr() const;
+    std::string        repr() const;
     
     static TmpStorage<Stack>      tmp_stacks;
     static TmpStorage<Expression> tmp_exprs;
       
   protected:
     
-    mutable vector<Term*> terms;
+    mutable std::vector<Term*> terms;
         
     // 'mutable' allows 'add_term' to be declared 'const', which
     // in turn allows operator+ to take Expressions passed as
@@ -151,7 +151,7 @@ class Term
     bool            is_mono() const;
     Waveguide*      get_inc() const;
     Waveguide*      get_ext() const;
-    string             repr() const;
+    std::string        repr() const;
 
     Termtype              get_type() const {return type;}
     BaseMaterial*          get_mat() const {return mat;}
@@ -185,8 +185,8 @@ class Term
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Expression  operator+(const Term& L,       const Term& R);
-const Expression& operator+(const Expression& L, const Term& R);
+const Expression operator+(const Term& L,       const Term& R);
+const Expression operator+(const Expression& L, const Term& R);
 
 
 
@@ -218,8 +218,8 @@ inline const Term operator*(const Term& t, unsigned int N)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-inline ostream& operator<<(ostream& s, const Expression& e)
-  {return s << e.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Expression& e)
+  {return s << e.repr() << std::endl;}
 
 
 
@@ -230,9 +230,9 @@ inline ostream& operator<<(ostream& s, const Expression& e)
 /////////////////////////////////////////////////////////////////////////////
 
 void material_expression_to_table(const Expression& e, 
-                                  vector<Complex>* eps, 
-                                  vector<Complex>* mu,
-                                  vector<Complex>* d);
+                                  std::vector<Complex>* eps, 
+                                  std::vector<Complex>* mu,
+                                  std::vector<Complex>* d);
 
 
 

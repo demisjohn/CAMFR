@@ -12,6 +12,11 @@
 
 #include "T_scheme_fields.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // cross_interface

@@ -17,7 +17,10 @@
 #include <complex>
 #include <string>
 
-using namespace std;
+using std::real;
+using std::imag;
+using std::abs; 
+using std::sqrt;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -66,7 +69,7 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 
 typedef double Real;
-typedef complex<Real> Complex;
+typedef std::complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
 typedef enum {ADR, track} Solver;
 typedef enum {normal, extra, SVD} Stability;
@@ -83,8 +86,24 @@ typedef enum {lapack, arnoldi} Eigen_calc;
 /////////////////////////////////////////////////////////////////////////////
 
 typedef enum {unknown, TEM, TE, TM, HE, EH, TE_TM} Polarisation;
-extern const string Pol_string[11];
-ostream& operator<< (ostream& s, const Polarisation& pol);
+extern const std::string Pol_string[11];
+std::ostream& operator<< (std::ostream& s, const Polarisation& pol);
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Workaround for inferior compilers.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
+#define NO_CXX_ABS
+#endif
+
+#ifdef NO_CXX_ABS
+Real abs(Real x);
+#endif
 
 
 

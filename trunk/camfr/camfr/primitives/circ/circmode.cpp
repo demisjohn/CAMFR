@@ -15,6 +15,11 @@
 #include "circdisp.h"
 #include "circoverlap.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Circ_M_Mode::Circ_M_Mode
