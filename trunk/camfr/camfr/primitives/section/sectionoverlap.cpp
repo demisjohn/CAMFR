@@ -70,15 +70,49 @@ class Overlap : public ComplexFunction
     {
       counter++;
 
+      // Make list of intervals.
+
+      const SectionImpl* sec_I  
+        = dynamic_cast<SectionImpl*>(m1->get_geom());
+      const SectionImpl* sec_II 
+        = dynamic_cast<SectionImpl*>(m2->get_geom());
+
+      const Slab& slab_I  
+        = *sec_I ->slabs[index_lookup(x, Plus, sec_I ->discontinuities)];
+
+      const Slab& slab_II 
+        = *sec_II->slabs[index_lookup(x, Plus, sec_II->discontinuities)];
+
+      vector<Complex> disc = slab_I.get_discontinuities();
+
+      disc.insert(disc.begin(), 0.0);
+
+      vector<Complex> disc_II = slab_II.get_discontinuities();
+      for (unsigned int k=0; k<disc_II.size(); k++)
+        disc.push_back(disc_II[k]);
+
+      remove_copies(&disc, 1e-9);
+
+      sort(disc.begin(), disc.end(), RealSorter());
+
+      // Do numeric integration.
+
       Overlap_x f(m1, m2, x);
 
       Wrap_real_to_real f_r(f);
       Wrap_real_to_imag f_i(f);
 
-      Real y_stop = real(m1->get_geom()->get_height());
+      Complex result = 0.0;
+      for (unsigned int k=0; k<disc.size()-1; k++)
+      {
+        Real y_start = real(disc[k]);
+        Real y_stop = real(disc[k+1]);
+
+        result += patterson_quad(f_r, y_start, y_stop, 1e-2, 4)
+              + I*patterson_quad(f_i, y_start, y_stop, 1e-2, 4);
+      }
       
-      return patterson_quad(f_r, 0, y_stop, 1e-2, 4)
-         + I*patterson_quad(f_i, 0, y_stop, 1e-2, 4);
+      return result;
     }
 
   protected:
@@ -103,17 +137,40 @@ class Overlap : public ComplexFunction
 Complex overlap_numeric(const SectionMode* mode_I,
                         const SectionMode* mode_II)
 {
+  // Make sorted list of separation points between different slabs.
+
+  Section2D* medium_I  = dynamic_cast<Section2D*>(mode_I ->get_geom());
+  Section2D* medium_II = dynamic_cast<Section2D*>(mode_II->get_geom());
+
+  vector<Complex> disc = medium_I->discontinuities;
+
+  disc.push_back(0.0);
+
+  for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
+    disc.push_back(medium_II->discontinuities[k]);
+
+  remove_copies(&disc, 1e-6);
+  
+  sort(disc.begin(), disc.end(), RealSorter());
+
+  // Loop over slices.
+
   Overlap f(mode_I, mode_II);
 
   Wrap_real_to_real f_r(f);
   Wrap_real_to_imag f_i(f);
 
-  Real x_stop = real(mode_I->get_geom()->get_width());
+  Complex result = 0.0;
+  for (unsigned int k=0; k<disc.size()-1; k++)
+  {
+    Real x_start = real(disc[k]);
+    Real x_stop  = real(disc[k+1]);
 
-  Complex numeric = patterson_quad(f_r, 0, x_stop, 1e-2, 4)
-     + I*patterson_quad(f_i, 0, x_stop, 1e-2, 4);
+    result += patterson_quad(f_r, x_start, x_stop, 1e-2, 4)
+          + I*patterson_quad(f_i, x_start, x_stop, 1e-2, 4);
+  }
 
-  return numeric;
+  return result;
 }
 
 
@@ -480,8 +537,6 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
   // Corrected and uncorrected mode.
   //
 
-  Complex old_ky = global.slab_ky;
-
   const Section2D* medium = (sec_I_mode->corrected) ? medium_I : medium_II;
 
   const Section2D_Mode* sec_mode = (sec_I_mode->corrected) ? sec_I_mode
@@ -489,8 +544,6 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
 
   vector<Complex> disc = medium->discontinuities;
   disc.insert(disc.begin(), 0.0);
-
-  global.slab_ky = sec_mode->get_kz();
 
   const int M = global_section.M;
   const int N = global_section.N;
@@ -508,8 +561,14 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
   const Complex W = sec_mode->get_geom()->get_width();
   const Complex H = sec_mode->get_geom()->get_height();
 
-  //std::cout << "sec mode n " 
-  //<<sec_mode->get_kz()/2./pi*global.lambda << std::endl;
+  int old_N = global.N;
+  global.N = sec_M;  
+
+  int old_orthogonal = global.orthogonal;
+  global.orthogonal = false;
+
+  Complex old_beta = global.slab_ky;
+  global.slab_ky = sec_mode->get_kz();
   
   Complex result = 0.0;
 
@@ -517,9 +576,6 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
   {
     SlabImpl* slab = medium->
       slabs[index_lookup(disc[k],Plus,medium->discontinuities)]->get_impl();
-
-    std::cout << k << " slab " << slab << " " << slab->get_core()->n() <<
-     " " << disc[k] << " " << disc[k+1] << std::endl << std::flush;
 
     sec_mode->get_fw_bw(disc[k], Plus, &fw, &bw);
 
@@ -553,30 +609,29 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
           if (sec_I_mode->corrected)
           {
             overlap_pw(slab_mode, beta, true, &Ox, &Oy);
-            result += (fw_jj+bw_jj)*Ox*(*Hy)(i1) - (fw_jj+bw_jj)*Oy*(*Hx)(i1);
+            result += (fw_jj-bw_jj)*Ox*(*Hy)(i1) - (fw_jj+bw_jj)*Oy*(*Hx)(i1);
           }
           else
           {            
             overlap_pw(slab_mode, beta, false, &Ox, &Oy);
-            result += (*Ex)(i1)*(fw_jj-bw_jj)*Oy - (*Ey)(i1)*(fw_jj-bw_jj)*Ox;
+            result += (*Ex)(i1)*(fw_jj-bw_jj)*Oy - (*Ey)(i1)*(fw_jj+bw_jj)*Ox;
           }
-
-          std::cout << k << " " << jj << " " << m << " " << n << " " << result << " " << fw_jj << " " << bw_jj << " " << Ox  << Oy 
-//<< (*Ex)(i1) << (*Ey)(i1) << std::endl;
-<<(*Hx)(i1) << (*Hy)(i1) <<std::endl;
         }
       }
     }
   }
 
-  global.slab_ky = old_ky;
+  global.N = old_N;
+  global.slab_ky = old_beta;
+  global.orthogonal = old_orthogonal;
+
+  return result;
+  
+  // Numerical verification.
 
   Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
-
-  //std::cout << "overlap " << numeric << " " << result
-  //           << " " << numeric-result << std::endl;
   
-  //if (abs(numeric - result) > 1e-3)
+  if (abs(numeric - result) > 1e-3)
   {
     std::cout << sec_I_mode->corrected << " " << sec_II_mode->corrected 
               << " " << sec_I_mode->n_eff() << " " << sec_II_mode->n_eff()
@@ -584,8 +639,6 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
     std::cout << "overlap " << numeric << " " << result
               << " " << abs(numeric-result) <<  " " 
               << abs((result)/numeric) << std::endl;
-   if (abs(numeric - result) > 1e-3)
-     std::cout << "****" << std::endl;  
   }
 
   return result;

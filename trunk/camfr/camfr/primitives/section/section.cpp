@@ -1620,6 +1620,27 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 }
 
 
+struct modesorter_tmp
+{
+    bool operator()(const Mode* a, const Mode* b)
+    {      
+      std::cout << a << " "<< b << std::endl << std::flush;
+
+      if ( (a->pol == TE) && (b->pol != TE) )
+        return true;
+
+      if ( (a->pol == TM) && (b->pol != TM) )
+        return false;
+
+      std::cout << a->get_kz() << " "<< b->get_kz() << std::endl << std::flush;
+      
+
+      const Complex kz_a = a->get_kz();
+      const Complex kz_b = b->get_kz();
+      
+      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1696,40 +1717,22 @@ void Section2D::find_modes_from_estimates()
 
   user_estimates.clear();
 
-  // Refine estimates.
-
-  /*
-  if (sort == highest_index)
-    std::sort(estimates.begin(), estimates.end(), index_sorter());
-  else
-    std::sort(estimates.begin(), estimates.end(), loss_sorter());
-  */
-
-  std::sort(estimates.begin(), estimates.end(), kz2_sorter());
+  // Split off modes to be corrected.
 
   if (estimates.size() > global.N)
     estimates.erase(estimates.begin()+global.N, estimates.end());
 
-  //for (int i=0; i<estimates.size(); i++)
-  //  std::cout << i << " " << sqrt(estimates[i].kz2)/2./pi*global.lambda 
-  //            << std::endl;
-
-  kt_to_neff transform(C0*min_eps_mu);
-  SectionDisp disp(left, right, global.lambda, M2, symmetric);
-
-  //if (global_section.mode_correction == false)
-  {
+  vector<Complex> kt_coarse;
 
   for (unsigned int i=0; i<estimates.size(); i++)
   { 
     Complex kz = sqrt(estimates[i].kz2);
-    bool corrected = false;
+
+    // Mode to be corrected.
 
     if ((global_section.mode_correction == true)
        && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
-    {
-      std::cout << "Refining " << kz/2./pi*global.lambda;
-      
+    {    
       Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
 
       if (imag(kt) < 0) // 45 degree cut?
@@ -1742,78 +1745,37 @@ void Section2D::find_modes_from_estimates()
       if ((abs(real(kt)) < .001) && (real(kt) < 0))
         kt -= 2*real(kt);
 
-      Complex kt_new = mueller(disp, kt+0.001, kt+.001*I, 1e-8);
-
-      kz = sqrt(C0*min_eps_mu - kt_new*kt_new);      
-
-      std::cout << " to " << kz/2./pi*global.lambda << std::endl;
-
-      corrected = true;
-    }    
-
-    if (imag(kz) > 0)
-      kz = -kz;
-
-    if (abs(imag(kz)) < abs(real(kz)))
-      if (real(kz) < 0)
+      kt_coarse.push_back(kt);
+    } 
+    else // Uncorrected mode.
+    {
+      if (imag(kz) > 0)
         kz = -kz;
 
-    Section2D_Mode* newmode = new 
-      Section2D_Mode(global.polarisation, kz, this,
-                     estimates[i].Ex, estimates[i].Ey,
-                     estimates[i].Hx, estimates[i].Hy, 
-                     corrected);
+      if (abs(imag(kz)) < abs(real(kz)))
+        if (real(kz) < 0)
+          kz = -kz;
 
-    newmode->normalise();
+      Section2D_Mode* newmode = new 
+        Section2D_Mode(global.polarisation, kz, this,
+                       estimates[i].Ex, estimates[i].Ey,
+                       estimates[i].Hx, estimates[i].Hy, 
+                       false);
 
-    modeset.push_back(newmode);
+      newmode->normalise();
+
+      modeset.push_back(newmode);
+    }
   }
 
-  global.N = modeset.size();
-  std::cout << "global.N " << global.N << std::endl;
-
-  py_print("Done.");
-
-  return;
-
-  // Test orthogonality.
-
-  cMatrix O12(estimates.size(), estimates.size(), fortranArray);
-  cMatrix O21(estimates.size(), estimates.size(), fortranArray);
-  cMatrix O11(estimates.size(), estimates.size(), fortranArray);
-  cMatrix O22(estimates.size(), estimates.size(), fortranArray);
-  calc_overlap_matrices(this, &O12, &O21, &O11, &O22);
-  std::cout << O11 << std::endl;
-  std::cout << O12 << std::endl;
-
-  return;
-  }
-
-  // Refine zeros using transcendental function.
+  // Refine modes using transcendental function.
 
   py_print("Refining estimates...");
 
-  vector<Complex> kt_coarse;
-  for (unsigned int i=0; i<estimates.size(); i++)
-  {
-    Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
+  kt_to_neff transform(C0*min_eps_mu);
+  SectionDisp disp(left, right, global.lambda, M2, symmetric);
+  //f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
-    if (imag(kt) < 0) // 45 degree cut?
-      kt = -kt;
-
-    if (abs(imag(kt)) < 1e-12)
-      if (real(kt) > 0)
-        kt = -kt;
-
-    if ((abs(real(kt)) < .001) && (real(kt) < 0))
-      kt -= 2*real(kt);
-
-    estimates[i].kt = kt;
-
-    kt_coarse.push_back(kt);
-  }
-
-  f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
 
   // Eliminate false zeros.
@@ -1828,12 +1790,9 @@ void Section2D::find_modes_from_estimates()
       remove_elems(&kt, -kt_i, 1e-6);
     }
 
-  // Create modeset.
+  // Add corrected modes to modeset.
 
   py_print("Creating mode profiles...");
-
-  if (estimates.size() > global.N+5)
-    estimates.erase(estimates.begin()+global.N+5, estimates.end());
 
   for (unsigned int i=0; i<kt.size(); i++)
   { 
@@ -1854,8 +1813,12 @@ void Section2D::find_modes_from_estimates()
     modeset.push_back(newmode);
   }
 
-  sort_modes();
-  truncate_N_modes(); 
+  //for (int i=0; i<modeset.size();i++)
+  //  std::cout << i <<"  " << modeset[i] << " " <<modeset[i]->get_kz() << std::endl << std::flush;
+
+  //TMP
+  //sort_modes();
+  //std::sort(modeset.begin(), modeset.end(), modesorter_tmp());
 
   py_print("Done.");
 

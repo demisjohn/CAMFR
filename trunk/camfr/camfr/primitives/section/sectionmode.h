@@ -31,8 +31,6 @@ class SectionMode : public Mode
 
     SectionMode(Polarisation pol, const Complex& kz0, SectionImpl* geom_)
       : Mode(pol, kz0, -kz0), geom(geom_) {}
-    
-    Complex get_kz () const {return kz;}
 
     SectionImpl* get_geom() const {return geom;}
 

@@ -205,13 +205,10 @@ struct ModeEstimate
     ModeEstimate(const Complex& kz2_,
                  cVector* Ex_=0, cVector* Ey_=0, 
                  cVector* Hx_=0, cVector* Hy_=0)
-      : kz2(kz2_), kt(0,.0), kt_refined(0.0), 
-        Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
+      : kz2(kz2_), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
 
     Complex kz2;
-    Complex kt;
-    Complex kt_refined;
-    cVector *Ex, *Ey, *Hx, *Hy;  
+    cVector *Ex, *Ey, *Hx, *Hy;
 };
 
 
