@@ -76,7 +76,7 @@ using std::isnan;
 typedef double Real;
 typedef std::complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
-typedef enum {ADR, track, series} Solver;
+typedef enum {ADR, track, series, ASR} Solver;
 typedef enum {normal, extra, SVD} Stability;
 typedef enum {identical, symmetric} Field_calc_heuristic;  
 typedef enum {GEV, T} Bloch_calc;
@@ -165,7 +165,7 @@ struct Global
     // The material whose gain will be adjusted to get amplitude resonance.
     Material* gain_mat;
 
-    // Complex solver to use: ADR, root tracking, series expansion.
+    // Complex solver to use: ADR, root tracking, series expansion, ... .
     Solver solver;
     
     // Stability mode: normal, extra matrix equilibration or SVD.
@@ -232,8 +232,8 @@ struct Global
     // eigenvalue in cavity calculations.
     Eigen_calc eigen_calc;
 
-    // TMP switch that tells CAMFR is the local modes are orthogonal.
-    // CAMFR should later figure this out by itself.
+    // Switch to tell CAMFR whether or not it should treat the modes as
+    // orthogonal.
     bool orthogonal;
 
     // Determines whether special case should be given to degenerate modes.

@@ -198,6 +198,14 @@ inline void set_mode_correction(Mode_correction c)
 inline void set_keep_all_estimates(bool b)
   {global_section.keep_all_estimates = b;}
 
+inline void set_eta_ASR(Real eta)
+{
+  if ((eta > 1.0) || (eta < 0.0))
+    py_print("Warning: eta_ASR should be between 0 and 1.");
+
+  global_slab.eta_ASR=eta;
+}
+
 inline void set_davy(bool b)
   {global.davy = b;}
 
@@ -663,12 +671,14 @@ BOOST_PYTHON_MODULE(_camfr)
   enum_<Solver>("Solver")
     .value("ADR",    ADR)
     .value("track",  track)
-    .value("series", series)
+    .value("series", series)    
+    .value("ASR",    ASR)
     ;
 
   scope().attr("ADR")    = ADR;
   scope().attr("track")  = track;
   scope().attr("series") = series;
+  scope().attr("ASR")    = ASR;
 
   // Wrap Stability enum.
 
@@ -824,7 +834,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_right_PML",              set_right_PML);
   def("set_upper_PML",              set_upper_PML);
   def("set_lower_PML",              set_lower_PML);
-  def("set_circ_PML",               set_circ_PML);
+  def("set_circ_PML",               set_circ_PML);  
+  def("set_eta_ASR",                set_eta_ASR);
   def("set_beta",                   set_beta);
   def("set_section_solver",         set_section_solver);    
   def("set_keep_all_estimates",     set_keep_all_estimates);  
