@@ -29,16 +29,16 @@ slab.calc()
 
 # Visualise.
 
-modenumber = 0
+r_x = arange(1.0, 3.5, 0.01)
 
 print "Plotting mode distribution (close window to continue)"
 plot_neff(slab)
 
 print "Plotting E field (close window to continue)"
-plot_field(slab, modenumber, lambda f : f.E2().real)
+plot_field(slab.mode(0), lambda f : f.E2().real, r_x)
 
 print "Plotting H field (close window to continue)"
-plot_field(slab, modenumber, lambda f : f.H2().real)
+plot_field(slab.mode(0), lambda f : f.H2().real, r_x)
 
 print "Plotting refractive index profile (close window to continue)"
-plot_n(slab)
+plot_n(slab, r_x)
