@@ -1,3 +1,7 @@
+2005-02-03  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* blochstack.py: New test.
+
 2005-01-26  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* shift.py: New test.
