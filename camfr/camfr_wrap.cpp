@@ -185,6 +185,9 @@ inline void set_guided_only(bool b)
 inline void set_mode_surplus(Real l)
   {global.mode_surplus = l;}
 
+inline void set_backward_modes(bool b)
+  {global.backward_modes = b;}
+
 inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -719,6 +722,7 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_beta",                   set_beta);
   def("set_guided_only",            set_guided_only);
   def("set_mode_surplus",           set_mode_surplus);
+  def("set_backward_modes",         set_backward_modes); 
   def("free_tmps",                  free_tmps);
 
   // Wrap Coord.
@@ -1063,6 +1067,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def(init<Expression&, Expression&, int, int>())
     .def("mode",   section_get_mode,
          return_value_policy<reference_existing_object>())
+    .def("disp",   &Section::get_disp)
     .def("width",  section_width)
     .def("height", section_height)
     .def("eps",    &Section::eps_at)
