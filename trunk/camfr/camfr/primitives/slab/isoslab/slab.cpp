@@ -92,9 +92,9 @@ Slab_M::Slab_M(const Expression& expression, int M_series_)
   // Check if waveguide is uniform.
 
   uniform = true;
-  for (unsigned int i=0; i<materials.size(); i++)
-    if (    (abs(materials[i]->n()   - core->n())   > 1e-6)
-         || (abs(materials[i]->mur() - core->mur()) > 1e-6) )
+  for (unsigned int i=0; i<materials.size(); i++)    
+    if (    (abs(materials[i]->n()   - core->n())   > 1e-12)
+         || (abs(materials[i]->mur() - core->mur()) > 1e-12) )
       uniform = false;
 }
 
@@ -885,7 +885,7 @@ cVector Slab_M::fourier_eps_extended(int M, cVector* inv_result) const
       else
       {
         const Complex t = -I*Real(m)*K;
-        factor = (exp( t*disc[k+1])-exp( t*disc[k]  )) / t 
+        factor = (exp( t*disc[k+1])-exp( t*disc[k]  )) / t
                + (exp(-t*disc[k])  -exp(-t*disc[k+1])) / t;
       }
 
@@ -1439,7 +1439,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
       upper_stacks.push_back(Stack(upper_ex));
 
       //std::cout << "lower" << lower_ex << std::endl;
-      //std::cout << "upper" << upper_ex << std::endl;  
+      //std::cout << "upper" << upper_ex << std::endl;
     }
   }
 
@@ -1507,17 +1507,32 @@ void Slab_M::build_modeset(vector<Complex>& kt)
 
     int core;
 
-    if (best_cores[i].size() == 1)
+    // Heuristic for identical cores.
+
+    if (global.field_calc_heuristic == identical)
     {
-      core = best_cores[i][0];
-      offset = 0;
-    }
-    else
-    {
-      if (offset >= best_cores[i].size())
+      if (best_cores[i].size() == 1)
+      {
+        core = best_cores[i][0];
         offset = 0;
+      }
+      else
+      {
+        if (offset >= best_cores[i].size())
+          offset = 0;
       
-      core = best_cores[i][offset++];
+        core = best_cores[i][offset++];
+      }
+    }
+
+    // Heuristic for symmetric structures.
+
+    else if (global.field_calc_heuristic == symmetric)
+    {
+      if (2*int(i/2) == i)
+        core = best_cores[i].front();
+      else
+        core = best_cores[i].back();
     }
 
     //Complex neff = sqrt(C*min_eps_mu - kt[i]*kt[i])/2./pi*global.lambda;
