@@ -1,5 +1,9 @@
 2002-06-21  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* field.cpp: Add propagate function.
+
+2002-06-21  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* field.h: Add deep copy constructor.
 
 2002-06-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
