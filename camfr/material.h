@@ -53,6 +53,9 @@ class BaseMaterial
 
     const Material_length operator() (const Complex& d=0.0) const;
 
+    virtual const Complex epsr(int) const = 0; // Diagonal tensor elements.
+    virtual const Complex  mur(int) const = 0;    
+
     virtual bool no_gain_present() const = 0;
     virtual std::string repr()     const = 0;
 };
@@ -96,6 +99,9 @@ class Material : public BaseMaterial
      const Complex     mu() const {return i_mur * mu0;}
      const Complex eps_mu() const {return i_n * i_n * eps0 * i_mur * mu0;}
 
+     const Complex epsr(int) const {return epsr();}
+     const Complex  mur(int) const {return mur();}     
+
      Real gain() const {return 4*imag(i_n)*pi/(real(global.lambda) * 1e-4);}
 
      void set_n(Complex n)        {i_n   = n;}
@@ -122,6 +128,53 @@ class Material : public BaseMaterial
 inline std::ostream& operator<<(std::ostream& s, const Material& m)
   {return s << m.repr() << std::endl;}
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: UniaxialMaterial
+//
+//   Material with a diagonal eps and mu tensor.
+//
+//   TODO: flesh out this class and improve inheritance hierarchy.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+class UniaxialMaterial : public Material
+{
+  public:
+
+     UniaxialMaterial(const Complex& epsr_1, 
+                      const Complex& epsr_2, 
+                      const Complex& epsr_3,
+                      const Complex& mur_1, 
+                      const Complex& mur_2, 
+                      const Complex& mur_3) : Material(sqrt(epsr_1))
+       {i_epsr[0] = epsr_1; i_epsr[1] = epsr_2; i_epsr[2] = epsr_3;
+         i_mur[0] =  mur_1;  i_mur[1] =  mur_2;  i_mur[2] =  mur_3;}
+
+     const Complex epsr(int i) const {return i_epsr[i-1];}
+     const Complex  mur(int i) const {return  i_mur[i-1];}
+
+     bool no_gain_present() const {return true;}
+
+     bool operator==(const Material& m) const
+       {return false;}
+
+     bool operator!=(const Material& m) const
+       {return !(*this == m);}
+
+     std::string repr() const
+       {std::ostringstream s; s << "Uniaxial material"; return s.str();}
+     
+  protected:
+
+     Complex i_epsr[3];
+     Complex i_mur[3];
+};
+
+inline std::ostream& operator<<(std::ostream& s, const UniaxialMaterial& m)
+  {return s << m.repr() << std::endl;}
 
 
 

@@ -889,6 +889,17 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("__repr__", &Material::repr)
     ;
 
+  // Wrap UniaxialMaterial.
+
+  class_<UniaxialMaterial, bases<Material> >
+    ("UniaxialMaterial",init<const Complex&,const Complex&,const Complex&,
+                             const Complex&,const Complex&,const Complex&>>())
+    .def("__call__", material_to_term)
+    .def("epsr",     &UniaxialMaterial::epsr)
+    .def("mur",      &UniaxialMaterial::mur)
+    .def("__repr__", &UniaxialMaterial::repr)
+    ;
+
   // Wrap Material_length.
 
   class_<Material_length>("Material_length", no_init);
