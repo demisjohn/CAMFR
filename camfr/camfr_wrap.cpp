@@ -36,6 +36,7 @@
 #include "primitives/slab/isoslab/slab.h"
 #include "primitives/slab/isoslab/slabwall.h"
 #include "primitives/slab/isoslab/slabdisp.h"
+#include "primitives/section/section.h"
 #include "primitives/section/sectiondisp.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,6 +117,9 @@ inline void set_field_calc(long f)
 inline void set_bloch_calc(long s)
   {global.bloch_calc = Bloch_calc(s);}
 
+inline void set_eigen_calc(long s)
+  {global.eigen_calc = Eigen_calc(s);}
+
 inline void set_orthogonal(bool b)
   {global.orthogonal = b;}
 
@@ -139,6 +143,7 @@ template class enum_as_int_converters<Solver>;
 template class enum_as_int_converters<Stability>;
 template class enum_as_int_converters<Field_calc>;
 template class enum_as_int_converters<Bloch_calc>;
+template class enum_as_int_converters<Eigen_calc>;
 template class enum_as_int_converters<Polarisation>;
 template class enum_as_int_converters<Fieldtype>;
 
@@ -460,6 +465,11 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     camfr.add(make_ref(GEV), "GEV");
     camfr.add(make_ref(T),   "T");
 
+    // Wrap Eigen_calc enum.
+
+    camfr.add(make_ref(lapack),  "lapack");
+    camfr.add(make_ref(arnoldi), "arnoldi");
+
     // Wrap Polarisation enum.
     
     camfr.add(make_ref(unknown), "unknown");
@@ -497,6 +507,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     camfr.def(set_unstable_exp_threshold, "set_unstable_exp_threshold");
     camfr.def(set_field_calc,             "set_field_calc");
     camfr.def(set_bloch_calc,             "set_bloch_calc");
+    camfr.def(set_eigen_calc,             "set_eigen_calc");
     camfr.def(set_orthogonal,             "set_orthogonal");
     camfr.def(set_circ_order,             "set_circ_order");
     camfr.def(set_circ_fieldtype,         "set_circ_field_type");
@@ -775,6 +786,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     InfStack_.def(constructor<const Expression&>());
     InfStack_.def(constructor<const Expression&,const Complex&>()); // tmp
+    InfStack_.def(&InfStack::get_R12,  "R12");
 
     // Wrap RealFunction.
 
@@ -857,19 +869,33 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
 
     Slab_.def(constructor<const Term&>());
     Slab_.def(constructor<const Expression&>());
-    Slab_.def(&Slab::set_left_wall,     "set_left_wall");
-    Slab_.def(&Slab::set_right_wall,    "set_right_wall");
-    Slab_.def(&Slab::get_width,         "width");
-    Slab_.def(&Slab::repr,              "__repr__"); // tmp
-    Slab_.def(waveguide_to_term,        "__call__"); // tmp
+
+    Slab_.def(&Slab::set_left_wall   "set_left_wall");
+    Slab_.def(&Slab::set_right_wall, "set_right_wall");
+    Slab_.def(&Slab::get_width,      "width");
+    Slab_.def(&Slab::repr,           "__repr__"); // tmp
+    Slab_.def(waveguide_to_term,     "__call__"); // tmp
 
     // Wrap SectionDisp.
 
     class_builder<SectionDisp> SectionDisp_(camfr, "SectionDisp");
     SectionDisp_.declare_base(ComplexFunction_);
 
-    SectionDisp_.def(constructor<Stack&, Stack&, Real>());
+    SectionDisp_.def(constructor<Stack&, Stack&, Real, int>());
     SectionDisp_.def(&SectionDisp::operator(), "__call__"); // tmp
+
+    // Wrap Section.
+
+    class_builder<Section> Section_(camfr, "Section");
+    Section_.declare_base(MultiWaveguide_);
+
+    Section_.def(constructor<const Expression&>());
+    Section_.def(constructor<const Expression&,int>());
+    Section_.def(constructor<const Expression&,const Expression&>());
+    Section_.def(constructor<const Expression&,const Expression&,int>());
+
+    Section_.def(&Section::get_width, "width");
+    Section_.def(&Section::repr,      "__repr__"); // tmp
   }
   catch(...)
   {

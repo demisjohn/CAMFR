@@ -14,7 +14,7 @@
 #include "defs.h"
 
 Global global={0,0,TE,0,track,normal,100,1,0.01,100,100,Complex(1,1),false,
-               20,1e-14,true,1e-10,S_S,GEV,true};
+               20,1e-14,true,1e-10,S_S,GEV,lapack,true};
 
 
 
