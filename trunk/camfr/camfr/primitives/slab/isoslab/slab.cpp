@@ -218,7 +218,6 @@ void Slab_M::find_modes()
   if (!recalc_needed())
     return;
 
-
   // Only TE or TM modes needed.
 
   if ((global.polarisation == TE) || (global.polarisation == TM))
@@ -784,6 +783,9 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     
     calc_fw = !calc_fw;
     Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
+
+    //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda 
+    //          << std::endl;
     
     newmode->normalise();
     

@@ -242,7 +242,7 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
     if (abs(real(kx_i)) < 1e-12)
       if (imag(kx_i) > 0)
         kx_i = -kx_i;
-
+    
     kx.push_back(kx_i);
   }
 
@@ -273,8 +273,8 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
 
   if (calc_fw == false)
   {
-    Complex swap = fw_chunk_begin_scaled;
-    fw_chunk_begin_scaled = bw_chunk_begin_scaled;
+    Complex swap = -fw_chunk_begin_scaled;
+    fw_chunk_begin_scaled = -bw_chunk_begin_scaled;
     bw_chunk_begin_scaled = swap;
   }
 
