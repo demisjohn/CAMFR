@@ -1,3 +1,7 @@
+2004-10-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* geometry.py: Add switch to calculate average eps and 1/eps.
+
 2004-08-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Add switch for Davy.
