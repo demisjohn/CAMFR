@@ -245,15 +245,25 @@ void SlabImpl::calc_overlap_matrices
     {
       (*O_I_II)(i,    j) =   TE_TE_I_II(i,j) * cos_I (  i);
       (*O_I_II)(i,  n+j) =   0.0;
-      (*O_I_II)(n+i,  j) = - Ex_Hz_I_II(i,j) * sin_II(  j) 
+      (*O_I_II)(n+i,  j) = - Ex_Hz_I_II(i,j) * sin_II(  j)
                            + Ez_Hx_I_II(i,j) * sin_I (n+i);
+      
       (*O_I_II)(n+i,n+j) =   TM_TM_I_II(i,j) * cos_II(n+j);
 
       (*O_II_I)(i,    j) =   TE_TE_II_I(i,j) * cos_II(  i);
       (*O_II_I)(i,  n+j) =   0.0;
-      (*O_II_I)(n+i,  j) = - Ex_Hz_II_I(i,j) * sin_I (  j) 
+      (*O_II_I)(n+i,  j) = - Ex_Hz_II_I(i,j) * sin_I (  j)
                            + Ez_Hx_II_I(i,j) * sin_II(n+i);
       (*O_II_I)(n+i,n+j) =   TM_TM_II_I(i,j) * cos_I (n+j);        
+    }
+
+  // Normalise.
+
+  for (int i=1; i<=N; i++)
+    for (int j=1; j<=N; j++)
+    {
+      (*O_I_II)(i,j) /= sqrt(cos_I (i) * cos_II(j));
+      (*O_II_I)(i,j) /= sqrt(cos_II(i) * cos_I (j));
     }
 }
 

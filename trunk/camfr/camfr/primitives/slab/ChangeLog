@@ -1,3 +1,7 @@
+2001-11-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.cpp: Fix normalisation.
+
 2001-11-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.cpp: Replace wrong kz by kz0.
