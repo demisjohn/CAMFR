@@ -13,7 +13,7 @@ import unittest, eps
 class substacks(unittest.TestCase):
     def testRT(self):
         
-        """Substracks"""
+        """Substacks"""
 
         print
         print "Running substacks..."
