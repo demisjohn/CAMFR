@@ -188,9 +188,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     
     // Avoid division by zero in case convergence has happened.
 
-    if (    (1. + abs(z1-z2) <= 1.)
-         || (1. + abs(z1-z3) <= 1.)
-         || (1. + abs(f1-f2) <= 1.) )
+    if ( (abs(z1-z2) < 1e-15) || (abs(z1-z3) < 1e-15) )
     {
       converged = true;
       break;
@@ -315,7 +313,7 @@ std::vector<Complex> mueller_multiple
     bool error = false;
     do
     {
-      Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, 1e-12,
+      Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
                                  &deflate, maxiter_i, &error);
 
       if (abs(new_root-z0[i]) > 0.1)
