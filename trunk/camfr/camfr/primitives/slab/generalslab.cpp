@@ -82,6 +82,30 @@ Real SlabImpl::S_flux(const FieldExpansion& f,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// signedsqrt2
+//
+//   Square root with branch cut at 45 degrees.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex signedsqrt2(const Complex& kz2)
+{
+  Complex new_kz = sqrt(kz2);
+
+  if (imag(new_kz) > 0)
+    new_kz = -new_kz;
+
+  if (abs(imag(new_kz)) < abs(real(new_kz)))
+    if (real(new_kz) < 0)
+      new_kz = -new_kz;
+
+  return new_kz;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // SlabImpl::calc_overlap_matrices()
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -200,10 +224,12 @@ void SlabImpl::calc_overlap_matrices
       = dynamic_cast<SlabMode*>(medium_II->get_mode(i))->get_kz0();
     
     sin_I (i) = global_slab.beta / kz0_I;
-    sin_II(i) = global_slab.beta / kz0_II; 
+    sin_II(i) = global_slab.beta / kz0_II;
 
-    cos_I (i) = signedsqrt(1.0 - sin_I (i) * sin_I (i));
-    cos_II(i) = signedsqrt(1.0 - sin_II(i) * sin_II(i));
+    // Note that cos needs to be in sync with the ones in slabmode.cpp.
+
+    cos_I (i) = signedsqrt2(1.0 - sin_I (i) * sin_I (i));
+    cos_II(i) = signedsqrt2(1.0 - sin_II(i) * sin_II(i));
   }
 
   // Calculate O_I_II and O_II_I.
