@@ -96,7 +96,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   global.lambda = lambda;
 
-  const Complex C = pow(2*pi/lambda, 2) / eps0 / mu0;
+  const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
 
   // Calculate kx in all materials.
 
