@@ -174,6 +174,8 @@ class Slab : public MultiWaveguide
 inline std::ostream& operator<<(std::ostream& s, const Slab& slab)
   {return s << slab.repr();}
 
+Complex slab_signedsqrt(const Complex& kz2);
+
 
 
 #endif

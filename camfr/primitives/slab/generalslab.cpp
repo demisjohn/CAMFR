@@ -92,13 +92,13 @@ Real SlabImpl::S_flux(const FieldExpansion& f,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// signedsqrt2
+// slab_signedsqrt
 //
 //   Square root with branch cut at 45 degrees.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex signedsqrt2(const Complex& kz2)
+Complex slab_signedsqrt(const Complex& kz2)
 {
   Complex new_kz = sqrt(kz2);
 
@@ -122,7 +122,7 @@ Complex signedsqrt2(const Complex& kz2)
 
 // Dirty includes. Refactor this code after the design of moslab has settled.
 
-#include "isoslab/slabmode.cpp"
+#include "isoslab/slabmode.h"
 
 // Work around MS linker bug.
 
@@ -246,8 +246,8 @@ void SlabImpl::calc_overlap_matrices
 
     // Note that cos needs to be in sync with the ones in slabmode.cpp.
 
-    cos_I (i) = signedsqrt2(1.0 - sin_I (i) * sin_I (i));
-    cos_II(i) = signedsqrt2(1.0 - sin_II(i) * sin_II(i));
+    cos_I (i) = slab_signedsqrt(1.0 - sin_I (i) * sin_I (i));
+    cos_II(i) = slab_signedsqrt(1.0 - sin_II(i) * sin_II(i));
   }
 
   // Calculate O_I_II and O_II_I.

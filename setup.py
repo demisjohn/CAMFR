@@ -71,7 +71,6 @@ setup(name         = "camfr",
                              "visualisation/camfr_tk.py",
                              "visualisation/TkPlotCanvas.py"]
                            + extra_files)],
-#                      ("documentation", ["docs/camfr.pdf"])],
       cmdclass     = {"install_data" : camfr_install_data,
                       "build"        : camfr_build},
       )

@@ -1,8 +1,10 @@
 CAMFR 1.0:
 
--upgrade boost: contants
--memory management (matlab)
+-leak check
+-add pentium3 to machine.cfg, cp it to machine_cfg_lix.py
+-upgrade scons for windows
 -thin structures
+-Lieven's plot routines
 -remove PML from geometry figure.
 
 CAMFR 3D:
