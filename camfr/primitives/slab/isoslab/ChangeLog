@@ -1,5 +1,9 @@
 2001-11-16  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* slabmode.cpp: Fix multiplication.
+
+2001-11-16  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* slabmode.cpp: Fix normalisation.
 
 2001-11-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
