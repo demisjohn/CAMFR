@@ -19,32 +19,57 @@ class expressions(unittest.TestCase):
         print "Running expressions..."
 
         a = Material(1)
-        waveguide = Slab(a(1))
+        
+        s  = Slab(a(1))
+        s2 = Slab(a(1))
+        
+        st = Stack(s(1) + s(2))
 
-        left = Stack(waveguide(1) + waveguide(2))
+        wall = E_Wall(s)
+        e = Expression(s(0) + st)
 
-        wall = E_Wall(waveguide)
-        e = Expression(waveguide(0) + left)
+        e_tt = s(0) + s(1)
+        e_te = s(0) + e
+        e_tw = s(0) + wall
+        e_ts = s(0) + st
 
-        e_tt = waveguide(0) + waveguide(1)
-        e_te = waveguide(0) + e
-        e_tw = waveguide(0) + wall
-        e_ts = waveguide(0) + left
-
-        e_et = e + waveguide(1)
+        e_et = e + s(1)
         e_ee = e + e
         e_ew = e + wall
-        e_es = e + left
+        e_es = e + st
 
-        e_wt = wall + waveguide(1)
+        e_wt = wall + s(1)
         e_we = wall + e
         e_ww = wall + wall
-        e_ws = wall + left
+        e_ws = wall + st
 
-        e_st = left + waveguide(1)
-        e_se = left + e
-        e_sw = left + wall
-        e_ss = left + left
+        e_st = st + s(1)
+        e_se = st + e
+        e_sw = st + wall
+        e_ss = st + st
+
+        stack = Stack(s(0))
+        stack = Stack(s(1) + s(1))
+        stack = Stack(s(0) + s(0))
+        stack = Stack(s(0) + s(1))
+        stack = Stack(s(0) + s(1) + s(0))
+        stack = Stack(s(0) + s(0) + s(0))
+
+        stack = Stack(s2(0) + s(0))
+        stack = Stack(s2(0) + s(1) + s(1))
+        stack = Stack(s2(0) + s(0) + s(0))
+        stack = Stack(s2(0) + s(0) + s(1))
+        stack = Stack(s2(0) + s(0) + s(1) + s(0))
+        stack = Stack(s2(0) + s(0) + s(0) + s(0))
+
+        stack = Stack(s2(1) + s(0))
+        stack = Stack(s2(1) + s(1) + s(1))
+        stack = Stack(s2(1) + s(0) + s(0))
+        stack = Stack(s2(1) + s(0) + s(1))
+        stack = Stack(s2(1) + s(0) + s(1) + s(0))
+        stack = Stack(s2(1) + s(0) + s(0) + s(0))
+
+        free_tmps()
 
         self.failUnless(1)
 

@@ -1,3 +1,8 @@
+2002-05-07  Peter Bienstman <Peter.Bienstman@rug.ac.be>
+
+	* precision.py: New test.
+	* expression.py: Add more tests.
+
 2002-05-06  Peter Bienstman <Peter.Bienstman@rug.ac.be>
 
 	* ADR_test.py: New test.
