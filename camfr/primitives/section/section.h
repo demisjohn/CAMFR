@@ -208,6 +208,8 @@ struct ModeEstimate
                  cVector* Hx_=0, cVector* Hy_=0)
       : kz2(kz2_), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
 
+    ~ModeEstimate();
+
     Complex kz2;
     cVector *Ex, *Ey, *Hx, *Hy;
 };
