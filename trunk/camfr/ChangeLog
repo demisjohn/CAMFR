@@ -17,6 +17,7 @@ CAMFR 1.1:
      e.g. fw, bw = stack.fw_bw(0)
 
  - Cavity.find_modes_in_region() has been renamed to Cavity::find_all_modes()
+ - fixed memory corruption when doing exotic things with Expressions
 
 
 
