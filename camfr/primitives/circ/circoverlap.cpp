@@ -14,6 +14,7 @@
 #include <algorithm>
 #include "../../util/vectorutil.h"
 #include "circoverlap.h"
+#include "circmode.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -86,15 +86,15 @@ class SlabImpl : public MultiWaveguide
     friend class UniformSlabMode;
 
     friend Complex overlap(const SlabMode*, const SlabMode*,
-                           const SlabCache* c=NULL,
-                           const vector<Complex>* v=NULL,
-                           int=0, int=0, int=0, int=0);
+                           const SlabCache* c,
+                           const vector<Complex>* v,
+                           int, int, int, int);
 
     friend void overlap_TM_TE(const SlabMode*, const SlabMode*,
 			      Complex* Ex_Hz, Complex* Ez_Hx,
-			      const SlabCache* cache=NULL,
-			      const vector<Complex>* disc=NULL,
-			      int=0, int=0, int=0, int=0);
+			      const SlabCache* cache,
+			      const vector<Complex>* disc,
+			      int, int, int, int);
 };
 
 
@@ -164,8 +164,6 @@ class Slab : public MultiWaveguide
 
 inline ostream& operator<<(ostream& s, const Slab& slab)
   {return s << slab.repr();}
-
-
 
 
 

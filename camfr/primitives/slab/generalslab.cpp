@@ -113,6 +113,7 @@ Complex signedsqrt2(const Complex& kz2)
 // Dirty includes. Refactor this code after the design of moslab has settled.
 
 #include "isoslab/slaboverlap.h"
+#include "isoslab/slabmode.h"
 
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,

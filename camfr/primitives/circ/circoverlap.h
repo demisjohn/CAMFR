@@ -14,7 +14,7 @@
 #define CIRCOVERLAP_H
 
 #include "../../math/linalg/linalg.h"
-#include "circmode.h"
+#include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -48,6 +48,8 @@ struct CircCache
 // The discontinuities are stored in the vector disc.
 //  
 /////////////////////////////////////////////////////////////////////////////
+
+class Circ_M_Mode; // forward declation -- see circmode.h
 
 Complex overlap(const Circ_M_Mode* mode_I,
                 const Circ_M_Mode* mode_II,
