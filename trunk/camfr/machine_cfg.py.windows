@@ -27,8 +27,8 @@ flags_base = "/nologo /G5 /O3 /MD -Qoption,cpp,--new_for_init \
 
 
 flags_noopt = flags_base + " /Od /Ob0 "
-flags       = flags_base + " /GR /GX /Qprec "                 
-fflags      = flags_base + " /Qlowercase /4L132  "
+flags       = flags_base + " /GR /GX /Qprec /Zc:wchar_t "                 
+fflags      = flags_base + " /Qlowercase /4L132 "
 
 link_flags = "/NODEFAULTLIB:libc.lib"
 
