@@ -53,6 +53,7 @@ extern SectionGlobal global_section;
 class SectionMode;
 class SectionCache;
 class OverlapMatrices;
+class RefSection;
 
 class SectionImpl : public MultiWaveguide
 { 
@@ -90,6 +91,8 @@ class SectionImpl : public MultiWaveguide
                                  const Complex&, const Complex&,
                                  FieldExpansion*, FieldExpansion*, 
                                  OverlapMatrices*, int, int);
+
+    friend class RefSection;
 };
 
 
@@ -212,6 +215,7 @@ class Section2D : public SectionImpl
 
     bool symmetric;
 
+    void find_modes_from_series();
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 

@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include "section.h"
+#include "refsection.h"
 #include "sectiondisp.h"
 #include "sectionmode.h"
 #include "sectionoverlap.h"
@@ -306,7 +307,7 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
 
   // Determine slabs.
 
-  Complex z = 0.0;
+  Complex z = I*global_section.left_PML;
 
   Expression left_flat = left_ex.flatten();
   for (int i=left_flat.get_size()-1; i>=0; i--)
@@ -316,9 +317,6 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
       continue;
     
     z += t->get_d();
-
-    if (i == left_flat.get_size()-1)
-      z += I*global_section.left_PML;
 
     discontinuities.push_back(z);
     slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
@@ -333,12 +331,13 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
 
     z += t->get_d();
 
-    if (i == right_flat.get_size()-1)
-      z += I*global_section.right_PML;
-
     discontinuities.push_back(z);
     slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
   }
+
+  Complex z_back = discontinuities.back() + I*global_section.right_PML;
+  discontinuities.pop_back();
+  discontinuities.push_back(z_back);
 }
 
 
@@ -485,7 +484,12 @@ void Section2D::find_modes()
   if (global.sweep_from_previous && (modeset.size() == global.N))
     find_modes_by_sweep();
   else
-    find_modes_from_scratch_by_track();
+  {
+    if (global.solver == series)
+      find_modes_from_series();
+    else
+      find_modes_from_scratch_by_track();
+  }
 
   // Remember wavelength and gain these modes were calculated for.
 
@@ -493,6 +497,29 @@ void Section2D::find_modes()
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
 }
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section2D::find_modes_from_series
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Section2D::find_modes_from_series()
+{
+  Material air(1.0);
+  RefSection ref(air, get_width(), get_height());
+  
+  int n = global.N/2;
+
+  cMatrix O_EE(n,n,fortranArray); cMatrix O_MM(n,n,fortranArray);
+  cMatrix O_EM(n,n,fortranArray); cMatrix O_zz(n,n,fortranArray);
+
+  ref.calc_overlap_matrices(this, &O_EE, &O_MM, &O_EM, &O_zz);
+}
+
 
 
 
