@@ -66,25 +66,15 @@ void InfStack::calcRT()
     
     // Determine if the mode is forward or backward.
 
-    bool fw = false;
+    bool fw = true;
     
-    if (imag(mode->get_kz()) < -1e-3)
-      fw = true;
-    else if (imag(mode->get_kz()) > 1e-3)
-      fw = false;
-    else
-      fw = real(mode->get_kz()) > 0.0;
-
-    Real S = mode->S_flux(0,real(inc->c1_size()), 0.1);
-
-    if (fw && (S < 0) && (abs(S) > 1e-3) )
-    { 
-      fw = false;
-    }
-    else if (!fw && (S > 0) && (abs(S) > 1e-3) )
+    if (abs(imag(mode->get_kz())) < 1e-3) // Propagating mode.
     {
-      fw = true;
+      Real d = mode->S_flux(0.0,real(inc->c1_size()),0.1);
+      fw = (d > 0);
     }
+    else // Evanescent mode.
+      fw = (imag(mode->get_kz()) < 0);
         
     if (fw)
     {
