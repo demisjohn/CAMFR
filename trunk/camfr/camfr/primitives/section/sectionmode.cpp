@@ -31,9 +31,7 @@ Section2D_Mode::Section2D_Mode
     : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_), 
       corrected(corrected_)
 {
-  // TMP
-
-  if (global_section.mode_correction == false)
+  if (corrected == false)
     return;
   
   // Initialise.
@@ -122,11 +120,18 @@ Section2D_Mode::~Section2D_Mode()
 
 Field Section2D_Mode::field(const Coord& coord) const 
 {
-  // TMP
+ 
+  //
+  // Plane wave based field profiles.
+  //
 
-  if (global_section.mode_correction == false)
+  if (corrected == false)
   {
     Field f;
+
+    Coord c = coord;
+    c.c1 += I*global_section.left_PML;
+    c.c2 += I*global_slab.lower_PML;
 
     const int M = global_section.M;
     const int N = global_section.N;
@@ -141,7 +146,7 @@ Field Section2D_Mode::field(const Coord& coord) const
 
         // TODO: alpha0, beta0
 
-        Complex expon = exp(I*2.*pi*(m/W/2.*coord.c1 + n/H/2.*coord.c2));
+        Complex expon = exp(I*2.*pi*(m/W/2.*c.c1 + n/H/2.*c.c2));
 
         f.E1 += (*Ex)(i1)*expon;
         f.E2 += (*Ey)(i1)*expon;
@@ -153,6 +158,12 @@ Field Section2D_Mode::field(const Coord& coord) const
 
     return f;
   }
+
+
+
+  //
+  // Slab modes based field profiles.
+  //
 
   // Initialise.
 
@@ -292,9 +303,11 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
 void Section2D_Mode::normalise() 
 {
-  // TMP
+  //
+  // Plane wave based field profiles.
+  //
 
-  if (global_section.mode_correction == false)
+  if (corrected == false)
   {
     Complex norm = sqrt(overlap_pw(this, this));
 
@@ -305,6 +318,12 @@ void Section2D_Mode::normalise()
 
     return;
   }
+
+
+
+  //
+  // Slab mode based field profiles.
+  //
   
   vector<Complex> disc(geom->get_disc());
   disc.insert(disc.begin(), 0.0);
