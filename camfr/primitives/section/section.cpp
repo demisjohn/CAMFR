@@ -35,7 +35,7 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0, 0.0, E_wall, E_wall, false};
+SectionGlobal global_section = {0.0, 0.0, E_wall, E_wall, false, OS, true};
 
 
 
@@ -530,7 +530,7 @@ void Section2D::find_modes()
 //
 /////////////////////////////////////////////////////////////////////////////
   
-struct index_sorter
+struct index_sorter // Remove?
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
     {
@@ -538,7 +538,7 @@ struct index_sorter
     }
 };
 
-struct loss_sorter
+struct loss_sorter // Remove?
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
     {
@@ -548,8 +548,8 @@ struct loss_sorter
 
 struct kz2_sorter
 {
-    bool operator()(const Complex& kz2_a, const Complex& kz2_b)
-      {return ( real(kz2_a) > real(kz2_b) );}
+    bool operator()(const ModeEstimate& a, const ModeEstimate& b)
+      {return ( real(a.kz2) > real(b.kz2) );}
 };
 
 struct kt_to_neff : ComplexFunction
@@ -570,7 +570,7 @@ struct kt_to_neff : ComplexFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Section2D::estimate_kz2_omar_schuenemann()
+vector<ModeEstimate> Section2D::estimate_kz2_omar_schuenemann()
 {
   int n = M1/2;
 
@@ -653,7 +653,17 @@ cVector Section2D::estimate_kz2_omar_schuenemann()
   else
     kz2 = eigenvalues_x(E);
 
-  return kz2;
+  // Return estimates.
+
+  vector<ModeEstimate> estimates;
+  
+  for (int i=1; i<=kz2.rows(); i++)
+  {
+    ModeEstimate est = ModeEstimate(kz2(i));
+    estimates.push_back(est);
+  }  
+    
+  return estimates;
 }
 
 
@@ -938,7 +948,7 @@ struct IndexConvertor
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Section2D::estimate_kz2_fourier()
+vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 {
 #if 0
   vector<Complex> disc;  
@@ -1046,7 +1056,7 @@ cVector Section2D::estimate_kz2_fourier()
   int n_ = 2*N+1;
 
   const int MN = m_*n_;
-  const bool Li = (global.section_solver == L);
+  const bool Li = (global_section.section_solver == L);
   
   cMatrix eps(MN,MN,fortranArray);
 
@@ -1407,9 +1417,20 @@ cVector Section2D::estimate_kz2_fourier()
 
   std::cout << "Eigenproblem size " << 2*MN_ << std::endl;
 
-  E_ /= k0*k0;
+  // Return estimates.
+
+  vector<ModeEstimate> estimates;
   
-  return E_;
+  for (int i=1; i<=E_.rows(); i++)
+  {
+    if (abs(E_(i)) > 1e-6)
+    {
+      ModeEstimate est = ModeEstimate(E_(i)/k0/k0);
+      estimates.push_back(est);
+    }  
+  }
+  
+  return estimates;
 }
 
 
@@ -1451,12 +1472,16 @@ void Section2D::find_modes_from_estimates()
 
   // Get estimates.
 
-  vector<Complex> kz2_coarse;
+  vector<ModeEstimate> estimates;
 
   if (user_estimates.size() != 0) // User provided estimates
   {
     for (unsigned int i=0; i<user_estimates.size(); i++)
-      kz2_coarse.push_back(pow(2*pi/global.lambda*user_estimates[i], 2));
+    {
+      ModeEstimate est 
+        = ModeEstimate(pow(2*pi/global.lambda*user_estimates[i], 2));
+      estimates.push_back(est);
+    } 
   }
   else
   {
@@ -1470,29 +1495,17 @@ void Section2D::find_modes_from_estimates()
       max_eps_eff = max_eps_mu;
 
     Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
-    
-    cVector kz2(fortranArray);
 
-    if (global.section_solver == OS)
-    {      
-      kz2.resize(M1);
-      kz2 = estimate_kz2_omar_schuenemann();
-    }    
+    vector<ModeEstimate> estimates_0;   
+
+    if (global_section.section_solver == OS)
+      estimates_0 = estimate_kz2_omar_schuenemann();  
     else
-    {      
-      int M = int(sqrt(Real(M1)));      
-      int N = int(sqrt(Real(M1)));
-      kz2.resize(2*(2*M+1)*(2*N+1));
-      kz2 = estimate_kz2_fourier();
-    }
+      estimates_0 = estimate_kz2_fourier();
 
-    //for (unsigned int i=1; i<=kz2.size(); i++)
-    //  std::cout << "raw " << i << " "
-    //            << sqrt(kz2(i))/2./pi*global.lambda << std::endl;
-
-    for (unsigned int i=1; i<=kz2.rows(); i++)
-      if (real(sqrt(kz2(i))) < 1.01*max_kz)
-        kz2_coarse.push_back(kz2(i));
+    for (unsigned int i=0; i<estimates_0.size(); i++)
+      if (real(sqrt(estimates_0[i].kz2)) < 1.01*max_kz)
+        estimates.push_back(estimates_0[i]);
   }
   user_estimates.clear();
 
@@ -1500,20 +1513,26 @@ void Section2D::find_modes_from_estimates()
 
   py_print("Refining estimates...");
 
-  if (sort == highest_index) // TODO: kz2_sorter?
-    std::sort(kz2_coarse.begin(), kz2_coarse.end(), index_sorter());
+  /*
+  if (sort == highest_index)
+    std::sort(estimates.begin(), estimates.end(), index_sorter());
   else
-    std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
+    std::sort(estimates.begin(), estimates.end(), loss_sorter());
+  */
 
-  //std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
+  std::sort(estimates.begin(), estimates.end(), kz2_sorter());
 
-  if (kz2_coarse.size() > global.N+5)
-    kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
+  for (int i=0; i<estimates.size(); i++)
+    std::cout << i << " " << sqrt(estimates[i].kz2)/2./pi*global.lambda 
+              << std::endl;
+
+  if (estimates.size() > global.N+5)
+    estimates.erase(estimates.begin()+global.N+5, estimates.end());
 
   vector<Complex> kt_coarse;
-  for (unsigned int i=0; i<kz2_coarse.size(); i++)
+  for (unsigned int i=0; i<estimates.size(); i++)
   {
-    Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
+    Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
 
     if (imag(kt) < 0) 
       kt = -kt;
@@ -1524,6 +1543,8 @@ void Section2D::find_modes_from_estimates()
 
     if ((abs(real(kt)) < .001) && (real(kt) < 0))
       kt -= 2*real(kt);
+
+    estimates[i].kt = kt;
 
     kt_coarse.push_back(kt);
   }
@@ -1574,9 +1595,9 @@ void Section2D::find_modes_from_estimates()
 
   py_print("Done.");
 
-  // Test orthogonality.
-
   return;
+
+  // Test orthogonality.
 
   cMatrix O12(modeset.size(), modeset.size(), fortranArray);
   cMatrix O21(modeset.size(), modeset.size(), fortranArray);
@@ -1596,7 +1617,6 @@ void Section2D::find_modes_from_estimates()
                   << std::endl << std::flush;
 
   exit(-1);
-
 }
 
 
