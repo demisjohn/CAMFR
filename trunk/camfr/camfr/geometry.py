@@ -38,7 +38,11 @@ class Point:
     def __repr__(self):
         return "(" + repr(self.x) + "," + repr(self.y) + ")"
 
-
+    def compare(self,p):
+        if self.x != p.x or self.y != p.y:
+          return 1
+        else:
+          return 0
 
 def sort_point(p1, p2):
     if p1.x < p2.x:
@@ -93,17 +97,26 @@ class Line:
 class Circle:
 
     def __init__(self, c, r, mat):
-        self.c   = c
-        self.r   = r
-        self.mat = mat
-
+        self.c    = c
+        self.r    = r
+        self.mat  = mat
+        self.type = "Circle"
+        
     def intersection_at_x(self, x):
         D = self.r**2 - (x - self.c.x)**2
         if D > 0:
             return [ self.c.y - sqrt(D), self.c.y + sqrt(D) ]
         else:
             return []
-        
+    
+    def compare(self,c):
+      if c.type!=self.type:
+        return 1
+      if self.c.compare(c.c) or self.r != c.r or self.mat!=c.mat:
+        return 1
+      else:
+        return 0  
+
 
 
 ############################################################################
@@ -119,7 +132,8 @@ class Rectangle:
         p.sort(sort_point)
         self.p1, self.p2 = p
         self.mat = mat
-
+        self.type = "Rectangle"
+        
     def center(self):
         return Point((self.p1.x+self.p2.x)/2., (self.p1.y+self.p2.y)/2.)
 
@@ -137,6 +151,14 @@ class Rectangle:
             r.sort()
             return r
 
+    def compare(self,r):
+      if r.type!=self.type:
+        return 1
+      if self.p1.compare(r.p1) or self.p2.compare(r.p2) or self.mat != r.mat:
+        return 1
+      else:
+        return 0
+
 
 
 ############################################################################
@@ -151,7 +173,8 @@ class Square:
         self.c = c
         self.a = a
         self.mat = mat
-
+        self.type = "Square"
+        
     def intersection_at_x(self, x):
         if (x < self.c.x - self.a/2.) or (x > self.c.x + self.a/2.):
             return []
@@ -162,6 +185,14 @@ class Square:
         return Rectangle(Point(self.c.x - self.a/2., self.c.y - self.a/2),
                          Point(self.c.x + self.a/2., self.c.y + self.a/2))
     
+    def compare(self,s):
+      if s.type != self.type:
+        return 1
+      elif self.c.compare(s.c) or self.a != s.a or self.mat != s.mat:
+        return 1
+      else:
+        return 0
+
 
 
 ############################################################################
@@ -173,11 +204,12 @@ class Square:
 class Triangle:
 
     def __init__(self, p1, p2, p3, mat):
-        p = [p1, p2, p3]
-        p.sort(sort_point)
-        self.p1, self.p2, self.p3 = p
+        self.p = [p1, p2, p3]
+        self.p.sort(sort_point)
+        self.p1, self.p2, self.p3 = self.p
         self.mat = mat
-
+        self.type = "Triangle"
+        
     def intersection_at_x(self, x):
         if (x < self.p1.x) or (x > self.p3.x):
             return []
@@ -189,7 +221,15 @@ class Triangle:
                  Line(self.p2, self.p3).intersection_at_x(x)]
         r.sort()
         return r
-
+  
+    def compare(self,t):
+      if t.type != self.type:
+        return 1
+      elif self.p1.compare(t.p1) or self.p2.compare(t.p2) or self.mat != t.mat:
+        return 1
+      else:
+        return 0
+      
 
 
 ############################################################################

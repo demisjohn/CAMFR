@@ -1,3 +1,8 @@
+2004-06-03  Pieter Dumon  <Pieter.Dumon@UGent.be>
+
+	* geometry3d.py: New file.
+	* geometry.py: Add compare functions.
+
 2004-06-03  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* S_scheme_fields.cpp: Fix transparent scatterers for MonoStacks.
