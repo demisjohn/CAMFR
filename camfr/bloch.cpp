@@ -406,19 +406,25 @@ Field BlochMode::field(const Coord& coord) const
     cout << "Warning: z-value out of unit cell. Truncating z." << endl;
     coord2.z = geom->get_total_thickness();
   }
-  
-  if (global.field_calc == S_S)
-  {
-    cout << "Setting field calc mode to S_T for Bloch modes." << endl;
-    global.field_calc == S_T;
-  }
-  
+
   geom->set_interface_field(interface_field);
+
+  if (global.field_calc == S_T)
+    cout << "Warning: field_calc S_T can give unstable results." << endl;
+
+  if ( (global.field_calc == S_S) && (interface_field.size() <= 1) )
+  {
+    Complex d = geom->get_total_thickness();
+    cVector inc_bw(global.N, fortranArray);
+    inc_bw = interface_field[0].bw * exp(-I*kz*d);
+ 
+    geom->set_inc_field(interface_field[0].fw, &inc_bw);
+  }
 
   Field f(geom->field(coord2));
 
   if (interface_field.size() <= 1)
     geom->get_interface_field(&interface_field);
-  
+
   return f;
 }
