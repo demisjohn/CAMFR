@@ -337,6 +337,10 @@ class Geometry:
    
     def to_expression(self, x0, x1, dx, y0, y1, dy, add_flipped=0):
 
+        if (x0 > x1) or (y0 > y1):
+            print "Error: Invalid boundaries for to_expression."
+            raise IndexError
+
         slabs = []
         
         x = x0 + dx/2.0
@@ -359,14 +363,15 @@ class Geometry:
                 if ys1 > y1:
                     ys1 = y1
 
-                def same(x,y): return abs(x-y) < 1e-5
+                def same(y0,y1): return abs(y0-y1) < 1e-5
 
                 new_slab = []      
                 j = 0
                 while j < len(slab):
 
                     if (slab[j][1] < ys0) or same(slab[j][1], ys0) or \
-                       (slab[j][0] > ys1) or same(slab[j][0], ys1):
+                       (slab[j][0] > ys1) or same(slab[j][0], ys1) or \
+                       (abs(ys0-ys1) < .001*dy):
                         new_slab.append(slab[j]) # No intersection.
                     else:
                         if not same(slab[j][0], ys0): # Old material pre.
@@ -409,14 +414,19 @@ class Geometry:
         
         i = 0
         while i < len(slabs):
+            
             i_end = i+1
             while     (i_end < len(slabs)) \
                   and similar(slabs[i_end], slabs[i], dy) \
                   and direction(slabs[i], slabs[i+1]) \
                    == direction(slabs[i_end-1], slabs[i_end]):
                 i_end += 1
+
+            if i_end == i+1:
+                new_slabs.append(average_slabs(slabs, i, i_end))
+            else:
+                new_slabs.append(slabs[i])
             
-            new_slabs.append(average_slabs(slabs, i, i_end))
             d.append((i_end - i) * dx)
                                               
             i = i_end
@@ -444,7 +454,7 @@ class Geometry:
             #print e_slab
             #s.calc()
             #pretty_print(s)
-            #plot_neff(s)
+            #plot(s)
             #print "------------"
    
             slab_cache.append(s)
