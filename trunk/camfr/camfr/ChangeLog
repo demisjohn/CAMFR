@@ -1,5 +1,10 @@
 2003-02-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* cavity.h: More logical argument order in constructor.
+	* cavity.cpp: Ditto.
+
+2003-02-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* stack.cpp: Fix naming clash.
 
 2003-02-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

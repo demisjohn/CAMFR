@@ -79,7 +79,7 @@ class Cavity
 {
   public:
 
-    Cavity(Stack& top, Stack& bot);
+    Cavity(Stack& bot, Stack& top);
 
     // Look for the sourceless modes in a given wavelength region.
     // If number=0, all modes are subsequently located using 'find_mode',
