@@ -39,8 +39,8 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
   for (unsigned int i=1; i<eps.size(); i++)
   {
     Complex eps_mu = eps[i]*mu[i];
-    
-    if (abs(eps_mu) < abs(min_eps_mu))
+
+    if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
   }
 }
@@ -77,7 +77,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   {
     Complex eps_mu = eps[i]*mu[i];
     
-    if (abs(eps_mu) < abs(min_eps_mu))
+    if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
   }
 }
@@ -191,11 +191,19 @@ Complex SlabDisp::operator()(const Complex& kt)
 
     if ( (k == eps.size()-1) && (abs(R_right) < 1e-10) )
       I_kx_d = 0;
-    
-    if (real(I_kx_d) > 0)
-      fw_chunk_end_scaled *= exp(-2.0*I_kx_d);
-    else
-      bw_chunk_end_scaled *= exp(+2.0*I_kx_d);
+
+    if (global.solver == track)
+    {
+      if (real(I_kx_d) > 0)
+        fw_chunk_end_scaled *= exp(-2.0*I_kx_d);
+      else
+        bw_chunk_end_scaled *= exp(+2.0*I_kx_d);
+    }
+    else // No scaling to keep the function analytic.
+    {
+      fw_chunk_end_scaled *= exp(-I_kx_d);      
+      bw_chunk_end_scaled *= exp(+I_kx_d);
+    }
     
     // Update values for next iteration.
     
