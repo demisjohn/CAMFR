@@ -764,6 +764,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   camfr.add(
     class_<Stack>("Stack")
     .def_init(args<const Expression&>())
+    .def_init(args<const Term&>())
     .def("calc",           &Stack::calcRT)
     .def("free",           &Stack::freeRT)
     .def("inc",            &Stack::get_inc,
