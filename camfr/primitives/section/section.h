@@ -18,6 +18,8 @@
 #include "../../stack.h"
 #include "../slab/generalslab.h"
 
+#include "sectiondisp.h" // TMP
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // STRUCT: SectionGlobal
@@ -79,12 +81,16 @@ class SectionImpl : public MultiWaveguide
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
 
+    SectionDisp* get_disp() const {return f;} // TMP
+
   protected:
     
   public: // tmp
 
     int M1;
     int M2;
+
+    SectionDisp* f;
 
     // z-values of the interfaces, not including left wall, including
     // right wall.
@@ -142,6 +148,9 @@ class Section : public MultiWaveguide
     Complex get_width()  const {return s->get_width();}
     Complex get_height() const {return s->get_height();}
     Complex c1_size()    const {return s->c1_size();}
+
+    Complex get_disp(const Complex& z) const 
+      {return (*s->get_disp())(z);} // TMP
 
     const FieldExpansion field_from_source
       (const Coord& pos, const Coord& orientation)

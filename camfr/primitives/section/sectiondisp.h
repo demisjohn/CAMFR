@@ -41,6 +41,7 @@ class SectionDisp : public ComplexFunction
 
     Complex calc_lapack();
     Complex calc_lapack2();
+    Complex calc_lapack3();
     Complex calc_arnoldi();
 
     Stack* left;
@@ -52,9 +53,11 @@ class SectionDisp : public ComplexFunction
 
     std::vector<Slab*> left_slabs;
     std::vector<Slab*> right_slabs;  
+    std::vector<Slab*> slabs;  
 
     std::vector<Complex*> left_d;
     std::vector<Complex*> right_d;
+    std::vector<Complex>  d;
     
     Real lambda;
 
