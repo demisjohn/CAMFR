@@ -1,3 +1,4 @@
+-get_min_n in slab trace
 -infstack recalc modes, inf*(notation), diagslab
 -Section: SymmetricSection, UniformSection, Auto-partitioned section, 
  walls(E, H, TBC, PC), max_n, min_n needed, false zeros, N/M, TEM mode, 
