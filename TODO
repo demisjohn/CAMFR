@@ -1,3 +1,4 @@
+-infstack recalc modes
 -Section: SymmetricSection, UniformSection, Auto-partitioned section, 
  walls(E, H, TBC, PC), max_n, min_n needed, false zeros, N/M, TEM mode, 
  SectionFlux
