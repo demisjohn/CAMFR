@@ -787,7 +787,7 @@ cVector Stack::get_refl_field()
   if (bw_inc)
     refl_field += multiply(as_multi()->get_T21(), inc_field_bw);
 
-  FieldExpansion inc(*get_inc(), inc_field, refl_field);
+  FieldExpansion inc(get_inc(), inc_field, refl_field);
   interface_field.push_back(inc);
   
   return refl_field;
@@ -838,7 +838,7 @@ FieldExpansion Stack::inc_field_expansion()
   if (bw_inc)
     refl_field += multiply(as_multi()->get_T21(), inc_field_bw);
 
-  FieldExpansion inc_field(*get_inc(), inc_field, refl_field);
+  FieldExpansion inc_field(get_inc(), inc_field, refl_field);
   interface_field.push_back(inc_field);
 
   return inc_field;
@@ -865,20 +865,7 @@ FieldExpansion Stack::ext_field_expansion()
   if (bw_inc)
     trans_field += multiply(as_multi()->get_R21(), inc_field_bw);
 
-  FieldExpansion ext_field(*get_ext(), trans_field, inc_field_bw);
-
-/*
-  //std::cout << ext_field << std::endl;
-
-  if (interface_field.size() <= 1)
-    calc_interface_fields();
-  
-  //std::cout << interface_field.back() << std::endl;
-
-  return interface_field.back();
-*/
-  
-  return ext_field;
+  return FieldExpansion(get_ext(), trans_field, inc_field_bw);
 }
 
 
@@ -956,7 +943,7 @@ Field Stack::field(const Coord& coord)
   // Calculate total field. Note that the z-dependence has already been
   // taken care of.
 
-  FieldExpansion field_expansion(*wg, fw, bw);
+  FieldExpansion field_expansion(wg, fw, bw);
 
   const Coord c(coord.c1,       coord.c2,       0,
                 coord.c1_limit, coord.c2_limit, coord.z_limit);
@@ -1367,7 +1354,7 @@ void Stack::calc_interface_fields()
         left_bw(1) += T21(1,1) * inc_field_bw(1);
     }
 
-    FieldExpansion inc(*get_inc(), inc_field, left_bw);
+    FieldExpansion inc(get_inc(), inc_field, left_bw);
     interface_field.push_back(inc);
   }
 

@@ -128,7 +128,7 @@ const FieldExpansion MultiWaveguide::field_from_source
                     + field.Ez * orientation.z  );
   }
   
-  return FieldExpansion(*this, fw, bw);
+  return FieldExpansion(this, fw, bw);
 }
 
 

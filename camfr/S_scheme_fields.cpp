@@ -60,7 +60,7 @@ void calc_field_T
   fw = multiply(ff, fw0) + multiply(fb, bw0);
   bw = multiply(bf, fw0) + multiply(bb, bw0);
     
-  field->push_back(FieldExpansion(*wg, fw, bw));
+  field->push_back(FieldExpansion(wg, fw, bw));
 }
 
 
@@ -105,7 +105,7 @@ void calc_field_T
       bw(i) = 0;
     }
   
-  field->push_back(FieldExpansion(*wg, fw, bw));
+  field->push_back(FieldExpansion(wg, fw, bw));
 }
 
 
@@ -149,7 +149,7 @@ void calc_field_T
     bw=0;
   }
 
-  field->push_back(FieldExpansion(*wg, fw, bw));
+  field->push_back(FieldExpansion(wg, fw, bw));
 }
 
 

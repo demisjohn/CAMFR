@@ -318,7 +318,7 @@ BlochMode::BlochMode(const Polarisation pol, const Complex& kz, Stack* s,
                      cVector& F, cVector& B)
   : Mode(pol,kz,-kz), geom(s)
 {
-  FieldExpansion f(*(geom->get_inc()), F, B);
+  FieldExpansion f(geom->get_inc(), F, B);
   interface_field.push_back(f);
 }
 
