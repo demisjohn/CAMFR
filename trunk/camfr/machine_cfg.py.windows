@@ -55,5 +55,9 @@ strip_command = ""
 extra_files = [ \
    "D:\\camfrcode/doc/camfr.pdf", 
    "D:\\camfrcode/pymat/build/lib.win32-2.2/pymat.pyd", 
-   "D:\\boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll" 
+   "D:\\boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
+   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libmmd.dll", 
+   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libIEPCF90MD.dll", 
+   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libF90MD.dll", 
+   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libintrinsMD.dll" 
    ]
