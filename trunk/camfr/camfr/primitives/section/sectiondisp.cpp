@@ -161,13 +161,132 @@ Complex SectionDisp::operator()(const Complex& kt)
 
   //Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_arnoldi();
 
-  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_lapack2();
+  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_band();
 
   global.N = old_N;
   global.slab_ky = old_beta;
   global.orthogonal = old_orthogonal;
 
   return res;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_band()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_band()
+{
+  // Create system matrix.
+
+  const int K = slabs.size();
+
+  cMatrix Q(2*M*K,2*M*K,fortranArray); Q = 0.0;
+
+  cVector prop_I(M,fortranArray), prop_II(M,fortranArray);
+
+  // Reflection from left wall.
+
+  Complex R0 = (global_section.leftwall == E_wall) ? -1.0 : 1.0;
+
+  slabs[0]->find_modes();
+
+  for (int i=1; i<=M; i++)
+  {
+    Q(i,  i) = 1.0;
+    Q(i,M+i) = -R0 * exp(-I*slabs[0]->get_mode(i)->get_kz() * d[0]);
+  }
+
+  // Interfaces.
+
+  for (unsigned int k=1; k<K; k++)
+  {
+    // Calculate propagation vectors.
+
+    slabs[k]->find_modes();
+
+    for (int i=1; i<=M; i++)
+    {
+      prop_I (i) = exp(-I*slabs[k-1]->get_mode(i)->get_kz() * d[k-1]);
+      prop_II(i) = exp(-I*slabs[k  ]->get_mode(i)->get_kz() * d[k  ]);      
+    }
+   
+    // Calculate overlap matrices.
+
+    cMatrix O_I_I (M,M,fortranArray); cMatrix O_II_II(M,M,fortranArray);
+    cMatrix O_I_II(M,M,fortranArray); cMatrix O_II_I (M,M,fortranArray);
+
+    slabs[k-1]->calc_overlap_matrices(slabs[k],
+                                      &O_I_II, &O_II_I, &O_I_I, &O_II_II);
+
+    // Index of block's top left row and column.
+
+    int r = (k-1)*2*M + M;
+    int c = (k-1)*2*M;
+
+    // Fill matrices.
+
+    for (int i=1; i<=M; i++)
+      for (int j=1; j<=M; j++)
+      {
+        Q(  r+i,    c+j) =  O_I_II(j,i)  * prop_I(j);
+        Q(M+r+i,    c+j) =  O_II_I(i,j)  * prop_I(j);
+
+        Q(  r+i,  M+c+j) =  O_I_II(j,i);
+        Q(M+r+i,  M+c+j) = -O_II_I(i,j);
+
+        Q(  r+i,2*M+c+j) = -O_II_II(j,i);
+        Q(M+r+i,2*M+c+j) = -O_II_II(i,j);
+
+        Q(  r+i,3*M+c+j) = -O_II_II(j,i) * prop_II(j);
+        Q(M+r+i,3*M+c+j) =  O_II_II(i,j) * prop_II(j);
+      } 
+  }
+
+  // Reflection from right wall.
+
+  Complex Rn = (global_section.rightwall == E_wall) ? -1.0 : 1.0;
+
+  int r = Q.rows()-M;
+  int c = Q.cols()-2*M;
+
+  for (int i=1; i<=M; i++)
+  {
+    Q(r+i,  c+i) = -Rn * exp(-I*slabs[K-1]->get_mode(i)->get_kz() * d[K-1]);
+    Q(r+i,M+c+i) = 1.0;
+  }
+
+  // Return determinant.
+
+  return determinant(Q);
+
+  // Calculate eigenvectors.
+
+  cVector e(Q.rows(),fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));
+
+  // Return product of eigenvalues.
+  
+  Complex product = 1.0;
+  for (int i=1; i<=Q.rows(); i++)
+    product *= e(i);
+  
+  return product;
+
+  // Return smallest eigenvalue.
+
+  int min_index = 1;
+
+  for (int i=2; i<=Q.rows(); i++)
+    if (abs(e(i)) < abs(e(min_index)))
+      min_index = i;
+
+  return e(min_index);
 }
 
 
