@@ -42,7 +42,7 @@ void calc_tilde(const Chunk& chunk,
   cVector prop(global.N,fortranArray);
   for (int i=1; i<=global.N; i++)
     prop(i) = exp( -I * s->get_ext()->get_mode(i)->get_kz() * chunk.d );
-
+  
   // Transparent scatterer?
 
   if (dynamic_cast<TransparentScatterer*>(s))
@@ -135,6 +135,7 @@ void S_scheme(const vector<Chunk>& chunks, DenseScatterer* result)
       M.reference(invert_svd(tmp));
 
     tmp = multiply(t12, M, pR21, t21) + r21;
+
     result->copy_R21(tmp);
     result-> set_T12(multiply(t12, M, pT12));
   } 
