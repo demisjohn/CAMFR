@@ -3113,7 +3113,11 @@ described by the expansion vectors @code{forward} and @code{backward}.
 @code{field(Coord)}: returns field at given coordinate. Only meaningful if
 a laser mode has been located, or if a source has been explicitly set.
 @item
-@code{n(Coord)}: returns refractive index at given coordinate. 
+@code{n(Coord)}: returns refractive index at given coordinate.
+@item
+@code{bot_stack()}: returns bottom stack. 
+@item
+@code{top_stack()}: returns top stack. 
 @end itemize
 
 
