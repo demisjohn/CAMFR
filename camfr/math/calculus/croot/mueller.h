@@ -51,11 +51,12 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
 /////////////////////////////////////////////////////////////////////////////
 
 std::vector<Complex> mueller_multiple
-  (ComplexFunction& f, const Complex& z0, Real eps=1e-14, int maxiter=50);
+  (ComplexFunction& f, const Complex& z0, Real eps=1e-14, 
+   const std::vector<Complex>* prev_zeros=0, int maxiter=50);
 
 std::vector<Complex> mueller_multiple
   (ComplexFunction& f, const std::vector<Complex>& z0, Real eps=1e-14, 
-   int maxiter=50);
+   const std::vector<Complex>* prev_zeros=0, int maxiter=50);
 
 
 
