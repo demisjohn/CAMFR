@@ -154,7 +154,7 @@ class Material; // forward declaration, see material.h
 struct Global
 {
     // Wavelength.
-    Real lambda;
+    Complex lambda;
 
     // Number of modes retained in eigenmode expansion. 
     unsigned int N;

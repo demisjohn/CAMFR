@@ -165,7 +165,7 @@ void RefSection::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;
@@ -509,7 +509,7 @@ RefSectionMode::RefSectionMode(Polarisation pol,   const Complex& kz,
   // Normalise.
 
   const Complex kt2 = kx*kx + ky*ky;
-  const Real omega  = 2*pi/global.lambda * c;
+  const Complex omega  = 2*pi/global.lambda * c;
 
   const Complex C_TE = kz / omega / geom->get_mu();
   const Complex C_TM = omega * geom->get_eps() / kz;
@@ -547,7 +547,7 @@ Field RefSectionMode::field(const Coord& coord) const
   // Calculate constants.
 
   const Complex kt2 = kx*kx + ky*ky;
-  const Real omega  = 2*pi/global.lambda * c;
+  const Complex omega  = 2*pi/global.lambda * c;
 
   const Complex C_TE = kz / omega / geom->get_mu();
   const Complex C_TM = omega * geom->get_eps() / kz;

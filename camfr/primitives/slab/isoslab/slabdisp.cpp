@@ -22,7 +22,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
+SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
                    SlabWall* lowerwall_, SlabWall* upperwall_)
   : lambda(lambda_), lowerwall(lowerwall_), upperwall(upperwall_)
 {
@@ -54,7 +54,8 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
 /////////////////////////////////////////////////////////////////////////////
 
 SlabDisp::SlabDisp(const vector<Material*>& materials,
-                   const vector<Complex>& thicknesses_, Real lambda_,
+                   const vector<Complex>& thicknesses_, 
+                   const Complex& lambda_,
                    SlabWall* lowerwall_, SlabWall* upperwall_)
   : thicknesses(thicknesses_), lambda(lambda_),
     lowerwall(lowerwall_), upperwall(upperwall_)
@@ -268,7 +269,7 @@ void SlabDisp::set_params(const vector<Complex>& params)
     mu[i]          = params[params_index++];
   }
 
-  lambda = real(params[params_index++]);
+  lambda = params[params_index++];
 
   min_eps_mu = params[params_index];
 }

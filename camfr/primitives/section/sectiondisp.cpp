@@ -29,8 +29,8 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
-                         bool sym)
+SectionDisp::SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda, 
+                         int _M, bool sym)
   : left(&_left), right(&_right), lambda(_lambda), M(_M), symmetric(sym) 
 {
   // TODO: Rework.

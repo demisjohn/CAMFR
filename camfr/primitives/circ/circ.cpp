@@ -187,10 +187,10 @@ Material* Circ_M::material_at(const Coord& coord) const
 
 Complex Circ_M::kt_to_kz(const Complex& kt)
 {
-  const Complex   nlast    = this->material[M-1]->n();
-  const Complex  murlast   = this->material[M-1]->mur();
-  const Real k0            = 2*pi/global.lambda;
-  const Complex   klast    = k0*nlast*sqrt(murlast);
+  const Complex nlast   = this->material[M-1]->n();
+  const Complex murlast = this->material[M-1]->mur();
+  const Complex k0      = 2*pi/global.lambda;
+  const Complex klast   = k0*nlast*sqrt(murlast);
 
   Complex kz = sqrt(klast*klast - kt*kt);
 
@@ -219,10 +219,10 @@ Complex Circ_M::kt_to_kz(const Complex& kt)
 
 Complex Circ_M::kz_to_kt(const Complex& kz)
 {
-  const Complex   nlast    = this->material[M-1]->n();
-  const Complex  murlast   = this->material[M-1]->mur();
-  const Real k0            = 2*pi/global.lambda;
-  const Complex   klast    = k0*nlast*sqrt(murlast);
+  const Complex nlast   = this->material[M-1]->n();
+  const Complex murlast = this->material[M-1]->mur();
+  const Complex k0      = 2*pi/global.lambda;
+  const Complex klast   = k0*nlast*sqrt(murlast);
 
   Complex kt = sqrt(klast*klast - kz*kz);
 
@@ -252,7 +252,7 @@ void Circ_M::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     std::cout << "Error: wavelength not set." << std::endl;
     return;
@@ -287,12 +287,12 @@ void Circ_M::find_modes()
 void Circ_M::find_modes_from_scratch_by_track()
 {
   const Real eps = 1e-13;
-  Real k0 = 2*pi/global.lambda;
+  Complex k0 = 2*pi/global.lambda;
 
   // Create dispersion relation for lossless structure.
 
   Circ_M_closed disp
-    (M, radius, material, global.lambda, global_circ.order, global.polarisation);
+    (M,radius,material,global.lambda,global_circ.order,global.polarisation);
 
   params = disp.get_params();
 
@@ -315,7 +315,7 @@ void Circ_M::find_modes_from_scratch_by_track()
   Real guided_kt_end = abs(kz_to_kt(1.01 * max_n * k0));
   // 1.01 above is to avoid problems when last layer is also highest index
 
-  Real guided_dkt = abs(0.5*pi*global.lambda/real(radius[0])); // roughly
+  Real guided_dkt = abs(0.5*pi*real(global.lambda)/real(radius[0])); // roughly
   
   Wrap_imag_to_abs guided_disp(disp);
     
@@ -720,7 +720,7 @@ void Circ_2::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;
@@ -771,7 +771,7 @@ void Circ_2::find_modes_from_scratch_by_ADR()
 {
   // Set constants.
   
-  const Real k0         = 2*pi/global.lambda;
+  const Complex k0      = 2*pi/global.lambda;
 
   const Complex   n1    = material[0]->n();
   const Complex   n2    = material[1]->n();
@@ -874,8 +874,8 @@ void Circ_2::find_modes_from_scratch_by_track()
   const Real eps        = 1e-13;
   const Real eps_copies = 1e-6;
   
-  const Real lambda     = global.lambda;
-  const Real k0         = 2*pi/lambda;
+  const Complex lambda  = global.lambda;
+  const Complex k0      = 2*pi/lambda;
 
   const Complex   n1    = material[0]->n();
   const Complex   n2    = material[1]->n();
@@ -1173,8 +1173,8 @@ void Circ_2::find_modes_by_sweep()
 { 
   // Set constants.
   
-  const Real lambda     = global.lambda;
-  const Real k0         = 2*pi/lambda;
+  const Complex lambda  = global.lambda;
+  const Complex k0      = 2*pi/lambda;
 
   const Complex   n1    = material[0]->n();
   const Complex   n2    = material[1]->n();
@@ -1329,7 +1329,7 @@ void Circ_1::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;

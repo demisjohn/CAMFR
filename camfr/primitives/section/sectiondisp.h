@@ -29,7 +29,7 @@ class SectionDisp : public ComplexFunction
 {
   public:
 
-    SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
+    SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda, int _M, 
                 bool symmetric = false);
 
     Complex operator()(const Complex& kt);
@@ -58,7 +58,7 @@ class SectionDisp : public ComplexFunction
     std::vector<Complex*> right_d;
     std::vector<Complex>  d;
     
-    Real lambda;
+    Complex lambda;
 
     int M;
 };

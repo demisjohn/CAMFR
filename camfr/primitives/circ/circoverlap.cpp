@@ -58,7 +58,7 @@ Complex overlap(const CircMode*  mode_I,
   const Circ_M* medium_I  = mode_I ->get_geom();
   const Circ_M* medium_II = mode_II->get_geom();
 
-  const Real omega = 2*pi/global.lambda * c;
+  const Complex omega = 2*pi/global.lambda * c;
   
   // Outer radii equal?
   

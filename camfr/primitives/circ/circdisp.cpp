@@ -43,7 +43,7 @@ Complex Circ_2_open::operator()(const Complex& kr2)
   const Complex mur1  =     core.mur();
   const Complex mur2  = cladding.mur();
   
-  const Real    k0    = 2*pi/lambda;
+  const Complex k0    = 2*pi/lambda;
   const Complex beta2 = k0*k0*epsr2*mur2 - kr2*kr2;
   const Complex kr1   = signedsqrt(k0*k0*epsr1*mur1 - beta2, core);
 
@@ -136,7 +136,7 @@ void Circ_2_open::set_params(const vector<Complex>& params)
   r        = params[0];
   core     = Material(params[1], params[2]);
   cladding = Material(params[3], params[4]);
-  lambda   = real(params[5]);
+  lambda   = params[5];
 }
 
 
@@ -149,7 +149,7 @@ void Circ_2_open::set_params(const vector<Complex>& params)
 
 Circ_2_closed::Circ_2_closed(const Complex&  _r,    const Complex&  _R,
                              const Material& _core, const Material& _cladding,
-                             Real            _lambda, int           _order,
+                             const Complex&  _lambda, int           _order,
                              Guided_rad      _type,
                              Hankel          _hankel,
                              Polarisation    _pol_0,
@@ -177,8 +177,8 @@ Circ_2_closed::Circ_2_closed(const Complex&  _r,    const Complex&  _R,
   scaling_co = true;
   
   if (     scale_always
-       || (real(r)/lambda > 25)
-       || (real(R)/lambda > 25) ) // heuristic
+       || (real(r)/real(lambda) > 25)
+       || (real(R)/real(lambda) > 25) ) // heuristic
   {
     scaling_cl    = true;
     scaling_split = true;
@@ -333,7 +333,7 @@ Complex Circ_2_closed::operator()(const Complex& kr2_)
   const Complex mur1  =     core.mur();
   const Complex mur2  = cladding.mur();
   
-  const Real    k0    = 2*pi/lambda;
+  const Complex k0    = 2*pi/lambda;
   const Complex beta2 = k0*k0*epsr2*mur2 - kr2*kr2;
   const Complex kr1   = signedsqrt(k0*k0*epsr1*mur1 - beta2, core);
 
@@ -446,7 +446,7 @@ Complex Circ_2_closed_cutoff::operator()(const Complex& kr2)
   const Complex mur1  =     core.mur();
   const Complex mur2  = cladding.mur();
   
-  const Real    k0    = 2*pi/lambda;
+  const Complex k0    = 2*pi/lambda;
   const Complex beta2 = k0*k0*epsr2*mur2 - kr2*kr2;
   const Complex kr1   = signedsqrt(k0*k0*epsr1*mur1 - beta2, core);
 
@@ -597,7 +597,7 @@ void Circ_2_closed::set_params(const vector<Complex>& params)
   R        = params[1];
   core     = Material(params[2], params[3]);
   cladding = Material(params[4], params[5]);
-  lambda   = real(params[6]);
+  lambda   = params[6];
 }
 
 
@@ -611,8 +611,7 @@ void Circ_2_closed::set_params(const vector<Complex>& params)
 Circ_M_closed::Circ_M_closed(unsigned int _M, 
 			     const vector<Complex>&  _r,    
                              const vector<Material*>& _m, 
-                             Real            _lambda, 
-			     int           _order,
+                             const Complex& _lambda, int _order,
                              Polarisation    _pol_0)
   : M(_M), radius(_r), material(_m),lambda(_lambda),
     order(_order), pol_0(_pol_0)
@@ -646,10 +645,10 @@ Complex Circ_M_closed::operator()(const Complex& kt)
 
   const bool scaling = true; 
 
-  const Complex   nlast    = material[M-1]->n();
-  const Complex  murlast   = material[M-1]->mur();
-  const Real k0         = 2*pi/global.lambda;
-  const Complex   klast    = k0*nlast*sqrt(murlast);
+  const Complex nlast   = material[M-1]->n();
+  const Complex murlast = material[M-1]->mur();
+  const Complex k0      = 2*pi/global.lambda;
+  const Complex klast   = k0*nlast*sqrt(murlast);
 
   Complex kz = sqrt(klast*klast - kt*kt);
   // always put kz in 4th or 1st quadrant
@@ -752,7 +751,7 @@ vector<Complex> Circ_M_closed::get_params() const
 
 void Circ_M_closed::set_params(const vector<Complex>& params)
 {
-  lambda = real(params[0]);
+  lambda = params[0];
 
   unsigned int index = 0;
 

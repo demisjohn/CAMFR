@@ -96,7 +96,7 @@ class Material : public BaseMaterial
      const Complex     mu() const {return i_mur * mu0;}
      const Complex eps_mu() const {return i_n * i_n * eps0 * i_mur * mu0;}
 
-     Real gain() const {return 4*imag(i_n)*pi/(global.lambda * 1e-4);}
+     Real gain() const {return 4*imag(i_n)*pi/(real(global.lambda) * 1e-4);}
 
      void set_n(Complex n)        {i_n   = n;}
      void set_mur(Complex mur)    {i_mur = mur;}   

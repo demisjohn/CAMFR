@@ -50,10 +50,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-inline void set_lambda(Real l)
+inline void set_lambda(Complex l)
   {global.lambda = l;}
 
-inline Real get_lambda()
+inline Complex get_lambda()
   {return global.lambda;}
 
 inline void set_N(int n)
@@ -375,7 +375,7 @@ inline void stack_set_inc_field_function(Stack& s, PyObject* o, Real eps)
   {
     PyErr_SetString(PyExc_ValueError, 
                     "set_inc_field_function only implemented for slabs.");
-    throw boost::python::argument_error();
+    exit(-1); //throw boost::python::argument_error();
   }
 
   PythonFunction f(o);
@@ -418,7 +418,7 @@ inline void stack_set_inc_field_gaussian
   {
     PyErr_SetString(PyExc_ValueError, 
                     "set_inc_field_gaussian only implemented for slabs.");
-    throw boost::python::argument_error();
+    exit(-1); //throw boost::python::argument_error();
   }
 
   GaussianFunction f(height,width,pos);
@@ -465,7 +465,7 @@ inline void stack_set_inc_field_plane_wave
   {
     PyErr_SetString(PyExc_ValueError, 
                     "set_inc_field_plane_Wave only implemented for slabs.");
-    throw boost::python::argument_error();
+    exit (-1); //throw boost::python::argument_error();
   }
 
   Complex index = slab->get_core()->n();

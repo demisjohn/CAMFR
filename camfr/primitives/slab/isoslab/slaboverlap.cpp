@@ -85,7 +85,7 @@ Complex overlap(const SlabMode* mode_I,
   const SlabImpl* medium_I  = mode_I ->get_geom();
   const SlabImpl* medium_II = mode_II->get_geom();
 
-  const Real omega = 2*pi/global.lambda * c;
+  const Complex omega = 2*pi/global.lambda * c;
 
   // TE and TM are orthogonal.
 
@@ -263,7 +263,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
   const SlabImpl* medium_I  = mode_I ->get_geom();
   const SlabImpl* medium_II = mode_II->get_geom();
 
-  const Real omega = 2*pi/global.lambda * c;
+  const Complex omega = 2*pi/global.lambda * c;
   
   // Widths equal?
   

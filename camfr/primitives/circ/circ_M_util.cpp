@@ -43,7 +43,7 @@ cMatrix transfer_matrix(const Complex& r,
 
   // Set constants
 
-  const Real    k0  = - 2*pi/global.lambda; // exp(ikz) versus exp(-ikz) 
+  const Complex k0  = - 2*pi/global.lambda; // exp(ikz) versus exp(-ikz) 
   const Complex ord = circ_order;
 
   Complex k1  = sqrt(k0*k0*n1*n1 - kz*kz);
@@ -154,7 +154,7 @@ cMatrix field_matrix(const Complex& r,
   
   // Set constants
 
-  const Real    k0  = - 2*pi/global.lambda; // exp(-iwt) versus exp(iwt)
+  const Complex k0  = - 2*pi/global.lambda; // exp(-iwt) versus exp(iwt)
   const Complex ord = circ_order;
 
   const Complex n = mat.n();

@@ -1,3 +1,10 @@
+2004-04-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.cpp: Lambda can now be complex.
+	* defs.h: Ditto.
+	* material.h: Ditto.
+	* cavity.cpp: Ditto.
+
 2004-02-12  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* geometry.py: Relax tolerance.
