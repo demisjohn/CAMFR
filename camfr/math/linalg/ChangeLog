@@ -1,0 +1,4 @@
+2002-02-07  Lieven Vanholme  <Lieven.Vanholmen@rug.ac.be>
+
+        * linalg.h: Add support for generalised eigenproblem.
+        * linalg.cpp: Ditto.
