@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "section.h"
 #include "sectiondisp.h"
 #include "sectionmode.h"
@@ -17,7 +18,6 @@
 
 using std::vector;
 using std::cout;
-using std::cerr;
 using std::endl;
 
 #include "../../util/vectorutil.h"
@@ -139,7 +139,7 @@ Section::Section(const Expression& expression, int M)
       s = new Section1D(*slab, d);
     else
     {
-      cerr << "Error: expected a slab to initialise a section." << endl;
+      py_error("Error: expected a slab to initialise a section.");
       exit (-1);
     }    
 
@@ -151,7 +151,7 @@ Section::Section(const Expression& expression, int M)
   
   // Transparently factor expression into right and left expression.
 
-  cerr << "Automatic splitting of expressions not yet implemented." << endl;
+  py_error("Automatic splitting of expressions not yet implemented.");
   exit (-1);
 }
 
@@ -186,8 +186,7 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
 
   if (left.get_inc() != right.get_inc())
   {
-    cerr << "Error: left and right part have different incidence media."
-         << endl;
+    py_error("Error: left and right part have different incidence media.");
     exit (-1);
   }
   
@@ -333,13 +332,13 @@ void Section2D::find_modes()
 
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return;
   }
 
@@ -644,9 +643,11 @@ void Section2D::find_modes_from_scratch_by_track()
     
     if (fx > 1e-2)
     {
-      cout << "Warning: possibly insufficient precision around beta "
-           << beta_guided_lossless[i] << "." << endl;
-      cout << "Removing this candidate with abs(fx) " << fx << "." << endl;
+      std::ostringstream s;
+      s << "Warning: possibly insufficient precision around beta "
+        << beta_guided_lossless[i] << "." << std::endl;
+      s << "Removing this candidate with abs(fx) " << fx << ".";
+      py_print(s.str());
     }
     else
     {
@@ -694,9 +695,11 @@ void Section2D::find_modes_from_scratch_by_track()
     
     if (fx > 1e-2)
     {
-      cout << "Warning: possibly insufficient precision around beta "
-           << beta_prop_rad_lossless[i] << "." << endl;
-      cout << "Removing this candidate with abs(fx) " << fx << "." << endl;
+      std::ostringstream s;
+      s << "Warning: possibly insufficient precision around beta "
+        << beta_prop_rad_lossless[i] << "." << std::endl;
+      s << "Removing this candidate with abs(fx) " << fx << ".";
+      py_print(s.str());
     }
     else
     {
@@ -735,8 +738,7 @@ void Section2D::find_modes_from_scratch_by_track()
     while (modes_left)
     {
       if (extra > 1)
-        cout << "Lost too many candidate modes. Expanding search region."
-             << endl;
+        py_print("Lost too many candidate modes. Expanding search region.");
       
       vector<Real> beta_evan_lossless = brent_N_minima
         (evan_wrap,beta_begin,modes_left+extra,
@@ -755,10 +757,11 @@ void Section2D::find_modes_from_scratch_by_track()
         const Real fx = abs(disp(I*beta_evan_lossless[i]));
         if (fx > 1e-2)
         {
-          cout << "Warning: possibly insufficient precision around beta "
-               <<  beta_evan_lossless[i] << "." << endl;
-          cout << "Removing this candidate with abs(fx) "
-               << fx << "." << endl;
+          std::ostringstream s;
+          s << "Warning: possibly insufficient precision around beta "
+            <<  beta_evan_lossless[i] << "." << std::endl;
+          s << "Removing this candidate with abs(fx) " << fx << ".";
+          py_print(s.str());
         }
         else
         {
@@ -886,8 +889,10 @@ void Section2D::find_modes_from_scratch_by_track()
 
   if (beta.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << beta.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << beta.size() << "/" << global.N << ").";
+    py_error(s.str());
     //exit (-1);
   }
   
@@ -951,11 +956,13 @@ void Section2D::find_modes_by_sweep()
   params = params_new;
 
   // Check if modes were lost during tracing.
-  
+
   if (beta.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << beta.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << beta.size() << "/" << global.N << ").";
+    py_error(s.str());
     exit (-1);
   }
 

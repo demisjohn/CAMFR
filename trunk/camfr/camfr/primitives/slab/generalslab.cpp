@@ -22,9 +22,6 @@
 #include "../../math/calculus/quadrature/patterson_quad.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "../../util/vectorutil.h"
 
@@ -229,8 +226,8 @@ void SlabImpl::calc_overlap_matrices
 
   if (!O_I_I)
   {
-    cerr << "Internal error: non-orthogonality of modes not taken "
-         << "into account" << endl;
+    py_error(
+     "Internal error: non-orthogonality of modes not taken into account");
     exit (-1);
   }
 
@@ -322,7 +319,7 @@ Slab::Slab(const Expression& ex)
     
     if (!m)
     {
-      cerr << "Error: expression contains non-material term." << endl;
+      py_error("Error: expression contains non-material term.");
       return;
     }
     
@@ -350,7 +347,7 @@ Slab::Slab(const Term& t)
 
   if (!m)
   {
-    cerr << "Error: expression contains non-material term." << endl;
+    py_error("Error: expression contains non-material term.");
     return;
   }
 

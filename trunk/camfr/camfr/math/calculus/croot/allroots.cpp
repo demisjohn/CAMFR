@@ -86,7 +86,7 @@ vector<Complex> roots_contour(const Contour& contour,
     B(i,1) = -G[N+i-1];
 
   // Solve linear system and exploit the symmetry. Note: the fact that this
-  // is a Hankel matrix is not used, since speedups would probable be minor
+  // is a Hankel matrix is not used, since speedups would probably be minor
   // due to the small dimension.
 
   c = solve_sym(A,B);
@@ -115,12 +115,19 @@ vector<Complex> roots_contour(const Contour& contour,
     Complex root = mueller(*contour.get_f(), roots1[i], roots1[i]+.001,
                            1e-15, &roots2, 50, &error);
 
+    cout << roots1[i] << " " << root << " " << error << endl;
+
     if (error)
       continue;
 
     if (contour.encloses(root))
+    {
+      cout << "@ " << root << endl;
       roots2.push_back(root); 
+    }
   }
+
+  cout << "@ found " << roots2.size() << endl;
   
   return roots2;      
 }

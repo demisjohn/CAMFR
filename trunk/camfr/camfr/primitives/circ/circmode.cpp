@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <algorithm>
 #include "circmode.h"
 #include "circdisp.h"
@@ -55,7 +56,7 @@ void Circ_M_Mode::normalise()
 
   if (abs(power) < 1e-10)
   {
-    cout << "Warning: mode close to cutoff." << endl;
+    py_print("Warning: mode close to cutoff.");
     power = 1;
   }
 
@@ -124,8 +125,7 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
   scaling_cl = true;
 
   if (abs(kr2) < 0.05)
-    cout << "Warning: mode very close to cutoff. "
-         << "Possible loss of precision." << endl;
+    py_print("Warning: mode close to cutoff. Possible loss of precision.");
 
   // Calculate J(z).exp(-abs(z_imag))  (scaling factors cancel here).
 
@@ -133,8 +133,7 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
   Complex J2R, dJ2R = dJ(order, kr2*R, &J2R, NULL, scaling_cl);
 
   if (abs(J1r) < 1e-6)
-    cout << "Warning: mode is zero of J1r. "
-         << "Possible loss of precision for field profiles." << endl;
+    py_print("Warning: mode is zero of J1r. Possible loss of precision.");
 
   // Calculate c_TE and c_TM.
 
@@ -232,8 +231,12 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
   //cout << "Worst error : " << worst << endl;
 
   if (worst > 1e-8)
-    cout << "Warning: error " << worst << " higher than 1e-8 "
-         << "in boundary conditions check: kz = " << kz_ << endl; 
+  {
+    std::ostringstream s;
+    s << "Warning: error " << worst << " higher than 1e-8 "
+      << "in boundary conditions check: kz = " << kz_;
+    py_print(s.str());
+  }
 }
 
 
@@ -526,8 +529,7 @@ Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
   const Complex R  = geom->radius[0];
 
   if (abs(kr[0]) < 0.05)
-    cout << "Warning: mode very close to cutoff. "
-         << "Possible loss of precision." << endl;
+    py_print ("Warning: mode close to cutoff.Possible loss of precision.");
   
   // Determine polarisation and set field expansion coefficients A and B.
 
@@ -567,8 +569,12 @@ Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
   //cout << "Worst error : " << worst << endl;
 
   if (worst > 1e-8)
-    cout << "Warning: error " << worst << " higher than 1e-8 "
-         << "in boundary conditions check." << endl; 
+  {
+    std::ostringstream s;
+    s << "Warning: error " << worst << " higher than 1e-8 "
+      << "in boundary conditions check: kz = " << kz_;
+    py_print(s.str());
+  }
 }
 
 
@@ -615,7 +621,7 @@ void Circ_1_Mode::normalise()
 
   if (abs(power) < 1e-10)
   {
-    cout << "Warning: mode close to cutoff." << endl;
+    py_print("Warning: mode close to cutoff.");
     power = 1;
   }
   

@@ -10,11 +10,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "linalg.h"
-
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -57,8 +54,7 @@ void transpose_self(cMatrix* A)
   const int N = A->rows();
   if (N != A->cols())
   {
-    cerr << "Error: transpose_self only implemented for "
-         << "square matrices." << endl;
+    py_error("Error: transpose_self only implemented for square matrices.");
     exit (-1);
   }
 
@@ -77,8 +73,7 @@ void herm_conj_self(cMatrix* A)
   const int N = A->rows();
   if (N != A->cols())
   {
-    cerr << "Error: herm_conj_self only implemented for "
-         << "square matrices." << endl;
+    py_error("Error: herm_conj_self only implemented for square matrices.");
     exit (-1);
   }
   
@@ -119,8 +114,10 @@ cVector multiply(const cMatrix& A, const cVector& x, Op a)
   if (    ( (a == nrml) && (A_cols != x_rows) )
        || ( (a != nrml) && (A_rows != x_rows) )  )
   {
-    cerr << "Error: dimensions for matrix multiplication don't match : ";
-    cerr << "[" << A_rows << "," << A_cols << "]*[" << x_rows << "]." << endl;
+    std::ostringstream s;
+    s << "Error: dimensions for matrix multiplication don't match : ";
+    s << "[" << A_rows << "," << A_cols << "]*[" << x_rows << "].";
+    py_error(s.str());
     exit (-1);
   }
 
@@ -169,9 +166,11 @@ cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a, Op b)
        || ( (a == nrml) && (b != nrml) && (A_cols != B_cols) )
        || ( (a != nrml) && (b != nrml) && (A_rows != B_cols) )   )
   {
-    cerr << "Error: dimensions for matrix multiplication don't match : ";
-    cerr << "[" << A_rows << "," << A_cols << "]*["
-         << B_rows << "m" << B_cols << "]." << endl;
+    std::ostringstream s;
+    s << "Error: dimensions for matrix multiplication don't match : ";
+    s << "[" << A_rows << "," << A_cols << "]*["
+      << B_rows << "m" << B_cols << "].";
+    py_error(s.str());
     exit (-1);
   }
 
@@ -232,13 +231,13 @@ cMatrix solve(const cMatrix& A, const cMatrix& B)
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
@@ -261,13 +260,18 @@ cMatrix solve(const cMatrix& A, const cMatrix& B)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
   
   return B_X;
 }
@@ -297,13 +301,13 @@ cMatrix solve_x(const cMatrix& A, const cMatrix& B)
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
@@ -343,26 +347,31 @@ cMatrix solve_x(const cMatrix& A, const cMatrix& B)
 
   // Diagnostic output:
 
-  cout << "Equi: " << equi[0] << endl;
-  cout << "Cond: " << cond << endl;
-  cout << "Ferr: " << ferr << endl;
-  cout << "Berr: " << berr << endl;
+  //cout << "Equi: " << equi[0] << endl;
+  //cout << "Cond: " << cond << endl;
+  //cout << "Ferr: " << ferr << endl;
+  //cout << "Berr: " << berr << endl;
 
   if (info == 0)
     return X;
   
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info == A_rows+1)
-    cout << "Warning: matrix singular to working precision." << endl;
+    py_error("Warning: matrix singular to working precision.");
   
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
   
   return X;
 }
@@ -386,13 +395,13 @@ cMatrix solve_svd(const cMatrix& A, const cMatrix& B)
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
@@ -424,13 +433,13 @@ cMatrix solve_sym(const cMatrix& A, const cMatrix& B)
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
@@ -455,14 +464,19 @@ cMatrix solve_sym(const cMatrix& A, const cMatrix& B)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
-  
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
+
   return B_X;
 }
 
@@ -491,13 +505,13 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B)
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
@@ -534,25 +548,30 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B)
 
   // Diagnostic output:
   
-  cout << "Cond: " << cond << endl;
-  cout << "Ferr: " << ferr << endl;
-  cout << "Berr: " << berr << endl;
+  //cout << "Cond: " << cond << endl;
+  //cout << "Ferr: " << ferr << endl;
+  //cout << "Berr: " << berr << endl;
 
   if (info == 0)
     return X;
   
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info == A_rows+1)
-    cout << "Warning: matrix singular to working precision." << endl;
+    py_error("Warning: matrix singular to working precision.");
   
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
 
   return X;
 }
@@ -578,7 +597,7 @@ cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
 
   if (N != A.columns())
   {
-    cerr << "Error: A matrix is not square." << endl;
+    py_error("Error: A matrix is not square.");
     exit (-1);
   }
 
@@ -621,12 +640,18 @@ cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: " << info << " eigenvalue(s) did not converge." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: " << info << " eigenvalue(s) did not converge.";;
+    py_error(s.str());
+  }
 
   //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
   
@@ -655,7 +680,7 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
 
   if (N != A.columns())
   {
-    cerr << "Error: A matrix is not square." << endl;
+    py_error("Error: A matrix is not square.");
     exit (-1);
   }
 
@@ -707,12 +732,18 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: " << info << " eigenvalue(s) did not converge." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: " << info << " eigenvalue(s) did not converge.";
+    py_error(s.str());
+  }
 
   //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
   
@@ -744,19 +775,19 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
 
   if (N != A.columns()) 
   {
-    cerr << "Error: A matrix is not square." << endl;
+    py_error("Error: A matrix is not square.");
     exit (-1); 
   }
 
   if (N != B.columns()) 
   {
-    cerr << "Error: A matrix has a different dimension than B." << endl;
+    py_error("Error: A matrix has a different dimension than B.");
     exit (-1);
   }
 
   if (N != B.rows())
   {
-    cerr << "Error: B matrix is not square." << endl;
+    py_error("Error: B matrix is not square.");
     exit (-1);
   } 
 
@@ -801,19 +832,29 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
                  N,work.data(),work_size*N,work2.data(),info); 
 
   if (info < 0) 
-  { 
-    cerr << "Error: bad value for argument " << -info << endl; 
+  {
+    std::ostringstream s; 
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1); 
   } 
 
   if ((info > 0) && (info <= N))
-    cout << "The QZ iteration failed. "
-         << "No eigenvectors have been calculated, "
-         << "but alpha(j) and beta(j) should be "
-         << "correct for j=" << info+1 << ",..., " << N; 
+  {
+    std::ostringstream s;
+    s << "The QZ iteration failed. " 
+      << "No eigenvectors have been calculated," << std::endl
+      << "but alpha(j) and beta(j) should be "
+      << "correct for j=" << info+1 << ",..., " << N; 
+    py_error(s.str());
+  }
 
   if (info > N) 
-    cout << "Warning: " << info << " eigenvalue(s) did not converge." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: " << info << " eigenvalue(s) did not converge.";
+    py_error(s.str());
+  }
 
   //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
 }
@@ -897,12 +938,18 @@ rVector svd(const cMatrix& A, cMatrix* Vh, cMatrix* U)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: element " << info << " did not converge." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: element " << info << " did not converge.";
+    py_error(s.str());
+  }
 
   //cout << "Optimal work size: " << real(work(1))/max_dim << "*N " << endl;
   
@@ -929,7 +976,7 @@ cMatrix invert(const cMatrix& A)
   
   if (N != A.columns())
   {
-    cerr << "Can only invert square matrices" << endl;
+    py_error("Can only invert square matrices.");
     exit (-1);
   }
 
@@ -951,13 +998,18 @@ cMatrix invert(const cMatrix& A)
   
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
 
   //cout << "Optimal work size: " << real(work(1))/N << "*N " << endl;
   
@@ -980,7 +1032,7 @@ cMatrix invert_x(const cMatrix& A)
   
   if (N != A.columns())
   {
-    cerr << "Can only invert square matrices" << endl;
+    py_error("Can only invert square matrices.");
     exit (-1);
   }
 
@@ -1012,7 +1064,7 @@ cMatrix invert_svd(const cMatrix& A)
   
   if (N != A.columns())
   {
-    cerr << "Can only invert square matrices" << endl;
+    py_error("Can only invert square matrices.");
     exit (-1);
   }
 
@@ -1038,8 +1090,11 @@ cMatrix invert_svd(const cMatrix& A)
       sigma(i) = 1./sigma(i);
 
   if (singularities)
-    cout << singularities << "/" << N
-         << " zero singular values encountered." << endl;
+  {
+    std::ostringstream s;
+    s << singularities << "/" << N << " zero singular values encountered.";
+    py_error(s.str());
+  }
 
   // hermitian conjugate U and Vh
 
@@ -1089,13 +1144,18 @@ void LU(const cMatrix& A, cMatrix* LU, iVector* P)
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
 
   if (info > 0)
-    cout << "Warning: singular system: U(" << info << "," << info
-         << ") is zero." << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: singular system: U(" << info << "," << info << ") is zero.";
+    py_error(s.str());
+  }
 }
 
 
@@ -1123,19 +1183,19 @@ cMatrix LU_solve(const cMatrix& LU, const iVector& P,
 
   if (A_rows != A_cols)
   {
-    cerr << "Error: system matrix is not square." << endl;
+    py_error("Error: system matrix is not square.");
     exit (-1);
   }
 
   if (A_rows != B_rows)
   {
-    cerr << "Error: dimension of rhs matrix does not match." << endl;
+    py_error("Error: dimension of rhs matrix does not match.");
     exit (-1);
   }
 
   if (P.rows() != A_rows)
   {
-    cerr << "Error: incorrect dimension of permution matrix." << endl;
+    py_error("Error: incorrect dimension of permution matrix.");
     exit (-1);
   }
 
@@ -1159,7 +1219,9 @@ cMatrix LU_solve(const cMatrix& LU, const iVector& P,
 
   if (info < 0)
   {
-    cerr << "Error: bad value for argument " << -info << endl;
+    std::ostringstream s;
+    s << "Error: bad value for argument " << -info;
+    py_error(s.str());
     exit (-1);
   }
   

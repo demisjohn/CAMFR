@@ -10,15 +10,13 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include "circoverlap.h"
 #include "circmode.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "../../util/vectorutil.h"
 
@@ -41,12 +39,12 @@ Complex overlap(const Circ_M_Mode* mode_I,
   {
     if ( (I_index < 1) || (I_index > 2) )
     {
-      cerr << "Error: I_index should be 1 or 2." << endl;
+      py_error("Error: I_index should be 1 or 2.");
       exit(-1);
     }
     if ( (II_index < 1) || (II_index > 2) )
     {
-      cerr << "Error: II_index should be 1 or 2." << endl;
+      py_error("Error: II_index should be 1 or 2.");
       exit(-1);
     }
   }
@@ -66,9 +64,11 @@ Complex overlap(const Circ_M_Mode* mode_I,
   
   if (medium_I->radius[medium_I->M-1] != medium_II->radius[medium_II->M-1])
   {
-    cerr << "Error: outer radii don't match: "
-         << medium_I ->radius[medium_I ->M-1] << " and "
-         << medium_II->radius[medium_II->M-1] << endl;
+    std::ostringstream s;
+    s << "Error: outer radii don't match: "
+      << medium_I ->radius[medium_I ->M-1] << " and "
+      << medium_II->radius[medium_II->M-1];
+    py_error(s.str());
     exit (-1);
   }
   
