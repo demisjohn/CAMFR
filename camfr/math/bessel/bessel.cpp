@@ -429,7 +429,7 @@ Real dJ(Real n, Real x, Real* Jn, Real* Jn_1, bool scaled)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Real dY(Real n, Real x, Real* Yn=0, Real* Yn_1=0, bool scaled)
+Real dY(Real n, Real x, Real* Yn, Real* Yn_1, bool scaled)
 {
   if (n==0)
   {
