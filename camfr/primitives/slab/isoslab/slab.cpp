@@ -490,9 +490,16 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   Wrap_imag_to_abs prop_wrap(disp);
 
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;  
-  Real prop_kt_end_lossless 
-    = abs(sqrt(C*(max_eps_mu_lossless - min_eps_mu_lossless)));
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  Complex max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (max_eps_mu_lossless*min_eps_mu_lossless < 0.0) )
+    max_eps_eff = 1.5/(1.0/max_eps_mu_lossless + 1.0/min_eps_mu_lossless);
+  else
+    max_eps_eff = max_eps_mu_lossless;
+
+  Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
 
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
