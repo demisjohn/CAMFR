@@ -64,7 +64,7 @@ class Waveguide
     Waveguide(bool uniform_=false, Material* core_=NULL)
       : uniform(uniform_), core(core_) {}
     
-    virtual ~Waveguide() {interface_cache.deregister(this);}
+    virtual ~Waveguide() {}
 
     bool    is_uniform() const {return uniform;}
     Material* get_core() const {return core;}
@@ -75,16 +75,16 @@ class Waveguide
     Complex n_at(const Coord& coord) const 
       {return sqrt(eps_at(coord)/eps0);}  
     
-    virtual bool  operator==(const Waveguide& w) const = 0;
-    virtual vector<Material*> get_materials()    const = 0;
-    virtual bool  contains(const Material& m)    const = 0;
-    virtual bool  no_gain_present()              const = 0;
-    virtual bool  recalc_needed()                const = 0;
-    virtual int   N()                            const = 0;
-    virtual Mode* get_mode(int i)                const = 0;
-    virtual Mode* get_fw_mode(int i)             const {return 0;};
-    virtual Mode* get_bw_mode(int i)             const {return 0;};
-    virtual void  find_modes()                         = 0;
+    virtual bool  operator==(const Waveguide& w)   const = 0;
+    virtual std::vector<Material*> get_materials() const = 0;
+    virtual bool  contains(const Material& m)      const = 0;
+    virtual bool  no_gain_present()                const = 0;
+    virtual bool  recalc_needed()                  const = 0;
+    virtual int   N()                              const = 0;
+    virtual Mode* get_mode(int i)                  const = 0;
+    virtual Mode* get_fw_mode(int i)               const {return 0;};
+    virtual Mode* get_bw_mode(int i)               const {return 0;};
+    virtual void  find_modes()                           = 0;
     
     const Waveguide_length operator()(const Complex& d=0.0) const;
 
@@ -94,7 +94,7 @@ class Waveguide
     virtual Complex lateral_S_corr(const Coord& c) const
       {return 1.0;}
 
-    virtual string repr() const = 0;
+    virtual std::string repr() const = 0;
     
   protected:
 
@@ -102,8 +102,8 @@ class Waveguide
     Material* core;
 };
 
-inline ostream& operator<<(ostream& s, const Waveguide& wg)
-  {return s << wg.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Waveguide& wg)
+  {return s << wg.repr() << std::endl;}
 
 
 
@@ -157,13 +157,13 @@ class MultiWaveguide : public Waveguide
       {modeset.push_back(&m);}
 
     void sort_modes()
-      {sort(modeset.begin(), modeset.end(), modesorter());}
+      {std::sort(modeset.begin(), modeset.end(), modesorter());}
 
     void sort_modes_bloch()
-      {sort(modeset.begin(), modeset.end(), modesorter_bloch());}
+      {std::sort(modeset.begin(), modeset.end(), modesorter_bloch());}
       
     void sort_modes_BDM()
-      {sort(modeset.begin(), modeset.end(), modesorter_BDM());}
+      {std::sort(modeset.begin(), modeset.end(), modesorter_BDM());}
       
     virtual void calc_overlap_matrices
       (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
@@ -171,11 +171,11 @@ class MultiWaveguide : public Waveguide
 
     void truncate_N_modes(int N=global.N);
 
-    string repr() const;
+    std::string repr() const;
     
   protected:
 
-    vector<Mode*> modeset;
+    std::vector<Mode*> modeset;
     
     // The wavelength and gain the modes were last calculated for,
     // are used to determine if recalculation is needed.
@@ -207,7 +207,7 @@ class MonoWaveguide : public Waveguide
     
     ~MonoWaveguide() {delete mode;}
 
-    vector<Material*> get_materials() const;
+    std::vector<Material*> get_materials() const;
     
     bool contains(const Material& m) const {return core == &m;}
 
@@ -220,7 +220,7 @@ class MonoWaveguide : public Waveguide
     int   N()             const {return 1;}
     Mode* get_mode(int i) const {return mode;}
 
-    string repr() const {return mode->repr();}
+    std::string repr() const {return mode->repr();}
     
   protected:
 

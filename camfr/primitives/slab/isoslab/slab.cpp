@@ -17,6 +17,12 @@
 #include "slaboverlap.h"
 #include "../slabmatrixcache.h"
 #include "../../../math/calculus/calculus.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "../../../util/vectorutil.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -471,7 +477,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   else
     prop_kt_end_lossless = 0.25; // To make rectangle for complex zero search.
   
-  reverse(kt_prop_lossless.begin(), kt_prop_lossless.end());
+  std::reverse(kt_prop_lossless.begin(), kt_prop_lossless.end());
 
   // Eliminate false zeros.
 

@@ -68,7 +68,7 @@ class Circ_M : public MultiWaveguide
 
     Circ_M() {}
       
-    Circ_M(const vector<Complex> &r, const vector<Material*> &m)
+    Circ_M(const std::vector<Complex> &r, const std::vector<Material*> &m)
       : M(m.size()), radius(r), material(m) {}
 
     Real S_flux(const FieldExpansion& f,
@@ -84,7 +84,7 @@ class Circ_M : public MultiWaveguide
 
     bool no_gain_present() const;
 
-    vector<Material*> get_materials() const
+    std::vector<Material*> get_materials() const
       {return material;}
 
     Complex eps_at(const Coord& coord) const
@@ -112,15 +112,15 @@ class Circ_M : public MultiWaveguide
 
     unsigned int M;
     
-    vector<Complex>   radius;
-    vector<Material*> material;
+    std::vector<Complex>   radius;
+    std::vector<Material*> material;
 
     friend class Circ_M_Mode;
     friend class Circ_2_Mode;
     friend class Circ_1_Mode;
     friend Complex overlap(const Circ_M_Mode*, const Circ_M_Mode*,
                            const CircCache* c,
-                           const vector<Complex>* v,
+                           const std::vector<Complex>* v,
                            int, int, int, int);
 };
 
@@ -150,9 +150,9 @@ class Circ_2 : public Circ_M
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
     
-    vector<Complex> kr2_backward;
-    vector<Complex> guided_disp_params;
-    vector<Complex> rad_disp_params;
+    std::vector<Complex> kr2_backward;
+    std::vector<Complex> guided_disp_params;
+    std::vector<Complex> rad_disp_params;
 
     unsigned int no_of_guided_modes;
 };
@@ -195,10 +195,10 @@ class Circ : public MultiWaveguide
     Circ(const Term& t);    
     ~Circ() {delete c;}
 
-    bool operator==(const Waveguide& w) const {return this == &w;}
-    vector<Material*> get_materials()   const {return c->get_materials();}
-    bool contains(const Material& m)    const {return c->contains(m);}
-    bool no_gain_present()              const {return c->no_gain_present();}
+    bool operator==(const Waveguide& w)    const {return this == &w;}
+    std::vector<Material*> get_materials() const {return c->get_materials();}
+    bool contains(const Material& m)       const {return c->contains(m);}
+    bool no_gain_present()                 const {return c->no_gain_present();}
 
     void find_modes() {return c->find_modes();}
     
@@ -227,14 +227,14 @@ class Circ : public MultiWaveguide
       {return c->calc_overlap_matrices(dynamic_cast<Circ*>(w2)->c,
                                        O_I_II,O_II_I,O_I_I,O_II_II);}
 
-    string repr() const {return c->repr();}
+    std::string repr() const {return c->repr();}
     
   protected:
 
     Circ_M* c;
 };
 
-inline ostream& operator<<(ostream& s, const Circ& circ)
+inline std::ostream& operator<<(std::ostream& s, const Circ& circ)
   {return s << circ.repr();}  
 
 

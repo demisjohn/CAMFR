@@ -51,8 +51,9 @@ struct Chunk
 
 typedef enum {before_prop, after_prop} Split_type;
   
-void split_chunks(const vector<Chunk>& chunks,
-                  vector<Chunk>* left_chunks, vector<Chunk>* right_chunks,
+void split_chunks(const std::vector<Chunk>& chunks,
+                  std::vector<Chunk>* left_chunks, 
+                  std::vector<Chunk>* right_chunks,
                   unsigned int i, Split_type split=after_prop);
 
 

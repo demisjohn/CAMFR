@@ -13,6 +13,9 @@
 #include "scatterer.h"
 #include "primitives/slab/generalslab.h"
 
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // MultiScatterer::recalc_needed
@@ -149,10 +152,10 @@ void DenseScatterer::copy_RT_from(const DenseScatterer& sc)
 
 void DenseScatterer::swap_RT_with(DenseScatterer& sc)
 {
-  cycleArrays(R12, sc.R12);
-  cycleArrays(R21, sc.R21);
-  cycleArrays(T12, sc.T12);
-  cycleArrays(T21, sc.T21);
+  blitz::cycleArrays(R12, sc.R12);
+  blitz::cycleArrays(R21, sc.R21);
+  blitz::cycleArrays(T12, sc.T12);
+  blitz::cycleArrays(T21, sc.T21);
 }
 
 
@@ -184,7 +187,7 @@ DiagScatterer::DiagScatterer(Waveguide& inc, Waveguide& ext)
     T12(fortranArray), T21(fortranArray),
     R12_dense(NULL),   R21_dense(NULL),
     T12_dense(NULL),   T21_dense(NULL)
-{
+{  
   if ( (inc != ext) && ( !inc.is_uniform() || !ext.is_uniform() ) )
   {
     cerr << "Error: incidence and exit media should be uniform in "
@@ -327,10 +330,10 @@ void DiagScatterer::copy_RT_from(const DiagScatterer& sc_d)
 
 void DiagScatterer::swap_RT_with(DiagScatterer& sc_d)
 {
-  cycleArrays(R12, sc_d.R12);
-  cycleArrays(R21, sc_d.R21);
-  cycleArrays(T12, sc_d.T12);
-  cycleArrays(T21, sc_d.T21);
+  blitz::cycleArrays(R12, sc_d.R12);
+  blitz::cycleArrays(R21, sc_d.R21);
+  blitz::cycleArrays(T12, sc_d.T12);
+  blitz::cycleArrays(T21, sc_d.T21);
 }
 
 

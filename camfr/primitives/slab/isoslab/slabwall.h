@@ -123,14 +123,14 @@ class SlabWall_PC : public SlabWall
       {
         if (s.get_inc() != s.get_ext())
         {
-          cerr << "Currently, incidence and exit media should match in "
-               << "SlabWall_PC." << endl;
+          std::cerr << "Currently, incidence and exit media should match in "
+                    << "SlabWall_PC." << std::endl;
           exit (-1);
         }
 
         if (!e.no_gain_present())
-          cout << "Warning: results might be incorrect for gain in "
-               << "SlabWall_PC." << endl;
+          std::cout << "Warning: results might be incorrect for gain in "
+                    << "SlabWall_PC." << std::endl;
       }  
 
     Complex get_R12() const;

@@ -1,0 +1,16 @@
+CAMFR 1.0:
+
+ - faster binaries
+ - more robust method of calculating Bloch modes (Lieven Vanholme)
+    (field profiles)
+ - new way of defining complex structures using geometric shapes and
+   automatic discretisation
+ - added stack.n(), stack.mu() and stack.eps()
+ - Matlab link under windows
+ - various documentation updates and minor bugfixes
+ - alpha: new root finder, waveguides with 2D cross-section
+ - semi infitinie stack
+
+CAMFR 0.9:
+
+ - initial public release

@@ -8,16 +8,25 @@ CAMFR also requires the following external programs or libraries,
 which must be installed first. The use of the lastest versions is 
 recommended.
 
-- Python from http://www.python.org
+- Python 2.2 or later from http://www.python.org
+- The Scons builing tool from www.scons.org
 - Numerical Python from http://sourceforge.net/projects/numpy
-- The Boost Python Library from http://www.boost.org
+- The Boost Python Library from http://www.boost.org. A CVS version is
+  needed, for instructions on how to get it, see 
+  http://mail.python.org/pipermail/c++-sig/2002-February/000815.html
+  For builing it, use a command like e.g. 
+      jam -sTOOLS="intel-win32" -sBUILD=release 
+      -sBOOST_ROOT=D:/boost_cvs/boost/ 
+      -sPYTHON_VERSION=2.2 -sPYTHON_ROOT=C:/progra~1/python22
 - a recent snapshot of Blitz++ from http://oonumerics.org/blitz
 - the Fortran linear algebra libraries BLAS and LAPACK, which you can get from 
   http://www.netlib.org. If possible however, use a vendor-supplied version 
   for maximum performance.
+- ARPACK and Arpack++, which you also get from Netlib. Note: for Arpack++,
+  a small patch might be required (TODO: check)
 
-Now edit make.inc and setup.py to adjust the location of these libraries, as well
-as other machine-dependent parameters and compiler flags. There are some examples
-in the files make.inc.{various_platforms}.
+Now edit machine_cfg.py to adjust the location of these libraries, as well
+as other machine-dependent parameters and compiler flags. There are some 
+examples in the files machine_cfg.py.{various_platforms}.
 
 Install the CAMFR library by typing 'python setup.py install'.

@@ -16,6 +16,11 @@
 #include "interface.h"
 #include "primitives/slab/slabmatrixcache.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Static variables.
@@ -362,9 +367,9 @@ Waveguide* Expression::get_ext() const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-string Expression::repr() const
+std::string Expression::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
   for (unsigned int i=0; i<get_size(); i++)
   {
@@ -646,9 +651,9 @@ Waveguide* Term::get_ext() const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-string Term::repr() const
+std::string Term::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
   switch (type)
   {
@@ -726,8 +731,8 @@ const Expression operator+(const Term& L, const Term& R)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Expression& operator+(const Expression& L, const Term& R)
-{ 
+const Expression operator+(const Expression& L, const Term& R)
+{
   Waveguide* wg1 = L.get_ext();
   Waveguide* wg2 = R.get_inc();
   

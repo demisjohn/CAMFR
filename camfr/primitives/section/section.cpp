@@ -14,6 +14,12 @@
 #include "sectiondisp.h"
 #include "sectionmode.h"
 #include "sectionoverlap.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "../../util/vectorutil.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -600,7 +606,7 @@ void Section2D::find_modes_from_scratch_by_track()
     beta_guided_lossless = beta_fine;
   }
   
-  reverse(beta_guided_lossless.begin(), beta_guided_lossless.end());
+  std::reverse(beta_guided_lossless.begin(), beta_guided_lossless.end());
 
   // Eliminate false zeros.
 
@@ -620,7 +626,7 @@ void Section2D::find_modes_from_scratch_by_track()
     cout << "n_eff higher than expected!" << endl;
   cout << "Slab kz: " << left.get_inc()->get_mode(1)->get_kz() << endl;
 
-  cout << setprecision(15);
+  cout << std::setprecision(15);
   cout << "Done lossless:" << endl;
   for (unsigned int i=0; i<beta_guided_lossless.size(); i++)
     cout << i << beta_guided_lossless[i]/2/pi*global.lambda << endl;
@@ -672,7 +678,7 @@ void Section2D::find_modes_from_scratch_by_track()
     beta_prop_rad_lossless = brent_all_minima
      (prop_wrap,0.0001,k0*min_n,d_beta/global.precision_rad,eps,sec);
 
-  reverse(beta_prop_rad_lossless.begin(), beta_prop_rad_lossless.end());
+  std::reverse(beta_prop_rad_lossless.begin(), beta_prop_rad_lossless.end());
 
   cout << "Done prop rad" << endl;
       for (unsigned int i=0; i<beta_prop_rad_lossless.size(); i++)

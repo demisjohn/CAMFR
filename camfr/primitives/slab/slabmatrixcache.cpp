@@ -15,6 +15,12 @@
 #include "slabmatrixcache.h"
 #include "generalslab.h"
 
+using std::vector;
+using std::pair;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // OverlapMatrices::OverlapMatrices

@@ -13,6 +13,11 @@
 #include "S_scheme_fields.h"
 #include "S_scheme.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // calc_field_T

@@ -17,6 +17,11 @@
 #include "T_scheme_fields.h"
 #include "primitives/slab/generalslab.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // StackImpl::StackImpl

@@ -14,6 +14,11 @@
 #include "scatterer.h"
 #include "icache.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // split_chunks

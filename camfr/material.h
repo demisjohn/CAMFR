@@ -54,11 +54,11 @@ class BaseMaterial
     const Material_length operator() (const Complex& d=0.0) const;
 
     virtual bool no_gain_present() const = 0;
-    virtual string repr()          const = 0;
+    virtual std::string repr()     const = 0;
 };
 
-inline ostream& operator<<(ostream& s, const BaseMaterial& m)
-  {return s << m.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const BaseMaterial& m)
+  {return s << m.repr() << std::endl;}
 
 
 
@@ -87,7 +87,7 @@ class Material : public BaseMaterial
 
      Material(const Complex& n, const Complex& mur=1.0)
        : i_n(n), i_mur(mur)
-       {if (i_mur != 1.0) cout << "Magnetic material" << endl;}
+       {if (i_mur != 1.0) std::cout << "Magnetic material" << std::endl;}
      
      const Complex    n() const {return i_n;}
      const Complex epsr() const {return i_n * i_n;}
@@ -108,8 +108,8 @@ class Material : public BaseMaterial
      bool operator!=(const Material& m) const
        {return !(*this == m);}
 
-     string repr() const
-       {ostringstream s; s << "Isotropic n=" << i_n; return s.str();}
+     std::string repr() const
+       {std::ostringstream s; s << "Isotropic n=" << i_n; return s.str();}
      
   protected:
 
@@ -117,8 +117,8 @@ class Material : public BaseMaterial
      Complex i_mur; 
 };
 
-inline ostream& operator<<(ostream& s, const Material& m)
-  {return s << m.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Material& m)
+  {return s << m.repr() << std::endl;}
 
 
 

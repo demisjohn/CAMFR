@@ -14,6 +14,11 @@
 #include "cavity.h"
 #include "math/calculus/minimum/minimum.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Sigma_lambda::operator()
@@ -109,7 +114,7 @@ void Cavity::find_modes_in_region
   }
 
   int modes_found = 0;
-  for (unsigned int i=Ax.size()-1; i>=0; i--)
+  for (int i=Ax.size()-1; i>=0; i--)
   {
     cout << "Looking for mode between " << Ax[i]
          << " and " << Bx[i] << "." << endl;

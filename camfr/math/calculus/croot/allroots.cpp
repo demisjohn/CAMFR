@@ -17,6 +17,11 @@
 #include "allroots.h"
 #include "mueller.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Maximum number of roots in a contour before we invoke subdivision.

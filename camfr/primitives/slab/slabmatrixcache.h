@@ -30,7 +30,7 @@ class SlabCache; // forward declation - see generalslab.h
 struct OverlapMatrices
 {
   OverlapMatrices(const SlabImpl* medium_I, const SlabImpl* medium_II, 
-                  const SlabCache* cache, const vector<Complex>* disc);
+                  const SlabCache* cache, const std::vector<Complex>* disc);
 
   int n; // Auxiliary variable to simplify comstructor.  
     
@@ -56,7 +56,7 @@ class SlabMatrixCache
     ~SlabMatrixCache();
       
     OverlapMatrices* get_matrices(SlabImpl* wg1, SlabImpl* wg2,
-       const SlabCache* cache, const vector<Complex>* disc);
+       const SlabCache* cache, const std::vector<Complex>* disc);
 
     void deregister(SlabImpl* wg);
     

@@ -15,6 +15,11 @@
 #include "slabwall.h"
 #include "slabmode.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // signedsqrt2_

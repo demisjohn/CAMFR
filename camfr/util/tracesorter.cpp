@@ -114,7 +114,8 @@ void Tracesorter::add_row(const cVector& row)
 
   const int N = row.rows();
 
-  bool placed[N+1];
+  bool* placed = new bool[N+1];
+
   for (int i=1; i<=N; i++)
     placed[i] = false;
   
@@ -130,6 +131,8 @@ void Tracesorter::add_row(const cVector& row)
     ordered_row(i) = row(best_index);
     placed[best_index] = true;
   }
+
+  delete [] placed;
 
   matrix.push_back(ordered_row);
 }

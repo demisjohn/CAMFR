@@ -20,14 +20,26 @@ Global global={0,0,TE,0,track,normal,100,1,0.01,100,100,Complex(1,1),false,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Workaround for inferior compilers.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef NO_CXX_ABS
+Real abs(Real x) {return x >= 0.0 ? x : -x;}
+#endif
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // operator<< for Polarisation
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const string Pol_string[] 
+const std::string Pol_string[] 
   = {"unknown", "TEM", "TE", "TM", "HE", "EH", "TE_TM"};
 
-ostream& operator<< (ostream& s, const Polarisation& pol)
+std::ostream& operator<< (std::ostream& s, const Polarisation& pol)
 {
   return s << Pol_string[pol];
 };
@@ -174,7 +186,7 @@ Real machine_eps()
 
 void out_of_memory()
 {
-  cerr << "Camfr: Out of memory." << endl;
+  std::cerr << "Camfr: Out of memory." << std::endl;
   exit(-1);
 }
 

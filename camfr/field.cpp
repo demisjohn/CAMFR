@@ -112,14 +112,14 @@ Field Field::operator/ (const Complex& c) const
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-string Field::repr() const
+std::string Field::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
-  s << "E1="  << E1 << ", E2=" << E2 << ", Ez=" << Ez << endl;
+  s << "E1="  << E1 << ", E2=" << E2 << ", Ez=" << Ez << std::endl;
   s << "H1="  << H1 << ", H2=" << H2 << ", Hz=" << Hz;
   
-  return s.str();
+  return  s.str();
 }
 
 
@@ -175,13 +175,13 @@ FieldExpansion FieldExpansion::operator* (const Complex& c) const
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-string FieldExpansion::repr() const
+std::string FieldExpansion::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
   
-  s << "Core: " << wg->get_core()->n() << endl;
-  s << "fw: " << fw << endl;
-  s << "bw: " << bw << endl;
+  s << "Core: " << wg->get_core()->n() << std::endl;
+  s << "fw: " << fw << std::endl;
+  s << "bw: " << bw << std::endl;
 
   return s.str();
 }

@@ -13,6 +13,11 @@
 #include <iostream>
 #include <algorithm>
 #include "minimum.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
        
 /*
  ************************************************************************
@@ -54,7 +59,7 @@
  * (which does not coincide with a or b) the procedure converges
  * superlinearly at a rate of about 1.324
  *
- * $Id: minimum.cpp,v 1.2 2002-02-22 20:45:58 pbienst Exp $
+ * $Id: minimum.cpp,v 1.3 2002-04-15 19:29:17 pbienst Exp $
  *
  ************************************************************************
  */
@@ -381,7 +386,7 @@ vector<Real> brent_refine_minima(Function1D<Real>& f, vector<Real>& x,
                                  Real delta_x, Real dx,
                                  Real eps, int sec_level)
 {
-  sort(x.begin(), x.end());
+  std::sort(x.begin(), x.end());
   
   vector<Real> results;
   

@@ -28,7 +28,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
-                Real eps=1e-14, const vector<Complex>* prev_zeros=0,
+                Real eps=1e-14, const std::vector<Complex>* prev_zeros=0,
                 int maxiter=100, bool *errorptr=0, bool verbose=false);
 
 

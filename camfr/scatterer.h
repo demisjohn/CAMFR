@@ -36,8 +36,8 @@ class Scatterer
     Waveguide* get_inc() const {return inc;}
     Waveguide* get_ext() const {return ext;}
 
-    virtual vector<Material*> get_materials() 
-      const {vector<Material*> m; return m;}
+    virtual std::vector<Material*> get_materials() 
+      const {std::vector<Material*> m; return m;}
 
     virtual Complex get_total_thickness()     const {return 0.0;}
     virtual bool contains(const Material& m)  const {return false;}
@@ -267,9 +267,9 @@ class FlippedScatterer : public MultiScatterer
     FlippedScatterer(MultiScatterer& sc_)
       : MultiScatterer(*sc_.get_ext(), *sc_.get_inc()), sc(&sc_) {}
 
-    Complex get_total_thickness()     const {return sc->get_total_thickness();}
-    vector<Material*> get_materials() const {return sc->get_materials();}
-    bool contains(const Material& m)  const {return sc->contains(m);}
+    Complex get_total_thickness() const {return sc->get_total_thickness();}
+    std::vector<Material*> get_materials() const {return sc->get_materials();}
+    bool contains(const Material& m) const {return sc->contains(m);}
 
     void allocRT() {return sc->allocRT();}
     void  freeRT() {return sc->freeRT();}
@@ -304,10 +304,10 @@ class TransparentScatterer : public DiagScatterer
 
     void calcRT();
 
-    Complex get_total_thickness()     const {return 0.0;}
-    vector<Material*> get_materials() const {return inc->get_materials();}
-    bool contains(const Material& m)  const {return inc->contains(m);}
-    bool recalc_needed()              const {return false;}
+    Complex get_total_thickness()          const {return 0.0;}
+    std::vector<Material*> get_materials() const {return inc->get_materials();}
+    bool contains(const Material& m)       const {return inc->contains(m);}
+    bool recalc_needed()                   const {return false;}
 };
 
 
@@ -328,10 +328,10 @@ class E_Wall : public DiagScatterer
       
     void calcRT();
 
-    Complex get_total_thickness()     const {return 0.0;}   
-    vector<Material*> get_materials() const {return inc->get_materials();}
-    bool contains(const Material& m)  const {return inc->contains(m);}
-    bool recalc_needed()              const {return false;}
+    Complex get_total_thickness()          const {return 0.0;}   
+    std::vector<Material*> get_materials() const {return inc->get_materials();}
+    bool contains(const Material& m)       const {return inc->contains(m);}
+    bool recalc_needed()                   const {return false;}
 };
 
 
@@ -352,10 +352,10 @@ class H_Wall : public DiagScatterer
 
     void calcRT();
 
-    Complex get_total_thickness()     const {return 0.0;}
-    vector<Material*> get_materials() const {return inc->get_materials();}
-    bool contains(const Material& m)  const {return inc->contains(m);}
-    bool recalc_needed()              const {return false;}
+    Complex get_total_thickness()          const {return 0.0;}
+    std::vector<Material*> get_materials() const {return inc->get_materials();}
+    bool contains(const Material& m)       const {return inc->contains(m);}
+    bool recalc_needed()                   const {return false;}
 };
 
 

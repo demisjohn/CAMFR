@@ -16,6 +16,12 @@
 #include "circdisp.h"
 #include "circmode.h"
 #include "circoverlap.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "../../math/calculus/calculus.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
 #include "../../util/vectorutil.h"
@@ -500,7 +506,8 @@ void Circ_2::find_modes_from_scratch_by_track()
                         guided_dk/global.precision,eps,1);
   }
 
-  reverse(kr2_guided_lossless_real.begin(), kr2_guided_lossless_real.end());
+  std::reverse(kr2_guided_lossless_real.begin(), 
+               kr2_guided_lossless_real.end());
 
   vector<Complex> kr2_guided_lossless;
   for (unsigned int i=0; i<kr2_guided_lossless_real.size(); i++)

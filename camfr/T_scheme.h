@@ -38,8 +38,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void T_scheme
-  (const vector<Chunk>& chunks,vector<Complex>* fw, vector<Complex>* bw);
+void T_scheme(const std::vector<Chunk>& chunks,
+              std::vector<Complex>* fw, std::vector<Complex>* bw);
 
 
 

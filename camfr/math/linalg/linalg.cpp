@@ -12,6 +12,10 @@
 
 #include "linalg.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Returns transpose or hermitian conjugate of A.
@@ -1044,8 +1048,8 @@ cMatrix invert_svd(const cMatrix& A)
 
   // inverse(A) = V.1/sigma.Uh
   
-  firstIndex i;
-  secondIndex j;
+  blitz::firstIndex i;
+  blitz::secondIndex j;
   
   U = sigma(i)*U(i,j);
 

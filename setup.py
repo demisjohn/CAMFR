@@ -1,49 +1,77 @@
 #! /usr/bin/env python
 
-from distutils.core import setup, Extension
-from distutils.command.build_ext import build_ext
-import os
+from distutils.core import setup
+from distutils.util import byte_compile
+from distutils.command.build import build
+from distutils.command.install_data import install_data
 
-# Make sure we build libcamfr.a before running the standard build_ext.
-# Also, after the make process, strip the library of debug symbols.
+from machine_cfg import *
+from camfrversion import *
 
-class camfr_build_ext(build_ext):
-    def run(self):
+# Make sure we build the libraries before running the standard build.
+# Also, after the build process, strip the library of debug symbols.
+
+class camfr_build(build):
+  def run(self):
+
+    import os
         
-        os.system('cd /home/pbienst/camfr_work ; make')
-        
-        build_ext.run(self)
+    os.system("scons")
+    os.system(strip_command)
 
-        fullname = self.get_ext_fullname(self.extensions[0].name)
-        ext_filename = os.path.join(self.build_lib, \
-                                    self.get_ext_filename(fullname))
+    return build.run(self)
 
-        os.system('strip ' + ext_filename)
 
-# Define the camfr extension module.
 
-camfr_extension = Extension(
-    "camfr_work", ["/home/pbienst/camfr_work/camfr/camfr_wrap.cpp"],  \
-    library_dirs=["/home/pbienst/camfr_work/camfr",                   \
-                  "/home/pbienst/boost_1_25_0/libs/python/src",       \
-                  "/home/pbienst/blitz-20001213/lib",                 \
-                  "/opt/intel/mkl/lib/32",                            \
-		  "/home/pbienst/ARPACK"],
-    include_dirs=["camfr", "/home/pbienst/boost_1_25_0",              \
-                  "/home/pbienst/blitz-20001213"],                    \
-    libraries=["camfr", "boost_python", "blitz", "arpack",            \
-	       "mkl_lapack", "mkl_p3", "m", "g2c", "stdc++"] )
+# Modified install_data, changing self.install_dir to the actual library dir.
+# Also byte-compiles *.py files that are outside of the regular package
+# hierarchy.
 
-# Set up the extension.
+class camfr_install_data(install_data):
+  def run(self):
 
-setup(name="camfr_work", version="1.0pre",                            \
-      description="CAvity Modelling FRamework",                       \
-      author="Peter Bienstman",                                       \
-      author_email="Peter.Bienstman@rug.ac.be",                       \
-      url="http://camfr.sourceforge.net/",                            \
-      py_modules=['geometry', 'camfr_tk', 'TkPlotCanvas'],            \
-      package_dir={'': 'camfr', '': 'visualisation'},                 \
-      # FIXME: ugly hack
-      data_files=[('lib/python2.1', ['camfr/geometry.py'])],          \
-      ext_modules=[camfr_extension],                                  \
-      cmdclass={'build_ext' : camfr_build_ext} )
+    # Byte-compile Python files.
+
+    scripts = []
+          
+    for i in self.data_files:
+      for j in i[1]:
+        if j[-2:] == "py":
+          scripts.append(j)
+          i[1].append(j+'c')
+
+    byte_compile(scripts)
+      
+    # Change install dir to library dir.
+    
+    install_cmd = self.get_finalized_command('install')
+    self.install_dir = getattr(install_cmd, 'install_lib')
+
+    return install_data.run(self)
+
+
+
+# Set up the module.
+
+setup(name         = "camfr",
+      version      =  camfr_version,
+      description  = "CAvity Modelling FRamework",
+      author       = "Peter Bienstman",
+      author_email = "Peter.Bienstman@rug.ac.be",
+      url          = "http://camfr.sourceforge.net",
+      extra_path   = "camfr",
+      packages     = ["examples.tutorial", "examples.other",
+                      "visualisation.examples", "testsuite"],
+      data_files   = [(".", ["camfrversion.py",
+                             "camfr/__init__.py",
+                             "camfr/_camfr" + dllsuffix,
+                             "camfr/geometry.py",
+                             "visualisation/plotutils.py",
+                             "visualisation/camfr_matlab.py",
+                             "visualisation/camfr_tk.py",
+                             "visualisation/TkPlotCanvas.py"]
+                           + extra_files)],
+#                      ("documentation", ["docs/camfr.pdf"])],
+      cmdclass     = {"install_data" : camfr_install_data,
+                      "build"        : camfr_build},
+      )

@@ -62,7 +62,7 @@ class Circ_M_Mode : public Mode
 
     const Circ_M* geom;
         
-    vector<Complex> kr; // Radial component of wavevector in each ring.
+    std::vector<Complex> kr; // Radial component of wavevector in each ring.
 };
 
 

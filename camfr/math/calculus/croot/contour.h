@@ -61,10 +61,10 @@ class Contour
     // Returns the contour integrals z^n/f, either over the entire contour,
     // or over a subcontour. Integrals along common line segments are reused.
 
-    vector<Complex> contour_integrals() const
+    std::vector<Complex> contour_integrals() const
       {return path_integrals(8, main_segments, main_signs);}
     
-    vector<Complex> subcontour_integrals(Subcontour s) const
+    std::vector<Complex> subcontour_integrals(Subcontour s) const
       {return path_integrals(4, sub_segments[s], sub_signs[s]);}
 
     // Returns equally-sized adjacent contour to the right. Integrals along
@@ -76,7 +76,7 @@ class Contour
     // and diagonally upwards-right. Integrals along common line segments
     // are precalculated and reused.
     
-    vector<Contour> adjacent_ur() const;
+    std::vector<Contour> adjacent_ur() const;
 
     // Return a contour twice the size of the original one, with the same
     // bottom right point. Integrals along common line segments
@@ -84,10 +84,10 @@ class Contour
 
     Contour double_ur() const;
 
-    void set_integrals(Segment segment, const vector<Complex>& ints)
+    void set_integrals(Segment segment, const std::vector<Complex>& ints)
       {integrals[segment] = ints; know_integrals[segment] = true;}
 
-    vector<Complex> get_integrals(Segment segment) const;
+    std::vector<Complex> get_integrals(Segment segment) const;
 
     ComplexFunction* get_f()  const {return f;}
     Complex get_bottom_left() const {return bl;}
@@ -106,14 +106,14 @@ class Contour
     Complex bl, bc, br;
     
     mutable bool know_integrals[12];
-    mutable vector<Complex> integrals[12];
+    mutable std::vector<Complex> integrals[12];
 
   private:
 
     void create_internal_points();
     void copy_from(const Contour& c);
     
-    vector<Complex> path_integrals
+    std::vector<Complex> path_integrals
       (unsigned int no_segments, Segment segments[], int signs[]) const;
 
     // Lookup tables describing contours, line segments,

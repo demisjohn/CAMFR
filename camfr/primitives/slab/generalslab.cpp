@@ -13,6 +13,12 @@
 #include "slabmatrixcache.h"
 #include "generalslab.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "../../util/vectorutil.h"
 
 /////////////////////////////////////////////////////////////////////////////

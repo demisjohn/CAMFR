@@ -27,7 +27,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
 
   Scatterer* sc;
   
-  bool found = cache.lookup(pair<Waveguide*, Waveguide*>(wg1, wg2), &sc);
+  bool found = cache.lookup(std::pair<Waveguide*, Waveguide*>(wg1, wg2), &sc);
 
   if (found)
     return sc;
@@ -37,7 +37,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   if ( (wg1 == wg2) && (!dynamic_cast<MonoWaveguide*>(wg1)) )
   { 
     sc = new TransparentScatterer(*wg1);
-    cache.store(pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
+    cache.store(std::pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
     return sc;
   }
  
@@ -54,7 +54,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   else
     sc = new DenseInterface(*wg1, *wg2);
 
-  cache.store(pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
+  cache.store(std::pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
 
   if (wg1 != wg2)
   {
@@ -71,7 +71,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
     else
       sc_flip = new FlippedScatterer(*dynamic_cast<MultiScatterer*>(sc));
 
-    cache.store(pair<Waveguide*, Waveguide*>(wg2, wg1), sc_flip);
+    cache.store(std::pair<Waveguide*, Waveguide*>(wg2, wg1), sc_flip);
   }
 
   return sc;
@@ -87,7 +87,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
 
 InterfaceCache::~InterfaceCache()
 {  
-  for (Cache<pair<Waveguide*, Waveguide*>, Scatterer*>::iter
+  for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     delete i->second;
 }
@@ -102,7 +102,7 @@ InterfaceCache::~InterfaceCache()
 
 void InterfaceCache::deregister(Waveguide* wg)
 {
-  for (Cache<pair<Waveguide*, Waveguide*>, Scatterer*>::iter
+  for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     if ( (i->first.first == wg) || (i->first.second == wg) )
       cache.erase(i->first);
@@ -118,7 +118,7 @@ void InterfaceCache::deregister(Waveguide* wg)
 
 void InterfaceCache::clear()
 { 
-  for (Cache<pair<Waveguide*, Waveguide*>, Scatterer*>::iter
+  for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     delete i->second;
 

@@ -32,21 +32,17 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> traceroot(vector<Complex>&     estimate1,
-                          Function1D<Complex>& f, 
-                          vector<Complex>&     params1,
-                          vector<Complex>&     params2,
-                          vector<Complex>&     forbiddenzeros,
-                          int resolution       = 1,
-                          string* fname        = NULL);
+std::vector<Complex> traceroot
+  (std::vector<Complex>& estimate1, Function1D<Complex>& f,
+   std::vector<Complex>& params1, std::vector<Complex>& params2,
+   std::vector<Complex>& forbiddenzeros,
+   int resolution = 1, std::string* fname = NULL);
 
-vector<Complex> traceroot(vector<Real>&        estimate1,
-                          Function1D<Complex>& f, 
-                          vector<Complex>&     params1,
-                          vector<Complex>&     params2,
-                          vector<Complex>&     forbiddenzeros,
-                          int resolution       = 1,
-                          string* fname        = NULL);
+std::vector<Complex> traceroot
+  (std::vector<Real>& estimate1, Function1D<Complex>& f,
+   std::vector<Complex>& params1, std::vector<Complex>& params2,
+   std::vector<Complex>& forbiddenzeros,
+   int resolution = 1, std::string* fname = NULL);
 
 
 
@@ -66,25 +62,19 @@ vector<Complex> traceroot(vector<Real>&        estimate1,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
-                                 Function1D<Complex>& f, 
-                                 vector<Complex>&     params1,
-                                 vector<Complex>&     params2,
-                                 vector<Complex>&     forbiddenzeros,
-                                 int resolution       = 1,
-                                 int chunk_length     = 48,
-                                 int overlap          = 4,
-                                 string* fname        = NULL);
+std::vector<Complex> traceroot_chunks
+  (std::vector<Complex>& estimate1, Function1D<Complex>& f,
+   std::vector<Complex>& params1, std::vector<Complex>& params2,
+   std::vector<Complex>& forbiddenzeros,
+   int resolution = 1, int chunk_length = 48, int overlap = 4,
+   std::string* fname = NULL);
 
-vector<Complex> traceroot_chunks(vector<Real>&        estimate1,
-                                 Function1D<Complex>& f, 
-                                 vector<Complex>&     params1,
-                                 vector<Complex>&     params2,
-                                 vector<Complex>&     forbiddenzeros,
-                                 int resolution       = 1,
-                                 int chunk_length     = 48,
-                                 int overlap          = 4,
-                                 string* fname        = NULL);
+std::vector<Complex> traceroot_chunks
+  (std::vector<Real>& estimate1, Function1D<Complex>& f,
+   std::vector<Complex>& params1, std::vector<Complex>& params2,
+   std::vector<Complex>& forbiddenzeros,
+   int resolution = 1, int chunk_length = 48, int overlap = 4,
+   std::string* fname = NULL);
 
 
 

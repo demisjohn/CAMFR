@@ -28,7 +28,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> allroots
+std::vector<Complex> allroots
   (ComplexFunction& f, const Complex& bottom_left, const Complex& top_right,
    Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4);
 
@@ -45,9 +45,10 @@ vector<Complex> allroots
 //
 /////////////////////////////////////////////////////////////////////////////
 
-vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
-                        const Complex& bottom_left, const Complex& top_right,
-                        Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4);
+std::vector<Complex> N_roots
+  (ComplexFunction& f, unsigned int N,
+   const Complex& bottom_left, const Complex& top_right,
+   Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4);
 
 
 #endif

@@ -38,10 +38,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 void S_scheme_fields_T
-  (const vector<Chunk>& chunks, vector<FieldExpansion>* field);
+  (const std::vector<Chunk>& chunks, std::vector<FieldExpansion>* field);
 
 void S_scheme_fields_S
-  (const vector<Chunk>& chunks, vector<FieldExpansion>* field,
+  (const std::vector<Chunk>& chunks, std::vector<FieldExpansion>* field,
    cVector* inc_right_bw=NULL);
 
 

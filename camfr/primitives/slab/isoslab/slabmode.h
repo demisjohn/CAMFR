@@ -85,12 +85,12 @@ class Slab_M_Mode : public SlabMode
 
     // Expansion coeff. of forward and backward waves at each interface.
         
-    vector<Complex> right; // towards x=+inf
-    vector<Complex> left;  // towards x=-inf
+    std::vector<Complex> right; // towards x=+inf
+    std::vector<Complex> left;  // towards x=-inf
 
     // x-component of wavevector.
     
-    vector<Complex> kx;
+    std::vector<Complex> kx;
 
     // Root of the orignal dispersion relation.
     

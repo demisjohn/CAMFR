@@ -52,8 +52,8 @@ class Tracesorter
     int find_best_index(int i, const cVector& row, bool* placed,
                         bool bad_turns_allowed=false) const;
 
-    vector<cVector> matrix;
-    vector<Real> turning_points;
+    std::vector<cVector> matrix;
+    std::vector<Real> turning_points;
 };
 
 

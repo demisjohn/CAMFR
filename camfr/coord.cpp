@@ -130,11 +130,11 @@ bool Coord::operator< (const Coord& c) const
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-string limit(Limit l) {return (l==Plus) ? "+" : "-";}
+std::string limit(Limit l) {return (l==Plus) ? "+" : "-";}
 
-string Coord::repr() const
+std::string Coord::repr() const
 {
-  ostringstream s;
+  std::ostringstream s;
 
   s << "(" << c1 << limit(c1_limit) << ","
            << c2 << limit(c2_limit) << ","

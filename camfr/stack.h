@@ -42,25 +42,25 @@ class StackImpl
 
     StackImpl() {}
   
-    StackImpl(const vector<Chunk>& chunks, unsigned int no_of_periods=1);
-    StackImpl(const Expression& e,         unsigned int no_of_periods=1);
+    StackImpl(const std::vector<Chunk>& chunks, unsigned int no_of_periods=1);
+    StackImpl(const Expression& e,              unsigned int no_of_periods=1);
     virtual ~StackImpl() {}
 
-    Complex stack_get_total_thickness()     const;
-    vector<Material*> stack_get_materials() const;
-    bool stack_contains(const Material& m)  const;
-    bool stack_no_gain_present()            const;
-    bool stack_all_layers_uniform()         const;
+    Complex stack_get_total_thickness()          const;
+    std::vector<Material*> stack_get_materials() const;
+    bool stack_contains(const Material& m)       const;
+    bool stack_no_gain_present()                 const;
+    bool stack_all_layers_uniform()              const;
     
-    vector<Complex*> get_thicknesses() const;
+    std::vector<Complex*> get_thicknesses() const;
 
-    const vector<Chunk>* get_chunks() const {return &chunks;}
+    const std::vector<Chunk>* get_chunks() const {return &chunks;}
     
     template <class T> friend void stack_calcRT(T* stack);
     
   protected:
 
-    vector<Chunk> chunks;
+    std::vector<Chunk> chunks;
     unsigned int  no_of_periods;
 
   private:
@@ -84,14 +84,14 @@ class DenseStack : public DenseScatterer, public StackImpl
   public:
 
     DenseStack() {}
-    DenseStack(const vector<Chunk>& chunks, unsigned int no_of_periods=1);    
-    DenseStack(const Expression& e,         unsigned int no_of_periods=1);
+    DenseStack(const std::vector<Chunk>& chunks, unsigned int no_of_periods=1);
+    DenseStack(const Expression& e,              unsigned int no_of_periods=1);
     ~DenseStack() {}
 
     Complex get_total_thickness() const
       {return stack_get_total_thickness();}
     
-    vector<Material*> get_materials() const 
+    std::vector<Material*> get_materials() const 
       {return stack_get_materials();}
     
     bool contains(const Material& m) const
@@ -122,14 +122,14 @@ class DiagStack : public DiagScatterer,  public StackImpl
   public:
 
     DiagStack() {}
-    DiagStack(const vector<Chunk>& chunks, unsigned int no_of_periods=1);    
-    DiagStack(const Expression& e,         unsigned int no_of_periods=1);
+    DiagStack(const std::vector<Chunk>& chunks, unsigned int no_of_periods=1); 
+    DiagStack(const Expression& e,              unsigned int no_of_periods=1);
     ~DiagStack() {}
 
     Complex get_total_thickness() const
       {return stack_get_total_thickness();}
     
-    vector<Material*> get_materials() const 
+    std::vector<Material*> get_materials() const 
       {return stack_get_materials();}
     
     bool contains(const Material& m) const
@@ -160,14 +160,14 @@ class MonoStack : public MonoScatterer, public StackImpl
   public:
   
     MonoStack() {}
-    MonoStack(const vector<Chunk>& chunks, unsigned int no_of_periods=1);    
-    MonoStack(const Expression& e,         unsigned int no_of_periods=1);
+    MonoStack(const std::vector<Chunk>& chunks, unsigned int no_of_periods=1); 
+    MonoStack(const Expression& e,              unsigned int no_of_periods=1);
     ~MonoStack() {}
 
     Complex get_total_thickness() const
       {return stack_get_total_thickness();}
     
-    vector<Material*> get_materials() const 
+    std::vector<Material*> get_materials() const 
       {return stack_get_materials();}
     
     bool contains(const Material& m) const
@@ -213,10 +213,11 @@ class Stack
 
     Complex get_total_thickness() const {return sc->get_total_thickness();}
     
-    vector<Material*> get_materials() const {return sc->get_materials();}
-    bool contains(const Material& m)  const {return sc->contains(m);}
-    bool no_gain_present()            const {return sc->no_gain_present();}
-    bool recalc_needed()              const {return sc->recalc_needed();}
+    std::vector<Material*> get_materials() const {return sc->get_materials();}
+
+    bool contains(const Material& m) const {return sc->contains(m);}
+    bool no_gain_present()           const {return sc->no_gain_present();}
+    bool recalc_needed()             const {return sc->recalc_needed();}
       
     void calcRT();
     void allocRT();
@@ -232,10 +233,10 @@ class Stack
     
     Field field(const Coord& coord);
 
-    void set_interface_field(const vector<FieldExpansion>& field);
-    void get_interface_field(      vector<FieldExpansion>* field) const;
+    void set_interface_field(const std::vector<FieldExpansion>& field);
+    void get_interface_field(      std::vector<FieldExpansion>* field) const;
 
-    Complex lateral_S_flux(const Complex& c1, vector<Complex>* S_k=NULL);
+    Complex lateral_S_flux(const Complex& c1, std::vector<Complex>* S_k=NULL);
 
     Complex eps_at(const Coord& coord) const;
     Complex  mu_at(const Coord& coord) const;
@@ -272,12 +273,12 @@ class Stack
     // A flat view of the stack, for calculating field profiles.
 
     Scatterer* flat_sc;
-    vector<Complex> interface_positions;
+    std::vector<Complex> interface_positions;
 
     cVector inc_field, inc_field_bw;
     bool bw_inc;
     
-    vector<FieldExpansion> interface_field;
+    std::vector<FieldExpansion> interface_field;
 
   private:
 

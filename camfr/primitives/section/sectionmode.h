@@ -64,8 +64,8 @@ class Section2D_Mode : public SectionMode
 
   protected:
 
-    mutable vector<FieldExpansion>  left_interface_field;
-    mutable vector<FieldExpansion> right_interface_field;
+    mutable std::vector<FieldExpansion>  left_interface_field;
+    mutable std::vector<FieldExpansion> right_interface_field;
 };
 
 

@@ -34,7 +34,7 @@ class DenseInterface : public DenseScatterer
 
     Complex get_total_thickness() const {return 0.0;}
 
-    vector<Material*> get_materials() const;
+    std::vector<Material*> get_materials() const;
  
     bool contains(const Material& m) const
       {return (inc->contains(m) || ext->contains(m));}
@@ -77,7 +77,7 @@ class DiagInterface : public DiagScatterer
 
     Complex get_total_thickness() const {return 0.0;}
 
-    vector<Material*> get_materials() const;
+    std::vector<Material*> get_materials() const;
 
     bool contains(const Material& m) const
       {return (inc->contains(m) || ext->contains(m));}
@@ -112,7 +112,7 @@ class MonoInterface : public MonoScatterer
 
     Complex get_total_thickness() const {return 0.0;}
 
-    vector<Material*> get_materials() const;
+    std::vector<Material*> get_materials() const;
 
     bool contains(const Material& m) const
       {return (inc->contains(m) || ext->contains(m));}

@@ -14,6 +14,11 @@
 #include <algorithm>
 #include "root.h"
 
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /*
  ************************************************************************
  *
@@ -46,7 +51,7 @@
  * Therefore, the range of uncertainty is guaranteed to tighten at 
  * least by a factor of 1.6
  *
- * $Id: root.cpp,v 1.4 2002-04-02 15:50:27 pbienst Exp $
+ * $Id: root.cpp,v 1.5 2002-04-15 19:29:17 pbienst Exp $
  *
  ************************************************************************
  */
@@ -355,7 +360,7 @@ vector<Real> brent_refine_roots(Function1D<Real>& f, vector<Real>& x,
                                 Real delta_x, Real dx,
                                 Real eps, int sec_level)
 {
-  sort(x.begin(), x.end());
+  std::sort(x.begin(), x.end());
   
   vector<Real> results;
   

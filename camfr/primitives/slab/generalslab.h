@@ -69,8 +69,8 @@ class SlabImpl : public MultiWaveguide
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
 
-    virtual vector<Complex> get_params() const = 0;
-    virtual void set_params(const vector<Complex>&) = 0;
+    virtual std::vector<Complex> get_params() const = 0;
+    virtual void set_params(const std::vector<Complex>&) = 0;
 
   protected:
 
@@ -80,20 +80,20 @@ class SlabImpl : public MultiWaveguide
     // x-values of the interfaces, not including left wall, including
     // right wall.
     
-    vector<Complex> discontinuities;
+    std::vector<Complex> discontinuities;
 
     friend class Slab_M_Mode;
     friend class UniformSlabMode;
 
     friend Complex overlap(const SlabMode*, const SlabMode*,
                            const SlabCache* c,
-                           const vector<Complex>* v,
+                           const std::vector<Complex>* v,
                            int, int, int, int);
 
     friend void overlap_TM_TE(const SlabMode*, const SlabMode*,
 			      Complex* Ex_Hz, Complex* Ez_Hx,
 			      const SlabCache* cache,
-			      const vector<Complex>* disc,
+			      const std::vector<Complex>* disc,
 			      int, int, int, int);
 };
 
@@ -116,10 +116,10 @@ class Slab : public MultiWaveguide
     Slab(const Term& t);    
     ~Slab() {delete s;}
 
-    bool operator==(const Waveguide& w) const {return this == &w;}
-    vector<Material*> get_materials()   const {return s->get_materials();}
-    bool contains(const Material& m)    const {return s->contains(m);}
-    bool no_gain_present()              const {return s->no_gain_present();}
+    bool operator==(const Waveguide& w)    const {return this == &w;}
+    std::vector<Material*> get_materials() const {return s->get_materials();}
+    bool contains(const Material& m)       const {return s->contains(m);}
+    bool no_gain_present()                 const {return s->no_gain_present();}
 
     void find_modes() {return s->find_modes();}
     
@@ -137,8 +137,8 @@ class Slab : public MultiWaveguide
 
     Complex get_width() const {return s->get_width();}
 
-    vector<Complex> get_params() const {return s->get_params();}
-    void set_params(const vector<Complex>& p) {s->set_params(p);}
+    std::vector<Complex> get_params() const {return s->get_params();}
+    void set_params(const std::vector<Complex>& p) {s->set_params(p);}
 
     const FieldExpansion field_from_source
       (const Coord& pos, const Coord& orientation)
@@ -155,14 +155,14 @@ class Slab : public MultiWaveguide
       {return s->calc_overlap_matrices(dynamic_cast<Slab*>(w2)->s,
                                        O_I_II,O_II_I,O_I_I,O_II_II);}
     
-    string repr() const {return s->repr();}
+    std::string repr() const {return s->repr();}
     
   protected:
 
     SlabImpl* s;
 };
 
-inline ostream& operator<<(ostream& s, const Slab& slab)
+inline std::ostream& operator<<(std::ostream& s, const Slab& slab)
   {return s << slab.repr();}
 
 

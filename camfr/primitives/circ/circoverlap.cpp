@@ -12,9 +12,16 @@
 
 #include <vector>
 #include <algorithm>
-#include "../../util/vectorutil.h"
 #include "circoverlap.h"
 #include "circmode.h"
+
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+
+#include "../../util/vectorutil.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

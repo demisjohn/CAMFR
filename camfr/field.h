@@ -57,11 +57,11 @@ class Field
     Field& operator*= (const Complex& c) {*this = *this*c; return *this;}
     Field& operator/= (const Complex& c) {*this = *this/c; return *this;}
 
-    string repr() const;
+    std::string repr() const;
 };
 
-inline ostream& operator<<(ostream& s, const Field& f)
-  {return s << f.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const Field& f)
+  {return s << f.repr() << std::endl;}
 
 inline Field operator*(const Complex& c, const Field& f) {return f*c;}
 
@@ -96,11 +96,11 @@ class FieldExpansion
 
     FieldExpansion operator* (const Complex&) const;
 
-    string repr() const;
+    std::string repr() const;
 };
 
-inline ostream& operator<<(ostream& s, const FieldExpansion& f)
-  {return s << f.repr() << endl;}
+inline std::ostream& operator<<(std::ostream& s, const FieldExpansion& f)
+  {return s << f.repr() << std::endl;}
 
 inline FieldExpansion operator*(const Complex& c, const FieldExpansion& f)
   {return f*c;}
