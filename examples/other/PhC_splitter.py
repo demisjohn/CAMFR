@@ -63,8 +63,6 @@ arm = Slab(  GaAs(r) + air(a-2*r)                                   \
 wg = BlochStack(cen(2*r) + no_rods(a-2*r))
 wg.calc()
 
-print wg
-
 guided = 0
 for i in range(2*N()):
     if (abs(wg.mode(i).kz().imag) < abs(wg.mode(guided).kz().imag)):
