@@ -246,24 +246,24 @@ void Slab_M::find_modes_from_scratch_by_ADR()
   Complex R_left  = l_wall ? l_wall->get_R12() : -1;
   Complex R_right = r_wall ? r_wall->get_R12() : -1;
   
-  // Find and max/min real refractive indices of structure.
+  // Find and max/min refractive indices of structure.
 
   Real max_n = 0.0;
-  vector<Real> n_lossless;
+  vector<Real> abs_n;
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Real n = real( materials[i]->n() * sqrt( materials[i]->mur()) );
+    Real n = abs( materials[i]->n() * sqrt( materials[i]->mur()) );
 
-    n_lossless.push_back(n);
+    abs_n.push_back(n);
     
     if (n > max_n)
       max_n = n;
   }
 
   Real min_n = max_n;
-  for (unsigned int i=0; i<n_lossless.size(); i++)
+  for (unsigned int i=0; i<abs_n.size(); i++)
   {
-    Real n = n_lossless[i];
+    Real n = abs_n[i];
     
     if (n < min_n)
       min_n = n;
@@ -282,7 +282,8 @@ void Slab_M::find_modes_from_scratch_by_ADR()
   Complex upperright( Re*max_kt, Im*max_kt);
 
   SlabDisp disp(materials, thicknesses, global.lambda, l_wall, r_wall);
-  vector<Complex> kt = N_roots(disp, global.N, lowerleft, upperright);
+  unsigned int zeros = global.N + 2 + materials.size();
+  vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright);
   
   cout << "Calls to slab dispersion relation : "<< disp.times_called() << endl;
   
@@ -290,7 +291,7 @@ void Slab_M::find_modes_from_scratch_by_ADR()
 
   const Real eps_copies = 1e-6;
   
-  for (unsigned int i=0; i<n_lossless.size(); i++)
+  for (unsigned int i=0; i<abs_n.size(); i++)
   {
     Complex kt_i = k0*sqrt(materials[i]->n()*materials[i]->n() - min_n*min_n);
     
@@ -386,7 +387,7 @@ void Slab_M::find_modes_from_scratch_by_track()
       || dynamic_cast<SlabWall_PC*>(r_wall) )
     PC = true;
 
-  // Find and max/min real refractive indices of structure.
+  // Find and max/min refractive indices of lossless structure.
 
   Real max_n = 0.0;
   vector<Real> n_lossless;
@@ -472,7 +473,7 @@ void Slab_M::find_modes_from_scratch_by_track()
 
   // Eliminate false zeros.
 
-  for (unsigned int i=0; i<n_lossless.size(); i++)
+  for (unsigned int i=0; i<materials.size(); i++)
   {
     Real kt_i = k0*sqrt(n_lossless[i]*n_lossless[i] - min_n*min_n);
 
@@ -484,7 +485,7 @@ void Slab_M::find_modes_from_scratch_by_track()
   // Check if the minima found correspond really to zeros and increase
   // precision using a mueller solver (in the absense of branchcuts).
   // Don't do this if precision_enhancement is larger than 1, since this
-  // typically indicate the presence of nearly generate modes.
+  // typically indicate the presence of nearly degenerate modes.
 
   vector<Complex> kt_lossless;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
@@ -570,7 +571,7 @@ void Slab_M::find_modes_from_scratch_by_track()
   
   
   //
-  // III: Eliminate doubles and flase zeros and trace modes to those of
+  // III: Eliminate doubles and false zeros and trace modes to those of
   //      true structure.
   //
 
