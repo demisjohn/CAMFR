@@ -1,5 +1,11 @@
 2003-02-04  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* cavity.h: add eps_at, mu_at, n_at.
+	* cavity.cpp: Ditto.
+	* camfr_wrpa.cpp: Ditto.
+
+2003-02-04  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* field.h: constify arguments.
 	* field.cpp: Ditto.
 
