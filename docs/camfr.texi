@@ -1,11 +1,11 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename camfr.info
-@settitle CAMFR manual v1.1
+@settitle CAMFR manual v1.2
 @c %**end of header
 
 @ifinfo
-CAMFR manual v1.1.
+CAMFR manual v1.2.
 
 Copyright @copyright{} 2001-2003 Peter Bienstman - Ghent University.
 @end ifinfo
@@ -23,8 +23,8 @@ END-INFO-DIR-ENTRY
 @titlepage
 @sp 10
 @title {CAMFR manual}
-@subtitle {version 1.1}
-@subtitle {February, 2003}
+@subtitle {version 1.2}
+@subtitle {October, 2003}
 @author Peter Bienstman
 
 @page
@@ -70,8 +70,8 @@ Modelling optical devices
 
 Visualisation
 
-* Tk toolkit::                  
-* Matlab interface::            
+* Basic visualisation::         
+* Advanced visualisation::      
 
 Reference guide
 
@@ -87,6 +87,7 @@ Reference guide
 * set_sweep_from_previous::     
 * set_chunk_tracing::           
 * set_degenerate::              
+* set_orthogonal::              
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -117,6 +118,7 @@ Reference guide
 * Planar::                      
 * Circ::                        
 * Slab::                        
+* plot::                        
 * plot_vector::                 
 * plot_matrix::                 
 * plot_n_eff::                  
@@ -370,7 +372,7 @@ Regardless of the invocation method, the output that will be printed out will
 look something like this:
 
 @example
-CAMFR 1.1 - Copyright (C) 1998-2003 Peter Bienstman - Ghent University.
+CAMFR 1.2 - Copyright (C) 1998-2003 Peter Bienstman - Ghent University.
 
 (21.3499038707+0j)
 (3.07668661368+0j)
@@ -2042,6 +2044,10 @@ value decomposition.
 @item
 If your waveguide don't have multiple cores, try using 
 @code{set_degenerate(0)}.
+@item
+If the field profiles seem to be calculated incorrectly, try
+@code{set_orthogonal(0)}.
+This will cause CAMFR to treat modes which are not exactly orthogonal due to rounding errors as non-orthogonal.
 @end itemize
 
 If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
@@ -2061,31 +2067,35 @@ of your scripts.
 
 @cindex visualisation
 
-Because Python is very well suited as a glue language, it is extremely easy
-to integrate a visualisation toolkit with Python bindings into a CAMFR
-simulation.
+@menu
+* Basic visualisation::         
+* Advanced visualisation::      
+@end menu
 
-The default toolkit used in CAMFR is based on Tk, which is standard in almost
-every Python distribution. It is however possible to use a different backend 
-for visualisation, e.g. Matlab if this program is installed on your system.
+@node Basic visualisation, Advanced visualisation, Visualisation, Visualisation
+@section Basic visualisation
 
-The interface to these toolkits is the same, they only differ on how they
-present the actual graphical output. The matlab wrapper also includes the
-possibility to pass data to and from Matlab for additional processing, as
-well as the option to write Matlab code from inside a Python script.
+CAMFR contains a number of interactive widgets to visualise modes, fields, 
+index profiles, show field animations, show the distribution of propagation
+constants in the complex plane, ...
+
+To activate these widgets, use the @code{plot} command e.g.:
+
+
+@code{plot(Slab)}
+
+@code{plot(Stack)}
+
+@code{plot(BlochStack)}
 
 @page
 
-@menu
-* Tk toolkit::                  
-* Matlab interface::            
-@end menu
+@node Advanced visualisation,  , Basic visualisation, Visualisation
+@section Advanced visualisation
 
-@node Tk toolkit, Matlab interface, Visualisation, Visualisation
-@section Tk toolkit
-
-CAMFR comes standard with a thin wrapper around some Tk plotting 
-facilities, which are partly based on code from Scientific Python, 
+For more fine-grained control over plotting, CAMFR comes standard with a 
+thin wrapper around some Tk plotting facilities, which are partly based 
+on code from Scientific Python, 
 @uref{http://starship.python.net/crew/hinsen/scientific.html}. 
 
 The following code illustrates some of these plotting routines:
@@ -2215,8 +2225,6 @@ Plotting is as simple as creating an empty vector to hold the data points
 @code{v = []}, collecting the data points @code{v.append((x,y))}, and finally
 plotting it @code{plot_vector(v)}.
 
-@page
-
 This example shows how to inspect the refractive index of a stack, as well 
 as how to plot and animate field profiles in a stack:
 
@@ -2291,92 +2299,6 @@ Finally, the 2D equivalent of @code{plot_vector(v)} is @code{plot_matrix(z)}.
 
 @page
 
-@node Matlab interface,  , Tk toolkit, Visualisation
-@section Matlab interface
-
-@cindex Matlab interface
-
-The wrapper which uses Matlab for visualisation has to be imported explicitly:
-@code{from camfr_matlab import *}.
-
-@code{camfr_matlab} supports all the same functions as the de default Tk 
-routines, like @code{plot_neff}, @code{plot_field}, @code{plot_n}, 
-@code{plot_vector}, ... . 
-Contrary to its Tk equivalent, this last function can even be used inside a 
-loop in order to give visual feedback on the progress of the simulation. 
-(This is not possible with the current Tk widget, as it
-requires closing the window before a new plot can be made.)  
-
-Additionally, the @code{camfr_matlab} module can be used to pass data to and 
-from Matlab, e.g. in order to perform some calculations which are not 
-supported by Numerical Python.
-
-This is illustrated in the following self-explanatory example:
-
-@example
-@group
-#!/usr/bin/env python
-
-####################################################################
-#
-# Illustrates passing data to and from Matlab.
-#
-####################################################################
-
-from camfr import *
-from Numeric import *
-from camfr_matlab import *
-
-set_lambda(1)
-set_N(50)
-set_polarisation(TE)
-
-@end group
-@group
-# Define materials.
-
-GaAs = Material(3.5)
-air  = Material(1.0)
-
-@end group
-@group
-# Define stack.
-
-set_lower_PML(-0.1)
-set_upper_PML(-0.1)
-
-space = Slab(air(4))
-slab = Slab(air(1.5) + GaAs(1) + air(1.5))
-
-stack = Stack(space(0) + slab(0.5) + space(0))
-
-stack.calc()
-
-@end group
-@group
-# Use Matlab to do some manipulations on a matrix (Note: this can 
-# also be done directly using Numerical Python).
-
-matlab.put("R12", stack.R12())
-matlab("A = R12 * R12")
-R12_R12 = matlab.get("A")
-
-@end group
-@group
-# Illustrates multiline commands using triple quotes
-
-matlab("""
-surf(abs(R12))
-figure
-pcolor(abs(R12*R12))
-""")
-
-raw_input("Press <enter> to continue")
-@end group
-@end example 
-
-@page
-
 @node Reference guide, Index, Visualisation, top
 @chapter Reference guide
 
@@ -2397,6 +2319,7 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_sweep_from_previous::     
 * set_chunk_tracing::           
 * set_degenerate::              
+* set_orthogonal::              
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -2427,6 +2350,7 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * Planar::                      
 * Circ::                        
 * Slab::                        
+* plot::                        
 * plot_vector::                 
 * plot_matrix::                 
 * plot_n_eff::                  
@@ -2584,7 +2508,7 @@ bool is 1 for true, and 0 for false.
 
 
 
-@node set_degenerate, set_circ_order, set_chunk_tracing, Reference guide
+@node set_degenerate, set_orthogonal, set_chunk_tracing, Reference guide
 @unnumberedsec @code{set_degenerate}
 @cindex @code{set_degenerate}
 
@@ -2595,8 +2519,18 @@ therefore this option defaults to true, but it can sometimes cause trouble.
 Note: a Python bool is 1 for true, and 0 for false.
 
 
+@node set_orthogonal, set_circ_order, set_degenerate, Reference guide
+@unnumberedsec @code{set_orthogonal}
+@cindex @code{set_orthogonal}
 
-@node set_circ_order, set_circ_field_type, set_degenerate, Reference guide
+@noindent
+@code{set_orthogonal(bool)}: sometimes modes that should be orthogonal are not
+exactly orthogonal due to rounding errors. Setting this option to false will
+treat these modes as non-orthogonal, and can sometimes drastically improve
+convergence. Note: a Python bool is 1 for true, and 0 for false.
+
+
+@node set_circ_order, set_circ_field_type, set_orthogonal, Reference guide
 @unnumberedsec @code{set_circ_order}
 @cindex @code{set_circ_order}
 
@@ -3405,7 +3339,7 @@ Member functions: same as @code{Waveguide}.
 
 
 
-@node Slab, plot_vector, Circ, Reference guide
+@node Slab, plot, Circ, Reference guide
 @unnumberedsec @code{Slab}
 @cindex @code{Slab}
 @cindex boundary conditions for slabs
@@ -3444,7 +3378,15 @@ for this slab. Possible choices for SlabWall include @code{slab_E_wall} and
 @xref{Waveguide}.
 
 
-@node plot_vector, plot_matrix, Slab, Reference guide
+@node plot, plot_vector, Slab, Reference guide
+@unnumberedsec @code{plot}
+@cindex @code{plot}
+
+@noindent
+@code{plot(s)}: starts the interactive plotting widget. @code{s} can be a 
+@code{Slab}, @code{Stack} or @code{BlochStack}.
+
+@node plot_vector, plot_matrix, plot, Reference guide
 @unnumberedsec @code{plot_vector}
 @cindex @code{plot_vector}
 
