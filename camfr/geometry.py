@@ -440,6 +440,12 @@ class Geometry:
                 e_slab.add(chunk_m(chunk_d))
                 
             s = Slab(e_slab)
+
+            #print e_slab
+            #s.calc()
+            #print s
+            #plot_neff(s)
+            #print "------------"
    
             slab_cache.append(s)
             e.add(s(d[i]))
@@ -447,7 +453,7 @@ class Geometry:
         # Add flipped scatterer.
 
         if add_flipped:
-            for i in range(len(slabs)-1, -1, -1):
-                e.add((slab_cache[i])(d[i]))
+            for i in range(len(slabs)):
+                e.add((slab_cache[-i-1])(d[-i-1]))
 
         return e
