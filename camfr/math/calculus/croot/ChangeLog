@@ -1,6 +1,11 @@
+2002-11-27  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mueller.h: Add solver starting from estimate vector.
+	* mueller.cpp: Ditto.
+
 2002-06-18  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* mueller.cpp: check for NaN.
+	* mueller.cpp: Check for NaN.
 
 2002-05-10  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 

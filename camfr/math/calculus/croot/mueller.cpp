@@ -214,8 +214,8 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     dz23 = dz12;
 
     // Check for convergence.
-
-    if (abs(corr) > 1e6*abs(z2))
+ 
+    if ( (abs(corr) > 1e6*abs(z2)) || ISNAN(abs(z1)) )
     {
       converged = false;
       break;
@@ -359,5 +359,48 @@ std::vector<Complex> mueller_multiple
 
   return allroots;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// mueller_multiple
+//
+/////////////////////////////////////////////////////////////////////////////
+
+std::vector<Complex> mueller
+  (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter)
+{
+  vector<Complex> allroots;
+  
+  for (unsigned int i=0; i<z0.size(); i++)
+  {
+    // Determine which zeros to deflate.
+
+    vector<Complex> deflate;
+ 
+    for (unsigned int j=0; j<allroots.size(); j++)
+      if (abs(allroots[j]-z0[i]) < 0.5)
+        deflate.push_back(allroots[j]);
+
+    // Find zero.
+
+    bool error = false;
+    
+    Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
+                               &deflate, maxiter, &error, true); 
+
+    if (error)
+      py_error("Mueller solver failed to converge.");
+
+    std::cout << i << " " << z0[i] << "-->" << new_root << std::endl;
+   
+    if (!error)
+      allroots.push_back(new_root);
+  }
+
+  return allroots;
+}
+
 
 
