@@ -1,3 +1,5 @@
+-SymmetricSection, UniformSection, Auto-partitioned section
+
 SHORT TERM 
 
 -default planar::set_theta (Peter)
@@ -28,7 +30,7 @@ MEDIUM TERM:
 -idem: hack for tails in slabmodes (Peter)
 
 -check for presence of gain medium in cavity
--prevent user from from making a stack with uniformv layers with different
+-prevent user from from making a stack with uniform layers with different
  widths
 -eliminate warning for zero tranmission through wall when calculating 
  fields in stack.
@@ -70,7 +72,9 @@ MEDIUM TERM:
 
 -cavity::calc_sigma: instead of using only the fw field, is it more robust
  to use fw_backward field to determine dominant mode?
--cavity: instead of using SVD, try eigenvalue decomposition
+-cavity: instead of using SVD, try eigenvalue decomposition or Arnoldi
+
+-revisit reflection from semi-infinite media.
 
 -PC_wall: add waveguide interface if needed
 -faster location of PC_wall eigenmodes
