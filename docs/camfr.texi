@@ -648,8 +648,8 @@ outfile.close()
 @section Example 4: a circular stack
 
 Not only can CAMFR deal with 2D Cartesian structures, it can also handle
-circular waveguides, although currently limited to waveguides with at most a 
-single index step in the radial direction.
+circular waveguides with an arbitrary number of index steps in the radial 
+direction.
 
 This is illustrated in the following Python file:
 
@@ -738,6 +738,9 @@ waveguides, but only varied the length of the waveguide sections.
 In this case, it made sense to keep the previous calculation results around, 
 because eigenmode expansion can easily update the scattering matrices of a 
 structure if only the length of the individual waveguide sections changes.
+
+For a more complex example dealing with Omniguide fibres, see 
+@code{omniguide.py} in the @code{examples/contrib} directory.
 
 @page
 
