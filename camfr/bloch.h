@@ -87,6 +87,8 @@ class BlochMode : public Mode
 
     Field field(const Coord& coord) const;
 
+    void fw_bw_field(const Coord& coord, cVector* fw, cVector* bw);
+
     cVector fw_field() const {return interface_field[0].fw;}
     cVector bw_field() const {return interface_field[0].bw;}    
 
