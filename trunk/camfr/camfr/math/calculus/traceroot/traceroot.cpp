@@ -20,6 +20,8 @@
 using std::vector;
 using std::string;
 using std::arg;
+using std::cout;
+using std::endl;
 
 #include "../../../util/vectorutil.h"
 #include "../../../util/cvector.h"
@@ -77,7 +79,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   
   if (abs(step) < 1e-13)
     return estimate1;
-
+  
   // Write initial zero locations to file.
 
   restart:
@@ -136,7 +138,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     for (unsigned int i=0; i<zeros.size(); i++)
     {
       Real eps_stag = 2*eps_coarse;
-      while (abs(zeros[i]-zeros_bis[i]) < 2*eps_coarse)
+      while ((abs(zeros[i]-zeros_bis[i]) < 2*eps_coarse))
       {
         if (abs(real(zeros_bis[i])) > abs(imag(zeros_bis[i])))
           zeros_bis[i] += eps_stag*I;
@@ -160,9 +162,14 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     zeros_try.clear();
     for (unsigned int i=0; !trouble && i<zeros.size(); i++)
       if (valid[i])
-      {        
+      {
+        vector<Complex> deflate;
+        for (unsigned int j=0; j<zeros_try.size(); j++)
+          if (abs(zeros_try[j]-zeros[i]) < 0.05)
+            deflate.push_back(zeros_try[j]);
+        
         zeros_try.push_back(mueller(f,zeros[i],zeros_bis[i],eps_coarse,
-                                    0,100,&trouble));  
+                                    &deflate,100,&trouble));
         if (trouble)
         {
           //cout << "Mueller didn't converge for " << zeros[i] << endl;
@@ -170,7 +177,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           break;
         }
         
-        //cout << setprecision(6);
+        //cout << std::setprecision(6);
         //cout << i << " " << zeros[i] << " " << zeros_bis[i]
         //<< "->" << zeros_try[i] << " " << zeros_jump[i] << endl;
       }
@@ -296,7 +303,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
         std::ostringstream st;
         st << "Error: inrecoverable problem during sweep. "
           << "Invalidating zero " << zeros_try[trouble_index];
-        py_error(st.str());
+        py_print(st.str());
 
         valid[trouble_index] = false;
         step = (params2 - params) / initial_resolution;
