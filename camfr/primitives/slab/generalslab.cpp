@@ -10,14 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-// Work around MS linker bug.
-
-#ifdef _WIN32
-#include "slabmatrixcache.cpp"
-#else
 #include "slabmatrixcache.h"
-#endif
-
 #include "generalslab.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
 
@@ -31,7 +24,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabGlobal global_slab = {0.0, 0.0, NULL, NULL, 0.0};
+SlabGlobal global_slab = {0.0, 0.0, NULL, NULL};
 
 
 
@@ -123,14 +116,7 @@ Complex slab_signedsqrt(const Complex& kz2)
 // Dirty includes. Refactor this code after the design of moslab has settled.
 
 #include "isoslab/slabmode.h"
-
-// Work around MS linker bug.
-
-#ifdef _WIN32
-#include "isoslab/slaboverlap.cpp"
-#else
 #include "isoslab/slaboverlap.h"
-#endif
 
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
@@ -241,8 +227,8 @@ void SlabImpl::calc_overlap_matrices
     Complex kz0_II 
       = dynamic_cast<SlabMode*>(medium_II->get_mode(i))->get_kz0();
     
-    sin_I (i) = global_slab.beta / kz0_I;
-    sin_II(i) = global_slab.beta / kz0_II;
+    sin_I (i) = global.slab_ky / kz0_I;
+    sin_II(i) = global.slab_ky / kz0_II;
 
     // Note that cos needs to be in sync with the ones in slabmode.cpp.
 

@@ -175,7 +175,7 @@ inline void set_upper_wall(SlabWall* w)
   {global_slab.rightwall = w;}
 
 inline void set_beta(const Complex& beta)
-  {global_slab.beta = beta;}
+  {global.slab_ky = beta;}
 
 inline int mode_pol(const Mode& m) {return m.pol;}
 
@@ -451,7 +451,7 @@ struct register_cVector_from_python
 
     data->convertible = storage;
 
-    delete a;
+    free(a);
   }
 
 };

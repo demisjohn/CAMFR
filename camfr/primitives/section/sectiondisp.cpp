@@ -99,7 +99,7 @@ Complex SectionDisp::operator()(const Complex& kt)
   global.orthogonal = false;
   global.polarisation = TE_TM;
 
-  Complex old_beta = global_slab.beta;
+  Complex old_beta = global.slab_ky;
 
   const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
   Complex beta = sqrt(C*min_eps_mu - kt*kt);
@@ -111,7 +111,7 @@ Complex SectionDisp::operator()(const Complex& kt)
     if (imag(beta) > 0)
       beta = -beta;
 
-  global_slab.beta = beta;
+  global.slab_ky = beta;
 
   int old_N = global.N;
   global.N = M;
@@ -119,7 +119,7 @@ Complex SectionDisp::operator()(const Complex& kt)
   Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_arnoldi();
 
   global.N = old_N;
-  global_slab.beta = old_beta;
+  global.slab_ky = old_beta;
 
   return res;
 }

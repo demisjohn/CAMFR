@@ -255,8 +255,8 @@ void Slab_M::find_modes()
       py_print("Warning: changing N to even number.");
     global.N = n;
 
-    const Complex old_beta = global_slab.beta;
-    global_slab.beta = 0.0;
+    const Complex old_beta = global.slab_ky;
+    global.slab_ky = 0.0;
 
     vector<Complex> old_params = params;
 
@@ -290,7 +290,7 @@ void Slab_M::find_modes()
     // Restore global variables and build modeset.
 
     global.N = 2*n;
-    global_slab.beta = old_beta;
+    global.slab_ky = old_beta;
     global.polarisation = TE_TM;
 
     kt.insert(kt.end(), kt_TM.begin(), kt_TM.end());
@@ -947,8 +947,8 @@ void UniformSlab::find_modes()
       py_print("Warning: changing N to even number.");
     global.N = n;
 
-    const Complex old_beta = global_slab.beta;
-    global_slab.beta = 0.0;
+    const Complex old_beta = global.slab_ky;
+    global.slab_ky = 0.0;
 
     // Find TE modes.
 
@@ -963,7 +963,7 @@ void UniformSlab::find_modes()
     // Restore global variables and build modeset.
 
     global.N = 2*n;
-    global_slab.beta = old_beta;
+    global.slab_ky = old_beta;
     global.polarisation = TE_TM;
 
     kt.insert(kt.end(), kt_TM.begin(), kt_TM.end());

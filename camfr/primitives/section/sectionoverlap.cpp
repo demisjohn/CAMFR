@@ -174,15 +174,15 @@ Complex z_integral
 {
   // Determine betas.
 
-  Complex old_beta = global_slab.beta;
+  Complex old_beta = global.slab_ky;
   
-  global_slab.beta = kz_I;
+  global.slab_ky = kz_I;
   Complex j_beta_I = I*mode_I->get_kz();
   
-  global_slab.beta = kz_II;
+  global.slab_ky = kz_II;
   Complex j_beta_II = I*mode_II->get_kz();
 
-  global_slab.beta = old_beta;
+  global.slab_ky = old_beta;
 
   Complex s = minus ? -1.0 : 1.0;
 

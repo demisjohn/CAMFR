@@ -1,11 +1,11 @@
 CAMFR 1.0:
 
 -leak check
--add pentium3 to machine.cfg, cp it to machine_cfg_lix.py
+-slab_global.beta --> global.slab_ky
+-add pentium3 to machine.cfg + libs, cp it to machine_cfg_lix.py
 -upgrade scons for windows
 -thin structures
 -Lieven's plot routines
--remove PML from geometry figure.
 
 CAMFR 3D:
 
@@ -82,9 +82,8 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
--use scons shared library support
 -move to uBLAS? (www.genesys-e.org/ublas)
--build: eliminate as many makefiles as possible, slab_global.beta
+-build: eliminate as many makefiles as possible
 -remove set_precision_enhancement and friends
 -get rid of S_T, T_T in field_calc
 -make the C++ naming convention more uniform and in sync with Python names

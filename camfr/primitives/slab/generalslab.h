@@ -32,8 +32,6 @@ struct SlabGlobal
     Real      right_PML;
     SlabWall*  leftwall; // NULL: electric wall.
     SlabWall* rightwall;
-    Complex beta; // The out-of plane component for off-angle
-                  // propagation k_y, not k_z.
 };
 
 extern SlabGlobal global_slab;
