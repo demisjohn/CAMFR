@@ -1,3 +1,7 @@
+2003-11-14  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* camfr_wrap.cpp: Wrap set_Estimate for Slab.
+
 2003-11-04  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* defs.cpp: Undo change in unstable_exp_threshold.
