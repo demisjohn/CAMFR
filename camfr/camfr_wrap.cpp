@@ -24,6 +24,7 @@
 #include "stack.h"
 #include "cavity.h"
 #include "bloch.h"
+#include "icache.h"
 #include "infstack.h"
 #include "math/calculus/function.h"
 #include "primitives/planar/planar.h"
@@ -307,6 +308,9 @@ inline Complex blochmode_n(BlochMode& m, Coord &c)
   {return m.get_geom()->n_at(c);}
 inline Complex sectionmode_n(SectionMode& m, Coord &c)
   {return m.get_geom()->n_at(c);}
+
+inline void free_tmp_interfaces(Waveguide& w)
+  {interface_cache.deregister(&w);}
 
 
 
@@ -768,6 +772,7 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes); 
   def("free_tmps",                  free_tmps);
+  def("free_tmp_interfaces",        free_tmp_interfaces);
 
   // Wrap Coord.
 
@@ -904,6 +909,11 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<MonoScatterer, bases<Scatterer>, boost::noncopyable>
     ("MonoScatterer", no_init);
 
+  // Wrap SquashedScatterer.
+
+  class_<SquashedScatterer, bases<DenseScatterer> >
+    ("SquashedScatterer", init<DenseScatterer&>());
+
   // Wrap FlippedScatterer.
 
   class_<FlippedScatterer, bases<MultiScatterer> >
@@ -961,6 +971,8 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("inc",                      &Stack::get_inc,
          return_value_policy<reference_existing_object>())
     .def("ext",                      &Stack::get_ext,
+         return_value_policy<reference_existing_object>())
+    .def("scatterer",                &Stack::as_multi,
          return_value_policy<reference_existing_object>())
     .def("length",                   stack_length)
     .def("width",                    stack_width)
