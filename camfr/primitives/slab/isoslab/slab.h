@@ -93,6 +93,11 @@ class Slab_M : public SlabImpl
     cVector fourier_eps         (int M, cVector* inv_eps=NULL) const;
     cVector fourier_eps_extended(int M, cVector* inv_eps=NULL) const;
 
+    void fill_E_matrix        (cMatrix*, int, int,
+                               const Complex&, const Complex&) const;
+    void fill_E_matrix_biaxial(cMatrix*, int, int,
+                               const Complex&, const Complex&) const;
+
     friend class Slab_M_Mode;
     friend class UniformSlab;
 };
