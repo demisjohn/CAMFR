@@ -1,13 +1,13 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename camfr.info
-@settitle CAMFR manual v1.2
+@settitle CAMFR manual v1.3
 @c %**end of header
 
 @ifinfo
-CAMFR manual v1.2.
+CAMFR manual v1.3.
 
-Copyright @copyright{} 2001-2003 Peter Bienstman - Ghent University.
+Copyright @copyright{} 2001-2004 Peter Bienstman - Ghent University.
 @end ifinfo
 
 @ignore
@@ -23,14 +23,14 @@ END-INFO-DIR-ENTRY
 @titlepage
 @sp 10
 @title {CAMFR manual}
-@subtitle {version 1.2}
+@subtitle {version 1.3}
 @subtitle {November, 2003}
 @author Peter Bienstman
 
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2001-2003 Peter Bienstman - Ghent University.
+Copyright @copyright{} 2001-2004 Peter Bienstman - Ghent University.
 @end titlepage
 
 @contents 
@@ -92,6 +92,7 @@ Reference guide
 * set_solver::                  
 * set_mode_surplus::            
 * set_unstable_exp_threshold::  
+* set_backward_modes::          
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -246,8 +247,8 @@ making it possible to perform sophisticated simulations and postprocessing.
 The examples in this chapter can be found in the directory 
 @code{examples/tutorial} in the main CAMFR directory. If you're on a Windows
 system, this directory could by something like 
-@code{C:\python22\Lib\site-packages\camfr}, on a Unix system it is usually 
-@code{/usr/lib/python2.2/site-packages/camfr}.
+@code{C:\python23\Lib\site-packages\camfr}, on a Unix system it is usually 
+@code{/usr/lib/python2.3/site-packages/camfr}.
 
 The first file 
 @code{tutorial1.py} introduces some simple waveguide simulations and 
@@ -376,7 +377,7 @@ Regardless of the invocation method, the output that will be printed out will
 look something like this:
 
 @example
-CAMFR 1.2 - Copyright (C) 1998-2003 Peter Bienstman - Ghent University.
+CAMFR 1.3 - Copyright (C) 1998-2004 Peter Bienstman - Ghent University.
 
 (21.3499038707+0j)
 (3.07668661368+0j)
@@ -2141,6 +2142,8 @@ This will cause CAMFR to treat modes which are not exactly orthogonal due to rou
 If you are dealing with very lossy materials, using a different solver might help: @code{set_solver(series)} and @code{set_mode_surplus(n)}. This will first construct an initial estimate of the modes based on a plane wave expansion. The number of plane waves used in this expansion is @code{n} times @code{get_N()}. These estimates are subsequently refined using the full dispersion relation.
 @item
 For trouble with uncoupled waveguides, try experimenting with @code{set_unstable_exp_threshold}. E.g. setting it to 1e-6 will mean waveguides will be treated sooner as decoupled than when the parameter was 1e-12.
+@item
+If you're working with circular structures in the regime of backward and complex modes (e.g. when the metal wall is close to the last interface), you can use @code{set_backward_modes(1)} for extra stability.
 @end itemize
 
 If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
@@ -2416,6 +2419,7 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_solver::                  
 * set_mode_surplus::            
 * set_unstable_exp_threshold::  
+* set_backward_modes::          
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -2643,15 +2647,21 @@ convergence. Note: a Python bool is 1 for true, and 0 for false.
 @xref{set_solver}.
 
 
-@node set_unstable_exp_threshold, set_circ_order, set_mode_surplus, Reference guide
+@node set_unstable_exp_threshold, set_backward_modes, set_mode_surplus, Reference guide
 @unnumberedsec @code{set_unstable_exp_threshold}
 @cindex @code{set_unstable_exp_threshold}
 
 @noindent
 @code{set_unstable_exp_threshold(eps)}: sets numerical parameter dealing with how soon waveguides will be treated as uncoupled. Setting this parameter to 1e-6 will result in a quicker decoupling as compared to e.g. 1e-12.
 
+@node set_backward_modes, set_circ_order, set_unstable_exp_threshold, Reference guide
+@unnumberedsec @code{set_backward_modes}
+@cindex @code{set_backward_modes}
 
-@node set_circ_order, set_circ_field_type, set_unstable_exp_threshold, Reference guide
+@noindent
+@code{set_backward_modes(1)}: use this for extra stability if you're working with circular structures in the regime of backward and complex modes (e.g. when the metal wall is close to the last interface). Involves a performance penalty, so it is off be default.
+
+@node set_circ_order, set_circ_field_type, set_backward_modes, Reference guide
 @unnumberedsec @code{set_circ_order}
 @cindex @code{set_circ_order}
 
