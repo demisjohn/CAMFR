@@ -1,3 +1,10 @@
+2004-03-04 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slab.cpp: Lambda can now be complex.
+	* slabdisp.h: Ditto.
+	* slabdisp.cpp: Ditto.
+	* slaboverlap.cpp: Ditto.
+
 2003-12-08 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slaboverlap.h: Add overlap with plane wave.

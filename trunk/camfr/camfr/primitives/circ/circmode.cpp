@@ -374,14 +374,14 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
   
   // Set constants.
   
-  const Real eps      = 1e-10;
-  const Real lambda   = global.lambda;
-  const Real k0       = 2*pi/lambda;
+  const Real eps       = 1e-10;
+  const Complex lambda = global.lambda;
+  const Complex k0     = 2*pi/lambda;
 
-  const Real order    = global_circ.order;
+  const Real order     = global_circ.order;
   
-  const Complex r     = geom->radius[0];
-  const Complex R     = geom->radius[1];
+  const Complex r      = geom->radius[0];
+  const Complex R      = geom->radius[1];
 
   const Material co = *(geom->material[0]);
   const Material cl = *(geom->material[1]);
@@ -820,14 +820,14 @@ void Circ_1_Mode::normalise()
   
   // Set constants.
   
-  const Real order  = global_circ.order;
+  const Real order = global_circ.order;
   
   const Complex mu  = geom->material[0]->mu();
   const Complex eps = geom->material[0]->eps();
   
-  const Real omega  = 2*pi/global.lambda * c;
+  const Complex omega = 2*pi/global.lambda * c;
   
-  const Complex R   = geom->radius[0];
+  const Complex R = geom->radius[0];
 
   Complex JR, dJR;
   dJR = dJ(order, kr[0]*R, &JR);

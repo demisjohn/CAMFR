@@ -105,7 +105,7 @@ class Circ_2_open : public ComplexFunction
 
     Circ_2_open(const Complex&  _r,
                 const Material& _core,   const Material& _cladding,
-                Real            _lambda, int             _order,
+                const Complex&  _lambda, int             _order,
                 Guided_rad      _type=guided)
 
       : r(_r), core(_core), cladding(_cladding),
@@ -121,7 +121,7 @@ class Circ_2_open : public ComplexFunction
           Complex    r;         // core radius
           Material   core;
           Material   cladding;
-          Real       lambda;    // wavelength
+          Complex    lambda;    // wavelength
     const int        order;     // order of Bessel functions
     const Guided_rad type;      // variations
 };
@@ -142,7 +142,7 @@ class Circ_2_closed : public ComplexFunction
   
     Circ_2_closed(const Complex&  _r,      const Complex&  _R,
                   const Material& _core,   const Material& _cladding,
-                  Real            _lambda, int             _order,
+                  const Complex&  _lambda, int             _order,
                   Guided_rad      _type=guided,
                   Hankel          _hankel=kind_1,
                   Polarisation    _pol_0=TE,
@@ -163,7 +163,7 @@ class Circ_2_closed : public ComplexFunction
           Complex      R;         // metal cylinder radius
           Material     core;
           Material     cladding;
-          Real         lambda;    // wavelength
+          Complex      lambda;    // wavelength
     const int          order;     // order of Bessel functions
     const Guided_rad   type;      // variations
     const Hankel       hankel;    // kind of Hankel functions
@@ -190,7 +190,7 @@ class Circ_2_closed_cutoff : public Circ_2_closed
   
     Circ_2_closed_cutoff(const Complex&  r,      const Complex&  R,
                          const Material& core,   const Material& cladding,
-                         Real            lambda, int             order,
+                         const Complex&  lambda, int             order,
                          Guided_rad      type=guided,
                          Hankel          hankel=kind_1,
                          Polarisation    pol_0=TE,
@@ -219,7 +219,7 @@ class Circ_2_closed_rad_lossless : public Circ_2_closed
     Circ_2_closed_rad_lossless
       (const Complex&  r,      const Complex&  R,
        const Material& core,   const Material& cladding,
-       Real            lambda, int             order,
+       const Complex&  lambda, int             order,
        Hankel          hankel=kind_1,
        Polarisation    pol_0=TE,
        bool            scale_always=false)
@@ -245,7 +245,7 @@ public:
   Circ_M_closed(unsigned int _M,
 		const std::vector<Complex>&  _r,     
 		const std::vector<Material*>& _m,  
-		Real            _lambda, 
+		const Complex&  _lambda, 
 		int             _order,
 		Polarisation    _pol_0=TE);
 
@@ -258,12 +258,12 @@ public:
         
 protected:
 
-  unsigned int M;     // number of rings 
-  std::vector<Complex>      radius;         // radii
-  std::vector<Material*>     material;      // materials
-  Real         lambda;    // wavelength
-  const int          order;     // order of Bessel functions
-  Polarisation pol_0;     // simplified for TE or TM order 0
+  unsigned int M;                  // number of rings 
+  std::vector<Complex> radius;     // radii
+  std::vector<Material*> material; // materials
+  Complex lambda;                  // wavelength
+  const int order;                 // order of Bessel functions
+  Polarisation pol_0;              // simplified for TE or TM order 0
     
 };
 

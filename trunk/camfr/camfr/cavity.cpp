@@ -185,7 +185,7 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     std::ostringstream s;
 
     s << "Done pass " << i 
-      << ": lambda " << global.lambda
+      << ": lambda " << real(global.lambda)
       << ", gain "   << global.gain_mat->gain();
 
     py_print(s.str());
@@ -193,8 +193,8 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     // Refine intervals and precisions for next pass.
 
     Real delta_lambda = lambda_stop - lambda_start;
-    lambda_start = global.lambda - delta_lambda/10.0;
-    lambda_stop  = global.lambda + delta_lambda/10.0;
+    lambda_start = real(global.lambda) - delta_lambda/10.0;
+    lambda_stop  = real(global.lambda) + delta_lambda/10.0;
 
     Real delta_n_imag = n_imag_stop - n_imag_start;
     n_imag_start = n_imag - delta_n_imag/10.0;

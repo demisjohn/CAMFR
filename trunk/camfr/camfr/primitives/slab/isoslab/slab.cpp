@@ -222,7 +222,7 @@ void Slab_M::find_modes()
 { 
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;
@@ -365,7 +365,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
 
   // Locate zeros starting from initial contour.
 
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+  const Complex C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
   
   Real max_kt = abs(sqrt(C*(max_eps_mu - min_eps_mu)))+1;
 
@@ -435,8 +435,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   const Real eps_zero   = 1e-10;
   const Real eps_copies = 1e-6;
   
-  const Real lambda     = global.lambda;
-  const Real k0         = 2*pi/lambda;
+  const Complex lambda  = global.lambda;
+  const Complex k0      = 2*pi/lambda;
   
   // Determine reflection coefficients of walls.
 
@@ -509,7 +509,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   
   Wrap_imag_to_abs prop_wrap(disp);
 
-  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+  const Complex C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
   Complex max_eps_eff;
   if (    (global.polarisation == TM) // Surface plasmon.
@@ -984,8 +984,8 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 {  
   // Set constants.
 
-  const Real omega = 2*pi/global.lambda * c;
-  const Real k0 = 2*pi/global.lambda;
+  const Complex omega = 2*pi/global.lambda * c;
+  const Complex k0 = 2*pi/global.lambda;
 
   // Create eigenvalue problem.
 
@@ -1233,7 +1233,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
       max_eps_mu = eps_mu;
   }
 
-  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+  const Complex C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
   Complex max_eps_eff;
   if (    (global.polarisation == TM) // Surface plasmon.
@@ -1331,7 +1331,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
       min_eps_mu = eps_mu;
   }
   
-  const Real C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
+  const Complex C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
 
   // Create Planars.
 
@@ -1669,7 +1669,7 @@ void UniformSlab::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;
@@ -1751,7 +1751,7 @@ vector<Complex> UniformSlab::find_kt()
        ((abs(R_upper-1.0) > 1e-10) && (abs(R_upper+1.0) > 1e-10)) )
     analytic = false;
   
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return kt;

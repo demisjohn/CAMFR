@@ -552,7 +552,7 @@ void Section2D::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     py_error("Error: wavelength not set.");
     return;
@@ -649,7 +649,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_omar_schuenemann()
 
   // Form auxiliary matrix.
 
-  const Real omega = 2*pi/global.lambda * c;
+  const Complex omega = 2*pi/global.lambda * c;
 
   cMatrix inv_O_zz(n,n,fortranArray);
   if(global.stability != SVD)
@@ -725,6 +725,12 @@ vector<ModeEstimate*> Section2D::estimate_kz2_omar_schuenemann()
   }
 
   std::sort(estimates.begin(), estimates.end(), kz2_sorter());
+
+  /*
+  for (int i=0; i<estimates.size(); i++)  
+    std::cout << i << " " << sqrt(estimates[i]->kz2)/2./pi*global.lambda 
+              << std::endl;
+  */
     
   return estimates;
 }
@@ -1287,7 +1293,8 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   cMatrix FG(2*MN,2*MN,fortranArray); 
   FG.reference(multiply(F,G));
- 
+
+/*
   cVector E(2*MN,fortranArray); 
   cMatrix eig(2*MN,2*MN,fortranArray); 
 
@@ -1296,19 +1303,18 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   else
     E = eigenvalues_x(FG, &eig);
 
-/*
   for (int i=1; i<=eig.columns(); i++)
   {
     std::cout << "eig " << i << " " << sqrt(E(i)/k0/k0)/k0 << std::endl;
     
-    for (int m=-M; m<=M; m++)
-      for (int n=-N; n<=N; n++)
-      {
-        int i1 = (m+M+1) + (n+N)*(2*M+1);
-        std::cout << i << " " <<m << " " << n << " " 
-                  << eig(i1,i)/eig(1,i) <<eig(MN+i1,i)/eig(1,i)<< std::endl;
-      }
-    std::cout << std::endl;
+    //for (int m=-M; m<=M; m++)
+    //  for (int n=-N; n<=N; n++)
+    //  {
+    //    int i1 = (m+M+1) + (n+N)*(2*M+1);
+    //    std::cout << i << " " <<m << " " << n << " " 
+    //              << eig(i1,i)/eig(1,i) <<eig(MN+i1,i)/eig(1,i)<< std::endl;
+    //  }
+    //std::cout << std::endl;
   }
 */
   
@@ -1674,7 +1680,7 @@ void Section2D::find_modes_from_estimates()
       max_eps_mu = eps_mu;
   }
 
-  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+  const Complex C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
   // Get estimates.
 
@@ -1947,7 +1953,7 @@ void Section1D::find_modes()
 {
   // Check values.
 
-  if (global.lambda == 0)
+  if (real(global.lambda) == 0)
   {
     cout << "Error: wavelength not set." << endl;
     return;
