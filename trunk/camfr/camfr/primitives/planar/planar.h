@@ -51,7 +51,7 @@ class Planar : public MonoWaveguide
     static Complex get_kt()
       {return kt;}
     
-    void set_theta(Real theta_radians);
+    void set_theta(Complex theta_radians);
 
     Complex c1_size() const 
       {return 0.0;}
