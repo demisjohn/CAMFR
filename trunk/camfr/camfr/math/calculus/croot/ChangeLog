@@ -1,3 +1,8 @@
+2002-05-10  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mueller.h: Optionally deflate extra zeros in mueller_multiple.
+	* mueller.cpp: Ditto.
+
 2002-05-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mueller.cpp: More robust underflow convergence.

@@ -254,22 +254,32 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> mueller_multiple
-  (ComplexFunction& f, const Complex& z0, Real eps, int maxiter)
+  (ComplexFunction& f, const Complex& z0, Real eps,
+   const std::vector<Complex>* prev_zeros, int maxiter)
 {
   vector<Complex> roots;
   roots.push_back(z0);
+
+  vector<Complex> deflate;
+  deflate.push_back(z0);
+  if (prev_zeros)
+    deflate.insert(deflate.end(), prev_zeros->begin(), prev_zeros->end());
 
   bool error = false;
   do
   {
     Complex new_root = mueller(f, z0+0.001, z0+.001*I, eps, 
-                               &roots, maxiter, &error);
+                               &deflate, maxiter, &error);
 
     if (abs(new_root-z0) > 0.1)
       error = true;
 
     if (!error)
+    {
       roots.push_back(new_root);
+      deflate.push_back(new_root);
+    }
+    
   }
   while (!error);
   
@@ -285,7 +295,8 @@ vector<Complex> mueller_multiple
 /////////////////////////////////////////////////////////////////////////////
 
 std::vector<Complex> mueller_multiple
- (ComplexFunction& f, const std::vector<Complex>& z0, Real eps, int maxiter)
+ (ComplexFunction& f, const std::vector<Complex>& z0, Real eps,
+  const std::vector<Complex>* prev_zeros, int maxiter)
 {
   // Create clustered vector of zeros.
 
@@ -302,6 +313,10 @@ std::vector<Complex> mueller_multiple
     // Determine which zeros to deflate.
 
     vector<Complex> deflate;
+
+    if (prev_zeros)
+      deflate.insert(deflate.end(), prev_zeros->begin(), prev_zeros->end());
+ 
     for (unsigned int j=0; j<z0.size(); j++)
       if (abs(z0[j]-z0[i]) < 0.5)
         deflate.insert(deflate.end(), roots[j].begin(), roots[j].end());    
