@@ -1,4 +1,8 @@
-2003-05-20  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+2003-05-15  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* mueller.cpp: Better check for degenerate modes.
+
+2003-05-14  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mueller.cpp: Minor numerics tweak.
 
