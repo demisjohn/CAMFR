@@ -64,7 +64,7 @@ Slab_M::Slab_M(const Expression& expression)
 
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
-    if ( real(materials[i]->n()) > real(materials[core_index]->n()) )
+    if ( abs(materials[i]->n()) > abs(materials[core_index]->n()) )
       core_index = i;
 
   core = materials[core_index];
@@ -243,37 +243,30 @@ void Slab_M::find_modes_from_scratch_by_ADR()
   SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
   SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1;
+  Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
+
+  // Find min and max refractive index of structure.
+
+  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
+  Complex max_eps_mu = materials[0]->eps()*materials[0]->mu();
   
-  // Find and max/min refractive indices of structure.
-
-  Real max_n = 0.0;
-  vector<Real> abs_n;
-  for (unsigned int i=0; i<materials.size(); i++)
+  for (unsigned int i=1; i<materials.size(); i++)
   {
-    Real n = abs( materials[i]->n() * sqrt( materials[i]->mur()) );
-
-    abs_n.push_back(n);
+    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
     
-    if (n > max_n)
-      max_n = n;
-  }
+    if (abs(eps_mu) < abs(min_eps_mu))
+      min_eps_mu = eps_mu;
 
-  Real min_n = max_n;
-  for (unsigned int i=0; i<abs_n.size(); i++)
-  {
-    Real n = abs_n[i];
-    
-    if (n < min_n)
-      min_n = n;
+    if (abs(eps_mu) > abs(min_eps_mu))
+      max_eps_mu = eps_mu;
   }
 
   // Locate zeros starting from initial contour.
 
-  const Real k0 = 2*pi/global.lambda;
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
   
-  Real max_kt = abs(k0*sqrt(Complex(max_n*max_n - min_n*min_n)))+1;
+  Real max_kt = abs(sqrt(C*(max_eps_mu - min_eps_mu)))+1;
 
   Real Re=real(global.C_upperright);
   Real Im=imag(global.C_upperright);
@@ -291,9 +284,10 @@ void Slab_M::find_modes_from_scratch_by_ADR()
 
   const Real eps_copies = 1e-6;
   
-  for (unsigned int i=0; i<abs_n.size(); i++)
+  for (unsigned int i=0; i<materials.size(); i++)
   {
-    Complex kt_i = k0*sqrt(materials[i]->n()*materials[i]->n() - min_n*min_n);
+    Complex kt_i 
+      = sqrt(C*(materials[i]->eps()*materials[i]->mu() - min_eps_mu));
     
     remove_elems(&kt,     kt_i,      eps_copies);
     remove_elems(&kt,    -kt_i,      eps_copies);
@@ -326,7 +320,7 @@ void Slab_M::find_modes_from_scratch_by_ADR()
   
   for (unsigned int i=0; i<kt.size(); i++)
   { 
-    Complex kz = sqrt(k0*k0*min_n*min_n - kt[i]*kt[i]);
+    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -370,8 +364,8 @@ void Slab_M::find_modes_from_scratch_by_track()
   SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
   SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
 
-  Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  Complex R_right = r_wall ? r_wall->get_R12() : -1;
+  Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
+  Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
 
   bool branchcut = false;
   if ( (abs(R_left) < eps_zero) || (abs(R_right) < eps_zero) )
@@ -664,10 +658,22 @@ void Slab_M::find_modes_from_scratch_by_track()
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
+
+  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
   
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
+    
+    if (abs(eps_mu) < abs(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
+  
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
   for (unsigned int i=0; i<kt.size(); i++)
-  { 
-    Complex kz = sqrt(k0*k0*min_n*min_n - kt[i]*kt[i]);
+  {
+    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -710,7 +716,7 @@ void Slab_M::find_modes_by_sweep()
   SlabDisp disp_old(materials, thicknesses, global.lambda, l_wall, r_wall);
   disp_old.set_params(params);
 
-  Complex min_n = disp_old.get_min_n();
+  Complex min_n = sqrt(disp_old.get_min_eps_mu()/eps0/mu0);
   Complex k0_old = 2*pi/last_lambda;
   
   vector<Complex> kt_old;
@@ -737,10 +743,22 @@ void Slab_M::find_modes_by_sweep()
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
+
+  Complex min_eps_mu = materials[0]->eps()*materials[0]->mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu =  materials[i]->eps()*materials[i]->mu();
+    
+    if (abs(eps_mu) < abs(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
+
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
   
   for (unsigned int i=0; i<kt.size(); i++)
   {
-    Complex kz = sqrt(k0*k0*min_n*min_n - kt[i]*kt[i]);
+    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;

@@ -42,7 +42,7 @@ class SlabDisp : public Function1D<Complex>
     Complex operator()(const Complex& kt);
 
 
-    Complex get_min_n() const {return min_n;}
+    Complex get_min_eps_mu() const {return min_eps_mu;}
 
     vector<Complex> get_params() const;
     
@@ -56,7 +56,7 @@ class SlabDisp : public Function1D<Complex>
     
     Real lambda;
 
-    Complex min_n;
+    Complex min_eps_mu;
 
     SlabWall*  leftwall;
     SlabWall* rightwall;

@@ -32,17 +32,15 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
     
   // Find min refractive index of structure.
 
-  Complex eps_mu_min = eps[0]*mu[0];
+  min_eps_mu = eps[0]*mu[0];
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
     Complex eps_mu = eps[i]*mu[i];
     
-    if (abs(eps_mu) < abs(eps_mu_min))
-      eps_mu_min = eps_mu;
+    if (abs(eps_mu) < abs(min_eps_mu))
+      min_eps_mu = eps_mu;
   }
-
-  min_n = sqrt(eps_mu_min / eps0 / mu0);
 }
 
 
@@ -71,17 +69,15 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
 
   // Find min refractive index of structure.
 
-  Complex eps_mu_min = eps[0]*mu[0];
+  min_eps_mu = eps[0]*mu[0];
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
     Complex eps_mu = eps[i]*mu[i];
     
-    if (abs(eps_mu) < abs(eps_mu_min))
-      eps_mu_min = eps_mu;
+    if (abs(eps_mu) < abs(min_eps_mu))
+      min_eps_mu = eps_mu;
   }
-
-  min_n = sqrt(eps_mu_min / eps0 / mu0);
 }
 
 
@@ -100,7 +96,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   global.lambda = lambda;
 
-  const Complex k0_2 = pow(2*pi/lambda, 2);
+  const Complex C = pow(2*pi/lambda, 2) / eps0 / mu0;
 
   // Calculate kx in all materials.
 
@@ -108,8 +104,7 @@ Complex SlabDisp::operator()(const Complex& kt)
   
   for (unsigned int i=0; i<eps.size(); i++)
   {
-    Complex n_2 = eps[i]*mu[i] / eps0/mu0;
-    Complex kx_i = sqrt(k0_2*(n_2 - min_n*min_n) + kt*kt);
+    Complex kx_i = sqrt(C*(eps[i]*mu[i] - min_eps_mu) + kt*kt);
 
     if (real(kx_i) < 0)
       kx_i = -kx_i;
@@ -123,7 +118,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   // For SlabWall_PC, we still need to set Planar::kt.
 
-  Complex beta = sqrt(k0_2*min_n*min_n - kt*kt);
+  Complex beta = sqrt(C*min_eps_mu - kt*kt);
 
   if (real(beta) < 0)
     beta = -beta;
@@ -185,7 +180,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
     // Propagate in medium and scale along the way, by
     // factoring out and discarding the positive exponentials.
-    // When R=0, we deal with an infinite medium
+    // When R=0, we deal with an infinite medium.
     
     Complex I_kx_d = I * kx[i2] * thicknesses[i2];
 
@@ -238,7 +233,7 @@ vector<Complex> SlabDisp::get_params() const
 
   params.push_back(lambda);
 
-  params.push_back(min_n);
+  params.push_back(min_eps_mu);
 
   return params;
 }
@@ -264,5 +259,5 @@ void SlabDisp::set_params(const vector<Complex>& params)
 
   lambda = real(params[params_index++]);
 
-  min_n = params[params_index];
+  min_eps_mu = params[params_index];
 }
