@@ -673,7 +673,7 @@ extern "C" void F77NAME(zgeevx)
    const Real*,const Complex*,const int&,const Real*,int&);
 
 cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
-{
+{ 
   // Check dimensions.
 
   const int N  = A.rows();
