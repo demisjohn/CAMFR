@@ -414,25 +414,30 @@ class PlaneWaveFunction : public ComplexFunction
 {
   public:
 
-    PlaneWaveFunction (Complex height, Complex slope)
-      : h(height), s(slope) {}
+    PlaneWaveFunction (Complex amplitude, Complex angle, Complex index)
+      : am(amplitude), an(angle), n(index) {}
 
-    Complex operator()(const Complex& x) {counter++; return h + x*s;}
+    Complex operator()(const Complex& x)
+      {counter++; return am*exp(-2.0*I*pi*sin(an)*n*x/global.lambda);}
 
   protected:
 
-    Complex h, s;
+    Complex am, an, n;
 };
 
 inline cVector slab_expand_plane_wave
-  (Slab& s, Complex height, Complex slope, Real eps)
-    {PlaneWaveFunction f(height,slope); return s.expand_field(&f, eps);}
+  (Slab& s, const Complex& amplitude, const Complex& angle, Real eps)
+{
+        Complex index = s.get_core()->n();
+        PlaneWaveFunction f(amplitude,angle, index); 
+        return s.expand_field(&f, eps);
+}
 
 inline void stack_set_inc_field_plane_wave
-  (Stack& s, Complex height, Complex slope, Real eps)
+  (Stack& s, const Complex& amplitude, const Complex& angle, Real eps)
 {
   Slab* slab = dynamic_cast<Slab*>(s.get_inc());
-  
+ 
   if (!slab)
   {
     PyErr_SetString(PyExc_ValueError, 
@@ -440,7 +445,8 @@ inline void stack_set_inc_field_plane_wave
     throw boost::python::argument_error();
   }
 
-  PlaneWaveFunction f(height,slope);
+  Complex index = slab->get_core()->n();
+  PlaneWaveFunction f(amplitude,angle,index);
   s.set_inc_field(slab->expand_field(&f, eps));
 }
 

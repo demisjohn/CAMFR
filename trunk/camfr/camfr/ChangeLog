@@ -1,3 +1,7 @@
+2003-11-03  Lieven Vanholme  <Lieven.Vanholme@ugent.be>
+
+	* camfr_wrap.cpp: fix plane wave incident field.
+
 2003-11-03  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* defs.cpp: Relax unstable_exp_threshold.
