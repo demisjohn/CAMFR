@@ -31,8 +31,9 @@ class RefSection : public SectionImpl
 {
   public:
 
-    RefSection(Material& mat, const Complex& width, const Complex& height) 
-      : m(&mat), a(width), b(height) {uniform=true; core=m; M=1;}
+    RefSection
+      (Material& mat, const Complex& width, const Complex& height, int N_) 
+        : N(N_), m(&mat), a(width), b(height) {uniform=true; core=m; M2=1;}
 
     ~RefSection() {}
     
@@ -73,6 +74,8 @@ class RefSection : public SectionImpl
                                cMatrix* O_EM, cMatrix* O_zz);
 
   protected:
+
+    int N;
 
     Material* m;
     Complex a;

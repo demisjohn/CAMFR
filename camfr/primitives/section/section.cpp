@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <sstream>
+#include <algorithm>
 #include "section.h"
 #include "refsection.h"
 #include "sectiondisp.h"
@@ -94,16 +95,16 @@ void SectionImpl::calc_overlap_matrices
     
     for (int i=1; i<=int(global.N); i++)
     {
-      cVector fw_I(medium_I->get_M(),fortranArray);
-      cVector bw_I(medium_I->get_M(),fortranArray);
+      cVector fw_I(medium_I->get_M2(),fortranArray);
+      cVector bw_I(medium_I->get_M2(),fortranArray);
 
       dynamic_cast<SectionMode*>(medium_I->get_mode(i))
         ->get_fw_bw(disc[k], Plus, &fw_I, &bw_I);
 
       field_I.push_back(FieldExpansion(NULL, fw_I, bw_I));
 
-      cVector fw_II(medium_II->get_M(),fortranArray);
-      cVector bw_II(medium_II->get_M(),fortranArray);
+      cVector fw_II(medium_II->get_M2(),fortranArray);
+      cVector bw_II(medium_II->get_M2(),fortranArray);
 
       dynamic_cast<SectionMode*>(medium_II->get_mode(i))
         ->get_fw_bw(disc[k], Plus, &fw_II, &bw_II);
@@ -113,7 +114,7 @@ void SectionImpl::calc_overlap_matrices
 
     // Create overlap cache.
 
-    if (medium_I->get_M() != medium_II->get_M())
+    if (medium_I->get_M2() != medium_II->get_M2())
     {
       std::cerr 
         << "Error: cache not yet general enough to deal with different M."
@@ -129,7 +130,7 @@ void SectionImpl::calc_overlap_matrices
     
     vector<Complex> disc_slab = slab_I->disc_intersect(slab_II);
     
-    SlabCache cache(medium_I->get_M(), disc_slab.size()-1);
+    SlabCache cache(medium_I->get_M2(), disc_slab.size()-1);
     slab_I->fill_field_cache(&cache, slab_II, disc_slab);
 
     OverlapMatrices m(slab_I, slab_II, &cache, &disc_slab, false);
@@ -196,7 +197,7 @@ Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section::Section(Expression& expression, int M)
+Section::Section(Expression& expression, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
   //
@@ -309,7 +310,7 @@ Section::Section(Expression& expression, int M)
 
   // Create Section.
 
-  s = new Section2D(left_ex, right_ex, M);
+  s = new Section2D(left_ex, right_ex, M1, M2);
 
   uniform = s->is_uniform();
   core = s->get_core();
@@ -323,7 +324,7 @@ Section::Section(Expression& expression, int M)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section::Section(Expression& left_ex, Expression& right_ex, int M)
+Section::Section(Expression& left_ex, Expression& right_ex, int M1, int M2)
 {
   bool symmetric = (&left_ex == &right_ex);
 
@@ -354,8 +355,8 @@ Section::Section(Expression& left_ex, Expression& right_ex, int M)
       << "Warning: left or right PML not supported from this constructor." 
       << std::endl;
 
-  s = symmetric ? new Section2D(left_ex, left_ex,  M) 
-                : new Section2D(left_ex, right_ex, M);
+  s = symmetric ? new Section2D(left_ex, left_ex,  M1, M2) 
+                : new Section2D(left_ex, right_ex, M1, M2);
 
   uniform = s->is_uniform();
   core = s->get_core();
@@ -369,8 +370,9 @@ Section::Section(Expression& left_ex, Expression& right_ex, int M)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
-  : left(left_ex), right(right_ex)
+Section2D::Section2D
+  (Expression& left_ex, Expression& right_ex, int M1_, int M2_)
+    : left(left_ex), right(right_ex)
 {
   // Check values.
 
@@ -380,9 +382,10 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
     return;
   }
 
-  uniform = false;
+  M1 = M1_;
+  M2 = M2_;
 
-  M = M_;
+  uniform = false;
 
   symmetric =     (&left_ex == &right_ex) 
               && (global_section.leftwall == global_section.rightwall);
@@ -600,16 +603,42 @@ void Section2D::find_modes()
 // Section2D::find_modes_from_series
 //
 /////////////////////////////////////////////////////////////////////////////
+  
+struct sorter
+{
+    bool operator()(const Complex& beta_a, const Complex& beta_b)
+      {return ( real(beta_a) > real(beta_b) );}
+};
 
 void Section2D::find_modes_from_series()
 {
+  // Check M1.
+
+  int n = M1/2;
+  
+  if (2*n != M1)
+    py_print("Warning: changing M1 to even number.");
+
+  M1 = 2*n;
+
+  // Find min eps mu.
+
+  Complex min_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
+
+  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
   // Calc overlap matrices.
 
   Material ref_mat(1.0);
-  RefSection ref(ref_mat, get_width(), get_height());
-  
-  const int N = global.N;
-  const int n = N/2;
+  RefSection ref(ref_mat, get_width(), get_height(), M1);
 
   cMatrix O_EE(n,n,fortranArray); cMatrix O_MM(n,n,fortranArray);
   cMatrix O_EM(n,n,fortranArray); cMatrix O_zz(n,n,fortranArray);
@@ -626,20 +655,19 @@ void Section2D::find_modes_from_series()
   else
     inv_O_zz.reference(invert_svd(O_zz));
 
-  cMatrix M(n,n,fortranArray);
+  cMatrix T(n,n,fortranArray);
   for (int i=1; i<=n; i++)
   {
     RefSectionMode* TM_i = dynamic_cast<RefSectionMode*>(ref.get_mode(n+i));
 
     for (int j=1; j<=n; j++)
     {
-      RefSectionMode* TM_j = dynamic_cast<RefSectionMode*>(ref.get_mode(n+j))
-;
-      M(i,j) =   TM_i->kt2()/TM_i->get_kz() * inv_O_zz(i,j) 
+      RefSectionMode* TM_j = dynamic_cast<RefSectionMode*>(ref.get_mode(n+j));
+      T(i,j) =   TM_i->kt2()/TM_i->get_kz() * inv_O_zz(i,j) 
                * TM_j->kt2()/TM_j->get_kz();
     }
 
-    M(i,i) += pow(omega,3) * ref_mat.eps() * ref_mat.mu() / TM_i->get_kz();
+    T(i,i) += pow(omega,3) * ref_mat.eps() * ref_mat.mu() / TM_i->get_kz();
   }
 
   // Create submatrices for eigenvalue problem.
@@ -647,11 +675,11 @@ void Section2D::find_modes_from_series()
   cMatrix A(n,n,fortranArray); cMatrix B(n,n,fortranArray);
   cMatrix C(n,n,fortranArray); cMatrix D(n,n,fortranArray);
 
-  A.reference(multiply(M, O_MM));
+  A.reference(multiply(T, O_MM));
   
   cMatrix trans_O_EM(n,n,fortranArray);
   trans_O_EM.reference(transpose(O_EM));
-  B.reference(multiply(M, trans_O_EM));
+  B.reference(multiply(T, trans_O_EM));
 
   C = O_EM;
   for (int i=1; i<=n; i++)
@@ -671,21 +699,66 @@ void Section2D::find_modes_from_series()
 
   // Solve eigenvalue problem.
 
-  cMatrix E(N,N,fortranArray);
+  cMatrix E(M1,M1,fortranArray);
   
   blitz::Range r1(1,n); blitz::Range r2(n+1,2*n);
 
   E(r1,r1) = A; E(r1,r2) = B;
   E(r2,r1) = C; E(r2,r2) = D;
 
-  cVector kz2(N,fortranArray);
+  cVector kz2(M1,fortranArray);
   kz2 = eigenvalues(E);
+
+  // Refine estimates.
+
+  vector<Complex> kz2_coarse;
+  for (unsigned int i=1; i<=M1; i++)
+    kz2_coarse.push_back(kz2(i));
+
+  std::sort(kz2_coarse.begin(), kz2_coarse.end(),sorter());
+
+  for (unsigned int i=0; i<kz2_coarse.size(); i++)
+    std::cout << "coarse" << i << " " << kz2_coarse[i] << std::endl;
+
+  kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+
+
+  vector<Complex> kt_coarse;
+  for (unsigned int i=0; i<kz2_coarse.size(); i++)
+  {
+    Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
+
+    // TODO: check
+
+    if (real(kt) < 0) 
+      kt = -kt;
+
+    if (abs(real(kt)) < 1e-12)
+      if (imag(kt) > 0)
+        kt = -kt;
+
+    kt_coarse.push_back(kt);
+  }
+
+  SectionDisp disp(left, right, global.lambda, M2, symmetric);
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50);
+
+  // Eliminate false zeros.
+
+  for (unsigned int i=1; i<=left.get_inc()->N(); i++)
+  {
+    Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
+    Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
+
+    remove_elems(&kt,  kt_i, 1e-6);
+    remove_elems(&kt, -kt_i, 1e-6);
+  }
 
   // Create modeset.
 
-  for (unsigned int i=1; i<=N; i++)
+  for (unsigned int i=0; i<kt.size(); i++)
   { 
-    Complex kz = sqrt(kz2(i));
+    Complex kz = sqrt(C0*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -693,10 +766,15 @@ void Section2D::find_modes_from_series()
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
+
+    Mode* newmode = new Mode(global.polarisation,kz,-kz);
+
+    //Section2D_Mode* newmode
+    // = new Section2D_Mode(global.polarisation,kz,this);
     
-    Mode *newmode = new Mode(global.polarisation,kz,-kz);
-    
-    //newmode->normalise();   // TMP 
+    std::cout << "TMP no normalise" << std::endl;
+    //newmode->normalise();
+
     modeset.push_back(newmode);
   }
 
@@ -769,7 +847,7 @@ void Section2D::find_modes_from_scratch_by_track()
   
   // Create dispersion relation for lossless structure.
   
-  SectionDisp disp(left, right, lambda, M, symmetric);
+  SectionDisp disp(left, right, lambda, M2, symmetric);
   params = disp.get_params();
 
   vector<Complex> params_lossless;
@@ -1133,7 +1211,7 @@ void Section2D::find_modes_by_sweep()
 {   
   // Trace modes from old configuration to new one.
   
-  SectionDisp disp(left, right, global.lambda, M, symmetric);
+  SectionDisp disp(left, right, global.lambda, M2, symmetric);
   vector<Complex> params_new = disp.get_params();
     
   vector<Complex> beta_old;
