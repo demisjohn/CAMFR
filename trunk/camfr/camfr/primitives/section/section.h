@@ -21,6 +21,7 @@
 #include "sectiondisp.h" // TMP
 
 typedef enum {lowest_loss, highest_index} Sort_type;
+typedef enum {OS, NT, L} Section_solver;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -39,6 +40,8 @@ struct SectionGlobal
     Section_wall_type  leftwall;
     Section_wall_type rightwall;
     bool guided_only; // TMP variable?
+    Section_solver section_solver;
+    bool mode_correction;
 };
 
 extern SectionGlobal global_section;
@@ -200,9 +203,12 @@ struct ModeEstimate
     ModeEstimate(const Complex& kz2_, 
                  cVector* Ex_=0, cVector* Ey_=0, 
                  cVector* Hx_=0, cVector* Hy_=0)
-      : kz2(kz2_), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
+      : kz2(kz2_), kt(0,.0), kt_refined(0.0), 
+        Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_) {}
 
     Complex kz2;
+    Complex kt;
+    Complex kt_refined;
     cVector *Ex, *Ey, *Hx, *Hy;  
 };
 
@@ -266,8 +272,8 @@ class Section2D : public SectionImpl
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
-    cVector estimate_kz2_omar_schuenemann();
-    cVector estimate_kz2_fourier();
+    std::vector<ModeEstimate> estimate_kz2_omar_schuenemann();
+    std::vector<ModeEstimate> estimate_kz2_fourier();
 
     std::vector<Complex> user_estimates;
     std::vector<Complex> params; // Last parameters of dispersion relation.
