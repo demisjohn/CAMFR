@@ -1,3 +1,11 @@
+2002-02-07  Lieven Vanholme  <Lieven.Vanholme@rug.ac.be>
+
+	* bloch.h: Add new GEV Bloch solver.
+	* bloch.cpp: Ditto.
+	* defs.h : Ditto.
+	* defs.cpp : Ditto.
+	* camfr_wrap.cpp: Ditto.
+
 2002-02-07  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* infstack.h: New file.

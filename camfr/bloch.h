@@ -2,11 +2,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     bloch.h
-// Author:   Peter.Bienstman@rug.ac.be
-// Date:     20000615
-// Version:  1.0
+// Authors:  Peter.Bienstman@rug.ac.be, Lieven.Vanholme@rug.ac.be
+// Date:     20020207
+// Version:  2.0
 //
-// Copyright (C) 2000 Peter Bienstman - Ghent University
+// Copyright (C) 2000-2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +50,9 @@ class BlochStack : public MultiWaveguide
 
   private:
 
-    void find_modes_dense();
+    void find_modes_GEV();
+    void find_modes_T();
+
     void find_modes_diag();
 
     void brillouin_eliminate_modes();

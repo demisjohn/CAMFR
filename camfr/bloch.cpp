@@ -2,11 +2,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     bloch.cpp
-// Author:   Peter.Bienstman@rug.ac.be
-// Date:     20000615
-// Version:  1.0
+// Authors:  Peter.Bienstman@rug.ac.be, Lieven.Vanholme@rug.ac.be
+// Date:     20020207
+// Version:  2.0
 //
-// Copyright (C) 2000 Peter Bienstman - Ghent University
+// Copyright (C) 2000-2002 Peter Bienstman - Ghent University
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -35,19 +35,21 @@ void BlochStack::find_modes()
 {
   if (stack.get_expression().all_layers_uniform() && global.orthogonal)
     find_modes_diag();
+  else if (global.bloch_calc == GEV)
+    find_modes_GEV();
   else
-    find_modes_dense();
+    find_modes_T();
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// BlochStack::find_modes_dense
+// BlochStack::find_modes_T
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void BlochStack::find_modes_dense()
+void BlochStack::find_modes_T()
 {  
   stack.calcRT();
 
@@ -133,6 +135,107 @@ void BlochStack::find_modes_dense()
   brillouin_eliminate_modes();
   sort_modes();
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 
+// BlochStack::find_modes_GEV 
+// 
+//  Finds Blochmodes by solving generalised eigenproblem:
+//
+//  | T21  R21 | |  F | = e |  O   I  | |  F | 
+//  |  O    I  | |e B |     | R12 T21 | |e B | 
+// 
+///////////////////////////////////////////////////////////////////////////// 
+
+void BlochStack::find_modes_GEV() 
+{ 
+  // Set up matrices.
+
+  stack.calcRT();
+
+  const cMatrix& R12(stack.as_multi()->get_R12()); 
+  const cMatrix& R21(stack.as_multi()->get_R21()); 
+  const cMatrix& T12(stack.as_multi()->get_T12()); 
+  const cMatrix& T21(stack.as_multi()->get_T21()); 
+
+  const int N = global.N;
+  
+  cMatrix U1(N,N,fortranArray); 
+  U1 = 0.0;
+  for(int i=1; i<=N; i++) 
+    U1(i,i) = 1.0;
+
+  // Solve generalised eigenvalue problem.
+
+  cMatrix A(2*N,2*N,fortranArray); 
+  cMatrix B(2*N,2*N,fortranArray); 
+
+  Range r1(1,N); Range r2(N+1,2*N); 
+
+  A(r1,r1) = T12; A(r1,r2) = R21; 
+  A(r2,r1) = 0.0; A(r2,r2) =  U1;
+
+  B(r1,r1) =  U1; B(r1,r2) = 0.0; 
+  B(r2,r1) = R12; B(r2,r2) = T21; 
+
+  cVector a(2*N,fortranArray); // beta = a/b
+  cVector b(2*N,fortranArray); 
+  cMatrix Z(2*N,2*N,fortranArray); // Holds F and e B.
+
+  gen_eigenvalues(A, B, &a, &b, &Z); 
+
+  // Create modeset. 
+
+  modeset.clear(); 
+
+  for (int mode=1; mode<=2*N; mode++) 
+  {
+    // Determine propagation constant.
+    
+    Complex beta;
+
+    if (abs(b(mode)) < 1e-30) // Set infinite eigenvalue to zero.
+      beta = 0.0;
+    else
+      beta = I*log(a(mode)/b(mode)) / stack.get_total_thickness();
+
+    // Determine fields.
+
+    cVector F(N,fortranArray); F = Z(r1,mode);
+    cVector B(N,fortranArray); B = Z(r2,mode) / (a(mode)/b(mode));
+
+    if (abs(beta) < 1e-20) // Non-converged result.
+    {
+      F = 0.0; 
+      B = 0.0;
+    }
+    
+    // Create mode.
+
+    Polarisation pol = stack.get_inc()->get_mode(1)->pol; 
+
+    BlochMode* blochmode = new BlochMode(pol,beta,&stack,F,B); 
+
+    modeset.push_back(blochmode); 
+
+    // On the edges of the Brillouin zone, the solutions are +/- a +/- b*I. 
+    // Only two of those are found, but it is not predictable which two. 
+    // Add therefore the corresponding solution at the other edge, and 
+    // later only maintain the set a-b*I and -a+b*I.
+
+    if (abs(abs(real(beta)) - pi/stack.get_total_thickness()) < 1e-8) 
+    { 
+      const Complex beta2 = -conj(beta); 
+      BlochMode* blochmode2 = new BlochMode(pol,beta2,&stack,F,B); 
+      modeset.push_back(blochmode2); 
+    } 
+  } 
+
+  brillouin_eliminate_modes(); 
+  sort_modes(); 
+} 
 
 
 
