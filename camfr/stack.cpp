@@ -38,7 +38,7 @@ StackImpl::StackImpl
     if ( wg1 && wg2 && (*wg1 != *wg2) )
     {
       py_error("Error: intermediate incidence and exit media don't match.");
-      exit (-1);
+      return;
     }
   }
   
@@ -48,7 +48,7 @@ StackImpl::StackImpl
   if ( (no_of_periods > 1) && (*inc != *ext) )
   {
     py_error("Error: inc and exit media don't match for periodic extension.");
-    exit (-1);
+    return;
   }
 }
 
@@ -76,7 +76,7 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
          || (e.get_term(i)->get_type() == MAT_EXPRESSION) )
     {
       py_error("Error: unexpected material term in stack expression.");
-      exit (-1);
+      return;
     }
   } 
   
@@ -85,14 +85,14 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
     if (e.get_term(i)->get_ext() != e.get_term(i+1)->get_inc())
     {
       py_error("Error: intermediate incidence and exit media don't match.");
-      exit (-1);
+      return;
     }
   }  
 
   if ( (no_of_periods > 1) && (e.get_inc() != e.get_ext()) )
   {
     py_error("Error: inc and exit media don't match for periodic extension.");
-    exit (-1);
+    return;
   }
 
   // Corner case of expression consisting of single waveguide.
@@ -143,7 +143,7 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
            || ( (i==0) && abs(t1->get_d()) ))
       {
         py_error("Error: unexpected waveguide.");
-        exit (-1);
+        return;
       }
   }
 }
@@ -749,7 +749,7 @@ void Stack::set_inc_field(const cVector& inc_field_,
     if (global.field_calc != S_S)
     {
       py_error("Error: backward incident field only supported with S_S");
-      exit (-1);
+      return;
     }
 
     inc_field_bw = *inc_field_bw_;
@@ -1311,7 +1311,7 @@ void Stack::calc_interface_fields()
     if (inc_field.rows() == 0)
     {
       py_error("Error: incident field not set.");
-      exit (-1);
+      return;
     }
 
     calcRT();

@@ -41,7 +41,7 @@ Slab_M::Slab_M(const Expression& expression)
     if (!m)
     {
       py_error("Error: expression contains non-material term.");
-      exit (-1);
+      return;
     }
 
     Complex thickness = ex.get_term(i)->get_d();
@@ -777,17 +777,6 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 
 void Slab_M::build_modeset(const vector<Complex>& kt)
 {
-  // Check if enough modes are found.
-
-  if (kt.size() < global.N)
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << kt.size() << "/" << global.N << "). ";
-    py_error(s.str());
-    exit (-1);
-  }
-  
   // Clear old modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
@@ -842,6 +831,22 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
   
   sort_modes();
   truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kt.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Slab_M_Mode *dummy = new Slab_M_Mode(unknown, 0.0, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
 
   // Remember wavelength and gain these modes were calculated for.
 

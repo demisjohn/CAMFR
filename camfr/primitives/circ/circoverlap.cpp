@@ -69,7 +69,7 @@ Complex overlap(const CircMode*  mode_I,
       << medium_I ->radius[medium_I ->M-1] << " and "
       << medium_II->radius[medium_II->M-1];
     py_error(s.str());
-    exit (-1);
+    return 0.0;
   }
   
   // Make sorted list of evaluation points for integrals (discontinuities).

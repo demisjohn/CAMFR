@@ -529,7 +529,7 @@ void DiagInterface::calcRT()
     s << "Warning: complex widths don't match: "
       << inc->c1_size() << " and " << ext->c1_size();
     py_error(s.str());
-    exit (-1);
+    return;
   }
 
   inc->find_modes();

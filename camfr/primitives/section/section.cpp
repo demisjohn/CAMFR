@@ -58,9 +58,9 @@ void SectionImpl::calc_overlap_matrices
     s << "Warning: complex widths don't match: "
       << medium_I ->get_width() << " and " << medium_II->get_width();
     py_error(s.str());
-    exit (-1);
+    return;
   }
-  
+
   // Make sorted list of separation points between different slabs.
 
   vector<Complex> disc = medium_I->discontinuities;
@@ -116,7 +116,7 @@ void SectionImpl::calc_overlap_matrices
       std::cerr 
         << "Error: cache not yet general enough to deal with different M."
         << std::endl;
-      exit (-1);
+      return;
     }
 
     SlabImpl* slab_I = medium_I->
@@ -184,7 +184,7 @@ Section::Section(Expression& expression, int M)
     else
     {
       py_error("Error: expected a slab to initialise a section.");
-      exit (-1);
+      return;
     }    
 
     uniform = s->is_uniform();
@@ -196,7 +196,6 @@ Section::Section(Expression& expression, int M)
   // Transparently factor expression into right and left expression.
 
   py_error("Automatic splitting of expressions not yet implemented.");
-  exit (-1);
 }
 
 
@@ -255,7 +254,7 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
   if (left.get_inc() != right.get_inc())
   {
     py_error("Error: left and right part have different incidence media.");
-    exit (-1);
+    return;
   }
 
   uniform = false;
@@ -910,17 +909,6 @@ void Section2D::find_modes_by_sweep()
 
   params = params_new;
 
-  // Check if modes were lost during tracing.
-
-  if (beta.size() < global.N)
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << beta.size() << "/" << global.N << ").";
-    py_error(s.str());
-    exit (-1);
-  }
-
   // Create modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
@@ -946,6 +934,24 @@ void Section2D::find_modes_by_sweep()
   }
   
   sort_modes();
+
+  truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Section2D_Mode *dummy = new Section2D_Mode(unknown, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
 }
 
 
@@ -961,7 +967,7 @@ void Section1D::find_modes()
 
   cout << "Section1D.find_modes() not yet implemented." << endl;
   
-  exit (-1);
+  return;
 
 #if 0
 

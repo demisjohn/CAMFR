@@ -66,7 +66,7 @@ Field SlabMode::field(const Coord& coord_) const
     std::ostringstream s;
     s << "Error: x-value " << coord.c1 << " out of range.";
     py_error(s.str());
-    exit (-1);
+    return Field();
   }
 
   if (abs(x) < 1e-10)
