@@ -1,5 +1,6 @@
--SlabImpl::S_flux
+-Trent's algorithm to invert Toeplitz
 -check .png extension
+-always take minimum number of modes in series solver
 
 CAMFR 3D:
 
@@ -12,7 +13,6 @@ CAMFR 3D:
 -improve interface of SectionDisp, remove f member of Section
 -rework place where stack gets split up in left and right part (3D_core.py)
 -optimise ref section overlap
--experiment with ref index, eigenvalues_x
 -Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D, kz=0
 -free slabmatrixcache?
 -generalise cache to work with different M in each section.
@@ -25,13 +25,6 @@ CAMFR 3D:
 
 
 
-TWO-STAGE 1D SOLVER
-
--TEM mode in inv(O_zz)
--investigate problems for high PML, high mode_surplus 
-
-
-
 MEDIUM TERM:
 
 -enum.export_values()
@@ -41,7 +34,7 @@ MEDIUM TERM:
 
 -try to prevent user from plotting in an infstack.
 
--inx/ext_S_flux: split over materials
+-inc/ext_S_flux: split over materials
 -possibility to set PML layer by layer
 
 -more general handling of decoupled waveguides
@@ -145,3 +138,6 @@ THEORY:
 -quadrant leaky modes (upperright neg imag?)
 -loss in cladding (no PML): check quadrant
 -analytic solution uniform TBC
+-Reduced order modelling?
+-Oblique expansion?
+
