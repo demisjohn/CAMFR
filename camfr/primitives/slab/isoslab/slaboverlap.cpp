@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     slaboverlap.cpp
-// Author:   Peter.Bienstman@rug.ac.be
+// Author:   Peter.Bienstman@ugent.be
 // Date:     20000210
 // Version:  1.0
 //
