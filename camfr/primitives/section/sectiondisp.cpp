@@ -84,6 +84,12 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
 
   for (int i=0; i<r->size(); i++)
   {
+    if (i==0 && (*r)[i].sc->get_ext()==slabs.back())
+    {
+      d.back() += (*r)[i].d;
+      continue;
+    }
+    
     Complex d_i = (*r)[i].d;
 
     if (abs(d_i) > 1e-6)
@@ -100,7 +106,15 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
   Expression e;
   for (unsigned int i=0; i<slabs.size(); i++)
     e += Term((*slabs[i])(d[i]));
-  
+
+  Scatterer* w;
+  if (global_section.rightwall == E_wall)
+    w = new E_Wall(*slabs.back());
+  if (global_section.rightwall == H_wall)
+    w = new H_Wall(*slabs.back());
+
+  e += Term(*w); // LEAKS
+ 
   stack = new Stack(e);
 
   // Determine minimum refractive index.
@@ -118,6 +132,9 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
   }
+
+  for (unsigned int i=0;i<slabs.size(); i++)
+    std::cout << "Slabs" << i << " " << slabs[i] << std::endl;
 }
 
 
@@ -168,6 +185,73 @@ Complex SectionDisp::operator()(const Complex& kt)
   global.orthogonal = old_orthogonal;
 
   return res;
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_field()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_field()
+{
+ stack->calcRT();
+
+ return stack->R12(1,1);
+
+ cMatrix R(M,M,fortranArray);
+ R.reference(stack->as_multi()->get_R12());
+
+ if (global_section.leftwall == E_wall)
+   R *= Complex(-1.0);
+
+ // Find min eigenvalue.
+
+ cVector e(M,fortranArray);
+ cMatrix E(M,M,fortranArray);
+
+  if (global.stability == normal)
+    e.reference(eigenvalues(R,&E));
+  else
+    e.reference(eigenvalues_x(R,&E));
+
+  int min_index = 1;
+
+  for (int i=2; i<=M; i++)
+    if (abs(e(i) - 1.0) < abs(e(min_index) - 1.0))
+      min_index = i;
+
+  cVector f(M,fortranArray);
+  for (int i=1; i<=M;i++)
+    f(i) = E(i,min_index);  
+  
+  // Bounce field off stack.
+
+  cVector f2(M,fortranArray);
+  f2 = multiply(R,f);
+  if (global_section.leftwall == E_wall)
+    f2 *= Complex(-1.0);
+
+
+  return f(1)+f2(1);
+  
+
+  // Total field.
+
+  cVector error(M,fortranArray);
+  if (global_section.leftwall == E_wall)
+    error = f + f2;
+  else
+    error = f - f2;
+  
+  Complex residue = 0.0;
+  for (int i=1; i<=M; i++)
+    residue += pow(error(i), 2);
+  
+  return residue;
 }
 
 
@@ -232,16 +316,24 @@ Complex SectionDisp::calc_band()
       for (int j=1; j<=M; j++)
       {
         Q(  r+i,    c+j) =  O_I_II(j,i)  * prop_I(j);
+        //Q(  r+i,    c+j) +=  O_I_I (j,i)  * prop_I(j);
         Q(M+r+i,    c+j) =  O_II_I(i,j)  * prop_I(j);
+        //Q(M+r+i,    c+j) -=  O_I_I(i,j)  * prop_I(j);
 
         Q(  r+i,  M+c+j) =  O_I_II(j,i);
+        //Q(  r+i,  M+c+j) +=  O_I_I (j,i);
         Q(M+r+i,  M+c+j) = -O_II_I(i,j);
+        //Q(M+r+i,  M+c+j) -= -O_I_I(i,j);
 
         Q(  r+i,2*M+c+j) = -O_II_II(j,i);
+        //Q(  r+i,2*M+c+j) += -O_II_I (j,i);
         Q(M+r+i,2*M+c+j) = -O_II_II(i,j);
+        //Q(M+r+i,2*M+c+j) -= -O_I_II(i,j);
 
         Q(  r+i,3*M+c+j) = -O_II_II(j,i) * prop_II(j);
+        //Q(  r+i,3*M+c+j) += -O_II_I (j,i) * prop_II(j);
         Q(M+r+i,3*M+c+j) =  O_II_II(i,j) * prop_II(j);
+        //Q(M+r+i,3*M+c+j) -=  O_I_II(i,j) * prop_II(j);
       } 
   }
 
@@ -255,8 +347,32 @@ Complex SectionDisp::calc_band()
   for (int i=1; i<=M; i++)
   {
     Q(r+i,  c+i) = -Rn * exp(-I*slabs[K-1]->get_mode(i)->get_kz() * d[K-1]);
-    Q(r+i,M+c+i) = 1.0;
+    Q(r+i,M+c+i) =  1.0;
   }
+
+  /*
+  cMatrix Q_t(Q.rows(),Q.columns(),fortranArray);
+
+  for (int i=1; i<=Q.rows(); i++)
+    for (int j=1; j<=Q.columns(); j++)
+      Q_t(i,j) = Q(Q.rows()-i,j);
+
+  Q_t.reference(transpose(Q));
+  Q += Q_t;
+  */
+
+  // SVD
+
+/*
+  rVector sigma(Q.rows(),fortranArray);
+  sigma = svd(Q);
+  Complex p =1;
+  for (int i=1; i<=Q.rows(); i++)
+    p *= sigma(i);
+  return p;
+  
+  return sigma(1)*sigma(2);
+*/
 
   // Return determinant.
 
@@ -276,6 +392,8 @@ Complex SectionDisp::calc_band()
   for (int i=1; i<=Q.rows(); i++)
     product *= e(i);
   
+  //std::cout << "prd" << product << " det" << determinant(Q) << std::endl;
+
   return product;
 
   // Return smallest eigenvalue.
@@ -395,9 +513,8 @@ Complex SectionDisp::calc_lapack()
 
   //std::cout << e << std::endl;
   
-  return product;
+  //return product;
 
- 
   // Return minimum distance of eigenvalues to 1.
 
   int min_index = 1;
