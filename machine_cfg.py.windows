@@ -46,7 +46,7 @@ dllcommand = "xilink /DLL /nologo /INCREMENTAL:NO /LIBPATH:./camfr \
         /LIBPATH:D:/boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic \
 	camfr/camfr_wrap.obj camfr.lib bpl.lib \
 	python22.lib blitz.lib mkl_c.lib mkl_lapack.lib mkl_p3.lib libf90.lib \
-	/OUT:_camfr.pyd /IMPLIB:_camfr.lib /EXPORT:init_camfr /NODEFAULTLIB:libc.lib "
+	/OUT:camfr/_camfr.pyd /IMPLIB:_camfr.lib /EXPORT:init_camfr /NODEFAULTLIB:libc.lib "
 
 # Command to strip library of excess symbols.
 
@@ -54,19 +54,13 @@ strip_command = ""
 
 # Extra files to copy to installation directory.
 
-# TODO: figure out how to use Windows absolute paths.
-
 extra_files = [ \
-   "../boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
-   "../pymat/pymat.pyd",
-   "../libs/mkl_support.dll",
-   "../libs/mkl_p3.dll",
-   "../libs/mkl_lapack32.dll",
-   "../libs/msvcr70.dll"
-   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_support.dll",
-   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_p3.dll",
-   #"C:/progra~1/Intel/MKL/ia32/bin/mkl_lapack32.dll",
-   #"C:/windows/system32/msvcr70.dll"
+   "D:\\boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
+   "D:\\pymat/pymat.pyd",
+   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_support.dll",
+   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_p3.dll",
+   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_lapack32.dll",
+   "C:\\windows/system32/msvcr70.dll"
    ]
 
 
