@@ -618,6 +618,18 @@ void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b)
 Real cavity_calc_sigma(Cavity& c)
   {return c.calc_sigma();}
 
+Complex material_epsr(Material& m)
+  {return m.epsr();}
+
+Complex basematerial_epsr(Material& m, int i)
+  {return m.epsr(i);}
+
+Complex material_mur(Material& m)
+  {return m.mur();}
+
+Complex basematerial_mur(Material& m, int i)
+  {return m.mur(i);}
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(cav_find_mode, Cavity::find_mode,2,5)
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(cav_find_modes, \
@@ -880,8 +892,8 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("__call__", material_to_term)
     .def("n",        &Material::n)
     .def("set_n",    &Material::set_n)
-    .def("epsr",     &Material::epsr)
-    .def("mur",      &Material::mur)
+    .def("epsr",     material_epsr)
+    .def("mur",      material_mur)
     .def("set_mur",  &Material::set_mur)
     .def("eps",      &Material::eps)
     .def("mu",       &Material::mu)
@@ -891,12 +903,12 @@ BOOST_PYTHON_MODULE(_camfr)
 
   // Wrap UniaxialMaterial.
 
-  class_<UniaxialMaterial, bases<Material> >
+  class_<UniaxialMaterial, bases<BaseMaterial> >
     ("UniaxialMaterial",init<const Complex&,const Complex&,const Complex&,
-                             const Complex&,const Complex&,const Complex&>>())
+                             const Complex&,const Complex&,const Complex& >())
     .def("__call__", material_to_term)
-    .def("epsr",     &UniaxialMaterial::epsr)
-    .def("mur",      &UniaxialMaterial::mur)
+    .def("epsr",     basematerial_epsr)
+    .def("mur",      basematerial_mur)
     .def("__repr__", &UniaxialMaterial::repr)
     ;
 
