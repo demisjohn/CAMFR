@@ -1051,6 +1051,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("expand_field",      slab_expand_field)
     .def("expand_gaussian",   slab_expand_gaussian) 
     .def("expand_plane_wave", slab_expand_plane_wave)
+    .def("set_dummy",         &Slab::set_dummy)
     ;
 
   // Wrap SectionDisp.
