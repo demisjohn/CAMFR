@@ -89,6 +89,8 @@ class VCSEL(unittest.TestCase):
 
         free_tmps()
 
+        set_sweep_from_previous(0)
+
         self.failUnless(wavelength_pass and gain_pass)
 
 suite = unittest.makeSuite(VCSEL, 'test')        

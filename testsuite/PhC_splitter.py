@@ -115,6 +115,8 @@ class PhC_splitter(unittest.TestCase):
                            < 100*eps.testing_eps
 
         free_tmps()
+
+        set_left_wall(slab_E_wall)
         
         self.failUnless(guided_kz_pass and R_pass and E_field_pass)
 
