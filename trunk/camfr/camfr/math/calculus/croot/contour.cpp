@@ -61,7 +61,20 @@ Contour::Contour(const Complex& bottom_left, const Complex& top_right,
 {
   for (unsigned int i=0; i<12; i++)
     know_integrals[i] = false;
-    
+
+  create_internal_points();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Contour::create_internal_points
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Contour::create_internal_points()
+{  
   // Construct egde points on contours.
   
   tl = real(bl) + I*imag(tr);
@@ -88,6 +101,64 @@ Contour::Contour(const Complex& bottom_left, const Complex& top_right,
   begin[cc_cr] = &cc; end[cc_cr] = &cr;
   begin[cc_bc] = &cc; end[cc_bc] = &bc;
   begin[cc_cl] = &cc; end[cc_cl] = &cl;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Contour::Contour
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Contour::Contour(const Contour& c)
+{
+  copy_from(c);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Contour::operator=
+//
+/////////////////////////////////////////////////////////////////////////////
+    
+Contour& Contour::operator=(const Contour& c)
+{
+  if (this == &c)
+    return *this;
+
+  copy_from(c);
+
+  return *this;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Contour::copy_from
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Contour::copy_from(const Contour& c)
+{
+  bl    = c.bl; 
+  tr    = c.tr;
+  f     = c.f;
+  M     = c.M;
+  eps   = c.eps;
+  mu    = c.mu;
+  max_k = c.max_k;
+  
+  for (unsigned int i=0; i<12; i++)
+  {
+    know_integrals[i] = c.know_integrals[i];
+         integrals[i] = c.     integrals[i];
+  }
+
+  create_internal_points();
 }
 
 
@@ -199,6 +270,10 @@ Contour Contour::adjacent_r() const
   r.set_integrals(tl_cl, -get_integrals(cr_tr));
   r.set_integrals(cl_bl, -get_integrals(br_cr));
 
+  cout << "Extending " << bl << tr << endl;
+    cout << "to " << r.get_bottom_left()
+         << r.get_top_right() << endl;
+
   return r;
 }
 
@@ -248,3 +323,25 @@ vector<Contour> Contour::adjacent_ur() const
   return new_contours;
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Contour::double_ur
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Contour Contour::double_ur() const
+{
+  Contour ur(bl, tr + (tr-bl), *f, M, eps, mu, max_k);
+
+  ur.set_integrals(cc_bc, -get_integrals(br_cr) - get_integrals(cr_tr));
+  ur.set_integrals(cc_cl,  get_integrals(tr_tc) + get_integrals(tc_tl));
+  ur.set_integrals(cl_bl,  get_integrals(tl_cl) + get_integrals(cl_bl));
+  ur.set_integrals(bl_bc,  get_integrals(bl_bc) + get_integrals(bc_br));
+
+  cout << "Enlarging initial contour to" << ur.get_bottom_left()
+       << ur.get_top_right() << endl;
+
+  return ur;
+}
