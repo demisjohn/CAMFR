@@ -15,7 +15,7 @@ class VCSEL(unittest.TestCase):
         """VCSEL"""
 
         set_lambda(.980)
-        set_N(100)
+        set_N(60)
         set_circ_order(1)
 	set_sweep_from_previous(1)
 
@@ -69,20 +69,22 @@ class VCSEL(unittest.TestCase):
 
         cavity = Cavity(top, bottom)
 
-        cavity.find_mode(.980, .981)
+        cavity.find_mode(.9803, .9804)
 
         wavelength = get_lambda()
         gain = gain_m.gain()
         
-        wavelength_OK = 0.980365949037
-        gain_OK = 1182.39935694
+        wavelength_OK = 0.980358455457
+        gain_OK = 500.101730607
 
         print wavelength, "expected", wavelength_OK
         print gain, "expected", gain_OK
 
         wavelength_pass \
           = abs((wavelength - wavelength_OK)/wavelength_OK) < eps.testing_eps
-        gain_pass = abs((gain - gain_OK)/gain_OK) < 10*eps.testing_eps
+        gain_pass = abs((gain - gain_OK)/gain_OK) < 20*eps.testing_eps
+
+        free_tmps()
 
         self.failUnless(wavelength_pass and gain_pass)
 

@@ -58,6 +58,8 @@ class SpE(unittest.TestCase):
         print eta, "expected", eta_OK
 
         eta_pass = abs((eta - eta_OK) / eta_OK) < eps.testing_eps
+
+        free_tmps()
        
         self.failUnless(eta_pass)
 

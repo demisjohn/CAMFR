@@ -15,7 +15,7 @@ class substacks(unittest.TestCase):
         
         """Substracks"""
 
-        set_lambda(1)
+        set_lambda(1.1)
         set_N(50)
 
         a = Material(1)
@@ -40,11 +40,13 @@ class substacks(unittest.TestCase):
 
         R = abs(st.R12(0,0))
 
-        R_OK = 0.658086686615
+        R_OK = 0.63344859662
 
         print R, "expected", R_OK
 
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
+
+        free_tmps()
 
         self.failUnless(R_pass)
 
