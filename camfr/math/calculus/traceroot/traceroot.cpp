@@ -186,7 +186,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
  
         //cout << std::setprecision(6);
         //cout << i << " " << zeros[i] << " " << zeros_bis[i]
-        //<< "->" << zeros_try[i] << " " << zeros_jump[i] << endl;
+        //     << "->" << zeros_try[i] << " " << zeros_jump[i] << endl;
       }
       else
         zeros_try.push_back(zeros[i]); // dummy fill
