@@ -46,9 +46,7 @@ class SlabFlux : public RealFunction
   public:
 
     SlabFlux(const FieldExpansion& fe_) : fe(fe_) 
-    {
-      PML = dynamic_cast<Slab*>(fe.wg)->get_imag_start_thickness();
-    }
+      {PML = dynamic_cast<Slab*>(fe.wg)->get_imag_start_thickness();}
 
     Real operator()(const Real& x)
     {
@@ -302,6 +300,85 @@ void SlabImpl::calc_overlap_matrices
                            - m->Ez_Hx_II_II(i,j) * sin_II(n+i))
                               / sqrt(cos_II(n+i)) / sqrt(cos_II(j));
     }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: OverlapFunction
+//
+//  Integrandum for overlap integral of a mode with an arbitrary field 
+//  profile described by a function f. For TE, f is E2, for TM f is H2.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class OverlapFunction : public ComplexFunction
+{
+  public:
+
+    OverlapFunction(SlabMode* m_, ComplexFunction* f_) : m(m_), f(f_)
+      {PML = m->get_geom()->get_imag_start_thickness();}
+
+    Complex operator()(const Complex& x)
+    {
+      counter++;
+
+      if (m->pol == TE)
+        return -(*f)(x) * m->field(Coord(x+PML*I,0,0)).H1;
+      else
+        return  (*f)(x) * m->field(Coord(x+PML*I,0,0)).E1;
+    }
+
+  protected:
+
+    Real PML;
+    SlabMode* m;
+    ComplexFunction* f;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabImpl::expand_field
+//
+//  Returns the expansion coefficients of a general field profile f.
+//  Eps is the precision for the numerical integration.
+// 
+/////////////////////////////////////////////////////////////////////////////
+
+cVector SlabImpl::expand_field(ComplexFunction* f, Real eps)
+{
+  find_modes();
+
+  cVector coef(global.N, fortranArray); 
+  coef = 0.0;
+  
+  vector<Complex> disc = discontinuities;
+  disc.insert(disc.begin(), 0.0);
+
+  for(int m=1; m<=global.N; m++)
+  {
+    SlabMode* mode = dynamic_cast<SlabMode*>(get_mode(m));
+
+    OverlapFunction o(mode, f);
+    
+    Wrap_real_to_real f_re(o);
+    Wrap_real_to_imag f_im(o);
+
+    // Speed up convergence by splitting the integrals.
+
+    for(int k=0; k<int(disc.size()-1); k++)
+    {
+      Real begin = real(disc[k]);
+      Real end   = real(disc[k+1]);
+      coef(m) +=   patterson_quad(f_re, begin, end, eps);
+      coef(m) += I*patterson_quad(f_im, begin, end, eps);
+    }
+  }
+
+  return coef;
 }
 
 

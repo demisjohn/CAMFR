@@ -15,6 +15,7 @@
 
 #include "../../waveguide.h"
 #include "../../expression.h"
+#include "../../math/calculus/function.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -73,6 +74,8 @@ class SlabImpl : public MultiWaveguide
 
     virtual std::vector<Complex> get_params() const = 0;
     virtual void set_params(const std::vector<Complex>&) = 0;
+
+    cVector expand_field(ComplexFunction* f, Real eps);
 
   protected:
 
@@ -160,6 +163,9 @@ class Slab : public MultiWaveguide
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
       {return s->calc_overlap_matrices(dynamic_cast<Slab*>(w2)->s,
                                        O_I_II,O_II_I,O_I_I,O_II_II);}
+
+    cVector expand_field(ComplexFunction* f, Real eps=1e-4)
+      {return s->expand_field(f, eps);}
     
     std::string repr() const {return s->repr();}
     
