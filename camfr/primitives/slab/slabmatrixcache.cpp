@@ -10,6 +10,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// Work around MS linker bug.
+
+#ifndef _WIN32
+
 #include "isoslab/slaboverlap.h"
 #include "isoslab/slabmode.h"
 #include "slabmatrixcache.h"
@@ -174,3 +178,7 @@ void SlabMatrixCache::clear()
 /////////////////////////////////////////////////////////////////////////////
 
 SlabMatrixCache slabmatrix_cache;
+
+
+
+#endif
