@@ -14,7 +14,8 @@
 #include "defs.h"
 
 Global global={0,0,TE,0,track,normal,100,1,0.01,100,100,Complex(1,1),false,
-               20,1e-14,true,1e-10,S_S,GEV,lapack,true,true,0.0,1.2,false};
+               20,1e-14,true,1e-12,identical,GEV,lapack,true,true,0.0,1.2,
+               false};
 
 
 
@@ -211,6 +212,19 @@ void out_of_memory()
 
 void pick_sign_k(Complex* k)
 {
+  // Lossy only.
+
+  if (imag(*k) > 0)
+    *k = - *k;
+
+  if (abs(imag(*k)) < 1e-12)
+    if (real(*k) < 0)
+      *k = - *k;
+
+  return;
+
+  // Old style.
+
   if (real(*k) < 0)
     *k = - *k;
 
@@ -218,9 +232,3 @@ void pick_sign_k(Complex* k)
     if (imag(*k) > 0)
       *k = - *k;
 }
-
-
-
-
-
-

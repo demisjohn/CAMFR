@@ -74,7 +74,7 @@ typedef std::complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
 typedef enum {ADR, track, series} Solver;
 typedef enum {normal, extra, SVD} Stability;
-typedef enum {T_T, S_T, S_S} Field_calc;  
+typedef enum {identical, symmetric} Field_calc_heuristic;  
 typedef enum {GEV, T} Bloch_calc;
 typedef enum {lapack, arnoldi} Eigen_calc;
 
@@ -219,7 +219,7 @@ struct Global
 
     // Determines if the field profiles in stacks are calculated with S or
     // T type excitations.
-    Field_calc field_calc;
+    Field_calc_heuristic field_calc_heuristic;
 
     // Determines which algorithm is used to calculate Bloch modes.
     Bloch_calc bloch_calc;
