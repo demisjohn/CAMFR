@@ -24,7 +24,7 @@ base_flags = "-ftemplate-depth-60 \
 
 flags_noopt = base_flags
 
-flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium4 \
+flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium3 \
                        -funroll-loops -fstrict-aliasing -g"
 
 fflags = flags
