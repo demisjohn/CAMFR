@@ -1,3 +1,7 @@
+2003-08-01 Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* slab.cpp: Add field_calc_heuristic.
+
 2003-07-11 Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* slab.h: Better calculation of mode profiles.
