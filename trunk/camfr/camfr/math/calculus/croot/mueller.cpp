@@ -337,8 +337,8 @@ std::vector<Complex> mueller_multiple
     int maxiter_i = maxiter * deflate.size();
     bool error = false;
     do
-    {      
-      Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I, eps,
+    { 
+      Complex new_root = mueller(f, z0[i]+0.001, z0[i]+.001*I+0.001, eps,
                                  &deflate, maxiter_i, &error);
 
       if (abs(new_root-z0[i]) > 0.1)
