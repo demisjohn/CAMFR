@@ -12,64 +12,6 @@
 
 #include "linalg.h"
 
-#ifndef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
-#ifndef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-#ifndef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
-
-#define FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-
-#endif
-#endif
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
-#define zgemv_F  zgemv
-#define zgemm_F  zgemm
-#define zgesv_F  zgesv
-#define zgesvx_F zgesvx
-#define zgeev_F  zgeev
-#define zgeevx_F zgeevx
-#define zggev_F  zggev
-#define zgesvd_F zgesvd
-#define zgetri_F zgetri
-#define zgetrf_F zgetrf
-#define zgetrs_F zgetrs
-#define zsysv_F  zsysv
-#define zsysvx_F zsysvx
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
-#define zgemv_F  zgemv_
-#define zgemm_F  zgemm_
-#define zgesv_F  zgesv_
-#define zgesvx_F zgesvx_
-#define zgeev_F  zgeev_
-#define zgeevx_F zgeevx_
-#define zggev_F  zggev_
-#define zgesvd_F zgesvd_
-#define zgetri_F zgetri_
-#define zgetrf_F zgetrf_
-#define zgetrs_F zgetrs_
-#define zsysv_F  zsysv_
-#define zsysvx_F zsysvx_
-#endif
-
-#ifdef FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
-#define zgemv_F  zgemv__
-#define zgemm_F  zgemm__
-#define zgesv_F  zgesv__
-#define zgesvx_F zgesvx__
-#define zgeev_F  zgeev__
-#define zgeevx_F zgeevx__
-#define zggev_F  zggev__
-#define zgesvd_F zgesvd__
-#define zgetri_F zgetri__
-#define zgetrf_F zgetrf__
-#define zgetrs_F zgetrs__
-#define zsysv_F  zsysv__
-#define zsysvx_F zsysvx__
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Returns transpose or hermitian conjugate of A.
@@ -157,10 +99,10 @@ void herm_conj_self(cMatrix* A)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgemv_F(const char*,const int&,const int&,
-                        const Complex&,const Complex*,const int&,
-                        const Complex*,const int&,const Complex&,
-                        const Complex*,const int&);
+extern "C" void F77NAME(zgemv)
+  (const char*,const int&,const int&,const Complex&,const Complex*,
+   const int&,const Complex*,const int&,const Complex&,const Complex*,
+   const int&);
 
 cVector multiply(const cMatrix& A, const cVector& x, Op a)
 {
@@ -190,8 +132,8 @@ cVector multiply(const cMatrix& A, const cVector& x, Op a)
   
   cVector y(A_rows,fortranArray);
   
-  zgemv_F(op_a,A_rows,A_cols,1,A.data(),A_rows,
-          x.data(),1,0,y.data(),1);
+  F77NAME(zgemv)(op_a,A_rows,A_cols,1,A.data(),A_rows,
+                 x.data(),1,0,y.data(),1);
   
   return y;
 }
@@ -204,10 +146,10 @@ cVector multiply(const cMatrix& A, const cVector& x, Op a)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgemm_F(const char*,const char*,const int&,const int&,
-                        const int&,const Complex&,const Complex*,const int&,
-                        const Complex*,const int&,const Complex&,
-                        const Complex*,const int&);
+extern "C" void F77NAME(zgemm)
+  (const char*,const char*,const int&,const int&,const int&,const Complex&,
+   const Complex*,const int&,const Complex*,const int&,const Complex&,
+   const Complex*,const int&);
 
 cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a, Op b)
 {
@@ -257,8 +199,8 @@ cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a, Op b)
 
   // BLAS Fortran routine:
   
-  zgemm_F(op_a,op_b,A_rows,B_cols,A_cols,
-          1,A.data(),A_rows,B.data(),B_rows,0,C.data(),A_rows);
+  F77NAME(zgemm)(op_a,op_b,A_rows,B_cols,A_cols,1,A.data(),A_rows,
+                 B.data(),B_rows,0,C.data(),A_rows);
   
   return C;
 }
@@ -271,8 +213,9 @@ cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a, Op b)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgesv_F(const int&,const int&,const Complex*,const int&,
-                        const int*,const Complex*,const int&,int&);
+extern "C" void F77NAME(zgesv)
+  (const int&,const int&,const Complex*,const int&,const int*,
+   const Complex*,const int&,int&);
 
 cMatrix solve(const cMatrix& A, const cMatrix& B)
 {
@@ -309,7 +252,8 @@ cMatrix solve(const cMatrix& A, const cMatrix& B)
   
   int info;
   
-  zgesv_F(A_rows,B_cols,A_LU.data(),A_rows,P.data(),B_X.data(),B_rows,info);
+  F77NAME(zgesv)(A_rows,B_cols,A_LU.data(),A_rows,
+                 P.data(),B_X.data(),B_rows,info);
 
   if (info < 0)
   {
@@ -332,12 +276,11 @@ cMatrix solve(const cMatrix& A, const cMatrix& B)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgesvx_F(const char*,const char*,const int&,const int&,
-                         const Complex*,const int&,const Complex*,const int&,
-                         const int*,const char*,const Real*,const Real*,
-                         const Complex*,const int&,const Complex*,const int&,
-                         Real&,const Real*,const Real*,const Complex*,
-                         const Real*,int&);
+extern "C" void F77NAME(zgesvx)
+  (const char*,const char*,const int&,const int&,const Complex*,const int&,
+   const Complex*,const int&,const int*,const char*,const Real*,const Real*,
+   const Complex*,const int&,const Complex*,const int&,Real&,const Real*,
+   const Real*,const Complex*,const Real*,int&);
 
 cMatrix solve_x(const cMatrix& A, const cMatrix& B)
 {
@@ -389,10 +332,10 @@ cMatrix solve_x(const cMatrix& A, const cMatrix& B)
   
   int info;
 
-  zgesvx_F("E","N",A_rows,B_cols,A_bis.data(),A_rows,AF.data(),A_rows,
-           P.data(),equi,R.data(),C.data(),B_bis.data(),B_rows,
-           X.data(),B_rows,cond,ferr.data(),berr.data(),work.data(),
-           work2.data(),info);
+  F77NAME(zgesvx)("E","N",A_rows,B_cols,A_bis.data(),A_rows,AF.data(),A_rows,
+                  P.data(),equi,R.data(),C.data(),B_bis.data(),B_rows,
+                  X.data(),B_rows,cond,ferr.data(),berr.data(),work.data(),
+                  work2.data(),info);
 
   // Diagnostic output:
 
@@ -462,9 +405,9 @@ cMatrix solve_svd(const cMatrix& A, const cMatrix& B)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zsysv_F(const char*,const int&,const int&,const Complex*,
-                        const int&,const int*,const Complex*,const int&,
-                        const Complex*,const int&,const int&);
+extern "C" void F77NAME(zsysv)
+  (const char*,const int&,const int&,const Complex*,const int&,const int*,
+   const Complex*,const int&,const Complex*,const int&,const int&);
 
 cMatrix solve_sym(const cMatrix& A, const cMatrix& B)
 {
@@ -503,8 +446,8 @@ cMatrix solve_sym(const cMatrix& A, const cMatrix& B)
   
   int info;
   
-  zsysv_F("U",A_rows,B_cols,A_LU.data(),A_rows,P.data(),B_X.data(),
-          B_rows,work.data(),2*A_rows,info);
+  F77NAME(zsysv)("U",A_rows,B_cols,A_LU.data(),A_rows,P.data(),B_X.data(),
+                 B_rows,work.data(),2*A_rows,info);
 
   if (info < 0)
   {
@@ -527,11 +470,11 @@ cMatrix solve_sym(const cMatrix& A, const cMatrix& B)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zsysvx_F(const char*,const char*,const int&,const int&,
-                         const Complex*,const int&,const Complex*,const int&,
-                         const int*,const Complex*,const int&,const Complex*,
-                         const int&,Real&,const Real*,const Real*,
-                         const Complex*,const int&, const Real*,int&);
+extern "C" void F77NAME(zsysvx)
+  (const char*,const char*,const int&,const int&,const Complex*,const int&,
+   const Complex*,const int&,const int*,const Complex*,const int&,
+   const Complex*,const int&,Real&,const Real*,const Real*,const Complex*,
+   const int&, const Real*,int&);
 
 cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B)
 {
@@ -580,9 +523,10 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B)
   
   int info;
 
-  zsysvx_F("N","U",A_rows,B_cols,A_bis.data(),A_rows,AF.data(),A_rows,
-           P.data(),B_bis.data(),B_rows,X.data(),B_rows,cond,ferr.data(),
-           berr.data(),work.data(),2*A_rows,work2.data(),info);
+  F77NAME(zsysvx)("N","U",A_rows,B_cols,A_bis.data(),A_rows,AF.data(),A_rows,
+                  P.data(),B_bis.data(),B_rows,X.data(),B_rows,cond,
+                  ferr.data(),berr.data(),work.data(),2*A_rows,work2.data(),
+                  info);
 
   // Diagnostic output:
   
@@ -613,14 +557,14 @@ cMatrix solve_sym_x(const cMatrix& A, const cMatrix& B)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// computes eigenvalues and/or eigenvectors of matrix A.
+// Computes eigenvalues and/or eigenvectors of matrix A.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgeev_F(const char*,const char*,const int&,const Complex*,
-                        const int&,const Complex*,const Complex*,const int&,
-                        const Complex*,const int&,const Complex*,const int&,
-                        const Real*,int&);
+extern "C" void F77NAME(zgeev)
+  (const char*,const char*,const int&,const Complex*,const int&,
+   const Complex*,const Complex*,const int&,const Complex*,const int&,
+   const Complex*,const int&,const Real*,int&);
 
 cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
 {
@@ -668,8 +612,8 @@ cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
     vectordata = NULL;
   }
   
-  zgeev_F("N",op_code,N,A_bis.data(),N,eigenvalues.data(),NULL,N,
-          vectordata,N,work.data(),work_size*N,work2.data(),info);
+  F77NAME(zgeev)("N",op_code,N,A_bis.data(),N,eigenvalues.data(),NULL,N,
+                 vectordata,N,work.data(),work_size*N,work2.data(),info);
 
   if (info < 0)
   {
@@ -693,11 +637,11 @@ cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgeevx_F(const char*,const char*,const char*,const char*,
-                         const int&,const Complex*,const int&,const Complex*,
-                         const Complex*,const int&,const Complex*,const int&,
-                         int&,int&,const Real*,Real&,const Real*,const Real*,
-                         const Complex*,const int&,const Real*,int&);
+extern "C" void F77NAME(zgeevx)
+  (const char*,const char*,const char*,const char*,const int&,
+   const Complex*,const int&,const Complex*,const Complex*,const int&,
+   const Complex*,const int&,int&,int&,const Real*,Real&,const Real*,
+   const Real*,const Complex*,const int&,const Real*,int&);
 
 cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
 {
@@ -753,9 +697,9 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
     vectordata = NULL;
   }
   
-  zgeevx_F("B","N",op_code,"N",N,A_bis.data(),N,eigenvalues.data(),NULL,N,
-           vectordata,N,ilo,ihi,scale.data(),norm,rconde.data(),
-           rcondv.data(),work.data(),work_size*N,work2.data(),info);
+  F77NAME(zgeevx)("B","N",op_code,"N",N,A_bis.data(),N,eigenvalues.data(),
+                  NULL,N,vectordata,N,ilo,ihi,scale.data(),norm,rconde.data(),
+                  rcondv.data(),work.data(),work_size*N,work2.data(),info);
 
   if (info < 0)
   {
@@ -775,16 +719,16 @@ cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
 
 ///////////////////////////////////////////////////////////////////////////// 
 // 
-// computes eigenvalues and/or eigenvectors of the generalized 
-// eigenproblem Ax = lambda Bx, where lambda = alpha / beta
+// Computes eigenvalues and/or eigenvectors of the generalized 
+// eigenproblem Ax = lambda Bx, where lambda = alpha / beta.
 // 
 ///////////////////////////////////////////////////////////////////////////// 
  
-extern "C" void zggev_F(const char*,const char*,const int&,const Complex*, 
-                        const int&,const Complex*,const int&,
-                        const Complex*,const Complex*,const Complex*,
-                        const int&,const Complex*,const int&,
-                        const Complex*,const int&,const Real*,int&);
+extern "C" void F77NAME(zggev)
+  (const char*,const char*,const int&,const Complex*,const int&,
+   const Complex*,const int&,const Complex*,const Complex*,const Complex*,
+   const int&,const Complex*,const int&,const Complex*,const int&,
+   const Real*,int&);
 
 void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
                      cVector* alpha, cVector* beta,
@@ -848,9 +792,9 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
     vectordata = NULL; 
   }
 
-  zggev_F("N",op_code,N,A_bis.data(),N,B_bis.data(),N,
-          alpha->data(),beta->data(),NULL,N,vectordata,
-          N,work.data(),work_size*N,work2.data(),info); 
+  F77NAME(zggev)("N",op_code,N,A_bis.data(),N,B_bis.data(),N,
+                 alpha->data(),beta->data(),NULL,N,vectordata,
+                 N,work.data(),work_size*N,work2.data(),info); 
 
   if (info < 0) 
   { 
@@ -878,10 +822,10 @@ void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgesvd_F(const char*,const char*,const int&,const int&,
-                         const Complex*,const int&,const Real*,const Complex*,
-                         const int&,const Complex*,const int&,const Complex*,
-                         const int&,const Real*,int&);
+extern "C" void F77NAME(zgesvd)
+  (const char*,const char*,const int&,const int&,const Complex*,const int&,
+   const Real*,const Complex*,const int&,const Complex*,const int&,
+   const Complex*,const int&,const Real*,int&);
 
 rVector svd(const cMatrix& A, cMatrix* Vh, cMatrix* U)
 {
@@ -943,9 +887,9 @@ rVector svd(const cMatrix& A, cMatrix* Vh, cMatrix* U)
     U_data = NULL;
   }
   
-  zgesvd_F(U_code,Vh_code,A_rows,A_cols,A_bis.data(),A_rows,SVD.data(),
-           U_data,A_rows,Vh_data,A_cols,work.data(),work_size*max_dim,
-           work2.data(),info);
+  F77NAME(zgesvd)(U_code,Vh_code,A_rows,A_cols,A_bis.data(),A_rows,SVD.data(),
+                  U_data,A_rows,Vh_data,A_cols,work.data(),work_size*max_dim,
+                  work2.data(),info);
 
   if (info < 0)
   {
@@ -969,8 +913,9 @@ rVector svd(const cMatrix& A, cMatrix* Vh, cMatrix* U)
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgetri_F(const int&,const Complex*,const int&,const int*,
-                         const Complex*,const int&,int&);
+extern "C" void F77NAME(zgetri)
+  (const int&,const Complex*,const int&,const int*,const Complex*,
+   const int&,int&);
 
 cMatrix invert(const cMatrix& A)
 {
@@ -998,7 +943,7 @@ cMatrix invert(const cMatrix& A)
 
   LU(A,&LU_invA,&P);
 
-  zgetri_F(N,LU_invA.data(),N,P.data(),work.data(),work_size*N,info);
+  F77NAME(zgetri)(N,LU_invA.data(),N,P.data(),work.data(),work_size*N,info);
   
   if (info < 0)
   {
@@ -1111,12 +1056,12 @@ cMatrix invert_svd(const cMatrix& A)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// do LU decomposition of matrix A.
+// Do LU decomposition of matrix A.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgetrf_F(const int&,const int&,const Complex*,const int&,
-                         const int*,int&);
+extern "C" void F77NAME(zgetrf)
+  (const int&,const int&,const Complex*,const int&,const int*,int&);
 
 void LU(const cMatrix& A, cMatrix* LU, iVector* P)
 {
@@ -1136,7 +1081,7 @@ void LU(const cMatrix& A, cMatrix* LU, iVector* P)
   
   int info;
 
-  zgetrf_F(A_rows,A_cols,LU->data(),A_rows,P->data(),info);
+  F77NAME(zgetrf)(A_rows,A_cols,LU->data(),A_rows,P->data(),info);
 
   if (info < 0)
   {
@@ -1154,12 +1099,13 @@ void LU(const cMatrix& A, cMatrix* LU, iVector* P)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// solve linear system op(A)*X=B starting from LU decomposition of A.
+// Solve linear system op(A)*X=B starting from LU decomposition of A.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" void zgetrs_F(const char*,const int&,const int&,const Complex*,
-                         const int&,const int*,const Complex*,const int&,int&);
+extern "C" void F77NAME(zgetrs)
+  (const char*,const int&,const int&,const Complex*,const int&,
+   const int*,const Complex*,const int&,int&);
 
 cMatrix LU_solve(const cMatrix& LU, const iVector& P,
                  const cMatrix& B, Op op)
@@ -1204,8 +1150,8 @@ cMatrix LU_solve(const cMatrix& LU, const iVector& P,
   if (op==herm)
     op_code[0] = 'C';
   
-  zgetrs_F(op_code,A_rows,B_cols,LU.data(),A_rows,P.data(),B_X.data(),
-           B_rows,info);
+  F77NAME(zgetrs)(op_code,A_rows,B_cols,LU.data(),A_rows,P.data(),
+                  B_X.data(),B_rows,info);
 
   if (info < 0)
   {
