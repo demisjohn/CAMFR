@@ -181,6 +181,9 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
                       FieldExpansion* field_I, FieldExpansion* field_II,
                       OverlapMatrices* m, int I_index, int II_index)
 {
+
+  Complex old_beta = global.slab_ky;
+
   // Calculate field expansion at start of slice.
 
   const Complex kz_I  = sec_I_mode ->get_kz();
@@ -222,7 +225,7 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   if (field_II)
   {
     fw_II = &(field_II->fw);
-    bw_II = &(field_II->bw);    
+    bw_II = &(field_II->bw);
   }
   else
   {
@@ -241,6 +244,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   { 
     SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
 
+    global.slab_ky = sec_II_mode->get_kz();
+
     Complex sn_II = mode_II->get_sin();
     Complex cs_II = mode_II->get_cos();
 
@@ -248,6 +253,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
       for (int ii=1; ii<=sec_I_M; ii++)
       {
         SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
+
+        global.slab_ky = sec_I_mode->get_kz();
 
         Complex sn_I = mode_I->get_sin();
         Complex cs_I = mode_I->get_cos();
@@ -291,9 +298,7 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
         term1 += x_factor*z_factor;
       }
   }
-
-
-
+      
   //
   // Term 2: -E1_I * Hz_II
   //
@@ -302,6 +307,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   for (int ii=1; ii<=sec_I_M; ii++)
   {
     SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
+ 
+    global.slab_ky = sec_I_mode->get_kz();
 
     Complex sn_I = mode_I->get_sin();
     Complex cs_I = mode_I->get_cos();
@@ -310,6 +317,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
       for (int jj=1; jj<=sec_II_M; jj++)
       {
         SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
+    
+        global.slab_ky = sec_II_mode->get_kz();
 
         Complex sn_II = mode_II->get_sin();
         Complex cs_II = mode_II->get_cos();
@@ -361,6 +370,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
     delete fw_I;  delete bw_I;
     delete fw_II, delete bw_II;
   }
+
+  global.slab_ky = old_beta;
 
   return term1 - term2;
 }
