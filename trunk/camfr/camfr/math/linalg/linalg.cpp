@@ -1209,7 +1209,7 @@ Complex determinant_band(const cMatrix& A, int rows, int kl, int ku)
 
   Complex determinant = 1.0;
   for (int i=1; i<=cols; i++)
-    determinant *= Ab(kl+ku+1,i);  
+    determinant *= Ab(kl+ku+1,i);
 
   // Calculate sign change due to permutations.
 
