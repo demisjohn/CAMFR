@@ -111,7 +111,7 @@ vector<Complex> roots_contour(const Contour& contour,
                            1e-15, &roots2, 50, &error);
 
     if (error)
-      break; // No more roots to be found.
+      continue;
 
     if (contour.encloses(root))
       roots2.push_back(root); 
@@ -235,7 +235,7 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
     Contour c = c0.double_ur();
     roots 
       = allroots(f, c.get_bottom_left(), c.get_top_right(), eps, mu, max_k);
-    
+   
     c0 = c;
   }
 
@@ -261,9 +261,12 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
     contour_stack.push_back(c0.adjacent_r());
 
   // Take additional contours into account until we have sufficient modes.
-  
+
+  int iters = 0;
   while (!contour_stack.empty())
-  {        
+  { 
+    iters++;
+    
     Contour c = contour_stack.front();
     contour_stack.erase(contour_stack.begin());
     
@@ -297,6 +300,16 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
       else
         contour_stack.push_back(c.adjacent_r());
     }
+
+    if (iters == 200)
+    {
+      cout << "Warning: maximum number of iterations reached." << endl
+           << "Try increasing real and/or imaginary part of "
+           << "set_C_upperright." << endl;
+      
+      return roots;
+    }
+    
   }
   
   return roots;
