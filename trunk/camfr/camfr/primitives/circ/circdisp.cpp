@@ -144,10 +144,10 @@ void Circ_2_open::set_params(const vector<Complex>& params)
 Circ_2_closed::Circ_2_closed(const Complex&  _r,    const Complex&  _R,
                              const Material& _core, const Material& _cladding,
                              Real            _lambda, int           _order,
-                             Guided_rad      _type=guided,
-                             Hankel          _hankel=kind_1,
-                             Polarisation    _pol_0=TE,
-                             bool            scale_always=false)
+                             Guided_rad      _type,
+                             Hankel          _hankel,
+                             Polarisation    _pol_0,
+                             bool            scale_always)
   : r(_r), R(_R), core(_core), cladding(_cladding), lambda(_lambda),
     order(_order), type(_type), hankel(_hankel), pol_0(_pol_0)
 {

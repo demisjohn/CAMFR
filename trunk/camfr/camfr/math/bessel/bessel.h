@@ -44,8 +44,8 @@ typedef complex<double> Complex;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Real     J(Real n, Real x, bool scaled=false);
-const Real     Y(Real n, Real x, bool scaled=false);
+      Real     J(Real n, Real x, bool scaled=false);
+      Real     Y(Real n, Real x, bool scaled=false);
 const Complex H1(Real n, Real x, bool scaled=false);
 const Complex H2(Real n, Real x, bool scaled=false);
 
@@ -54,9 +54,9 @@ const Complex  Y(Real n, const Complex& z, bool scaled=false);
 const Complex H1(Real n, const Complex& z, bool scaled=false);
 const Complex H2(Real n, const Complex& z, bool scaled=false);
 
-const Real     dJ(Real n, Real x, Real*    Jn=0, Real*    Jn_1=0,
+      Real     dJ(Real n, Real x, Real*    Jn=0, Real*    Jn_1=0,
                   bool scaled=false);
-const Real     dY(Real n, Real x, Real*    Yn=0, Real*    Yn_1=0,
+      Real     dY(Real n, Real x, Real*    Yn=0, Real*    Yn_1=0,
                   bool scaled=false);
 const Complex dH1(Real n, Real x, Complex* Hn=0, Complex* Hn_1=0,
                   bool scaled=false);

@@ -72,7 +72,7 @@ SlabImpl::~SlabImpl()
 
 Real SlabImpl::S_flux(const FieldExpansion& f,
                       Real c1_start, Real c1_stop,
-                      Real precision = 1e-10) const
+                      Real precision) const
 {
   SlabFlux flux(f);
   return patterson_quad(flux, c1_start, c1_stop, precision);
@@ -92,7 +92,7 @@ Real SlabImpl::S_flux(const FieldExpansion& f,
 
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
-   cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
+   cMatrix* O_I_I, cMatrix* O_II_II)
 { 
   SlabImpl* medium_I  = this;
   SlabImpl* medium_II = dynamic_cast<SlabImpl*>(w);

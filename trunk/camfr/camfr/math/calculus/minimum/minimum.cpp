@@ -54,12 +54,12 @@
  * (which does not coincide with a or b) the procedure converges
  * superlinearly at a rate of about 1.324
  *
- * $Id: minimum.cpp,v 1.1.1.1 2001-09-06 16:40:56 pbienst Exp $
+ * $Id: minimum.cpp,v 1.2 2002-02-22 20:45:58 pbienst Exp $
  *
  ************************************************************************
  */
 
-Real brent_minimum(Function1D<Real>& f, Real ax, Real bx, Real eps=1e-13)
+Real brent_minimum(Function1D<Real>& f, Real ax, Real bx, Real eps)
 {  
   const int MAXITER = 100;
   static const Real r = (3-sqrt(5.0))/2;	// The golden section ratio.
@@ -191,7 +191,7 @@ Real brent_minimum(Function1D<Real>& f, Real ax, Real bx, Real eps=1e-13)
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Real> brent_minimum(Function1D<Real>& f, vector<Real>& Ax,
-                           vector<Real>& Bx, Real eps=1e-13)
+                           vector<Real>& Bx, Real eps)
 {
   if (Ax.size() != Bx.size())
   {
@@ -217,7 +217,7 @@ vector<Real> brent_minimum(Function1D<Real>& f, vector<Real>& Ax,
 
 void bracket_all_minima(Function1D<Real>& f, Real ax, Real bx,
                         vector<Real>& Ax,vector<Real>& Bx, Real dx,
-                        int sec_level=0)
+                        int sec_level)
 {
   Ax.clear(); Bx.clear();
   
@@ -278,7 +278,7 @@ void bracket_all_minima(Function1D<Real>& f, Real ax, Real bx,
 
 void bracket_N_minima(Function1D<Real>& f, Real ax, int N,
                       vector<Real>& Ax, vector<Real>& Bx,
-                      Real dx, int sec_level=0)
+                      Real dx, int sec_level)
 {
   Ax.clear(); Bx.clear();
 
@@ -346,7 +346,7 @@ void bracket_N_minima(Function1D<Real>& f, Real ax, int N,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Real> brent_all_minima(Function1D<Real>& f, Real ax, Real bx, Real dx,
-                              Real eps=1e-13, int sec_level=0)
+                              Real eps, int sec_level)
 {
   vector<Real> Ax, Bx;
   bracket_all_minima(f, ax, bx, Ax, Bx, dx, sec_level);
@@ -362,7 +362,7 @@ vector<Real> brent_all_minima(Function1D<Real>& f, Real ax, Real bx, Real dx,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Real> brent_N_minima(Function1D<Real>& f, Real ax, int N, Real dx,
-                            Real eps=1e-13, int sec_level=0)
+                            Real eps, int sec_level)
 {
   vector<Real> Ax, Bx;
   bracket_N_minima(f, ax, N, Ax, Bx, dx, sec_level);
@@ -379,7 +379,7 @@ vector<Real> brent_N_minima(Function1D<Real>& f, Real ax, int N, Real dx,
 
 vector<Real> brent_refine_minima(Function1D<Real>& f, vector<Real>& x,
                                  Real delta_x, Real dx,
-                                 Real eps=1e-13, int sec_level=0)
+                                 Real eps, int sec_level)
 {
   sort(x.begin(), x.end());
   

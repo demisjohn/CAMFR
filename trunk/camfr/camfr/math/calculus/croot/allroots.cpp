@@ -203,7 +203,7 @@ vector<Complex> allroots_contour(const Contour& c)
 
 vector<Complex> allroots
   (ComplexFunction& f, const Complex& bottom_left, const Complex& top_right,
-   Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4)
+   Real eps, Real mu, unsigned int max_k)
 { 
   Contour contour(bottom_left, top_right, f, 2*N_max-1, eps, mu, max_k);
   return allroots_contour(contour);
@@ -221,7 +221,7 @@ typedef enum {ur, r} ExpandDirection;
 
 vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
                         const Complex& bottom_left, const Complex& top_right,
-                        Real eps=1e-4, Real mu=1e-4, unsigned int max_k=4)
+                        Real eps, Real mu, unsigned int max_k)
 {
   // Enlarge initial contour if needed.
 

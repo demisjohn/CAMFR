@@ -83,8 +83,8 @@ Cavity::Cavity(Stack& top_, Stack& bot_)
 
 void Cavity::find_modes_in_region
   (Real lambda_start, Real lambda_stop, Real delta_lambda,
-   unsigned int number=0, Real n_imag_start=0.0, Real n_imag_stop=0.015,
-   unsigned int passes=1)
+   unsigned int number, Real n_imag_start, Real n_imag_stop,
+   unsigned int passes)
 { 
   // Sweep wavelength and look for possible minima.
 
@@ -130,9 +130,9 @@ void Cavity::find_modes_in_region
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-void Cavity::find_mode(Real lambda_start,     Real lambda_stop,
-                       Real n_imag_start=0.0, Real n_imag_stop=0.015,
-                       unsigned int passes=1)
+void Cavity::find_mode(Real lambda_start, Real lambda_stop,
+                       Real n_imag_start, Real n_imag_stop,
+                       unsigned int passes)
 {  
   if (passes < 1)
   {
@@ -186,7 +186,7 @@ void Cavity::find_mode(Real lambda_start,     Real lambda_stop,
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Real Cavity::calc_sigma(int* dominant_mode=NULL)
+Real Cavity::calc_sigma(int* dominant_mode)
 {
   int N = global.N;
   

@@ -33,9 +33,9 @@ using namespace std;
 
 vector<Complex> patterson_z_n(ComplexFunction& f,
                               const Complex& a, const Complex& b, int M,
-                              Real eps, Real mu, bool* error_ptr=NULL,
-                              unsigned int max_k=8,
-                              vector<Complex>* abs_error=NULL)
+                              Real eps, Real mu, bool* error_ptr,
+                              unsigned int max_k,
+                              vector<Complex>* abs_error)
 {
   // Check if a and b are different.
 
@@ -244,7 +244,7 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
 vector<Complex> patterson_quad_z_n_sub
   (ComplexFunction& f, const Complex& a, const Complex& b, int M,
    Real eps, Real mu, const vector<Complex>& result_estimate,
-   unsigned int max_k=8)
+   unsigned int max_k)
 { 
   bool error;
   vector<Complex> abs_error;
@@ -293,7 +293,7 @@ vector<Complex> patterson_quad_z_n_sub
 
 vector<Complex> patterson_quad_z_n(ComplexFunction& f,
                                    const Complex& a, const Complex& b, int M,
-                                   Real eps, Real mu, unsigned int max_k=8)
+                                   Real eps, Real mu, unsigned int max_k)
 {
   // Try patterson on the entire interval.
 

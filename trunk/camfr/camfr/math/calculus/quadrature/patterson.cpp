@@ -30,8 +30,8 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 
 Real patterson(RealFunction& f, Real a, Real b, Real eps,
-               bool* error_ptr=NULL, unsigned int max_k=8,
-               Real* abs_error=NULL)
+               bool* error_ptr, unsigned int max_k,
+               Real* abs_error)
 {
   // Check if a and b are different.
 

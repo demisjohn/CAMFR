@@ -20,7 +20,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-InfStack::InfStack(const Expression& e, const Complex& W_=0)
+InfStack::InfStack(const Expression& e, const Complex& W_)
   : s(e), W(W_) 
 {
   Expression e1 = 1*e; // Makes sure incidence and exit media are the same.
@@ -79,6 +79,9 @@ void InfStack::calcRT()
         cout << "Unexpected power flow for mode " << mode->get_kz() << endl;
     }
 
+      if (fw && (mode->S_flux(0,real(W), 1e-5) < 0))
+        cout << "Unexpected power flow for mode " << mode->get_kz() << endl;
+
     if (fw)
     {
       cVector f(N,fortranArray); f.reference(mode->fw_field());
@@ -94,7 +97,8 @@ void InfStack::calcRT()
     }  
   }
 
-  // Calculate R12. Set T12 to the unity matrix for practical purposes.
+  // Calculate R12. Set the T's to the unity matrix for practical purposes,
+  // and to avoid spurious errors.
 
   allocRT();
 
@@ -106,5 +110,8 @@ void InfStack::calcRT()
     T12(i,i) = 1.0;
 
   R21 = 0.0;
+
   T21 = 0.0;
+  for (int i=1; i<=N; i++)
+    T21(i,i) = 1.0;
 }

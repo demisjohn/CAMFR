@@ -67,8 +67,8 @@ void Circ_M_Mode::normalise()
 /////////////////////////////////////////////////////////////////////////////
 
 Field Circ_M_Mode::field_ring(int i, const Coord& coord,
-                              Complex* dEzdr=0, Complex* dHzdr=0,
-                              bool ang_dep=true) const
+                              Complex* dEzdr, Complex* dHzdr,
+                              bool ang_dep) const
 {
   cerr << "Field profiles for structures with M rings "
        << "not yet implemented." << endl;
@@ -283,7 +283,7 @@ void calc_phi_dependence(int order, const Complex& phi, bool ang_dep,
 /////////////////////////////////////////////////////////////////////////////
 
 Field Circ_2_Mode::field_core(const Coord& coord, Complex* dEzdr_p,
-                              Complex* dHzdr_p, bool ang_dep=true) const
+                              Complex* dHzdr_p, bool ang_dep) const
 {
   // Set constants.
 
@@ -381,7 +381,7 @@ Field Circ_2_Mode::field_core(const Coord& coord, Complex* dEzdr_p,
 /////////////////////////////////////////////////////////////////////////////
 
 Field Circ_2_Mode::field_cladding(const Coord& coord, Complex* dEzdr_p,
-                                  Complex* dHzdr_p, bool ang_dep=true) const
+                                  Complex* dHzdr_p, bool ang_dep) const
 {
   // Set constants.
   
@@ -627,8 +627,8 @@ void Circ_1_Mode::normalise()
 /////////////////////////////////////////////////////////////////////////////
 
 Field Circ_1_Mode::field_ring(int notused, const Coord& coord,
-                              Complex* dEzdr_p=0, Complex* dHzdr_p=0,
-                              bool ang_dep=true) const
+                              Complex* dEzdr_p, Complex* dHzdr_p,
+                              bool ang_dep) const
 {
   // Set constants.
 
