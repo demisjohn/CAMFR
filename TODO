@@ -1,3 +1,6 @@
+-investigate worse convergence for TM modes
+-push limit for # lateral periods
+-core in get/set params
 -build: Eliminate as many makefiles as possible, slab_global.beta
 -circ_mode check: 0/0
 -infstack recalc modes, inf*(notation), diagslab, unexpected powerflow
@@ -25,6 +28,7 @@ SHORT TERM
 MEDIUM TERM:
 
 -speed up M - U1, where U1 is unit matrix
+-short cut check_error in Bessel functions
 
 -better handling of decoupled waveguides (Peter)
 -related: check instabilities in bend2, first formulation of rods (Peter)
@@ -81,6 +85,8 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-remove set_precision_enhancement and friends
+-make material.get_eps_mu
 -get rid of S_T, T_T in field_calc
 -make the C++ naming convention more uniform and in sync with Python names
  (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)
