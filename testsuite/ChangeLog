@@ -1,3 +1,10 @@
+2003-08-01  Peter Bienstman <Peter.Bienstman@ugent.be>
+
+	* slab2.py: New test.
+	* stack2.py: Ditto.
+	* degenerate2.py: Ditto.
+	* grating3.py: Ditto.
+
 2003-02-28  Peter Bienstman <Peter.Bienstman@rug.ac.be>
 
 	* field.py: New test.
