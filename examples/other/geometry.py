@@ -23,11 +23,11 @@ g += Circle   (Point(4.5, 0.0), 0.5, mat)
 prop0,  prop1,  d_prop  =  0.0, 5.0, 0.50
 trans0, trans1, d_trans = -2.5, 2.5, 0.01
 
-PML1, PML2 = -0.1, -0.1
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
 
 exp = g.to_expression(prop0,  prop1,  d_prop,
-                      trans0, trans1, d_trans,
-                      PML1, PML2)
+                      trans0, trans1, d_trans)
 
 s = Stack(exp)
 
