@@ -1,3 +1,8 @@
+2003-01-22  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mueller.h: Improve output from solver.
+	* mueller.cpp: Ditto.
+
 2002-11-27  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mueller.h: Add solver starting from estimate vector.
