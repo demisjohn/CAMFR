@@ -160,12 +160,12 @@ Complex SectionDisp::calc_lapack2()
   else
     e.reference(eigenvalues_x(Q));
   
-  // Return product of eigenvalues (determinant).
+  // Return product of eigenvalues-1..
 
   Complex product = 1.0;
 
   for (int i=1; i<=M; i++)
-    product *= e(i);
+    product *= e(i) - 1.0;
   
   return product;
 }

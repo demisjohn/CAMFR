@@ -32,8 +32,8 @@ Section2D_Mode::Section2D_Mode
   // Initialise.
 
   int old_N = global.N;
-  int M = geom->M;
-  global.N = geom->M;
+  int M = geom->M2;
+  global.N = geom->M2;
 
   int old_orthogonal = global.orthogonal;
   global.orthogonal = false;
@@ -97,7 +97,7 @@ Field Section2D_Mode::field(const Coord& coord) const
   Section2D* section = dynamic_cast<Section2D*>(geom);
 
   int old_N = global.N;
-  global.N = section->M;  
+  global.N = section->M2;  
 
   int old_orthogonal = global.orthogonal;
   global.orthogonal = false;
@@ -180,7 +180,7 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
   Section2D* section = dynamic_cast<Section2D*>(geom);
 
   int old_N = global.N;
-  global.N = section->M;
+  global.N = section->M2;
 
   int old_orthogonal = global.orthogonal;
   global.orthogonal = false;

@@ -65,7 +65,9 @@ class SectionImpl : public MultiWaveguide
     virtual Complex get_height() const = 0;
     virtual Complex c1_size()    const {return get_width();}
 
-    int get_M() const {return M;}
+    int get_M1() const {return M1;}
+    int get_M2() const {return M2;}
+
     std::vector<Complex> get_disc() const {return discontinuities;}
 
     Real S_flux(const FieldExpansion& f,
@@ -81,7 +83,8 @@ class SectionImpl : public MultiWaveguide
     
   public: // tmp
 
-    int M;
+    int M1;
+    int M2;
 
     // z-values of the interfaces, not including left wall, including
     // right wall.
@@ -113,8 +116,10 @@ class Section : public MultiWaveguide
   public:
 
     Section(const Term& t);
-    Section(Expression& ex, int M=global.N);
-    Section(Expression& left_ex, Expression& right_ex, int M=global.N);
+    Section(Expression& ex, 
+            int M1=int(global.N*global.mode_surplus), int M2=global.N);
+    Section(Expression& left_ex, Expression& right_ex, 
+            int M1=int(global.N*global.mode_surplus), int M2=global.N);
     ~Section() {delete s; delete leftwall_sc; delete rightwall_sc;}
 
     bool operator==(const Waveguide& w)    const {return this == &w;}
@@ -182,7 +187,7 @@ class Section2D : public SectionImpl
   public:
 
     Section2D() {}
-    Section2D(Expression& left_ex, Expression& right_ex, int M);   
+    Section2D(Expression& left_ex, Expression& right_ex, int M1, int M2);   
     Section2D(const Section2D& section);
 
     Section2D& operator= (const Section2D& section);
@@ -243,7 +248,8 @@ class Section1D : public SectionImpl
   public:
 
     Section1D(Slab& slab_, const Complex& width) 
-      : slab(&slab_), d(width) {uniform=false; core=slab->get_core(); M=1;}
+      : slab(&slab_), d(width) 
+        {uniform=false; core=slab->get_core(); M1=0; M2=1;}
 
     ~Section1D() {}
     

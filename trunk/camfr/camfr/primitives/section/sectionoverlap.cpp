@@ -199,8 +199,8 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
   const Slab& slab_II 
     = *sec_II->slabs[index_lookup(z_start, Plus, sec_II->discontinuities)];
 
-  const int sec_I_M  = sec_I ->get_M();
-  const int sec_II_M = sec_II->get_M();
+  const int sec_I_M  = sec_I ->get_M2();
+  const int sec_II_M = sec_II->get_M2();
 
   // Get field expansion from cache or calculate it from scratch.
 

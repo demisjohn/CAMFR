@@ -169,19 +169,12 @@ void RefSection::find_modes()
     py_error("Error: wavelength not set.");
     return;
   }
-  
-  if (global.N == 0)
-  {
-    py_error("Error: number of modes not set.");
-    return;
-  }
 
-  Polarisation old_pol = global.polarisation;
+  //Polarisation old_pol = global.polarisation;
 
-  const int n = int(global.N/2);
-  if (2*n != global.N)
-    py_print("Warning: changing N to even number.");
-  global.N = n;
+  const int n = int(N/2);
+
+  //global.N = n;
 
   const Complex k2 = pow(2*pi/global.lambda * m->n(), 2);
 
@@ -287,8 +280,7 @@ void RefSection::find_modes()
 
   // Restore globals.
 
-  global.polarisation = old_pol;
-  global.N = 2*n;
+  //global.polarisation = old_pol;
 }
 
 
@@ -394,7 +386,7 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
 {
   find_modes();
 
-  const int n = int(global.N/2);
+  const int n = int(N/2);
 
   vector<Complex> section_disc = profile->discontinuities;
 

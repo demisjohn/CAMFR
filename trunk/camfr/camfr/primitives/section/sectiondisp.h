@@ -32,7 +32,7 @@ class SectionDisp : public ComplexFunction
     SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
                 bool symmetric = false);
 
-    Complex operator()(const Complex& beta);
+    Complex operator()(const Complex& kt);
 
     std::vector<Complex> get_params() const;
     void set_params(const std::vector<Complex>&);
