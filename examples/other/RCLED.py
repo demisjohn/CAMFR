@@ -43,17 +43,15 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 
   # Reference bulk emitter
 
-  top_open = Stack(GaAs(1) + GaAs(1))
-  bot_open = Stack(GaAs(1) + GaAs(1))
+  half_open = Stack(GaAs(1))
 
   r0 = Coord(0,0,0)
   orientation = Coord(1,0,0)
 
-  open = Cavity(top_open,bot_open)
+  open = Cavity(half_open,half_open)
   open.set_source(r0, orientation)
 
-  c = Coord(0,0,0)
-  ref_rate = (top_open.field(c).E1()).real
+  ref_rate = (half_open.field(r0).E1()).real
   
   # 2-D structure
 
@@ -67,7 +65,7 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 
   # Calculate spontaneous emission rate.
 
-  rate = rcled.field(c).E1().real / ref_rate
+  rate = rcled.field(r0).E1().real / ref_rate
 
   # Calculate QW emission.
 
@@ -121,7 +119,7 @@ eps = 1e-10
 
 for spacer in arange(0.130, 0.160, 0.002):
   for r in arange(10.0, 10.0+eps, 2.0):
-    for PML in arange(0.05, 0.05+eps, 0.01):
+    for PML in arange(-0.05, -0.05+eps, 0.01):
       for M in arange(300, 300+eps, 20):
         max_rho = r
         resolution = 1e-10
