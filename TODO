@@ -35,6 +35,8 @@ MEDIUM TERM:
 -check for presence of gain medium in cavity
 -prevent user from from making a stack with uniformv layers with different
  widths
+-eliminate warning for zero tranmission through wall when calculating 
+ fields in stack.
 
 -new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
  Ability to cache field profiles and speed up.
