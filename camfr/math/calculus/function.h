@@ -215,7 +215,8 @@ class Wrap_real_to_arg : public RealFunction
     Wrap_real_to_arg(ComplexFunction& general_)
       : general(&general_) {}
    
-    Real operator()(const Real& x) {return arg((*general)(Complex(x,0.0)));}
+    Real operator()(const Real& x) 
+      {return std::arg((*general)(Complex(x,0.0)));}
 
   protected:
 
@@ -237,7 +238,8 @@ class Wrap_imag_to_arg : public RealFunction
     Wrap_imag_to_arg(ComplexFunction& general_)
       : general(&general_) {}
    
-    Real operator()(const Real& x) {return arg((*general)(Complex(0.0,x)));}
+    Real operator()(const Real& x) 
+      {return std::arg((*general)(Complex(0.0,x)));}
 
   protected:
 
