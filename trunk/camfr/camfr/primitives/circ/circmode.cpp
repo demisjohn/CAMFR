@@ -23,6 +23,22 @@ using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// rel_error
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Real rel_error(const Complex& a, const Complex& b)
+{
+  if (abs(b) > 1e-8)
+    return abs((a-b)/b);
+  else
+    return abs(a-b);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Circ_M_Mode::Circ_M_Mode
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -215,17 +231,17 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
   Real error;
   Real worst = 0;  
   
-  if ( (error = abs(  Rfield.Ez -           0.0         )) > worst )
+  if ( (error = abs(Rfield.Ez)) > worst )
     worst = error;
-  if ( (error = abs(  Rfield.E2 -           0.0         )) > worst )
+  if ( (error = abs(Rfield.E2)) > worst )
     worst = error;
-  if ( (error = abs((rpfield.Ez - rmfield.Ez)/rmfield.Ez)) > worst )
+  if ( (error = rel_error(rpfield.Ez, rmfield.Ez)) > worst )
     worst = error;
-  if ( (error = abs((rpfield.Hz - rmfield.Hz)/rmfield.Hz)) > worst )
+  if ( (error = rel_error(rpfield.Hz, rmfield.Hz)) > worst )
     worst = error;
-  if ( (error = abs((rpfield.E2 - rmfield.E2)/rmfield.E2)) > worst )
+  if ( (error = rel_error(rpfield.E2, rmfield.E2)) > worst )
     worst = error;
-  if ( (error = abs((rpfield.H2 - rmfield.H2)/rmfield.H2)) > worst )
+  if ( (error = rel_error(rpfield.H2, rmfield.H2)) > worst )
     worst = error;
 
   //cout << "Worst error : " << worst << endl;
@@ -529,7 +545,7 @@ Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
   const Complex R  = geom->radius[0];
 
   if (abs(kr[0]) < 0.05)
-    py_print ("Warning: mode close to cutoff.Possible loss of precision.");
+    py_print ("Warning: mode close to cutoff. Possible loss of precision.");
   
   // Determine polarisation and set field expansion coefficients A and B.
 
@@ -563,8 +579,8 @@ Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
   Real error;
   Real worst = 0;
 
-  if ( (error = abs(Rfield.Ez - 0.0)) > worst ) worst = error;
-  if ( (error = abs(Rfield.E2 - 0.0)) > worst ) worst = error;
+  if ( (error = abs(Rfield.Ez)) > worst ) worst = error;
+  if ( (error = abs(Rfield.E2)) > worst ) worst = error;
   
   //cout << "Worst error : " << worst << endl;
 
