@@ -678,7 +678,7 @@ void Section2D::find_modes_from_series()
   for (unsigned int i=1; i<=M1; i++)
     kz2_coarse.push_back(kz2(i));
 
-  std::sort(kz2_coarse.begin(), kz2_coarse.end(),sorter());
+  std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
@@ -698,7 +698,7 @@ void Section2D::find_modes_from_series()
 
   kt_to_neff transform(C0*min_eps_mu);
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50, &transform);
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
 
   f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
