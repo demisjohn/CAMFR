@@ -1,3 +1,8 @@
+2003-12-08 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slaboverlap.h: Add overlap with plane wave.
+	* slaboverlap.cpp: Ditto.
+
 2003-11-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Introduce material_at.

@@ -455,13 +455,14 @@ Complex overlap_numeric_(const SlabMode* mode_I,
                          const Slab_M* profile)
 {
   vector<Complex> slab_disc = profile->get_discontinuities();
+  slab_disc.insert(slab_disc.begin(), 0.0);
 
   Complex numeric = 0.0;
 
-  for (unsigned int k=0; k<slab_disc.size(); k++)
+  for (unsigned int k=0; k<slab_disc.size()-1; k++)
   {
-    Complex x0 = k==0 ? 0.0 : slab_disc[k-1];
-    Complex x1 = slab_disc[k];
+    Complex x0 = slab_disc[k];
+    Complex x1 = slab_disc[k+1];
 
     Overlap_ f(mode_I, mode_II, profile);
 
@@ -469,7 +470,7 @@ Complex overlap_numeric_(const SlabMode* mode_I,
     Wrap_real_to_imag f_i(f);
 
     numeric += patterson_quad(f_r, real(x0), real(x1), 1e-6, 4)
-      + I*patterson_quad(f_i, real(x0), real(x1), 1e-6, 4);
+           + I*patterson_quad(f_i, real(x0), real(x1), 1e-6, 4);
   }
   
   return numeric;
@@ -658,6 +659,98 @@ inline Complex int_exp(const Complex& k, const Complex& d)
 }
 
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Overlap_pw
+//
+//  Numeric integration, only used for verification purposes. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Overlap_pw : public ComplexFunction
+{
+  public:
+
+    Overlap_pw(const SlabMode* m_,const Complex& k_, bool E_, bool O1_) 
+      : m(m_), k(k_), E(E_), O1(O1_) {}
+
+    Complex operator()(const Complex& x)
+    {
+      counter++;
+
+      Field f = m->field(Coord(x,0,0));
+
+      if (E)
+      {
+        if (O1)      
+          return f.E1 * exp(I*k*x);
+        else          
+          return f.Ez * exp(I*k*x);
+      }
+      else
+      {
+        if (O1)      
+          return f.H1 * exp(I*k*x);
+        else          
+          return f.Hz * exp(I*k*x);
+      }
+    }
+
+  protected:
+
+    bool E;
+    bool O1;
+    const SlabMode* m;
+    const Complex k;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_pw_numeric
+//
+//   Calculates overlap integral of a SlabMode with a plane wave exp(j.k.x).
+//
+//   Verification function which calculates the overlap integrals 
+//   numerically. Slower and less acurate.
+//   To be removed after the analytical overlap calculation matures.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void overlap_pw_numeric(const SlabMode* mode, const Complex& k, bool E,
+                        Complex* Oz, Complex* O1)
+{
+  Overlap_pw fx(mode, k, E, true);
+  Overlap_pw fz(mode, k, E, false);
+
+  Wrap_real_to_real fx_r(fx);
+  Wrap_real_to_imag fx_i(fx);
+
+  Wrap_real_to_real fz_r(fz);
+  Wrap_real_to_imag fz_i(fz);
+
+  vector<Complex> disc = mode->get_geom()->get_discontinuities();
+  disc.insert(disc.begin(), 0.0);
+
+  *Oz = *O1 = 0.0;
+
+  for (unsigned int k=0; k<disc.size()-1; k++)
+  {
+    Complex x0 = disc[k];
+    Complex x1 = disc[k+1];
+
+    *O1 +=    patterson_quad(fx_r, real(x0), real(x1), 1e-4) 
+          + I*patterson_quad(fx_i, real(x0), real(x1), 1e-4);  
+
+    *Oz +=    patterson_quad(fz_r, real(x0), real(x1), 1e-4)
+          + I*patterson_quad(fz_i, real(x0), real(x1), 1e-4);
+  }
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // overlap_pw
@@ -677,10 +770,13 @@ void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
 
   const Complex k0 = 2*pi/global.lambda;
 
-  for (int k=0; k<disc.size()-1; k++)
+  const Complex sn = mode->get_sin();
+  const Complex cs = mode->get_cos();
+
+  for (int i=0; i<disc.size()-1; i++)
   {
-    const Complex x0 = disc[k];
-    const Complex x1 = disc[k+1];
+    const Complex x0 = disc[i];
+    const Complex x1 = disc[i+1];
 
     const Complex d = x1 - x0;
     
@@ -692,11 +788,8 @@ void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
     Complex fw, bw;
     mode->forw_backw_at(lower, &fw, &bw);
 
-    const Complex fw_int = fw * int_exp(-I*kx + I*k, d);
-    const Complex bw_int = bw * int_exp( I*kx + I*k, d);
-
-    Complex sn = mode->get_sin();
-    Complex cs = mode->get_cos();
+    const Complex fw_int = fw * int_exp(-I*kx + I*k, d) * exp(I*k*x0);
+    const Complex bw_int = bw * int_exp( I*kx + I*k, d) * exp(I*k*x0);
 
     if (E == true) // Calculate overlap with Ez and E1.
     {
@@ -727,6 +820,23 @@ void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
       }
     }
   }
+
+  return;
+
+  // Verify numerically.
+
+  Complex O1_num = 0.0;
+  Complex Oz_num = 0.0;
+
+  overlap_pw_numeric(mode, k, E, &Oz_num, &O1_num);
+
+  if (abs(*Oz-Oz_num) > 1e-5)
+  std::cout << E << " Oz " << *Oz << " " << Oz_num << " " << abs(*Oz-Oz_num)
+            << std::endl; 
+ 
+  if (abs(*O1-O1_num) > 1e-5)
+  std::cout << E << " O1 " << *O1 << " " << O1_num << " " << abs(*O1-O1_num) 
+            << std::endl;
 }
 
 
