@@ -10,7 +10,14 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// Work around MS linker bug.
+
+#ifdef _WIN32
+#include "slabmatrixcache.cpp"
+#else
 #include "slabmatrixcache.h"
+#endif
+
 #include "generalslab.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
 
@@ -118,8 +125,15 @@ Complex signedsqrt2(const Complex& kz2)
 
 // Dirty includes. Refactor this code after the design of moslab has settled.
 
+#include "isoslab/slabmode.cpp"
+
+// Work around MS linker bug.
+
+#ifdef _WIN32
+#include "isoslab/slaboverlap.cpp"
+#else
 #include "isoslab/slaboverlap.h"
-#include "isoslab/slabmode.h"
+#endif
 
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
