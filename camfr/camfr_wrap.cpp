@@ -47,7 +47,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
-using namespace boost::python;
 
 
 
@@ -138,14 +137,14 @@ inline void set_right_wall(SlabWall* w)
 inline void set_beta(const Complex& beta)
   {global_slab.beta = beta;}
 
-template class enum_as_int_converters<Limit>;
-template class enum_as_int_converters<Solver>;
-template class enum_as_int_converters<Stability>;
-template class enum_as_int_converters<Field_calc>;
-template class enum_as_int_converters<Bloch_calc>;
-template class enum_as_int_converters<Eigen_calc>;
-template class enum_as_int_converters<Polarisation>;
-template class enum_as_int_converters<Fieldtype>;
+template class boost::python::enum_as_int_converters<Limit>;
+template class boost::python::enum_as_int_converters<Solver>;
+template class boost::python::enum_as_int_converters<Stability>;
+template class boost::python::enum_as_int_converters<Field_calc>;
+template class boost::python::enum_as_int_converters<Bloch_calc>;
+template class boost::python::enum_as_int_converters<Eigen_calc>;
+template class boost::python::enum_as_int_converters<Polarisation>;
+template class boost::python::enum_as_int_converters<Fieldtype>;
 
 inline Complex mode_kz (const Mode& m) {return m.get_kz();}
 inline Complex mode_pol(const Mode& m) {return m.pol;}
@@ -837,8 +836,8 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     boost::python::class_builder<Circ> Circ_(camfr, "Circ");
     Circ_.declare_base(MultiWaveguide_);
     
-    Circ_.def(constructor<const Term&>());
-    Circ_.def(constructor<const Expression&>());    
+    Circ_.def(boost::python::constructor<const Term&>());
+    Circ_.def(boost::python::constructor<const Expression&>());    
     Circ_.def(&Circ::repr,       "__repr__"); // tmp
     Circ_.def(waveguide_to_term, "__call__"); // tmp
 
@@ -854,7 +853,8 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
       SlabWallMixed_(camfr, "SlabWallMixed");
     SlabWallMixed_.declare_base(SlabWall_);
 
-    SlabWallMixed_.def(constructor<const Complex&, const Complex&>());
+    SlabWallMixed_.def(boost::python::constructor
+                       <const Complex&, const Complex&>());
 
     // Wrap SlabWall_TBC.
 
@@ -865,9 +865,9 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     SlabWall_TBC_.def(boost::python::constructor
                       <const Complex&, const Material&>());
 
-    camfr.add(make_ref(slab_E_wall),    "slab_E_wall");
-    camfr.add(make_ref(slab_H_wall),    "slab_H_wall");
-    camfr.add(make_ref(slab_open_wall), "slab_open_wall");
+    camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
+    camfr.add(boost::python::make_ref(slab_H_wall),    "slab_H_wall");
+    camfr.add(boost::python::make_ref(slab_open_wall), "slab_open_wall");
 
     // Wrap SlabWall_PC.
 
@@ -875,7 +875,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
       SlabWall_PC_(camfr, "SlabWall_PC");
     SlabWall_PC_.declare_base(SlabWall_);
 
-    SlabWall_PC_.def(constructor<const Expression&>());
+    SlabWall_PC_.def(boost::python::constructor<const Expression&>());
 
     // Wrap SlabDisp.
 
