@@ -335,6 +335,56 @@ vector<Contour> Contour::adjacent_ur() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Contour::adjacent_dr
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Contour> Contour::adjacent_dr() const
+{
+  // Create adjacent contours.
+
+  Contour  r(br,           tr + (tr-tl), *f, M, eps, mu, max_k);
+  Contour  d(bl - (tl-bl), br,           *f, M, eps, mu, max_k);
+  Contour dr(br - (tr-br), br + (br-bl), *f, M, eps, mu, max_k);
+
+  // Precalculate shared line segments.
+
+   r.set_integrals(tl_cl,   -get_integrals(cr_tr));
+   r.set_integrals(cl_bl,   -get_integrals(br_cr));
+
+  dr.set_integrals(tl_cl, -d.get_integrals(cr_tr));
+  dr.set_integrals(cl_bl, -d.get_integrals(br_cr));
+
+   d.set_integrals(tr_tc,   -get_integrals(bc_br));
+   d.set_integrals(tc_tl,   -get_integrals(bl_bc));
+
+  dr.set_integrals(tr_tc, -r.get_integrals(bc_br));
+  dr.set_integrals(tc_tl, -r.get_integrals(bl_bc));
+  
+  // Return adjacent contours.
+
+  vector<Contour> new_contours;
+
+  new_contours.push_back(dr);
+  new_contours.push_back(d);
+  new_contours.push_back(r);
+
+  ostringstream s;
+  
+  s << "Extending " << bl << tr << endl;
+  for (unsigned int i=0; i<new_contours.size(); i++)
+    s << "to " << i << new_contours[i].get_bottom_left()
+                    << new_contours[i].get_top_right() << endl;
+
+  py_print(s.str());
+
+  return new_contours;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Contour::double_ur
 //
 /////////////////////////////////////////////////////////////////////////////

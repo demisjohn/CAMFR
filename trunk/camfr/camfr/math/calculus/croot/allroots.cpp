@@ -117,7 +117,7 @@ vector<Complex> roots_contour(const Contour& contour,
 
     if (error)
       continue;
-
+    
     if (contour.encloses(root))
     {
       vector<Complex> multiple_roots 
@@ -150,7 +150,7 @@ struct Sorter
 };
 
 vector<Complex> allroots_contour(const Contour& c) 
-{
+{ 
   // Find roots in contour and subcontours.
   
   vector<Complex> roots = roots_contour(c, c.contour_integrals());
@@ -178,7 +178,7 @@ vector<Complex> allroots_contour(const Contour& c)
       if (abs(roots[i]-subroots[i]) > 1e-10)
         equal = false;
     
-    if (equal)    
+    if (equal)
       return roots;
   }
 
@@ -189,8 +189,6 @@ vector<Complex> allroots_contour(const Contour& c)
     return roots;
   
   // Else, recursively subdivide contour further.
-  
-  //cout << "Subdivide " << c.get_bottom_left() << c.get_top_right() << endl;
   
   roots.clear();
   for (unsigned int i_=0; i_<4; i_++)
@@ -227,11 +225,10 @@ vector<Complex> allroots
 //
 /////////////////////////////////////////////////////////////////////////////
 
-typedef enum {ur, r} ExpandDirection;
-
 vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
                         const Complex& bottom_left, const Complex& top_right,
-                        Real eps, Real mu, unsigned int max_k)
+                        Real eps, Real mu, unsigned int max_k, 
+                        ExpandDirection dir)
 {
   // Enlarge initial contour if needed.
 
@@ -254,21 +251,26 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
 
   // Set up the contour stack with new contours.
 
-  ExpandDirection dir = r;
+  ExpandDirection true_dir = r;
   for (unsigned int i=0; i<roots.size(); i++)
-    if (imag(roots[i]) > imag(c0.get_center()))
-      dir = ur;
+  {
+    if ( (dir == ur) && (imag(roots[i]) > imag(c0.get_center())) )
+      true_dir = ur;
+    else if ( (dir == dr) && (imag(roots[i]) < imag(c0.get_center())) )
+      true_dir = dr;
+  }
 
   vector<Contour> contour_stack;
-  if (dir == ur)
+  if (true_dir == r)
+    contour_stack.push_back(c0.adjacent_r());
+  else
   {
-    vector<Contour> new_c = c0.adjacent_ur();
+    vector<Contour> new_c = (true_dir == ur) ? c0.adjacent_ur() 
+                                             : c0.adjacent_dr();
 
     for (unsigned int i=0; i<new_c.size(); i++)
       contour_stack.push_back(new_c[i]);
   }
-  else
-    contour_stack.push_back(c0.adjacent_r());
 
   // Take additional contours into account until we have sufficient modes.
 
@@ -283,32 +285,34 @@ vector<Complex> N_roots(ComplexFunction& f, unsigned int N,
     vector<Complex> roots_c
       = allroots(f, c.get_bottom_left(), c.get_top_right(), eps, mu, max_k);
 
-    ExpandDirection dir = r;
+    ExpandDirection true_dir = r;
     for (unsigned int i=0; i<roots_c.size(); i++)
-      if (imag(roots_c[i]) > imag(c.get_center()))
-        dir = ur;
+    {
+      if ( (dir == ur) && (imag(roots_c[i]) > imag(c0.get_center())) )
+        true_dir = ur;
+      else if ( (dir == dr) && (imag(roots_c[i]) < imag(c0.get_center())) )
+        true_dir = dr;
+    }
 
     if (roots_c.size() == 0)
-      dir = ur;
+      true_dir = dir;
 
     roots.insert(roots.end(), roots_c.begin(), roots_c.end());
-
-    //cout << "Roots so far : " << endl;
-    //for (unsigned int i=0; i<roots.size(); i++)
-    //  cout << i << roots[i] << " " << abs(f(roots[i])) << endl;
 
     if (    (roots.size() < N)
          && (!roots_c.empty() || (roots_c.empty() && contour_stack.empty())) )
     {
-      if (dir == ur)
+
+      if (true_dir == r)
+        contour_stack.push_back(c.adjacent_r());
+      else
       {
-        vector<Contour> new_c = c.adjacent_ur();
+        vector<Contour> new_c = (true_dir == ur) ? c.adjacent_ur() 
+                                                 : c.adjacent_dr();
 
         for (unsigned int i=0; i<new_c.size(); i++)
           contour_stack.push_back(new_c[i]);
       }
-      else
-        contour_stack.push_back(c.adjacent_r());
     }
 
     if (iters == 200)
