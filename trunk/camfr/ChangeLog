@@ -15,11 +15,19 @@ CAMFR 1.1:
  - plot_n and plot_field now works for BlochStacks, BlochModes and Cavities
    too
  - added Stack.fw_bw(z), which returns a tuple of the expansion 
-   coefficients of the forward and backward field at position z in the Stack
+   coefficients of the forward and backward field at position z in the Stack.
+   Also works for Blochmodes.
 
      e.g. fw, bw = stack.fw_bw(0)
+	  fw, bw = blochstack.mode(0).fw_bw(0)
 
  - Cavity.find_modes_in_region() has been renamed to Cavity::find_all_modes()
+ - the constructor for Cavity has been changed from Cavity(top, bottom) to
+   Cavity(bottom,top). This makes the coordinate system more intuitive.
+ - arbitrary sources can now be placed inside a cavity
+
+     e.g. cavity.set_Source(fw, bw)
+
  - fixed memory corruption when doing exotic things with Expressions
  - fixed crash when plotting uniform layers or planars
 
