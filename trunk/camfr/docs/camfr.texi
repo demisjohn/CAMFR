@@ -5,9 +5,9 @@
 @c %**end of header
 
 @ifinfo
-CAMFR manual v1.0.
+CAMFR manual v1.1.
 
-Copyright @copyright{} 2001-2002 Peter Bienstman - Ghent University.
+Copyright @copyright{} 2001-2003 Peter Bienstman - Ghent University.
 @end ifinfo
 
 @ignore
@@ -3473,10 +3473,13 @@ which field component to plot, e.g. @code{lambda f : f.E2().real}.
 specifying which  interval to plot and with which resolution. @code{x} is the 
 transverse  direction, @code{z} the propagation direction. The actual display
 is dependent on which visualisation backend is loaded. Note that the function
-also supports an additional argument: a string with the filename to write the 
-picture to. For pictures, a variety of formats are supported (gif, jpg, png, 
-bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will 
-determine the format to be used. 
+also supports an additional argument: a string @code{filename} with the 
+filename to write the picture to. For pictures, a variety of formats are 
+supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the 
+suffix of the filename will determine the format to be used. Other arguments
+are @code{overlay_n} (defaults to true) which overlays the index profile
+on the field plot, and @code{contour} (defaults to true) which uses contours
+to show the index profile rather than gray scale.
 
 
 
@@ -3496,7 +3499,10 @@ which  interval to plot and with which resolution. @code{x} is the
 transverse  direction, @code{z} the propagation direction. The actual display 
 is dependent on which visualisation  backend is loaded. @code{filename} is
 an optional string argument to determine which file to write an (uncompressed)
-animated gif to.
+animated gif to. Other arguments are @code{overlay_n} (defaults to true) 
+which overlays the index profile on the field plot, and @code{contour} 
+(defaults to true) which uses contours to show the index profile rather 
+than gray scale.
 
 
 @node Index,  , Reference guide, top
