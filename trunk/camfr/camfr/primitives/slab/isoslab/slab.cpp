@@ -564,7 +564,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
                                I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
 
-      if (!error && metal && abs(real(kt_new)) > 0.1)
+      if (!error && metal && abs(real(kt_new)) > 0.001)
       {
         py_print("Found complex mode pair.");
         kt_complex.push_back(kt_new);
@@ -609,7 +609,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
           : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
                     1e-11,0,100,&error);
 
-        if (!error && metal && (abs(imag(kt_new)) > 0.1))
+        if (!error && metal && (abs(imag(kt_new)) > 0.001))
         {
           py_print("Found complex mode pair.");
           kt_complex.push_back(kt_new);
