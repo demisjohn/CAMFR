@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include "section.h"
 #include "refsection.h"
@@ -684,6 +685,36 @@ void Section2D::find_modes_from_series()
   E(r2,r1) = C; E(r2,r2) = D;
 
   cVector kz2(M1,fortranArray);
+
+#if 0
+  
+  cMatrix field(M1,M1,fortranArray);
+  kz2 = eigenvalues(E, &field);
+
+  std::ofstream of("field");
+
+  int mode = 1;
+  for (int k=1; k<=M1; k++)
+    if ( abs(kz2(k)-54.) < abs(kz2(k)-kz2(mode)) )
+      mode = k;
+  
+  for (Real x=0; x<=.5; x+=.02/4.)
+  {
+    for (Real y=0; y<=.5; y+=.02/4.)
+    {
+      Complex E_ = 0.0;
+      for (int k=1; k<=n; k++)
+      { 
+        E_ += field(k,mode) * ref.get_mode(n+k)->field(Coord(x,y,0)).E2; // TM
+        E_ += field(n+k,mode) * ref.get_mode(k)->field(Coord(x,y,0)).E2; // TE
+      }
+      
+      of << real(E_) << " ";
+    }
+    of << std::endl;
+  }
+
+#endif
 
   if (global.stability == normal)
     kz2 = eigenvalues(E);
