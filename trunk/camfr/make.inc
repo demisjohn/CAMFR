@@ -50,6 +50,8 @@ MATH   = -lm
 
 # compiler flags
 
+# suggestions for 3.1: -Os -march=pentium3 -mpreferred-stack-boundary=4
+
 FLAGS  = -fPIC -O3 --param max-inline-insns=600 -march=pentiumpro \
 	-ftemplate-depth-30 -ffast-math -g\
       	-funroll-loops -fstrict-aliasing -I$(BLITZ)\
