@@ -1,1 +1,1 @@
-camfr_version = "20050126"
+camfr_version = "20050128"
