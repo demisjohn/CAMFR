@@ -130,8 +130,8 @@ class Slab : public MultiWaveguide
 {
   public:
 
-    Slab(const Expression& ex);
-    Slab(const Term& t);    
+    Slab(const Expression& ex, int M_series=0);
+    Slab(const Term& t, int M_series=0);    
     ~Slab() {delete s;}
 
     bool operator==(const Waveguide& w)    const {return this == &w;}

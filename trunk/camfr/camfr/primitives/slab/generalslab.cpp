@@ -371,7 +371,7 @@ cVector SlabImpl::expand_field(ComplexFunction* f, Real eps)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Slab::Slab(const Expression& ex)
+Slab::Slab(const Expression& ex, int M_series)
 {
   Expression e = ex.flatten();
   
@@ -390,7 +390,7 @@ Slab::Slab(const Expression& ex)
     s = new UniformSlab(d, *m);
   }
   else
-    s = new Slab_M(e);
+    s = new Slab_M(e,M_series);
 
   uniform = s->is_uniform();
   core = s->get_core();
@@ -404,7 +404,7 @@ Slab::Slab(const Expression& ex)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Slab::Slab(const Term& t)
+Slab::Slab(const Term& t, int M_series)
 {
   Material* m = dynamic_cast<Material*>(t.get_mat());
   Complex   d = t.get_d() + I*global_slab.lower_PML + I*global_slab.upper_PML;
