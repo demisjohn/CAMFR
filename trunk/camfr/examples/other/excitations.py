@@ -37,7 +37,8 @@ s.set_inc_field_function(f, eps)
 
 s.set_inc_field_gaussian(A, sigma, x0, eps)
 
-# Plane wave: f = A + slope*x
+# Plane wave with amplitude A and angle theta (radians).
 
-slope = 0.0
-s.set_inc_field_plane_wave(A, slope, eps)
+A = 1.0
+theta = 0.0
+s.set_inc_field_plane_wave(A, theta, eps)

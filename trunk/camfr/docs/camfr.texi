@@ -88,6 +88,8 @@ Reference guide
 * set_chunk_tracing::           
 * set_degenerate::              
 * set_orthogonal::              
+* set_solver::                  
+* set_mode_surplus::            
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -1968,10 +1970,11 @@ s.set_inc_field_function(f, eps)
 
 s.set_inc_field_gaussian(A, sigma, x0, eps)
 
-# Plane wave: f = A + slope*x
+# Plane wave with amplitude A and angle theta (radians).
 
-slope = 0.0
-s.set_inc_field_plane_wave(A, slope, eps)
+A = 1.0
+theta = 0.0
+s.set_inc_field_plane_wave(A, theta, eps)
 @end group
 @end example
 
@@ -1997,11 +2000,10 @@ For even greater speed, there exists a predefined Gaussian excitation:
 s.set_inc_field_gaussian(A, sigma, x0, eps)
 @end example
 
-Finally, there is also a predefined excitation for a plane wave 
-@code{A + slope*x}:
+Finally, there is also a predefined excitation for a plane wave with amplitude @code{A} making an angle @code{theta} (in radians) with the propagation direction:
 
 @example
-s.set_inc_field_plane_wave(A, slope, eps)
+s.set_inc_field_plane_wave(A, theta, eps)
 @end example
 
 The accuracy which can be achieved to represent an arbitrary field is of course
@@ -2042,12 +2044,14 @@ can change the way these situations are handled. Use
 With @code{set_stability(SVD)} a pseudo inverse is calculated using singular
 value decomposition.
 @item
-If your waveguide don't have multiple cores, try using 
+If your waveguides don't have multiple cores, try using 
 @code{set_degenerate(0)}.
 @item
 If the field profiles seem to be calculated incorrectly, try
 @code{set_orthogonal(0)}.
 This will cause CAMFR to treat modes which are not exactly orthogonal due to rounding errors as non-orthogonal.
+@item 
+If you are dealing with very lossy materials, using a different solver might help: @code{set_solver(series)} and @code{set_mode_surplus(n)}. This will first construct an initial estimate of the modes based on a plane wave expansion. The number of plane waves used in this expansion is @code{n} times @code{get_N()}. These estimates are subsequently refined using the full dispersion relation.
 @end itemize
 
 If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
@@ -2320,6 +2324,8 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_chunk_tracing::           
 * set_degenerate::              
 * set_orthogonal::              
+* set_solver::                  
+* set_mode_surplus::            
 * set_circ_order::              
 * set_circ_field_type::         
 * set_lower_PML::               
@@ -2519,7 +2525,7 @@ therefore this option defaults to true, but it can sometimes cause trouble.
 Note: a Python bool is 1 for true, and 0 for false.
 
 
-@node set_orthogonal, set_circ_order, set_degenerate, Reference guide
+@node set_orthogonal, set_solver, set_degenerate, Reference guide
 @unnumberedsec @code{set_orthogonal}
 @cindex @code{set_orthogonal}
 
@@ -2529,8 +2535,25 @@ exactly orthogonal due to rounding errors. Setting this option to false will
 treat these modes as non-orthogonal, and can sometimes drastically improve
 convergence. Note: a Python bool is 1 for true, and 0 for false.
 
+@node set_solver, set_mode_surplus, set_orthogonal, Reference guide
+@unnumberedsec @code{set_solver}
+@cindex @code{set_solver}
 
-@node set_circ_order, set_circ_field_type, set_orthogonal, Reference guide
+@noindent
+@code{set_solver(series)}: activates a different solver to calculate the modes in a slab. It will first construct an estimate of the modes based on a plane wave expansion. These estimates will subsequently be refined using the full dispersion relation. This is especially useful for lossy structures. The number of plane waves used can be set through @code{set_mode_surplus()}.
+@xref{set_mode_surplus}.
+
+
+@node set_mode_surplus, set_circ_order, set_solver, Reference guide
+@unnumberedsec @code{set_mode_surplus}
+@cindex @code{set_mode_surplus}
+
+@noindent
+@code{set_mode_surplus(n)}: sets the number of plane waves used in the series expansion to @code{n*get_N()}. Only affects the series solver for Slabs.
+@xref{set_solver}.
+
+
+@node set_circ_order, set_circ_field_type, set_mode_surplus, Reference guide
 @unnumberedsec @code{set_circ_order}
 @cindex @code{set_circ_order}
 
@@ -2965,9 +2988,8 @@ right side.
 @code{A*exp(-0.5*((x-x0)/sigma)**2} and use precision @code{eps} to calculate
 the overlap integrals.
 @item
-@code{set_inc_field_plane_wave(A, slope, eps)}: set a plane wave incident field
-@code{A + slope*x} and use precision @code{eps} to calculate the overlap 
-integrals.
+@code{set_inc_field_plane_wave(A, theta, eps)}: set a plane wave incident field
+with amplitude @code{A}, angle @code{theta} in radians, and use precision @code{eps} to calculate the overlap integrals.
 @item
 @code{set_inc_field_function(f, eps)}: set an incident field described by
 a function @code{f} and use precision @code{eps} to calculate the overlap 
