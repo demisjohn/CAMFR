@@ -14,6 +14,7 @@
 #define SLABOVERLAP_H
 
 #include "../../../math/linalg/linalg.h"
+#include "slab.h"
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -71,6 +72,23 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
 		   const SlabCache* cache=NULL,
 		   const std::vector<Complex>* disc=NULL,
 		   int i=0, int j=0, int I_index=0, int II_index=0);
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Calculates overlap matrix of reference modes with an index profile.
+//
+//   O_tt(i,j) = Int(eps . E_t_i . E_t_j)
+//   O_zz(i,j) = Int(eps . E_z_i . E_z_j)
+//
+//   O_tt is O_EE for TE and O_MM for TM.
+//   O_zz is for TM only.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void overlap_reference_modes(cMatrix* O_tt, cMatrix* O_zz, 
+                             const UniformSlab& ref, const Slab_M& profile);
 
 
 
