@@ -193,7 +193,10 @@ inline void set_backward_modes(bool b)
   {global.backward_modes = b;}
 
 inline void set_section_solver(Section_solver s)
-  {global.section_solver = s;}
+  {global_section.section_solver = s;}
+
+inline void set_mode_correction(bool b)
+  {global_section.mode_correction = b;}
 
 inline int mode_pol(const Mode& m) {return m.pol;}
 
@@ -787,7 +790,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_circ_PML",               set_circ_PML);
   def("set_beta",                   set_beta);
   def("set_guided_only",            set_guided_only);  
-  def("set_section_solver",         set_section_solver);
+  def("set_section_solver",         set_section_solver);  
+  def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes); 
   def("free_tmps",                  free_tmps);

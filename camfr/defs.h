@@ -81,7 +81,6 @@ typedef enum {normal, extra, SVD} Stability;
 typedef enum {identical, symmetric} Field_calc_heuristic;  
 typedef enum {GEV, T} Bloch_calc;
 typedef enum {lapack, arnoldi} Eigen_calc;
-typedef enum {OS, NT, L} Section_solver;
 
 
 
@@ -249,9 +248,6 @@ struct Global
 
     // Tmp switch to enable backward modes.
     bool backward_modes;
-
-    // Solver used to create estimate of Section modes.
-    Section_solver section_solver;
 };
 
 extern Global global;
