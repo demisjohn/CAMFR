@@ -2,11 +2,13 @@
 -optimnise S_scheme_fields
 _optimise get_inc/ext field
 -quick test camfr_matlab (flipud?)
--blochstakc get_length
+-blochstack get_length
 
 
 CAMFR 3D:
 
+-band matrix routines / not full determinant
+-check if creation of extra interface in middle of core is needed
 -clean up RefSectionMode::field (not used, but still)
 -left/right PML not passed to stack correctly when using 2 expressions
 -re-enable symmetry
@@ -21,6 +23,7 @@ CAMFR 3D:
  complex modes, determinant faster than eigenvalues?
 -dispersion relation of 2D slabs: try to eliminate need for O_II_I in 
  interface.cpp
+-1 element too much in slabs (optimise fort calc_band)?
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -Complex modes in presence of PML
