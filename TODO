@@ -1,11 +1,9 @@
 CAMFR 1.0:
 
--leak check
--slab_global.beta --> global.slab_ky
--add pentium3 to machine.cfg + libs, cp it to machine_cfg_lix.py
--upgrade scons for windows
--thin structures
--Lieven's plot routines
+-Windows machine_cfg.py
+-Lieven's plot routines + manual (plot_field_waveguide typo, plot_matrix)
+-go through bug reports
+
 
 CAMFR 3D:
 
@@ -30,6 +28,8 @@ MEDIUM TERM:
 
 -eliminate warning for zero transmission through wall when calculating 
  fields in stack
+
+-group identical sections in Geometry
 
 -implementation of flipped stacks
 -easier notation for InfStack: inf*(expression)
