@@ -870,7 +870,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     Slab_.def(constructor<const Term&>());
     Slab_.def(constructor<const Expression&>());
 
-    Slab_.def(&Slab::set_left_wall   "set_left_wall");
+    Slab_.def(&Slab::set_left_wall,  "set_left_wall");
     Slab_.def(&Slab::set_right_wall, "set_right_wall");
     Slab_.def(&Slab::get_width,      "width");
     Slab_.def(&Slab::repr,           "__repr__"); // tmp
