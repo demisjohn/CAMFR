@@ -1112,7 +1112,7 @@ Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k)
              + safe_mult( bw_bw, prop_int(-k_i - conj(-k_j), d) );
       }
     
-    // Apply geometry dependent correction factor nad update results..
+    // Apply geometry dependent correction factor and update results.
 
     S *= wg->lateral_S_corr(Coord(c1,0,0));
     

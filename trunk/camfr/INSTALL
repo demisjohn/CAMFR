@@ -2,14 +2,14 @@ INSTALLATION
 
 For the compilation of CAMFR, a C++ compiler is needed that supports
 many features from the latest C++ standard. Use e.g. a recent version
-(3.0.4 or later) of the gcc compiler from http://www.gnu.org/gcc.
+(3.0.4 or later) of the gcc compiler from http://gcc.gnu.org.
 
 CAMFR also requires the following external programs or libraries, 
 which must be installed first. The use of the lastest versions is 
 recommended.
 
 - Python 2.2 or later from http://www.python.org
-- The Scons builing tool from www.scons.org
+- The Scons builing tool from http://www.scons.org
 - Numerical Python from http://sourceforge.net/projects/numpy
 - The Boost Python Library from http://www.boost.org. A CVS version is
   needed, for instructions on how to get it, see 
