@@ -12,6 +12,7 @@
 
 #include "generalslab.h"
 #include "slabmatrixcache.h"
+#include "isoslab/slabwall.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
 
 using std::vector;
@@ -62,6 +63,36 @@ class SlabFlux : public RealFunction
 
 SlabImpl::~SlabImpl(){
   slabmatrix_cache.deregister(this);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabImpl::R_lower()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SlabImpl::R_lower() const
+{
+  SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+  Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+  return R_lower;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabImpl::R_upper()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SlabImpl::R_upper() const
+{
+  SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
+  Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
+  return R_upper;
 }
 
 

@@ -59,7 +59,10 @@ class SlabImpl : public MultiWaveguide
 
     void set_lower_wall(SlabWall& lower) {lowerwall=&lower;}
     void set_upper_wall(SlabWall& upper) {upperwall=&upper;}
-    
+
+    Complex R_lower() const;
+    Complex R_upper() const;
+   
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
                 Real precision = 1e-10) const;
@@ -88,12 +91,17 @@ class SlabImpl : public MultiWaveguide
     void set_dummy(bool b) {dummy = b;}
     bool is_dummy() const {return dummy;}
 
+    void add_kz2_estimate(const Complex& kz2)
+      {user_kz2_estimates.push_back(kz2);}  
+
   protected:
 
     bool dummy;
 
     SlabWall* lowerwall; // NULL means use wall from global_slab.
     SlabWall* upperwall;
+
+    std::vector<Complex> user_kz2_estimates;
 
     // x-values of the interfaces, not including lower wall, including
     // upper wall.
@@ -147,9 +155,12 @@ class Slab : public MultiWaveguide
     
     void set_lower_wall(SlabWall& lower) const {s->set_lower_wall(lower);}
     void set_upper_wall(SlabWall& upper) const {s->set_upper_wall(upper);}
-    
-    Complex eps_at(const Coord& coord) const {return s->eps_at(coord);}
-    Complex  mu_at(const Coord& coord) const {return s-> mu_at(coord);}
+
+    Complex R_lower() const {return s->R_lower();}   
+    Complex R_upper() const {return s->R_upper();}
+  
+    Material* material_at(const Coord& coord) const 
+      {return s->material_at(coord);}
 
     Complex eps_avg() const {return s->eps_avg();}
 
@@ -188,7 +199,9 @@ class Slab : public MultiWaveguide
 
     void set_dummy(bool b) {s->set_dummy(b);}
     bool is_dummy() const {return s->is_dummy();}
-    
+
+    void add_kz2_estimate(const Complex& kz2) {s->add_kz2_estimate(kz2);}
+  
   protected:
 
     SlabImpl* s;
