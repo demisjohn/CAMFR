@@ -2624,7 +2624,8 @@ Can be either @code{cos_type} (default) or @code{sin_type}.
 @code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
 negative for absorption. Implements PML boundary conditions. The lower 
 cladding is at @code{x=0}, at the first term in the expression to create a 
-@code{Slab}. By default, @code{p} is zero.
+@code{Slab}. By default, @code{p} is zero. Needs to be set BEFORE structures
+are defined.
 
 @noindent
 @xref{set_upper_PML}, @ref{set_circ_PML}.
@@ -2640,7 +2641,8 @@ cladding is at @code{x=0}, at the first term in the expression to create a
 @code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
 negative for absorption. Implements PML boundary conditions. The upper 
 cladding is at  @code{x=slab.width()}, at the last term in the expression to 
-create a @code{Slab}. By default, @code{p} is zero.
+create a @code{Slab}. By default, @code{p} is zero. Needs to be set BEFORE 
+structures are defined.
 
 @noindent
 @xref{set_lower_PML}, @ref{set_circ_PML}.
@@ -2655,7 +2657,7 @@ create a @code{Slab}. By default, @code{p} is zero.
 @code{set_circ_PML(p)}: gives the cladding of all subsequently defined
 circular waveguides an imaginary thickness of @code{p*1j}, with @code{p} 
 usually negative for absorption. Implements PML boundary conditions. By 
-default, @code{p} is zero. 
+default, @code{p} is zero. Needs to be set BEFORE structures are defined. 
 
 @noindent
 @xref{set_lower_PML}, @ref{set_upper_PML}.
@@ -2668,8 +2670,9 @@ default, @code{p} is zero.
 
 @noindent
 @code{set_lower_wall(SlabWall)}: sets the lower wall (i.e. at @code{x=0}) to
-the given wall. Has an effect on all @code{Slab}s that are subsequently 
+the given wall. Has an effect on all @code{Slab}s  that are subsequently 
 defined.
+
 
 @noindent
 Note that walls can also be set on a slab-by-slab basis, 
