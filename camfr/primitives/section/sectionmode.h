@@ -61,7 +61,7 @@ class Section2D_Mode : public SectionMode
 
     Section2D_Mode(Polarisation pol, const Complex& kz, Section2D* geom,
                    cVector* Ex=0,cVector* Ey=0,cVector* Hx=0,cVector* Hy=0,
-                   bool corrected=false);
+                   bool corrected=true);
   
     ~Section2D_Mode();
 
