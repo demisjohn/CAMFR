@@ -99,10 +99,10 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.Ez *= field.E2 * sn / sqrt(cs);
+      field.Ez  = field.E2 * sn / sqrt(cs);
       field.E2 *= cs / sqrt(cs);
  
-      field.H2 *= -field.Hz * sn / sqrt(cs);
+      field.H2  = -field.Hz * sn / sqrt(cs);
       field.Hz *= cs / sqrt(cs);
       field.H1 /= sqrt(cs);
     }
@@ -121,11 +121,11 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.E2 *= -field.Ez * sn / sqrt(cs);
+      field.E2  = -field.Ez * sn / sqrt(cs);
       field.Ez *= cs / sqrt(cs);
       field.E1 /= sqrt(cs);
  
-      field.Hz *= field.H2 * sn / sqrt(cs);
+      field.Hz  = field.H2 * sn / sqrt(cs);
       field.H2 *= cs / sqrt(cs);
     }
   }
