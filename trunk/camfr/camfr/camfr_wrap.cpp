@@ -753,6 +753,9 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("Hz",       field_Hz)
     .def("abs_E",    &Field::abs_E)
     .def("abs_H",    &Field::abs_H)
+    .def("S1",       &Field::S1)
+    .def("S2",       &Field::S2)
+    .def("Sz",       &Field::Sz)
     .def("__repr__", &Field::repr)
     );
 

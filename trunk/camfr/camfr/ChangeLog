@@ -1,3 +1,8 @@
+2002-07-16  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* field.h: add Poynting vector to Field.
+	* camfr_wrap.cpp: ditto.
+
 2002-07-15  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* camfr_wrap.cpp: major change in the way PML is defined.

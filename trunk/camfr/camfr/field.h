@@ -47,6 +47,10 @@ class Field
     Real abs_H() const
       {return sqrt(real(H1*conj(H1) + H2*conj(H2) + Hz*conj(Hz)));}
 
+    Complex S1() const {return E2*conj(Hz) - Ez*conj(H2);}
+    Complex S2() const {return Ez*conj(H1) - E1*conj(Hz);}
+    Complex Sz() const {return E1*conj(H2) - E2*conj(H1);}    
+
     Field operator+ (const Field&)   const;
     Field operator- (const Field&)   const;
     Field operator* (const Complex&) const;
