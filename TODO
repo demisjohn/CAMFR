@@ -41,11 +41,12 @@ CAMFR 3D:
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -speed up nomalisation through cache?
-
+-slaboverlap TE_TM: introduce 'same' function
 
 
 MEDIUM TERM:
 
+-study latest Li paper on S matrix
 -enum.export_values()
 -speed up M - U1, where U1 is unit matrix
 -speed up S_scheme_fields by avoiding explicit matrix multiplication.
@@ -119,6 +120,8 @@ MEDIUM TERM:
 
 SOURCE MAINTENANCE
 
+-dynamic dame of camfr library (i.e. camfr vs camfr_work defined in only
+ one place) http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/223972
 -Use scons Clean function
 -remove old mode profile calculator
 -Section sorter to mode.h
