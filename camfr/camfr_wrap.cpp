@@ -195,6 +195,9 @@ inline void set_section_solver(Section_solver s)
 inline void set_mode_correction(Mode_correction c)
   {global_section.mode_correction = c;}
 
+inline void set_keep_all_estimates(bool b)
+  {global_section.keep_all_estimates = b;}
+
 inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -820,7 +823,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_lower_PML",              set_lower_PML);
   def("set_circ_PML",               set_circ_PML);
   def("set_beta",                   set_beta);
-  def("set_section_solver",         set_section_solver);  
+  def("set_section_solver",         set_section_solver);    
+  def("set_keep_all_estimates",     set_keep_all_estimates);  
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes); 

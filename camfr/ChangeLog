@@ -1,3 +1,7 @@
+2004-07-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.py: Add 'set_keep_all_estimates'.
+
 2004-06-10  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* geometry3d.py: Fix rounding errors.
