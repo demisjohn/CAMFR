@@ -80,7 +80,7 @@ vector<Complex> polyroot(const vector<Complex>& coef)
 
   vector<Complex> results;
   for (unsigned int i=0; i<N; i++)
-    results.push_back(root_r[i] + I*root_i[i]);
+    results.push_back(Complex(root_r[i],root_i[i]));
 
   return results;
 }
