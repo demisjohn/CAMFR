@@ -636,7 +636,7 @@ void Slab_M_Mode::calc_fw_bw(Stack& lower_stack, Stack& upper_stack)
   //for (unsigned int i=0; i<fw.size(); i++)
   //  std::cout << "field" << i << " " << fw[i] << bw[i] << std::endl;
   //std::cout << "field " << i << " "
-  //          << f(real(fw[i])) << " "
+  //           << f(real(fw[i])) << " "
   //          << f(imag(fw[i])) << " "
   //          << f(real(bw[i])) << " "
   //          << f(imag(bw[i])) << std::endl;
