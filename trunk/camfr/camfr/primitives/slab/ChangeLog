@@ -1,3 +1,8 @@
+2002-05-09 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.h: Add get_imag_start_thickness.
+	* generalslab.cpp: Fix SlabFlux for PML case..
+
 2002-03-18 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.cpp: Improve portability.
