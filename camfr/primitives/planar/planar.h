@@ -66,10 +66,35 @@ class Planar : public MonoWaveguide
     static Complex kt;
 
     Complex calc_kz() const;
+
+    friend class PlanarMode;
 };
 
-    
-    
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: PlanarMode
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+class PlanarMode : public Mode
+{
+  public:
+
+    PlanarMode(Polarisation pol, const Complex& kz, const Complex& kz_bw,
+               const Complex& A, const Complex& B,  const Planar& geom_) 
+      : Mode(pol, kz, kz_bw, A, B), geom(&geom_) {}
+  
+    Field field(const Coord& coord) const;
+
+  protected:
+
+    const Planar* geom;
+};
+
+
+  
 #endif
 
 
