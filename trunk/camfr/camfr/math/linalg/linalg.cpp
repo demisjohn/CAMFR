@@ -1134,7 +1134,7 @@ Complex determinant(const cMatrix& A)
   // Do LU decomposition.
 
   cMatrix LU_(N,N,fortranArray);
-  iVector P (N,  fortranArray);
+  iVector P  (N,  fortranArray);
   LU(A, &LU_, &P);
 
   // Calculate determinant.
