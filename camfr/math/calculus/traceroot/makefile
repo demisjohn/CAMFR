@@ -11,8 +11,8 @@ roottest.o: roottest.cpp
 
 test: roottest.o traceroot.o
 	$(CC) roottest.o traceroot.o ../../../defs.o \
-	../croot/croot.a ../root/root.o ../../../util/cvector.o \
-	../../bessel/bessel.a \
+	../croot/mueller.o ../root/root.o ../../../util/cvector.o \
+	../../../util/stringutil.o ../../bessel/bessel.a \
 	$(LFLAGS) -o roottest
 
 FORCE:

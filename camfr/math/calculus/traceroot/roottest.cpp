@@ -60,27 +60,29 @@ class F : public Function1D<Complex>
 
 int main()
 {
-
-  // find roots of f1
+  // Find roots of f1.
   
   F f1(0);
-  wrap_real_to_real f1_wrap(f1);
+  Wrap_real_to_real f1_wrap(f1);
   vector<Real> zeros1 = brent_N_roots(f1_wrap, 0, 10, pi/2, 1e-15, 1);
   
   cout << "Zeros of f1:" << endl;
   for (int i=0; i<zeros1.size(); i++)
     cout << i << " : " << zeros1[i] << endl;
 
-  // trace them to those of f2
+  // Trace them to those of f2.
 
-  F f2(10*I);
+  F f2(10.0*I);
+
+  vector<Complex> p1 = f1.get_params();
+  vector<Complex> p2 = f2.get_params();
+  vector<Complex> forbidden;
   
-  vector<Complex> zeros2 = traceroot(f1, zeros1, f2);
+  vector<Complex> zeros2 = traceroot(zeros1, f1, p1, p2, forbidden);
   
   cout << endl << "Zeros of f2:" << endl;
   for (int i=0; i<zeros2.size(); i++)
     cout << i << " : " << zeros2[i] << endl;
   
-  return 0;
-  
+  return 0; 
 }

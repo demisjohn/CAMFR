@@ -21,8 +21,9 @@
 //
 // traceroot
 //
-//  Start from the roots estimate1 of function f1 and return the roots of f2,
-//  by gradually changing the parameters of f1 to those of f2.
+//  Start from the roots estimate1 of function f with parameters params1 
+//  and return the roots of f with params params2, by gradually changing 
+//  the parameters.
 //  Zeros that the algorithm should not converge to can be specified in
 //  forbiddenzeros.
 //  The initial resolution can be specified, but the sweep parameters
@@ -32,15 +33,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> traceroot(vector<Complex>&     estimate1,
-                          Function1D<Complex>& f1, 
-                          Function1D<Complex>& f2,
+                          Function1D<Complex>& f, 
+                          vector<Complex>&     params1,
+                          vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
                           int resolution       = 1,
                           string* fname        = NULL);
 
 vector<Complex> traceroot(vector<Real>&        estimate1,
-                          Function1D<Complex>& f1, 
-                          Function1D<Complex>& f2,
+                          Function1D<Complex>& f, 
+                          vector<Complex>&     params1,
+                          vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
                           int resolution       = 1,
                           string* fname        = NULL);
@@ -61,13 +64,12 @@ vector<Complex> traceroot(vector<Real>&        estimate1,
 //  The part of the zeros in each chunk can be written to 'fname1',
 //  'fname2', ..
 //
-//  Note that the paramters of f1 will have been modified on exit
-//
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
-                                 Function1D<Complex>& f1,
-                                 Function1D<Complex>& f2,
+                                 Function1D<Complex>& f, 
+                                 vector<Complex>&     params1,
+                                 vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
                                  int resolution       = 1,
                                  int chunk_length     = 48,
@@ -75,8 +77,9 @@ vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
                                  string* fname        = NULL);
 
 vector<Complex> traceroot_chunks(vector<Real>&        estimate1,
-                                 Function1D<Complex>& f1,
-                                 Function1D<Complex>& f2,
+                                 Function1D<Complex>& f, 
+                                 vector<Complex>&     params1,
+                                 vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
                                  int resolution       = 1,
                                  int chunk_length     = 48,

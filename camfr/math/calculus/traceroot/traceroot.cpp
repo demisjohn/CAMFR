@@ -26,11 +26,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> traceroot(vector<Complex>&     estimate1,
-                          Function1D<Complex>& f1, 
-                          Function1D<Complex>& f2,
+                          Function1D<Complex>& f, 
+                          vector<Complex>&     params1,
+                          vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
-                          int resolution,
-                          string* fname)
+                          int resolution       = 1,
+                          string* fname        = NULL)
 { 
   // Declare all variables before first goto-label.
 
@@ -43,8 +44,6 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   int initial_resolution = resolution;
   int max_fine_iters     = 20;
 
-  vector<Complex> params1 = f1.get_params();
-  vector<Complex> params2 = f2.get_params();
   vector<Complex> params, step;
   vector<Complex> zeros, zeros_bis; // Two recent zero estimates.
   vector<Complex> zeros_try;        // New trial estimate.
@@ -103,7 +102,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   newest     = &zeros;
   fine_iters = 0;
 
-  do // Gradually sweep parameters of f1 to those of f2.
+  do // Gradually sweep parameters from params1 to params2.
   {
     
     // See if we can try to increase the step.
@@ -137,7 +136,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 
     undo:
 
-    f1.set_params(params);
+    f.set_params(params);
     trouble       = false;
     trouble_index = -1;
     
@@ -145,7 +144,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     for (unsigned int i=0; !trouble && i<zeros.size(); i++)
       if (valid[i])
       {        
-        zeros_try.push_back(mueller(f1,zeros[i],zeros_bis[i],eps_coarse,
+        zeros_try.push_back(mueller(f,zeros[i],zeros_bis[i],eps_coarse,
                                     0,100,&trouble));  
         if (trouble)
         {
@@ -313,7 +312,9 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   while (abs(params-params2) >= abs(step/2));
     
   // Do a final fine search for zeros.
-  
+
+  f.set_params(params2);
+
   vector<Complex> zeros2;
   for (unsigned int i=0; i<zeros.size(); i++)
     if (valid[i])
@@ -334,7 +335,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 
         trouble = false;
         Complex final
-          = mueller(f2,zeros[i],zeros_bis[i],eps_fine,0,100,&trouble);
+          = mueller(f,zeros[i],zeros_bis[i],eps_fine,0,100,&trouble);
 
         if (trouble)
           cout << "Warning: Mueller did not converge on final search for "
@@ -352,7 +353,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 
   delete s;
 
-  f1.set_params(params1); // Restore f1. 
+  f.set_params(params1); // Restore f. 
 
   return zeros2;
 }
@@ -366,17 +367,19 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> traceroot(vector<Real>&        estimate1,
-                          Function1D<Complex>& f1, 
-                          Function1D<Complex>& f2,
+                          Function1D<Complex>& f, 
+                          vector<Complex>&     params1,
+                          vector<Complex>&     params2,
                           vector<Complex>&     forbiddenzeros,
-                          int resolution,
-                          string* fname)
+                          int resolution       = 1,
+                          string* fname        = NULL)
 {
   vector<Complex> c_estimate1;
   for (unsigned int i=0; i<estimate1.size(); i++)
     c_estimate1.push_back(Complex(estimate1[i], 0.0));
 
-  return traceroot(c_estimate1, f1, f2, forbiddenzeros, resolution, fname); 
+  return traceroot(c_estimate1, f, params1, params2, 
+                   forbiddenzeros, resolution, fname); 
 }
 
 
@@ -387,15 +390,15 @@ vector<Complex> traceroot(vector<Real>&        estimate1,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-
 vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
-                                 Function1D<Complex>& f1,
-                                 Function1D<Complex>& f2,
+                                 Function1D<Complex>& f, 
+                                 vector<Complex>&     params1,
+                                 vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
-                                 int resolution,
-                                 int chunk_length,
-                                 int overlap,
-                                 string* fname)
+                                 int resolution       = 1,
+                                 int chunk_length     = 48,
+                                 int overlap          = 4,
+                                 string* fname        = NULL)
 { 
   vector<Complex> zeros2;
   int chunknumber=0;
@@ -424,7 +427,7 @@ vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
     // Find zeros of chunk.
 
     vector<Complex> zeros_chunk = traceroot
-      (chunk, f1, f2, forbiddenzeros, resolution, chunkfname);
+      (chunk, f, params1, params2, forbiddenzeros, resolution, chunkfname);
     
     zeros2.insert(zeros2.end(), zeros_chunk.begin(), zeros_chunk.end());
 
@@ -449,18 +452,19 @@ vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Complex> traceroot_chunks(vector<Real>&        estimate1,
-                                 Function1D<Complex>& f1,
-                                 Function1D<Complex>& f2,
+                                 Function1D<Complex>& f, 
+                                 vector<Complex>&     params1,
+                                 vector<Complex>&     params2,
                                  vector<Complex>&     forbiddenzeros,
-                                 int resolution,
-                                 int chunk_length,
-                                 int overlap,
-                                 string* fname)
+                                 int resolution       = 1,
+                                 int chunk_length     = 48,
+                                 int overlap          = 4,
+                                 string* fname        = NULL)
 {
   vector<Complex> c_estimate1;
   for (unsigned int i=0; i<estimate1.size(); i++)
     c_estimate1.push_back(Complex(estimate1[i], 0.0));
 
-  return traceroot_chunks(c_estimate1, f1, f2, forbiddenzeros,
+  return traceroot_chunks(c_estimate1, f, params1, params2, forbiddenzeros,
                           resolution, chunk_length, overlap, fname); 
 }
