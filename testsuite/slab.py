@@ -20,10 +20,13 @@ class slab(unittest.TestCase):
 	
         set_lambda(1.56)
         set_N(75)
+        set_mode_surplus(2)
         set_polarisation(TM)
         set_upper_PML(-0.25)   
         core = Material(2.8305)
         clad = Material(1.0)
+
+        #set_mode_surplus(3)
 
         s = Slab(core(4.3) + clad(12.95))
         s.calc()
