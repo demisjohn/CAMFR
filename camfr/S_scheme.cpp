@@ -335,6 +335,7 @@ void S_scheme(const vector<Chunk>& chunks, MonoScatterer* result)
     calc_tilde(chunks[k], &r12, &r21, &t12, &t21);
     
     Complex res = 1.0-r12*pR21;
+    
     Complex M = 1.0/res;
 
     // Regularise in case of resonance.
