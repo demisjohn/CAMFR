@@ -1685,7 +1685,7 @@ she likes.
 CAMFR comes with a thin wrapper around some Tk plotting 
 facilities, which are based on code from Scientific Python, which has its
 homepage at
-@uref{http://starship.python.net/crew/hinsen/scientific.htm}. The necessary
+@uref{http://starship.python.net/crew/hinsen/scientific.html}. The necessary
 code from Scientific Python is included within the CAMFR distribution, while
 Tk is standard on most Python distributions (consult your system 
 administrator if in doubt).
