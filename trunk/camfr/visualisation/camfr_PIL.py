@@ -183,7 +183,7 @@ def _output_pic(pic, filename=0):
     
     if filename:
         if '.' in filename:
-            suffix  = filename[filename.index('.'):]
+            (name, suffix) = os.path.splitext(filename)
         else:
             suffix  = '.jpg'
             filename += suffix
@@ -290,19 +290,27 @@ def _output_movie(movie, filename):
     frames = len(movie)
 
     if filename:
+        #for Nr in range(frames):
+        #    fn = filename + str(Nr) + ".jpg"
+        #    movie[Nr].save(fn)
+        #return
+        
         for Nr in range(0,frames):
             movie[Nr] = movie[Nr].convert("P")  
         if '.' in filename:
-            if filename[filename.index('.'):] != '.gif':
+            (name, suffix) = os.path.splitext(filename)
+            if suffix != '.gif':
                 print "File format not supported. Defaulting to gif."
                 filename = filename[:filename.index('.')] + ".gif"
         else:
             filename += ".gif"
+            
         slash     = '/'
         script    = sys.argv[0]
         totalpath = os.path.abspath(script)
         userpath  = os.path.dirname(totalpath)+slash+filename
         fp = open(userpath,"wb")
+        
         gifmaker.makedelta(fp, movie)
         fp.close()
         print  "Created", userpath
