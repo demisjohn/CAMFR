@@ -125,6 +125,9 @@ class Cavity
     Complex  mu_at(const Coord& c) const;
     Complex   n_at(const Coord& c) const {return sqrt(eps_at(c)/eps0);}
 
+    Stack* get_top() const {return top;}
+    Stack* get_bot() const {return bot;}
+
   protected:
 
     void set_source_expansion(const FieldExpansion& f);
