@@ -22,6 +22,9 @@ bool MultiScatterer::recalc_needed() const
 {  
   const Real eps = 1e-10;
 
+  if (inc && (inc->N() != global.N))
+    return true;
+
   if (abs(global.lambda - last_lambda) > eps)
     return true;
 

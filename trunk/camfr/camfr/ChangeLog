@@ -1,5 +1,10 @@
 2002-09-12  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* waveguide.cpp: Recalc if global.N changes.
+	* scatterer.cpp: Ditto.
+
+2002-09-12  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* field.h: Add abs_S.
 
 2002-08-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

@@ -79,6 +79,9 @@ bool MultiWaveguide::recalc_needed() const
 {
   const Real eps = 1e-10;
 
+  if (modeset.size() != global.N)
+    return true;
+
   if (abs(global.lambda - last_lambda) > eps)
     return true;
 
