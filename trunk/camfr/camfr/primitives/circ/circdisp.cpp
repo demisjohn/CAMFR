@@ -13,6 +13,7 @@
 #include <iostream>
 #include "circdisp.h"
 #include "circ.h"
+#include "circ_M_util.h"
 
 using std::vector;
 using std::cout;
@@ -598,3 +599,168 @@ void Circ_2_closed::set_params(const vector<Complex>& params)
   cladding = Material(params[4], params[5]);
   lambda   = real(params[6]);
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Circ_M_closed::Circ_M_closed
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Circ_M_closed::Circ_M_closed(unsigned int _M, 
+			     const vector<Complex>&  _r,    
+                             const vector<Material*>& _m, 
+                             Real            _lambda, 
+			     int           _order,
+                             Polarisation    _pol_0)
+  : M(_M), radius(_r), material(_m),lambda(_lambda),
+    order(_order), pol_0(_pol_0)
+{
+  if (M<3)
+  {
+    cout << "Error: use Circ_2 or Circ_1 for M<3" << endl;
+    exit(-1);
+  }
+
+  if ( (order == 0) && (pol_0 != TE) && (pol_0 != TM) )
+  {
+    cout << "Invalid polarisation for this order, changing to TE." << endl;
+    pol_0 = TE;
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Circular geometry, M rings, closed system.
+// Uses kz as independent variable.
+// disp = 0 when boundary conditions are satisfied (Ez = Ephi = 0 at metal wall)
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Circ_M_closed::operator()(const Complex& kt)
+{
+  counter++;
+
+  const bool scaling = true; 
+
+  const Complex   nlast    = material[M-1]->n();
+  const Complex  murlast   = material[M-1]->mur();
+  const Real k0         = 2*pi/global.lambda;
+  const Complex   klast    = k0*nlast*sqrt(murlast);
+
+  Complex kz = sqrt(klast*klast - kt*kt);
+  // always put kz in 4th or 1st quadrant
+  if (real(kz)<0)
+    kz = -kz;
+  // also if kz is on imaginary axis make its imaginary part negative
+  // (avoid noise problems)
+  if (abs(real(kz))<1e-12)
+    if (imag(kz)>0)
+      kz = -kz;
+
+  cMatrix Ttotal(4,4,fortranArray); 
+  cMatrix F(6,4,fortranArray);
+  cMatrix Mcore(4,2,fortranArray);
+  cMatrix M_Etang(2,6,fortranArray);
+
+  cMatrix Mresult(2,2,fortranArray);
+
+  Ttotal = total_transfer_matrix(kz, scaling);
+
+  F = field_matrix(radius[M-1], *material[M-1], kz, order, scaling);
+
+  // Mcore says that at r = 0 the coefficients of the Y Bessel functions 
+  // are zero
+
+  Mcore(1,1) = 1.0;  Mcore(1,2) = 0.0;
+  Mcore(2,1) = 1.0;  Mcore(2,2) = 0.0;
+  Mcore(3,1) = 0.0;  Mcore(3,2) = 1.0;
+  Mcore(4,1) = 0.0;  Mcore(4,2) = 1.0;
+
+  M_Etang = 0.0;
+  M_Etang(1,1) = 1.0; // select Ez   component
+  M_Etang(2,2) = 1.0; // select Ephi component
+
+  Mresult = multiply(M_Etang, F,  Ttotal, Mcore);
+
+  if (order == 0) // temporary fix; for order == 0 
+  // one should use 2x2 instead of 4x4 matrices
+    if (pol_0 == TM)
+      return Mresult(1,1);
+    else
+      return Mresult(2,2);
+  
+  return Mresult(1,1)*Mresult(2,2) - Mresult(1,2)*Mresult(2,1);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Calculates total transfer matrix for Circular geometry, M rings, 
+// closed system.
+// Uses kz as independent variable.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cMatrix Circ_M_closed::total_transfer_matrix(const Complex& kz, bool scaling)
+{
+  cMatrix T(4,4,fortranArray);
+
+  T = 0.0;
+  for (int i=1; i<=4; i++)
+    T(i,i) = 1.0;
+
+  for (unsigned int i=0; i<M-1; i++)
+    T = multiply(transfer_matrix(radius[i], *material[i], *material[i+1], 
+                                 kz, order, scaling), T);  
+  return T;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// get_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> Circ_M_closed::get_params() const
+{   
+  vector<Complex> params;
+
+  params.push_back(lambda);
+  for (unsigned int i=0; i<radius.size(); i++)
+  {
+    params.push_back(radius[i]);
+    params.push_back(material[i]->n());
+    params.push_back(material[i]->mur());
+  }
+
+  return params;  
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// set_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Circ_M_closed::set_params(const vector<Complex>& params)
+{
+  lambda = real(params[0]);
+
+  unsigned int index = 0;
+
+  for (unsigned int i=1; i<params.size(); i=i+3)
+  {
+    radius[index] = params[i];
+    *material[index] = Material(params[i+1], params[i+2]);
+    index++;
+  }
+}
+

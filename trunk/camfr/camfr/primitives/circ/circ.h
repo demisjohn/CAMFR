@@ -92,6 +92,9 @@ class Circ_M : public MultiWaveguide
 
     Complex eps_at(const Coord& coord) const;
     Complex  mu_at(const Coord& coord) const;
+
+    Complex kt_to_kz(const Complex& kt);
+    Complex kz_to_kt(const Complex& kz);
     
     void find_modes();
     
@@ -106,6 +109,8 @@ class Circ_M : public MultiWaveguide
 
   protected:
 
+    void find_modes_from_scratch_by_track();
+
     static Hankel hankel;
 
     unsigned int M;
@@ -113,10 +118,13 @@ class Circ_M : public MultiWaveguide
     std::vector<Complex>   radius;
     std::vector<Material*> material;
 
+    std::vector<Complex> params;
+
+    friend class CircMode;
     friend class Circ_M_Mode;
     friend class Circ_2_Mode;
     friend class Circ_1_Mode;
-    friend Complex overlap(const Circ_M_Mode*, const Circ_M_Mode*,
+    friend Complex overlap(const CircMode*, const CircMode*,
                            const CircCache* c,
                            const std::vector<Complex>* v,
                            int, int, int, int);

@@ -202,18 +202,409 @@ Complex Circ_M::mu_at(const Coord& coord) const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Circ_M::kt_to_kz()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Circ_M::kt_to_kz(const Complex& kt)
+{
+  const Complex   nlast    = this->material[M-1]->n();
+  const Complex  murlast   = this->material[M-1]->mur();
+  const Real k0            = 2*pi/global.lambda;
+  const Complex   klast    = k0*nlast*sqrt(murlast);
+
+  Complex kz = sqrt(klast*klast - kt*kt);
+
+  // always put kz in 4th or 1st quadrant
+
+  if (real(kz)<0)
+    kz = -kz;
+
+  // also if kz is on imaginary axis make its imaginary part negative
+  // (avoid noise problems)
+
+  if (abs(real(kz))<1e-12)
+    if (imag(kz)>0)
+      kz = -kz;
+      
+  return kz;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Circ_M::kz_to_kt()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex Circ_M::kz_to_kt(const Complex& kz)
+{
+  const Complex   nlast    = this->material[M-1]->n();
+  const Complex  murlast   = this->material[M-1]->mur();
+  const Real k0            = 2*pi/global.lambda;
+  const Complex   klast    = k0*nlast*sqrt(murlast);
+
+  Complex kt = sqrt(klast*klast - kz*kz);
+
+  // always put kt in the semicircle centered on the first quadrant
+
+  if ((real(kt)+imag(kt))<0)
+  {
+    kt = -kt;
+    // give a warning if kt is close to this branch-cut
+    if (abs(real(kt)+imag(kt))<0.01*abs(kt))
+      std::cout << "Warning: branch-cut in circ.cpp: " << -kt
+                << "became " << kt << std::endl;
+  }
+  
+  return kt;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Circ_M::find_modes()
 //
 /////////////////////////////////////////////////////////////////////////////
 
 void Circ_M::find_modes()
 {
+  // Check values.
+
+  if (global.lambda == 0)
+  {
+    std::cout << "Error: wavelength not set." << std::endl;
+    return;
+  }
+  
+  if (global.N == 0)
+  {
+    std::cout << "Error: number of modes not set." << std::endl;
+    return;
+  }
+
+  if (!recalc_needed())
+    return;
+
+  find_modes_from_scratch_by_track();
+
+  // Remember wavelength and gain these modes were calculated for.
+
+  last_lambda = global.lambda;
+  if (global.gain_mat)
+    last_gain_mat = *global.gain_mat;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Circ_M::find_modes_from_scratch_by_track
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Circ_M::find_modes_from_scratch_by_track()
+{
+  const Real eps = 1e-13;
+  Real k0 = 2*pi/global.lambda;
+
+  // Create dispersion relation for lossless structure.
+
+  Circ_M_closed disp
+    (M, radius, material, global.lambda, global_circ.order, global.polarisation);
+
+  params = disp.get_params();
+
+  vector<Complex> params_lossless;
+  for (unsigned int i=0; i<params.size(); i++)
+    params_lossless.push_back(real(params[i]));
+
+  disp.set_params(params_lossless);
+
+
+
+  //
+  // I. Find guided modes
+  //
+
+  Real max_n = -1e10;
+  for (unsigned int i=0; i<material.size(); i++)
+    if (max_n < real( material[i]->n() * sqrt( material[i]->mur()) ))
+      max_n = real( material[i]->n() * sqrt( material[i]->mur()) );
+  Real guided_kt_end = abs(kz_to_kt(1.01 * max_n * k0));
+  // 1.01 above is to avoid problems when last layer is also highest index
+
+  Real guided_dkt = abs(0.5*pi*global.lambda/real(radius[0])); // roughly
+  
+  Wrap_imag_to_abs guided_disp(disp);
+    
+  vector<Real> kt_guided_lossless;
+
+  if (guided_dkt > guided_kt_end)
+    guided_dkt = guided_kt_end;
+
+  int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
+
+  Real kt_min = 1e-4; //don't go to abs(kt) < kt_min because disp is ill-behaved
+
+  kt_guided_lossless = brent_all_minima(guided_disp, kt_min, guided_kt_end-1e-9,
+                                        guided_dkt/global.precision, eps,
+                                        sec);
+
+  reverse(kt_guided_lossless.begin(), kt_guided_lossless.end());
+    
+  vector<Complex> kt_lossless, kt_complex;
+
+  // Check what type of minimum each solution is
+  // Could be: 
+  // 1. true zero on axis - keep
+  // 2. smooth non-zero minimum (quadratic) - try to find complex mode
+  // 3. noisy minimum - discard
+
+  for (unsigned int i=0; i<kt_guided_lossless.size(); i++)
+  {
+    Real kt0 = kt_guided_lossless[i];
+    Real dk = kt0 * 1e-02;
+    Real ratio = 3;
+    Real v0 = guided_disp(kt0);
+    Real v1_left  = guided_disp(kt0 - dk);
+    Real v1_right = guided_disp(kt0 + dk);
+    Real v2_left, v2_right;
+    int mintype = 3;
+    while (dk > 1e-06)
+    {
+      v2_left  = v1_left ;
+      v2_right = v1_right;
+      v1_left  = guided_disp(kt0 - dk/ratio);
+      v1_right = guided_disp(kt0 + dk/ratio);
+      
+      // Test to see if we have type 1 (true zero).
+
+      Real average = (v1_left*ratio + v1_right*ratio + v2_left + v2_right)/4.0;
+      Real maxerr = 0.1;
+      if ((abs(v1_left *ratio - average) < maxerr * average) &&
+	  (abs(v1_right*ratio - average) < maxerr * average) &&
+	  (abs(v2_left        - average) < maxerr * average) &&
+	  (abs(v2_right       - average) < maxerr * average))
+	mintype = 1;
+      
+      // Test to see if we have type 2 (quadratic).
+
+      Real average2 = (v0 + v1_left + v1_right + v2_left + v2_right)/5.0;
+      Real maxerr2 = 0.01;
+      if ((mintype == 3) &&
+	  (abs(v0       - average2) < maxerr2 * average2) &&
+	  (abs(v1_left  - average2) < maxerr2 * average2) &&
+	  (abs(v1_right - average2) < maxerr2 * average2) &&
+	  (abs(v2_left  - average2) < maxerr2 * average2) &&
+	  (abs(v2_right - average2) < maxerr2 * average2))
+	if ((v0 < (v1_left+v1_right)/2.0) && 
+	    ((v1_left+v1_right)/2.0 < (v2_left+v2_right)/2.0))
+	  mintype = 2;
+
+      // If not type 1 or 2 yet then decrease dk and try again.
+
+      dk = dk/ratio;
+    }
+
+    //cout << "kt_guided_lossless = " << kt_guided_lossless[i] 
+    //     << "   min type = " << mintype << std::endl;
+
+    if (mintype == 1)
+      kt_lossless.push_back(I*kt_guided_lossless[i]);
+    else if (mintype == 2)
+    {
+      // Follow mode in complex plane.
+
+      bool error = false;
+      Complex kt_new = mueller(disp, I*kt_guided_lossless[i],
+			       I*kt_guided_lossless[i]+0.002,1e-11,0,100,
+                               &error);
+      if (!error && abs(real(kt_new)) > 0.001 && abs(imag(kt_new)) > 0.001)
+      {
+	std::cout << "Found complex mode pair. " << kt_new << std::endl;
+	std::cout << "Started from  " << I*kt_guided_lossless[i] << std::endl;
+	kt_complex.push_back(kt_new);
+      }
+    }
+    else
+      std::cout << "Removing bad minimum " << kt_guided_lossless[i] << std::endl;
+  }
+
+  const Real eps_copies = 1e-6;
+  remove_copies(&kt_lossless, eps_copies);
+  remove_elems(&kt_lossless, Complex(0.0), eps_copies);
+
+  //cout << "guided: kt \t kz" << std::endl;
+  //for (unsigned int i=0; i<kt_lossless.size(); i++)
+  //  cout << kt_lossless[i] 
+  //	 << " " << kt_to_kz(kt_lossless[i]) << std::endl;
+  
+
+
+  //
+  // II. Find radiation modes
+  //
+
+  int modes_left = (kt_lossless.size() >= global.N + 2) ? 0 
+    : global.N - kt_lossless.size() + 2;
+ 
+  Wrap_real_to_abs radiation_disp(disp);
+
+  Real kt_begin = kt_min;
+  const Real radiation_dkt = guided_dkt;
+  while (modes_left)
+  {
+    vector<Real> kt_radiation_lossless = brent_N_minima
+      (radiation_disp, kt_begin, modes_left, radiation_dkt/global.precision,
+       eps,sec);
+
+    for (unsigned int i=0; i<kt_radiation_lossless.size(); i++)
+    {
+      //cout << kt_radiation_lossless[i] << " " 
+      //     << kt_to_kz(kt_radiation_lossless[i]) << std::endl;
+
+      Real kt0 = kt_radiation_lossless[i];
+      Real dk = kt0 * 1e-02;
+      Real ratio = 3;
+      Real v0 = radiation_disp(kt0);
+      Real v1_left  = radiation_disp(kt0 - dk);
+      Real v1_right = radiation_disp(kt0 + dk);
+      Real v2_left, v2_right;
+      int mintype = 3;
+      while (dk > 1e-06)
+      {
+        v2_left  = v1_left ;
+        v2_right = v1_right;
+        v1_left  = radiation_disp(kt0 - dk/ratio);
+        v1_right = radiation_disp(kt0 + dk/ratio);
+      
+        // test to see if we have type 1 (true zero)
+        Real average = (v1_left*ratio + v1_right*ratio + v2_left + v2_right)/4.0;
+        Real maxerr = 0.1;
+      if ((abs(v1_left *ratio - average) < maxerr * average) &&
+	  (abs(v1_right*ratio - average) < maxerr * average) &&
+	  (abs(v2_left        - average) < maxerr * average) &&
+	  (abs(v2_right       - average) < maxerr * average))
+	mintype = 1;
+      
+      // test to see if we have type 2 (quadratic)
+      Real average2 = (v0 + v1_left + v1_right + v2_left + v2_right)/5.0;
+      Real maxerr2 = 0.01;
+      if ((mintype == 3) &&
+	  (abs(v0       - average2) < maxerr2 * average2) &&
+	  (abs(v1_left  - average2) < maxerr2 * average2) &&
+	  (abs(v1_right - average2) < maxerr2 * average2) &&
+	  (abs(v2_left  - average2) < maxerr2 * average2) &&
+	  (abs(v2_right - average2) < maxerr2 * average2))
+	if ((v0 < (v1_left+v1_right)/2.0) && 
+	    ((v1_left+v1_right)/2.0 < (v2_left+v2_right)/2.0))
+	  mintype = 2;
+
+      //if not type 1 or 2 yet then decrease dk and try again
+      dk = dk/ratio;
+    }
+
+      //cout << "kt_radiation_lossless = " << kt_radiation_lossless[i] 
+      //   << "   min type = " << mintype << std::endl;
+    
+    if (mintype == 1)
+      kt_lossless.push_back(kt_radiation_lossless[i]);
+    else if (mintype == 2)
+    {
+      // follow mode in complex plane
+      bool error = false;
+      Complex kt_new = mueller(disp, kt_radiation_lossless[i],
+			       kt_radiation_lossless[i]+0.002*I,1e-11,0,100,
+                               &error);
+      if (!error && abs(real(kt_new)) > 0.001 && abs(imag(kt_new)) > 0.001)
+      {
+	std::cout << "Found complex mode pair. " << kt_new << std::endl;
+	std::cout << "Started from  " << kt_radiation_lossless[i] << std::endl;
+	kt_complex.push_back(kt_new);
+      }
+    }
+    else
+      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] << std::endl;
+    }
+    
+    modes_left = (kt_lossless.size() >= global.N + 2) ? 0 
+      : global.N - kt_lossless.size() + 2;
+
+    kt_begin = kt_radiation_lossless[kt_radiation_lossless.size()-1];
+  }  // what does the "extra" variable do in slab.cpp??
+
+  for (unsigned int i=0; i<kt_complex.size(); i++)
+  {  
+    kt_lossless.push_back(kt_complex[i]);
+    kt_lossless.push_back(-real(kt_complex[i])+I*imag(kt_complex[i]));
+  }
+  
+
+
+  //
+  // III. Remove redundant roots, etc.
+  //
+
+  remove_copies(&kt_lossless, eps_copies);
+  
+  //for (unsigned int i=0; i<material.size(); i++)////
+  // remove_elems(&kz_lossless, Complex(real(material[i]->n()) * k0), 
+  // eps_copies);////
+  //remove_elems(&kr2, + k0*sqrt(delta_k), eps_copies);
+  //remove_elems(&kr2, - k0*sqrt(delta_k), eps_copies);
+
+  // Check if enough modes are found.
+
+  if (kt_lossless.size() < global.N)
+  {
+    std::cout << "Error: didn't find enough modes ("
+         << kt_lossless.size() << "/" << global.N << "). " << std::endl;
+    exit (-1);
+  }
+
+
+
+  //
+  // IV. Traceroot
+  //
+
+  vector<Complex> forbidden;
+  forbidden.push_back(0.0);
+
+  vector<Complex> kt =
+    traceroot(kt_lossless, disp,
+              params_lossless, params,
+              forbidden, global.sweep_steps);
+
+  std::cout << "Calls to dispersion relation: " 
+            << disp.times_called() << std::endl;
+
+  // Create mode set
+
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
+
+  for (unsigned int i=0; i<kt.size(); i++)
+  {
+    Complex kz = kt_to_kz(kt[i]);
+
+    if (real(kt[i]) < -.001) // Backward mode of complex set.
+      kz = -kz;
+    
+    Circ_M_Mode *newmode
+      = new Circ_M_Mode(Polarisation(unknown), kz, this);
+
+    newmode->normalise();
+
+    modeset.push_back(newmode);
+  }
   
-  py_error("Circ_M::findModes to be implemented.");
-  exit (-1);
+  sort_modes();
+  truncate_N_modes();
 }
 
 
@@ -250,11 +641,11 @@ void Circ_M::calc_overlap_matrices
 
   for (int i=1; i<=int(global.N); i++)
   {
-    const Circ_M_Mode* mode_I
-      = dynamic_cast<const Circ_M_Mode*>(medium_I ->get_mode(i));
+    const CircMode* mode_I
+      = dynamic_cast<const CircMode*>(medium_I ->get_mode(i));
 
-    const Circ_M_Mode* mode_II
-      = dynamic_cast<const Circ_M_Mode*>(medium_II->get_mode(i));
+    const CircMode* mode_II
+      = dynamic_cast<const CircMode*>(medium_II->get_mode(i));
 
     for (int k=0; k<int(disc.size()-1); k++)
     {
@@ -297,23 +688,23 @@ void Circ_M::calc_overlap_matrices
     for (int j=1; j<=int(global.N); j++)
     {      
       (*O_I_II)(i,j) = overlap
-        (dynamic_cast<const Circ_M_Mode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const Circ_M_Mode*>(medium_II->get_mode(j)),
+        (dynamic_cast<const CircMode*>(medium_I ->get_mode(i)),
+         dynamic_cast<const CircMode*>(medium_II->get_mode(j)),
          &cache, &disc, i, j, 1, 2);
       
       (*O_II_I)(i,j) = overlap
-        (dynamic_cast<const Circ_M_Mode*>(medium_II->get_mode(i)),
-         dynamic_cast<const Circ_M_Mode*>(medium_I ->get_mode(j)),
+        (dynamic_cast<const CircMode*>(medium_II->get_mode(i)),
+         dynamic_cast<const CircMode*>(medium_I ->get_mode(j)),
          &cache, &disc, i, j, 2, 1);
 
       if (O_I_I) (*O_I_I)(i,j) = overlap
-        (dynamic_cast<const Circ_M_Mode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const Circ_M_Mode*>(medium_I ->get_mode(j)),
+        (dynamic_cast<const CircMode*>(medium_I ->get_mode(i)),
+         dynamic_cast<const CircMode*>(medium_I ->get_mode(j)),
          &cache, &disc, i, j, 1, 1);
 
       if (O_II_II) (*O_II_II)(i,j) = overlap
-        (dynamic_cast<const Circ_M_Mode*>(medium_II->get_mode(i)),
-         dynamic_cast<const Circ_M_Mode*>(medium_II->get_mode(j)),
+        (dynamic_cast<const CircMode*>(medium_II->get_mode(i)),
+         dynamic_cast<const CircMode*>(medium_II->get_mode(j)),
          &cache, &disc, i, j, 2, 2);
     }
 }
@@ -431,7 +822,7 @@ void Circ_2::find_modes_from_scratch_by_ADR()
   
   vector<Complex> kr2 = N_roots(disp, global.N, lowerleft, upperright);
   
-  // cout << "Calls to circ dispersion relation : "<<disp.times_called()<<endl;
+  // cout << "Calls to circ dispersion relation : "<<disp.times_called()<<std::endl;
   
   // Eliminate copies and false zeros.
 
@@ -575,7 +966,7 @@ void Circ_2::find_modes_from_scratch_by_track()
   
   //cout << "Calls to guided dispersion relation: "
   //     << guided_disp_lossless.times_called() + guided_disp.times_called()
-  //     << endl;
+  //     << std::endl;
 
 
   
@@ -644,7 +1035,7 @@ void Circ_2::find_modes_from_scratch_by_track()
   
   //cout << "Calls to radiation dispersion relation: "
   //     << rad_disp_lossless.times_called() + rad_disp.times_called()
-  //     << endl;
+  //     << std::endl;
 
   
 /*  
@@ -676,13 +1067,13 @@ void Circ_2::find_modes_from_scratch_by_track()
   for (unsigned int i=0; i<kr2_complex_lossless_try.size(); i++)
     if (    ( abs(real(kr2_complex_lossless_try[i])) < eps_copies)
          || ( abs(imag(kr2_complex_lossless_try[i])) < eps_copies) )
-    cout << "Warning: unable to locate possible complex mode." << endl;
+    cout << "Warning: unable to locate possible complex mode." << std::endl;
   else
     kr2_complex_lossless.push_back(kr2_complex_lossless_try[i]);
   
   if (kr2_complex_lossless.size() > 0)
     cout << "Found " << kr2_complex_lossless.size()
-         << " set(s) of complex modes!" << endl;
+         << " set(s) of complex modes!" << std::endl;
 
   // Add other complex mode of symmetric quartet.
   
@@ -712,7 +1103,7 @@ void Circ_2::find_modes_from_scratch_by_track()
  
   cout << "Calls to complex dispersion relation: "
        << complex_disp_lossless.times_called() + complex_disp.times_called()
-       << endl;
+       << std::endl;
 */ 
   //
   // Join modes, eliminate double zeros and false zeros at kr2=0 and kr1=0.
@@ -816,7 +1207,7 @@ void Circ_2::find_modes_by_sweep()
   vector<Complex> kr2_guided_old;
   for (unsigned int i=0; i<no_of_guided_modes; i++)
   {
-    const Circ_M_Mode* mode = dynamic_cast<const Circ_M_Mode*>(modeset[i]);
+    const CircMode* mode = dynamic_cast<const CircMode*>(modeset[i]);
     kr2_guided_old.push_back(mode->kr_at(radius[1]));
   }
 
@@ -844,7 +1235,7 @@ void Circ_2::find_modes_by_sweep()
   vector<Complex> kr2_rad_old;
   for (unsigned int i=no_of_guided_modes; i<modeset.size(); i++)
   {
-    const Circ_M_Mode* mode = dynamic_cast<const Circ_M_Mode*>(modeset[i]);
+    const CircMode* mode = dynamic_cast<const CircMode*>(modeset[i]);
     kr2_rad_old.push_back(mode->kr_at(radius[1]));
   }
 
@@ -1094,7 +1485,24 @@ Circ::Circ(const Expression& ex)
     c = new Circ_2(d1, *m1, d1+d2, *m2);
   }
   else
-    py_error("Error: more than two materials not yet supported in Circ.");
+  {    
+    vector<Complex> r;
+    vector<Material*> m;
+    Complex current_r = 0.0;
+    
+    for (unsigned int i=0; i<e.get_size(); i++)
+    {
+      current_r += e.get_term(i)->get_d();
+
+      if (i == e.get_size()-1)
+        current_r += I*global_circ.PML;
+      
+      r.push_back(current_r);
+      m.push_back(dynamic_cast<Material*>(e.get_term(i)->get_mat()));      
+    }    
+
+    c = new Circ_M(r, m);
+  }
 
   uniform = c->is_uniform();
   core = c->get_core();

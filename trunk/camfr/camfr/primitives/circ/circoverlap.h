@@ -49,10 +49,10 @@ struct CircCache
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-class Circ_M_Mode; // forward declation -- see circmode.h
+class CircMode; // forward declation -- see circmode.h
 
-Complex overlap(const Circ_M_Mode* mode_I,
-                const Circ_M_Mode* mode_II,
+Complex overlap(const CircMode* mode_I,
+                const CircMode* mode_II,
                 const CircCache* cache=NULL,
                 const std::vector<Complex>* disc=NULL,
                 int i=0, int j=0, int I_index=0, int II_index=0);

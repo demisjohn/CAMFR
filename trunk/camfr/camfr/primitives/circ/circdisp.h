@@ -18,6 +18,7 @@
 #include "../../mode.h"
 #include "../../math/calculus/calculus.h"
 #include "../../math/bessel/bessel.h"
+#include "../../math/linalg/linalg.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -227,6 +228,43 @@ class Circ_2_closed_rad_lossless : public Circ_2_closed
                       rad,hankel,pol_0,scale_always) {}
 
     Complex operator()(const Complex& kr2);
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Closed system, M rings.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Circ_M_closed : public ComplexFunction
+{
+public:
+  
+  Circ_M_closed(unsigned int _M,
+		const std::vector<Complex>&  _r,     
+		const std::vector<Material*>& _m,  
+		Real            _lambda, 
+		int             _order,
+		Polarisation    _pol_0=TE);
+
+  Complex operator()(const Complex& kz);
+
+  cMatrix total_transfer_matrix(const Complex& kz, bool scaling = false);
+  
+  std:: vector<Complex> get_params() const;
+  void set_params(const std::vector<Complex>&);
+        
+protected:
+
+  unsigned int M;     // number of rings 
+  std::vector<Complex>      radius;         // radii
+  std::vector<Material*>     material;      // materials
+  Real         lambda;    // wavelength
+  const int          order;     // order of Bessel functions
+  Polarisation pol_0;     // simplified for TE or TM order 0
+    
 };
 
 

@@ -15,6 +15,8 @@
 #include "circmode.h"
 #include "circdisp.h"
 #include "circoverlap.h"
+#include "circ_M_util.h"
+#include "../../util/index.h"
 
 using std::vector;
 using std::cout;
@@ -39,12 +41,56 @@ Real rel_error(const Complex& a, const Complex& b)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Circ_M_Mode::Circ_M_Mode
+// calc_phi_dependence
+//
+//  Auxiliary function to calculate phi-dependence of E fields (f)
+//  and H fields (g).
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Circ_M_Mode::Circ_M_Mode(Polarisation pol, const Complex& kz,
-                         const Circ_M* geom_)
+void calc_phi_dependence(int order, const Complex& phi, bool ang_dep,
+                         Complex* f, Complex* df, Complex* g, Complex* dg)
+{
+  Complex cs, d_cs, sn, d_sn;
+  Real n = order;
+
+  if (n != 0)
+  {
+      cs = ang_dep ?    cos(n*phi) : 1.0;
+    d_cs = ang_dep ? -n*sin(n*phi) : 1.0;
+
+      sn = ang_dep ?    sin(n*phi) : 1.0;
+    d_sn = ang_dep ?  n*cos(n*phi) : 1.0;
+  }
+  else
+  {
+      cs = 1.0;
+    d_cs = 0.0;
+
+      sn = 1.0;
+    d_sn = 0.0;
+  }
+  
+  if (global_circ.fieldtype == cos_type)
+  {
+    *f = cs; *df = d_cs; *g = sn; *dg = d_sn;
+  }
+  else
+  {
+    *f = sn; *df = d_sn; *g = cs; *dg = d_cs;
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CircMode::CircMode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+CircMode::CircMode(Polarisation pol, const Complex& kz,
+                   const Circ_M* geom_)
   : Mode(pol, kz, -kz), geom(geom_)
 { 
   // Initialise kr for each ring.
@@ -62,11 +108,11 @@ Circ_M_Mode::Circ_M_Mode(Polarisation pol, const Complex& kz,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Circ_M_Mode::normalise
+// CircMode::normalise
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Circ_M_Mode::normalise()
+void CircMode::normalise()
 {
   Complex power = overlap(this, this);
 
@@ -84,17 +130,227 @@ void Circ_M_Mode::normalise()
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Circ_M_Mode::Circ_M_Mode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Circ_M_Mode::Circ_M_Mode(Polarisation pol, const Complex& kz,
+                         const Circ_M* geom)
+  : CircMode(pol, kz, geom)
+{ 
+  // Calculate transfer matrices.
+
+  for(unsigned int i=0; i < geom->M - 1; i++)
+    T.push_back(transfer_matrix(geom->radius[i], *geom->material[i], 
+				*geom->material[i+1], kz, 
+                                global_circ.order, false));
+
+  // Calculate field expansion coefficients A and B.
+
+  // First, calculate total transfer matrix.
+
+  cMatrix Ttotal(4,4,fortranArray); Ttotal = 0.0;
+  for (int i=1; i<=4; i++)
+    Ttotal(i,i) = 1.0;
+
+  for (unsigned int i=0; i<geom->M-1; i++)
+    Ttotal = multiply(T[i], Ttotal);
+
+  // Then, calculate field matrix at metal wall.
+
+  cMatrix F(6,4,fortranArray);
+  F = field_matrix(geom->radius[geom->M-1], *geom->material[geom->M-1],
+                   kz, global_circ.order, false);
+
+  // Two more matrices.
+
+  cMatrix Mcore(4,2,fortranArray);
+  cMatrix M_Etang(2,6,fortranArray);
+
+  // Mcore says that at r = 0 the coefficients of the Y Bessel 
+  // functions are zero.
+
+  Mcore(1,1) = 1.0;  Mcore(1,2) = 0.0;
+  Mcore(2,1) = 1.0;  Mcore(2,2) = 0.0;
+  Mcore(3,1) = 0.0;  Mcore(3,2) = 1.0;
+  Mcore(4,1) = 0.0;  Mcore(4,2) = 1.0;
+
+  M_Etang = 0.0;
+  M_Etang(1,1) = 1.0; // select Ez   component
+  M_Etang(2,2) = 1.0; // select Ephi component
+  
+  cMatrix Mresult(2,2,fortranArray);
+  Mresult = multiply(M_Etang, F,  Ttotal, Mcore);
+
+  // Now we have a 2-by-2 Mresult whose determinant we know is zero.
+
+  // Find A and B from condition Mresult(1,1) * A + Mresult(1,2) * B = 0
+  // or from condition Mresult(2,1) * A + Mresult(2,2) * B = 0.
+
+  if (abs(Mresult(1,1)) > abs(Mresult(2,2)))
+  {
+    B =  Mresult(1,1);
+    A = -Mresult(1,2);
+  }
+  else
+  {
+    A = - Mresult(2,2);
+    B =   Mresult(2,1);
+  }
+
+  if ((A == 0.0) && (B == 0.0))
+  {
+    cout << "Error in Circ_M_Mode::Circ_M_Mode: A = B = 0" << endl;    
+    exit(-1);
+  }
+
+  // Calculate amplitude vectors.
+
+  cVector core_amplitudes(4,fortranArray);
+  core_amplitudes(1) = 0.5 * A;
+  core_amplitudes(2) = 0.5 * A;
+  core_amplitudes(3) = 0.5 * B;
+  core_amplitudes(4) = 0.5 * B;
+
+  amplitudes.push_back(core_amplitudes);
+
+  for (unsigned int i=0; i<geom->M-1; i++)
+    amplitudes.push_back(multiply(T[i], amplitudes[i]));
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Circ_M_Mode::field_ring
 //
 /////////////////////////////////////////////////////////////////////////////
 
 Field Circ_M_Mode::field_ring(int i, const Coord& coord,
-                              Complex* dEzdr, Complex* dHzdr,
+                              Complex* dEzdr, Complex* dHzdr, 
                               bool ang_dep) const
 {
-  cerr << "Field profiles for structures with M rings "
-       << "not yet implemented." << endl;
-  exit (-1);
+  const Complex r = coord.c1;
+
+  // Find index of layer.
+
+  int j = index_lookup(r, coord.c1_limit, geom->radius);
+
+  if (j == geom->radius.size())
+  {
+    cout << "Radius larger then outer radius. Setting field to zero." << endl;
+
+    Field field;
+
+    if (dEzdr)
+      *dEzdr = 0.0;
+    if (dHzdr)
+      *dHzdr = 0.0;
+
+    return field;
+  }
+
+  // Get field matrix.
+
+  cMatrix F(6,4,fortranArray);
+  F = field_matrix(r, *geom->material[j], kz, global_circ.order, false);
+
+  Complex f,df,g,dg; // Need this even if ang_dep == false.
+  calc_phi_dependence(global_circ.order, coord.c2, ang_dep, &f, &df, &g, &dg);
+
+  if (global_circ.fieldtype == cos_type)
+  {
+    g  *= I; // Because exp(I*m*phi) - exp(-I*m*phi) = 2 * I * sin(m*phi).
+    dg *= I;
+  }
+  else
+  {
+    f  *= I;
+    df *= I;
+  }
+
+  Complex Df,Dg;
+  if (global_circ.order != 0)
+  {
+    Df = df/(I*Real(global_circ.order));
+    Dg = dg/(I*Real(global_circ.order));
+    }
+  else
+  {
+    Df = 0.0;
+    Dg = 0.0;
+  }
+  
+  cMatrix ang_dep_matrix(6,4,fortranArray);
+  for (int i=1; i<=6; i++)
+    for (int j=1; j<=2; j++)
+    {
+      ang_dep_matrix(i,j)   = f;
+      ang_dep_matrix(i,j+2) = g;
+    }
+
+  ang_dep_matrix(2,1) = Df;
+  ang_dep_matrix(2,2) = Df;
+
+  ang_dep_matrix(3,3) = Dg;
+  ang_dep_matrix(3,4) = Dg;
+
+  ang_dep_matrix(5,3) = Dg;
+  ang_dep_matrix(5,4) = Dg;
+  
+  ang_dep_matrix(6,1) = Df;
+  ang_dep_matrix(6,2) = Df;
+
+  F = F * ang_dep_matrix; // element by element multiplication
+
+  // vector with 6 field components
+
+  cVector components(6,fortranArray);
+  components = multiply(F, amplitudes[j]);
+
+  Field field;
+
+  const Real eps = 1e-14;
+
+  field.Ez = components(1); // Ez
+  field.E2 = components(2); // Ephi
+  field.E1 = components(3); // Er
+
+  field.Hz = components(4); // Hz
+  field.H2 = components(5); // Hphi
+  field.H1 = components(6); // Hr
+
+  const Real Z0 = c * 4*pi*1e-07;
+
+  if (dEzdr)
+    *dEzdr = - I * (kz * field.E1 - 
+		    (2.0*pi/global.lambda) * 
+		    Z0   * geom->material[j]->mur()  * field.H2);
+  if (dHzdr)
+    *dHzdr = - I * (kz * field.H1 + 
+		    (2.0*pi/global.lambda) *
+		    (1./Z0) * geom->material[j]->epsr() * field.E2);
+
+  return field;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Circ_M_Mode::normalise
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Circ_M_Mode::normalise()
+{
+  Complex power = overlap(this, this);
+
+  A /= sqrt(power);
+  B /= sqrt(power);
+
+  for(unsigned int i=0; i < geom->M; i++)
+    amplitudes[i] /= sqrt(power);
 }
 
 
@@ -108,8 +364,8 @@ Field Circ_M_Mode::field_ring(int i, const Coord& coord,
 Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
                          const Complex& kr1,  const Complex& kr2,
                          const Circ_M* geom_)
-  : Circ_M_Mode(pol_, kz_, geom_) 
-{  
+  : CircMode(pol_, kz_, geom_) 
+{
   // Set kr vector.
   
   kr.clear();
@@ -252,49 +508,6 @@ Circ_2_Mode::Circ_2_Mode(Polarisation pol_,   const Complex& kz_,
     s << "Warning: error " << worst << " higher than 1e-8 "
       << "in boundary conditions check: kz = " << kz_;
     py_print(s.str());
-  }
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// calc_phi_dependence
-//
-//  Auxiliary function to calculate phi-dependence of E fields (f)
-//  and H fields (g).
-//
-/////////////////////////////////////////////////////////////////////////////
-
-void calc_phi_dependence(int order, const Complex& phi, bool ang_dep,
-                         Complex* f, Complex* df, Complex* g, Complex* dg)
-{
-  Complex cs, d_cs, sn, d_sn;
-  Real n = order;
-
-  if (n != 0)
-  {
-      cs = ang_dep ?    cos(n*phi) : 1.0;
-    d_cs = ang_dep ? -n*sin(n*phi) : 1.0;
-
-      sn = ang_dep ?    sin(n*phi) : 1.0;
-    d_sn = ang_dep ?  n*cos(n*phi) : 1.0;
-  }
-  else
-  {
-      cs = 1.0;
-    d_cs = 0.0;
-
-      sn = 1.0;
-    d_sn = 0.0;
-  }
-  
-  if (global_circ.fieldtype == cos_type)
-  {
-    *f = cs; *df = d_cs; *g = sn; *dg = d_sn;
-  }
-  else
-  {
-    *f = sn; *df = d_sn; *g = cs; *dg = d_cs;
   }
 }
 
@@ -532,7 +745,7 @@ Field Circ_2_Mode::field_cladding(const Coord& coord, Complex* dEzdr_p,
 
 Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
                          const Complex& kr_, const Circ_M*  geom_)
-  : Circ_M_Mode(pol_, kz_, geom_) 
+  : CircMode(pol_, kz_, geom_) 
 {
   // Set kr vector.
 
