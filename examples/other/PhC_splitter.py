@@ -12,14 +12,10 @@ from Numeric import *
 
 set_lambda(1.5)
 set_N(50)
-set_precision(1000)
-set_precision_enhancement(500)
-set_dx_enhanced(.0001)
 
 # Set geometry parameters
 
 GaAs = Material(3.4)
-wg_m = Material(1.8)
 air  = Material(1.0)
   
 a = .600     # period
@@ -36,19 +32,19 @@ sections = 1 # intermediate 90 deg sections
 
 # Define slabs.
 
-no_rods = Slab(air(a-r+(sections+1+periods)*a+cl-PML*1j))
+no_rods = Slab(air(a-r+(sections+1+periods)*a+cl+PML*1j))
 
 # Central waveguide.
  
 cen = Slab(  air(a-r)                                               \
            + (sections+1+periods)*(GaAs(2*r) + air(a-2*r))          \
-           + air(cl-PML*1j) )
+           + air(cl+PML*1j) )
 
 # Vertical section.
 
 ver = Slab(  air(a-r + (sections+1)*a)                              \
            + periods*(GaAs(2*r) + air(a-2*r) )                      \
-           + air(cl-PML*1j) )
+           + air(cl+PML*1j) )
 
 # Outer arms.
  
@@ -56,7 +52,7 @@ arm = Slab(  GaAs(r) + air(a-2*r)                                   \
            + sections*(GaAs(2*r) + air(a-2*r))                      \
 	   + air(a)                                                 \
            + periods*(GaAs(2*r) + air(a-2*r))                       \
-           + air(cl-PML*1j) )
+           + air(cl+PML*1j) )
 
 # Find lowest order waveguide mode.
 
