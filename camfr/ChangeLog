@@ -1,3 +1,7 @@
+2003-12-04  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* camfr_wrap.cpp: Wrap mode_correction enum.
+
 2003-12-04  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* mode.h: Remove wrapper.
