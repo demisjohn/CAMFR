@@ -1,3 +1,7 @@
+2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* S_scheme.cpp: regularise in case of resonance.
+
 2003-06-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* camfr_wrap.cpp: Add get_polarisation.

@@ -282,7 +282,7 @@ void calc_tilde(const Chunk& chunk,
   Complex kz = s->get_ext()->get_mode(1)->get_kz();
 
   Complex M;
-  if ( imag(kz) > 1000 )
+  if (imag(kz) > 1000)
   {
     py_print("Warning: S-scheme not suited for extremely high gain.");
     M = 1e6;
@@ -334,7 +334,11 @@ void S_scheme(const vector<Chunk>& chunks, MonoScatterer* result)
 
     calc_tilde(chunks[k], &r12, &r21, &t12, &t21);
     
-    Complex M = 1.0/(1.0-r12*pR21);
+    Complex res = 1.0-r12*pR21;
+    Complex M = 1.0/res;
+
+    if (abs(res) < 1e-12) // Regularise in case of resonance.
+      M = 0.0;
 
     result->set_R12(pT21 * M *  r12 * pT12  +  pR12);
     result->set_T21(pT21 * M *  t21);
