@@ -357,7 +357,7 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
     chunks[0].sc->calcRT();
 
   // Loop over chunks.
-
+  
   for (unsigned int k=0; k<chunks.size(); k++)
   {
     // Calculate fw field after interface.
@@ -391,6 +391,7 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
     if (right_chunks.size() != 0)
     {
       DiagScatterer right; right.allocRT();
+
       S_scheme(right_chunks, &right);
       
       bw_prop = right.get_diag_R12() * fw_prop;
@@ -521,8 +522,9 @@ void S_scheme_fields_S
 
   // Check type of chunks and call corresponding function.
 
-  for (unsigned int i=0; i<chunks.size(); i++)
-    if (! chunks[i].sc->get_inc()->is_uniform())
+  for (unsigned int i=0; i<chunks.size(); i++) 
+    if (    ! dynamic_cast<DiagScatterer*>(chunks[i].sc) 
+         && ! chunks[i].sc->is_mono())
       return calc_S_S(chunks, field, inc_right_bw);
   
   for (unsigned int i=0; i<chunks.size(); i++)

@@ -1,5 +1,9 @@
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* S_scheme_fields.cpp: Better check for DiagScatterer.
+
+2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* S_scheme.cpp: use unstable_exp_threshold.
 
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
