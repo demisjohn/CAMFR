@@ -76,7 +76,7 @@ class Section2D_Mode : public SectionMode
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: UniformSectionMode
+// CLASS: Section1D_Mode
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +91,10 @@ class Section1D_Mode : public SectionMode
     void get_fw_bw(const Complex& c, Limit c_limit, cVector* fw, cVector* bw);
 
     void normalise();
+
+  protected:
+
+    Complex fw, bw;
 };
 
 

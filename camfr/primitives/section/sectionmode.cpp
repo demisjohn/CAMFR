@@ -123,7 +123,9 @@ Field Section2D_Mode::field(const Coord& coord) const
   Complex s;
   if (real(coord.c1) < real(section->left.get_total_thickness()))
   {
-    stack_coord.z = section->left.get_total_thickness() - coord.c1;
+    stack_coord.z = section->left.get_total_thickness() - coord.c1
+      + I*global_section.left_PML;
+
     stack_coord.z_limit = (coord.c1_limit == Plus) ? Min : Plus;
 
     if (abs(coord.c1) < 1e-8) // TMP: kludge
@@ -134,7 +136,9 @@ Field Section2D_Mode::field(const Coord& coord) const
   }
   else
   {  
-    stack_coord.z = coord.c1 - section->left.get_total_thickness();
+    stack_coord.z = coord.c1 - section->left.get_total_thickness()
+      + I*global_section.left_PML;
+
     stack_coord.z_limit = coord.c1_limit;
 
     if (abs(coord.c1 - section->right.get_total_thickness()) < 1e-8)

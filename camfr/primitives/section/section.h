@@ -20,6 +20,29 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// STRUCT: SectionGlobal
+//
+//   Groups global variables related to section structures.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+typedef enum {E_wall, H_wall} Section_wall_type;
+
+struct SectionGlobal
+{
+    Real  left_PML;
+    Real right_PML;
+    Section_wall_type  leftwall;
+    Section_wall_type rightwall;
+    bool guided_only; // TMP variable?
+};
+
+extern SectionGlobal global_section;
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: SectionImpl
 //
 //  Class containing the implementation shared by the different types of
@@ -36,7 +59,7 @@ class SectionImpl : public MultiWaveguide
   public:
 
     SectionImpl() {}
-     
+
     virtual Complex get_width()  const = 0;
     virtual Complex get_height() const = 0;
     virtual Complex c1_size()    const {return get_width();}
@@ -84,11 +107,9 @@ class Section : public MultiWaveguide
 {
   public:
 
-    Section(const Expression& ex, int M=global.N);
-    Section(const Expression& left_ex, const Expression& right_ex, 
-            int M=global.N);
-    Section(const Term& t);    
-    ~Section() {delete s;}
+    Section(Expression& ex, int M=global.N);
+    Section(Expression& left_ex, Expression& right_ex, int M=global.N);
+    ~Section() {delete s; delete leftwall_sc; delete rightwall_sc;}
 
     bool operator==(const Waveguide& w)    const {return this == &w;}
     std::vector<Material*> get_materials() const {return s->get_materials();}
@@ -130,6 +151,8 @@ class Section : public MultiWaveguide
   protected:
 
     SectionImpl* s;
+    DiagScatterer* leftwall_sc;
+    DiagScatterer* rightwall_sc;
 };
 
 inline std::ostream& operator<<(std::ostream& s, const Section& section)
@@ -152,9 +175,8 @@ class Section2D : public SectionImpl
   public:
 
     Section2D() {}
-    Section2D(const Expression& left_ex, const Expression& right_ex, int M);   
+    Section2D(Expression& left_ex, Expression& right_ex, int M);   
     Section2D(const Section2D& section);
-    ~Section2D() {}
 
     Section2D& operator= (const Section2D& section);
 
@@ -188,7 +210,6 @@ class Section2D : public SectionImpl
 
     bool symmetric;
 
-    void find_modes_from_scratch_by_ADR();
     void find_modes_from_scratch_by_track();
     void find_modes_by_sweep();
 
