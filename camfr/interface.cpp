@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "interface.h"
 #include "primitives/slab/generalslab.h"
 
@@ -522,6 +523,15 @@ void DiagInterface::calcRT()
     return;
 
   allocRT();
+
+  if (abs(inc->c1_size() - ext->c1_size()) > 1e-6)
+  {
+    std::ostringstream s;
+    s << "Warning: complex widths don't match: "
+      << inc->c1_size() << " and " << ext->c1_size();
+    py_error(s.str());
+    exit (-1);
+  }
 
   inc->find_modes();
   ext->find_modes();
