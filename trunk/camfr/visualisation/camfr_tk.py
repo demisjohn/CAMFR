@@ -34,16 +34,18 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def plot2D(z):
+def plot_matrix(z):
 
     # Scale z and find appropriate colormap.
+    
+    z = flipud(z)
 
-    height = z.shape[1]
-    width  = z.shape[0]
+    height = z.shape[0]
+    width  = z.shape[1]
     
     zmax = max(max(z))
     zmin = min(min(z))
-
+   
     if (zmin < 0) and (0 < zmax) :
         colormap = create_bipolar_color_map()
         zmax = max([-zmin, zmax])
@@ -52,7 +54,8 @@ def plot2D(z):
         colormap = create_unipolar_colormap_2()
 
     interval = zmax - zmin
-    z -= zmin
+
+    z = z - zmin
 
     colors = len(colormap)
  
@@ -71,11 +74,11 @@ def plot2D(z):
     canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
     canvas.pack()
 
-    for y in arange(height-1, -1, -1):
-        for x in range(0,width):
+    for y in range(height):
+        for x in range(width):
             canvas.create_rectangle(scale*x+2,       scale*y+2,          \
                                     scale*x+2+scale, scale*y+2+scale,    \
-                                    fill=colormap[int(z[x,y])], width=0)
+                                    fill=colormap[int(z[y,x])], width=0)
  
     root.mainloop()
 
@@ -91,29 +94,31 @@ def phasormovie(z):
 
     # Make movie-memory.
     
-    height = z.shape[1]
-    width  = z.shape[0]    
+    height = z.shape[0]
+    width  = z.shape[1]    
     frames = 16
-    movie  = zeros([frames, width , height], Float)
+    movie  = zeros([frames, height, width], Float)
 
     colormap = create_bipolar_color_map()
 
     # Fill all frames, rescale the data.
     # The central color ends up where data = zero.
 
+    z = flipud(z)
+
     for Nr in range(0,frames):
         movie[Nr] = z.real
-        z *= exp(2j*pi/frames)
+        z = z * exp(2j*pi/frames)
  
     interval = 2*max(max(abs(z)))
     colors   = len(colormap)
     
     for Nr in range(0,frames):
         if (interval != 0): 
-            movie[Nr] += interval/2.
-            movie[Nr] *= (colors-1)/interval
+            movie[Nr] = movie[Nr] + interval/2.
+            movie[Nr] = movie[Nr] * (colors-1)/interval
         else:
-            movie[Nr] += colors/2.
+            movie[Nr] = movie[Nr] + colors/2.
     
     # (re)size picture.
 
@@ -124,25 +129,35 @@ def phasormovie(z):
     # Put picture on canvas.
 
     root = Tk()
+
     canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
     canvas.pack()
 
-    for y in arange(height-1, -1, -1):
+    for y in range(height):
         for x in range(0,width):
             canvas.create_rectangle(scale*x+2,       scale*y+2,          \
                                     scale*x+2+scale, scale*y+2+scale,    \
-                                    fill=colormap[int(movie[0,x,y])], width=0)
+                                    fill=colormap[int(movie[0,y,x])], width=0)
+
+    # Close window procedure
+    
+    stop = [0]    
+    def callback(): stop[0] = 1 
+    root.protocol("WM_DELETE_WINDOW", callback)
 
     # Animate picture.
     
-    while 1:
+    while not stop[0]:
         for frame in movie:
+            if stop[0]: break
             object = 1   
-            for y in arange(height-1, -1, -1):
+            for y in range(height):
                 for x in range(0, width):
-                    canvas.itemconfigure(object,fill=colormap[int(frame[x,y])])
+                    canvas.itemconfigure(object,fill=colormap[int(frame[y,x])])
                     object += 1  
             root.update()
+
+    root.destroy()       
 
 
     
@@ -241,7 +256,7 @@ def plot_f(f, r_x, r_y):
       for i_x in range(len(r_x)):
         fz[i_x,i_y] = abs(f(r_x[i_x] + r_y[i_y]*1j))
 
-    plot2D(fz)
+    plot_matrix(fz)
 
 
 
@@ -270,13 +285,13 @@ def plot_n_waveguide(waveguide, r_x):
 
 def plot_n_stack(stack, r_x, r_z):
     
-    n = zeros([len(r_z),len(r_x)], Float)
+    n = zeros([len(r_x),len(r_z)], Float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        n[i_z,i_x] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+        n[i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
 
-    plot2D(n)
+    plot_matrix(n)
 
 
 
@@ -300,7 +315,7 @@ def plot_n(o, r_x, r_z=0):
 #
 ##############################################################################
 
-def plot_field_waveguide(mode, complex, r_x):
+def plot_field_waveguide(mode, component, r_x):
     
     v = []
     
@@ -319,13 +334,13 @@ def plot_field_waveguide(mode, complex, r_x):
 
 def plot_field_stack(stack, component, r_x, r_z):
     
-    f = zeros([len(r_z),len(r_x)], Float)
+    f = zeros([len(r_x),len(r_z)], Float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        f[i_z,i_x] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    plot2D(f)
+    plot_matrix(f)
 
 
 
@@ -351,10 +366,10 @@ def plot_field(o, component, r_x, r_z=0):
 
 def animate_field(stack, component, r_x, r_z):
     
-    f = zeros([len(r_z),len(r_x)], Complex)
+    f = zeros([len(r_x),len(r_z)], Complex)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
-        f[i_z,i_x] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+        f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
     phasormovie(f)
