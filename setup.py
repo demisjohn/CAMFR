@@ -34,7 +34,7 @@ camfr_extension = Extension(
 
 # Set up the extension.
 
-setup(name="camfr", version="0.89",                                   \
+setup(name="camfr", version="1.0pre",                                 \
       description="CAvity Modelling FRamework",                       \
       author="Peter Bienstman",                                       \
       author_email="Peter.Bienstman@rug.ac.be",                       \
