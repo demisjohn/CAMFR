@@ -1,5 +1,10 @@
 2003-04-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* slab.h: Better TM estimate.
+	* slab.cpp: Ditto.
+
+2003-04-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* slab.h: Add RCWA estimate.
 	* slab.cpp: Ditto.
 

@@ -802,14 +802,14 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 // Slab_M::fourier_eps
 //
 //  Returns fourier expansion of eps with order m = -M,...,M
-//  Basis functions are exp(j.m.2.pi/d.x)
+//  Basis functions are exp(j.m.2.pi/d.x).
 //  Can optionally also calculate the expansion of 1/eps.
 //
 /////////////////////////////////////////////////////////////////////////////
 
 cVector Slab_M::fourier_eps(int M, cVector* inv_result) const
 {
-  const Complex K = 2*pi/get_width();
+  const Complex K = 2.*pi/get_width();
 
   cVector result(2*M+1,fortranArray);
 
@@ -839,7 +839,7 @@ cVector Slab_M::fourier_eps(int M, cVector* inv_result) const
       if (inv_result)
         inv_E_m += factor / eps;
     }
-
+    
     result(m+M+1) = E_m / get_width();
     if (inv_result)
       (*inv_result)(m+M+1) = inv_E_m / get_width();      
@@ -852,31 +852,84 @@ cVector Slab_M::fourier_eps(int M, cVector* inv_result) const
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::estimate_kz2_from_RCWA
+// Slab_M::fourier_eps_extended
 //
-// Note: this only works for E_walls on both sides for TE, and for H_walls 
-// on both sides for TM.
-//
-// Matrix sizes are twice that of the uniform mode method, and radiation
-// modes are found twice.
+//  Returns fourier expansion of eps mirrored on x=0 with order 
+//  m = -M,...,M
+//  Basis functions are exp(j.m.2.pi/2.d.x).
+//  Can optionally also calculate the expansion of 1/eps.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Slab_M::estimate_kz2_from_RCWA()
+cVector Slab_M::fourier_eps_extended(int M, cVector* inv_result) const
+{
+  const Complex K = 2.*pi/2./get_width();
+
+  cVector result(2*M+1,fortranArray);
+
+  vector<Complex> disc = discontinuities;
+  disc.insert(disc.begin(), 0.0);
+
+  for (int m=0; m<=M; m++)
+  {
+    Complex E_m     = 0.0;
+    Complex inv_E_m = 0.0;
+
+    for (unsigned int k=0; k<int(disc.size()-1); k++)
+    {
+      const Complex eps = eps_at(Coord(disc[k], 0, 0, Plus))/eps0;
+
+      Complex factor;
+      if (m==0)
+        factor = 2.*(disc[k+1]-disc[k]);
+      else
+      {
+        const Complex t = -I*Real(m)*K;
+        factor = (exp( t*disc[k+1])-exp( t*disc[k]  )) / t 
+               + (exp(-t*disc[k])  -exp(-t*disc[k+1])) / t;
+      }
+
+      E_m += factor * eps;
+
+      if (inv_result)
+        inv_E_m += factor / eps;
+    }
+    
+    result(-m+M+1) = result(m+M+1) = E_m/get_width()/2.;
+    if (inv_result)
+      (*inv_result)(-m+M+1) = (*inv_result)(m+M+1) = inv_E_m/get_width()/2.;
+  }
+  
+  return result;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::estimate_kz2_from_RCWA
+//
+// Note: does not work as it uses periodic boundary conditions rather
+// than walls.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+std::vector<Complex> Slab_M::estimate_kz2_from_RCWA()
 {
   // Calculate eps matrices.
 
   const int M = M_series ? M_series : int(global.N * global.mode_surplus);
 
   cVector f_eps    (4*M+1,fortranArray);
-  cVector f_inv_eps(4*M+1,fortranArray);
+  cVector f_inv_eps(4*M+1,fortranArray);  
 
   if (global.polarisation == TE)
     f_eps = fourier_eps(2*M);
   else
     f_eps = fourier_eps(2*M, &f_inv_eps);
 
-  const int n = 2*M + 1;  
+  int n = 2*M + 1;
+ 
   cMatrix Eps(n,n,fortranArray);
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
@@ -910,13 +963,13 @@ cVector Slab_M::estimate_kz2_from_RCWA()
     // are Toeplitz matrices.
 
     cMatrix inv_Eps(n,n,fortranArray); inv_Eps.reference(invert(Eps));
-    cMatrix inv_A  (n,n,fortranArray); inv_A  .reference(invert(A)); 
+    cMatrix inv_A  (n,n,fortranArray); inv_A  .reference(invert(A));
 
     for (int i=1; i<=n; i++)
     {
       for (int j=1; j<=n; j++)
-        E(i,j) = Real(i-1-M)*lambda_over_d * inv_Eps(i,j) *
-                 Real(j-1-M)*lambda_over_d;
+        E(i,j) = (Real(i-1-M)*lambda_over_d) * inv_Eps(i,j) *
+                 (Real(j-1-M)*lambda_over_d);      
 
       E(i,i) -= 1.0;
     }
@@ -926,14 +979,17 @@ cVector Slab_M::estimate_kz2_from_RCWA()
 
   // Solve eigenvalue problem.
 
+  cVector e(n,fortranArray);
+  if (global.stability == normal)
+    e = eigenvalues(E);
+  else
+    e = eigenvalues_x(E);
+
   const Complex k0 = 2*pi/global.lambda;
 
-  cVector kz2(n,fortranArray);
-
-  if (global.stability == normal)
-    kz2 = -k0*k0*eigenvalues(E);
-  else
-    kz2 = -k0*k0*eigenvalues_x(E);
+  vector<Complex> kz2;
+  for (int i=1; i<=n; i++)
+    kz2.push_back(-k0*k0*e(i));
 
   return kz2;
 }
@@ -946,38 +1002,40 @@ cVector Slab_M::estimate_kz2_from_RCWA()
 //
 /////////////////////////////////////////////////////////////////////////////
 
-cVector Slab_M::estimate_kz2_from_uniform_modes()
+std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 {  
   // Set constants.
 
-  const int n = M_series ? M_series : int(global.N * global.mode_surplus);
   const Real omega = 2*pi/global.lambda * c;
-
-  // Calculate overlap matrices.
-
-  int old_N = global.N;
-  global.N = n;
-
-  Material ref_mat(1.0);
-  UniformSlab ref(get_width(),ref_mat);
-  ref.find_modes();
-  
-  global.N = old_N;
-
-  cMatrix O_tt(n,n,fortranArray);
-
-  cMatrix O_zz(fortranArray);
-  if (global.polarisation == TM)
-    O_zz.resize(n,n);
-
-  overlap_reference_modes(&O_tt, &O_zz, ref, *this);
+  const Real k0 = 2*pi/global.lambda;
 
   // Create eigenvalue problem.
 
-  cMatrix E(n,n,fortranArray);
+  if (global.polarisation == TE) // TODO: reformulate as fourier expansion.
+  {
+    const int n = M_series ? M_series : int(global.N * global.mode_surplus);
+  
+    cMatrix E(n,n,fortranArray);
 
-  if (global.polarisation == TE)
-  { 
+    // Calculate overlap matrices.
+
+    int old_N = global.N;
+    global.N = n;
+
+    Material ref_mat(1.0);
+    UniformSlab ref(get_width(),ref_mat);
+    ref.find_modes();
+   
+    global.N = old_N;
+
+    cMatrix O_tt(n,n,fortranArray);
+
+    cMatrix O_zz(fortranArray);
+    if (global.polarisation == TM)
+      O_zz.resize(n,n);
+
+    overlap_reference_modes(&O_tt, &O_zz, ref, *this);
+
     E = O_tt;
     
     for (int i=1; i<=n; i++)
@@ -994,73 +1052,138 @@ cVector Slab_M::estimate_kz2_from_uniform_modes()
 
       E(i,i) -= pow(TE_i->kx_at(Coord(0,0,0)), 2);
     }
+
+    // Solve eigenvalue problem.
+
+    cVector e(E.rows(),fortranArray);
+    if (global.stability == normal)
+      e = eigenvalues(E);
+    else
+      e = eigenvalues_x(E);
+
+    vector<Complex> kz2;
+    for (int i=1; i<=n; i++)
+      kz2.push_back(-k0*k0*e(i));
+
+    return kz2;
+
   }
-  else
+  else // TM case.
   {
-#if 0
-    // Alternative formulation.
+    // Determine reflection coefficients of walls.
 
-    O_zz *= pow(omega * ref_mat.eps(), 2);
-  
-    const Complex omega_3_mu_eps 
-      = pow(omega,3) * ref_mat.eps() * ref_mat.mu();
+    SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
+    SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
+    Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
+    Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
+
+    const Complex lambda_over_d = global.lambda / get_width() / 2.;
+
+    Complex offset = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : lambda_over_d/2.;
+
+    // Calculate eps matrices.
+
+    int M = M_series ? M_series : int(global.N * global.mode_surplus);
+
+    if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
+      M--; // Note: don't do this for HH since it has a dummy solution.
+ 
+    cVector f_eps    (4*M+1,fortranArray);
+    cVector f_inv_eps(4*M+1,fortranArray);  
+
+    if (global.polarisation == TE)
+      f_eps = fourier_eps_extended(2*M);
+    else
+      f_eps = fourier_eps_extended(2*M, &f_inv_eps);
+
+    int n = 2*M + 1;
+
+    if (abs(offset) > 1e-6) // EH or HE has no zeroth order term.
+      n--;
+ 
+    cMatrix Eps(n,n,fortranArray);
     for (int i=1; i<=n; i++)
-    {
-      SlabMode* TM_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
-      Complex kz_i   = TM_i->get_kz();
-
-      if (abs(kz_i) < 1e-6)
-        py_print("WARNING: reference mode close to cutoff!");
-
-      O_zz(i,i) += omega_3_mu_eps / kz_i;
-    }
-
-     E.reference(multiply(O_tt, O_zz));
-
-#endif
-
-    cMatrix inv_O_zz(n,n,fortranArray);
-    inv_O_zz.reference(invert_svd(O_zz));
-
-    const Complex omega_3_mu_eps 
-      = pow(omega,3) * ref_mat.eps() * ref_mat.mu();
-    
-    cMatrix T(n,n,fortranArray);
-    for (int i=1; i<=n; i++)
-    {
-      SlabMode* TM_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
-      Complex kz_i   = TM_i->get_kz();
-      Complex kt_i_2 = pow(TM_i->kx_at(Coord(0,0,0)),2);
-
-      if (abs(kz_i) < 1e-6)
-        py_print("WARNING: reference mode close to cutoff!");
-
       for (int j=1; j<=n; j++)
+        Eps(i,j) = f_eps(i-j + 2*M+1);
+  
+    cMatrix A(n,n,fortranArray);
+    for (int i=1; i<=n; i++)
+      for (int j=1; j<=n; j++)
+        A(i,j) = f_inv_eps(i-j + 2*M+1);
+
+    // Create matrix for eigenvalue problem.
+
+    // Note: the following inversions can be sped up because these 
+    // are Toeplitz matrices.
+
+    cMatrix inv_Eps(n,n,fortranArray); inv_Eps.reference(invert(Eps));
+    cMatrix inv_A  (n,n,fortranArray); inv_A  .reference(invert(A));
+
+    cMatrix E(n,n,fortranArray);
+    for (int i=1; i<=n; i++)
+    {
+      for (int j=1; j<=n; j++)
+        E(i,j) = (Real(i-1-M)*lambda_over_d+offset) * inv_Eps(i,j) *
+                 (Real(j-1-M)*lambda_over_d+offset);
+
+      E(i,i) -= 1.0;
+    }
+    
+    E = multiply(inv_A, E);
+
+    // Reduce eigenvalue problem to retain only solutions with desired
+    // symmetry.
+    //
+    // For same walls on both sides, the 2M+1 eigenvectors come in 2 sets:
+    //
+    //   [...,b,a,0,-a,-b,...] (HH)
+    //   [...,b,a,c, a, b,...] (EE)
+    //
+    // For different walls and 2M eigenvectors we have:
+    //
+    //   [...,b,a,-a,-b,...] (HE) 
+    //   [...,b,a, a, b,...] (EH)
+
+    // TODO: try doing this reduction before matrix inversions 
+    // and multiplications.
+    
+    int M_ = int((n+1)/2);
+    
+    cMatrix E_(M_,M_,fortranArray);
+
+    if (abs(offset) < 1e-6) // EE or HH
+    {
+      for (int i=1; i<=M_; i++)
       {
-        SlabMode* TM_j = dynamic_cast<SlabMode*>(ref.get_mode(j));
-        Complex kz_j   = TM_j->get_kz();
-        Complex kt_j_2 = pow(TM_j->kx_at(Coord(0,0,0)),2);
+        for (int j=1; j<=M_-1; j++)
+          E_(i,j) = E(i,j) - R_lower*E(i,E.columns()-j+1);
 
-        T(i,j) = kt_i_2/kz_i * inv_O_zz(i,j) * kt_j_2/kz_j;
+        E_(i,M_) = (abs(R_lower-1.0) < 1e-6) ? 0.0 : E(i,M_);
       }
-
-      T(i,i) += omega_3_mu_eps / kz_i;
+    }
+    else // EH or HE
+    {
+      for (int i=1; i<=M_; i++)
+        for (int j=1; j<=M_; j++)
+          E_(i,j) = E(i,j) - R_lower*E(i,E.columns()-j+1);
     }
 
-     E.reference(multiply(T, O_tt));
+    // Solve eigenvalue problem.
+
+    cVector e(E_.rows(),fortranArray);
+    if (global.stability == normal)
+      e = eigenvalues(E_);
+    else
+      e = eigenvalues_x(E_);
+
+    vector<Complex> kz2;
+    for (int i=1; i<=n; i++)
+      if (abs(e(i)) > 1e-6) // Zero is dummy solution for HH case.
+        kz2.push_back(-k0*k0*e(i));
+
+    return kz2;
   }
-
-  // Solve eigenvalue problem.
-
-  cVector kz2(n,fortranArray);
-
-  if (global.stability == normal)
-    kz2 = eigenvalues(E);
-  else
-    kz2 = eigenvalues_x(E);
-
-  return kz2;
 }
 
 
@@ -1102,20 +1225,12 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 {
   // Get coarse estimates.
 
-  const int M = M_series ? M_series : int(global.N * global.mode_surplus);
-
-  cVector kz2(fortranArray);
+  vector<Complex> kz2;
   if (global.eigen_calc != arnoldi) // Hijacked switch.
-  {
-    kz2.resize(M);
     kz2 = estimate_kz2_from_uniform_modes();
-  }
   else
-  {
-    kz2.resize(2*M+1);
     kz2 = estimate_kz2_from_RCWA();
-  }
-
+  
   // Find min and max eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
@@ -1146,12 +1261,14 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   // Refine estimates.
 
   vector<Complex> kz2_coarse;
-  for (unsigned int i=1; i<=kz2.size(); i++)
-    if (real(sqrt(kz2(i))) < 1.2*max_kz)
-      kz2_coarse.push_back(kz2(i));
+  for (unsigned int i=0; i<kz2.size(); i++)
+    if (real(sqrt(kz2[i])) < 1.2*max_kz)
+      kz2_coarse.push_back(kz2[i]);
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
-  kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+
+  if (kz2_coarse.size() > global.N)
+    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
