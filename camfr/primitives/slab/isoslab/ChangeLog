@@ -1,3 +1,7 @@
+2001-11-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slabmode.cpp: Resolve name conflict.
+
 2001-11-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.cpp: Account for TE_TM polarisation.

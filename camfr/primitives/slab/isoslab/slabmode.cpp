@@ -80,8 +80,8 @@ Field SlabMode::field(const Coord& coord_) const
 
   // Calculate total field.
 
-  const Complex s = global_slab.beta / kz;
-  const Complex c = sqrt(1.0 - s*s);
+  const Complex sn = global_slab.beta / kz;
+  const Complex cs = sqrt(1.0 - sn*sn);
   
   Field field;
 
@@ -99,11 +99,11 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.Ez *= field.E2 * s;
-      field.E2 *= c;
+      field.Ez *= field.E2 * sn;
+      field.E2 *= cs;
  
-      field.H2 *= -field.Hz * s;
-      field.Hz *= c;
+      field.H2 *= -field.Hz * sn;
+      field.Hz *= cs;
     }
   }
   else 
@@ -120,11 +120,11 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.E2 *= -field.Ez * s;
-      field.Ez *= c;
+      field.E2 *= -field.Ez * sn;
+      field.Ez *= cs;
  
-      field.Hz *= field.H2 * s;
-      field.H2 *= c;
+      field.Hz *= field.H2 * sn;
+      field.H2 *= cs;
     }
   }
 
