@@ -17,6 +17,9 @@ class PhC_splitter(unittest.TestCase):
         
         """Photonic crystal splitter"""
 
+        print
+        print "Running photonic crystal splitter..."
+
         set_lambda(1.5)
         set_N(50)
         set_polarisation(TE)

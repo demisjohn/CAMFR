@@ -17,6 +17,9 @@ class metal_splitter(unittest.TestCase):
         
         """Metal splitter"""
 
+        print
+        print "Running metal splitter..."
+
         set_lambda(1.5)
         set_N(60)
         set_unstable_exp_threshold(1e-8)

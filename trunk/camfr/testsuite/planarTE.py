@@ -16,6 +16,9 @@ class planarTE(unittest.TestCase):
 
         """Planar TE"""
 
+        print
+        print "Running planar TE..."
+
         set_lambda(1)
         set_N(1)
 

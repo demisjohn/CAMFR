@@ -13,6 +13,11 @@ import unittest, eps
 class grating(unittest.TestCase):
     def testgrating(self):
 
+        """Grating"""
+
+        print
+        print "Running grating..."
+
         set_N(10)
         set_lambda(1.5)
 
@@ -21,27 +26,29 @@ class grating(unittest.TestCase):
 
         set_left_wall (slab_H_wall)
         set_right_wall(slab_H_wall)
-      
-        compare = 10
-        continu = 1
-      
-        for gpol in arange(0.5, 0.7, 0.02):
-            gp = gpol * get_lambda()
 
-            slab = Slab(5*(air(gp/2.) + GaAs(gp) + air(gp/2.))+air(0))
-            slab.calc()
-    
-            E_field = abs(slab.mode(0).field(Coord(gp/2.,0,0)).E2().real)
-        
-            print gp, E_field 
+        gp = 0.5*get_lambda()
+        s1 = Slab(5*(air(gp/4.) + GaAs(gp/2.) + air(gp/4.))+air(0))
+        s1.calc()
+        E1 = s1.mode(0).field(Coord(gp/2.,0,0)).E2()
 
-            if E_field > compare:
-                continu = 0
-            compare = E_field
+        E1_OK = -9.37774762123-2.02472587307e-14j
+        print E1, "expected", E1_OK
+        E1_pass = abs((E1 - E1_OK) / E1_OK) < eps.testing_eps
+
+
+        gp = 1.0*get_lambda()
+        s2 = Slab(5*(air(gp/4.) + GaAs(gp/2.) + air(gp/4.))+air(0))
+        s2.calc()
+        E2 = s2.mode(0).field(Coord(gp/2.,0,0)).E2()
+
+        E2_OK = -7.03121528777-4.85905818077e-11j        
+        print E2, "expected", E2_OK
+        E2_pass = abs((E2 - E2_OK) / E2_OK) < eps.testing_eps
 
         free_tmps()
-        
-        self.failUnless(1)
+           
+        self.failUnless(E1_pass and E2_pass)
 
 suite = unittest.makeSuite(grating, 'test')
 

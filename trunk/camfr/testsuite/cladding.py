@@ -13,27 +13,32 @@ import unittest, eps
 class cladding(unittest.TestCase):
     def testcladding(self):
 
-      set_N(4)
-      set_polarisation(TE)
+        """cladding"""
 
-      set_lambda(1.5)
+        print
+        print "Running cladding..."
+        
+        set_N(4)
+        set_polarisation(TE)
 
-      GaAs = Material(3.5)
-      air  = Material(1.0)
-      
-      core = Slab(air(10)+ GaAs(1)+ air(10))
-      core.calc()
-      
-      E_field = core.mode(0).field(Coord(core.width()-0.01,0,0)).E2()
-      E_field_OK = 0.0
-      
-      print E_field, "expected", E_field_OK
+        set_lambda(1.5)
 
-      E_field_pass = abs(E_field) < eps.testing_eps
-
-      free_tmps()
+        GaAs = Material(3.5)
+        air  = Material(1.0)
       
-      self.failUnless( E_field_pass )
+        core = Slab(air(10)+ GaAs(1)+ air(10))
+        core.calc()
+      
+        E_field = core.mode(0).field(Coord(core.width()-0.01,0,0)).E2()
+        E_field_OK = 0.0
+      
+        print E_field, "expected", E_field_OK
+
+        E_field_pass = abs(E_field) < eps.testing_eps
+
+        free_tmps()
+      
+        self.failUnless( E_field_pass )
 
 suite = unittest.makeSuite(cladding, 'test')        
 

@@ -15,6 +15,9 @@ class expressions(unittest.TestCase):
         
         """Expressions"""
 
+        print
+        print "Running expressions..."
+
         a = Material(1)
         waveguide = Slab(a(1))
 
