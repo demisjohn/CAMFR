@@ -1,3 +1,7 @@
+2001-11-27  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* material.h: Add signedsqrt.
+
 2001-11-23  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* mode.h: Virtualise n_eff.

@@ -139,6 +139,20 @@ inline Complex signedsqrt(const Complex& kz2, const Material& material)
 inline Complex signedsqrt(const Complex& kz2, const Material* material)
    {return signedsqrt(kz2, *material);}
 
+inline Complex signedsqrt(const Complex& kz2)
+{
+  Complex kz = sqrt(kz2);
+
+  if (real(kz) < 0) 
+      kz = -kz;
+
+  if (abs(real(kz)) < 1e-12)
+    if (imag(kz) > 0)
+      kz = -kz;
+
+  return kz;
+}
+
 
 
 #endif
