@@ -732,17 +732,24 @@ void Section2D::find_modes_from_series()
     else
       max_eps_eff = max_eps_mu;
 
-    Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
+    if (abs(real(max_eps_eff)) < abs(real(max_eps_mu)))
+      max_eps_eff = max_eps_mu;
 
+    Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
+    
     cVector kz2(M1,fortranArray);
     kz2 = estimate_kz2();
+
+    //for (unsigned int i=1; i<=kz2.size(); i++)
+    //  std::cout << "raw " << i << " "
+    //            << sqrt(kz2(i))/2./pi*global.lambda << std::endl;
 
     for (unsigned int i=1; i<=M1; i++)
       if (real(sqrt(kz2(i))) < 1.01*max_kz)
         kz2_coarse.push_back(kz2(i));
   }
   user_estimates.clear();
-  
+
   // Refine estimates.
 
   py_print("Refining estimates...");
