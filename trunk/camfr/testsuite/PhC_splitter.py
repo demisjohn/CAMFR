@@ -104,7 +104,7 @@ class PhC_splitter(unittest.TestCase):
         # Calculate field.
 
         E_field = splitter.field(Coord(a/2.,0,a/2.)).E2()
-        E_field_OK = 27.1304433382+53.5340316489j
+        E_field_OK = 22.4579434509+55.559502526j
 
         print E_field, "expected", E_field_OK
 

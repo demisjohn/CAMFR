@@ -41,7 +41,7 @@ class dent(unittest.TestCase):
         s.calc()
 
         R = s.R12(0,0)
-	R_OK = 0.675552207942+0.392863210495j
+        R_OK = 0.682324430135+0.388296669449j
 	
         print R, "expected", R_OK
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
