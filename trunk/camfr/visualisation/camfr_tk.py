@@ -2,7 +2,7 @@ from TkPlotCanvas import *
 from camfr import *
 from Numeric import *
 from MLab import *
-import math
+from cmath import *
 
 ##############################################################################
 #
@@ -71,7 +71,7 @@ def plot2D(z):
     canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
     canvas.pack()
 
-    for y in range(0,height):
+    for y in arange(height-1, -1, -1):
         for x in range(0,width):
             canvas.create_rectangle(scale*x+2,       scale*y+2,          \
                                     scale*x+2+scale, scale*y+2+scale,    \
@@ -81,6 +81,71 @@ def plot2D(z):
 
 
 
+##############################################################################
+#
+# Creates a movie starting from a complex matrix representing phasors.
+#
+##############################################################################
+
+def phasormovie(z):
+
+    # Make movie-memory.
+    
+    height = z.shape[1]
+    width  = z.shape[0]    
+    frames = 16
+    movie  = zeros([frames, width , height], Float)
+
+    colormap = create_bipolar_color_map()
+
+    # Fill all frames, rescale the data.
+    # The central color ends up where data = zero.
+
+    for Nr in range(0,frames):
+        movie[Nr] = z.real
+        z *= exp(2j*pi/frames)
+ 
+    interval = 2*max(max(abs(z)))
+    colors   = len(colormap)
+    
+    for Nr in range(0,frames):
+        if (interval != 0): 
+            movie[Nr] += interval/2.
+            movie[Nr] *= (colors-1)/interval
+        else:
+            movie[Nr] += colors/2.
+    
+    # (re)size picture.
+
+    area, scale = 100000, 1
+    if (height*width < area):
+        scale = int(math.sqrt(area/(height*width)))
+
+    # Put picture on canvas.
+
+    root = Tk()
+    canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
+    canvas.pack()
+
+    for y in arange(height-1, -1, -1):
+        for x in range(0,width):
+            canvas.create_rectangle(scale*x+2,       scale*y+2,          \
+                                    scale*x+2+scale, scale*y+2+scale,    \
+                                    fill=colormap[int(movie[0,x,y])], width=0)
+
+    # Animate picture.
+    
+    while 1:
+        for frame in movie:
+            object = 1   
+            for y in arange(height-1, -1, -1):
+                for x in range(0, width):
+                    canvas.itemconfigure(object,fill=colormap[int(frame[x,y])])
+                    object += 1  
+            root.update()
+
+
+    
 ##############################################################################
 #
 # Different colormaps.
@@ -235,7 +300,7 @@ def plot_n(o, r_x, r_z=0):
 #
 ##############################################################################
 
-def plot_field_waveguide(mode, r_x, component):
+def plot_field_waveguide(mode, complex, r_x):
     
     v = []
     
@@ -252,7 +317,7 @@ def plot_field_waveguide(mode, r_x, component):
 #
 ##############################################################################
 
-def plot_field_stack(stack, r_x, r_z, component):
+def plot_field_stack(stack, component, r_x, r_z):
     
     f = zeros([len(r_z),len(r_x)], Float)
 
@@ -275,3 +340,21 @@ def plot_field(o, component, r_x, r_z=0):
         plot_field_waveguide(o, component, r_x)
     if type(o) == Stack:
         plot_field_stack(o, component, r_x, r_z)
+
+
+
+##############################################################################
+#
+# Animate the field profile in a stack.
+#
+##############################################################################
+
+def animate_field(stack, component, r_x, r_z):
+    
+    f = zeros([len(r_z),len(r_x)], Complex)
+
+    for i_x in range(len(r_x)):
+      for i_z in range(len(r_z)):
+        f[i_z,i_x] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
+
+    phasormovie(f)
