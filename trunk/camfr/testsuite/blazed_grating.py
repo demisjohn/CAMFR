@@ -105,8 +105,8 @@ class blazed_grating(unittest.TestCase):
         print R, "expected", R_OK
         print T, "expected", T_OK
 
-        R_pass = abs(R - R_OK) < eps.testing_eps
-        T_pass = abs(T - T_OK) < eps.testing_eps
+        R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
+        T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         self.failUnless(R_pass and T_pass)
 

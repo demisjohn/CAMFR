@@ -44,7 +44,7 @@ class substacks(unittest.TestCase):
 
         print R, "expected", R_OK
 
-        R_pass = abs(R - R_OK) < eps.testing_eps
+        R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         self.failUnless(R_pass)
 
