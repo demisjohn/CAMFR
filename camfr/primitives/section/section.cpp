@@ -200,6 +200,9 @@ Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
 Section::Section(Expression& expression, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
+  if ( (M1 < M2) || (M2 < global.N) )
+    py_print("Warning: M1 > M2 > N not fulfilled.");
+
   //
   // 1D section
   //
@@ -659,7 +662,7 @@ void Section2D::find_modes_from_series()
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
       C(i,j) *= omega * ref.get_mode(i)->get_kz();
-  
+ 
   D = O_EE;
   for (int i=1; i<=n; i++)
   {
@@ -710,6 +713,9 @@ void Section2D::find_modes_from_series()
     if (abs(imag(kt)) < 1e-12)
       if (real(kt) > 0)
         kt = -kt;
+
+    if ((abs(real(kt)) < .001) && (real(kt) < 0))
+      kt -= 2*real(kt);
 
     kt_coarse.push_back(kt);
   }
