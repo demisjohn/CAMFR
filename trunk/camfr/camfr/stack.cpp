@@ -83,14 +83,14 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
   
   for (unsigned int i=0; i<e.get_size()-1; i++)
   {    
-    if (*(e.get_term(i)->get_ext()) != *(e.get_term(i+1)->get_inc()))
+    if (e.get_term(i)->get_ext() != e.get_term(i+1)->get_inc())
     {
       py_error("Error: intermediate incidence and exit media don't match.");
       exit (-1);
     }
   }  
 
-  if ( (no_of_periods > 1) && (*(e.get_inc()) != *(e.get_ext())) )
+  if ( (no_of_periods > 1) && (e.get_inc() != e.get_ext()) )
   {
     py_error("Error: inc and exit media don't match for periodic extension.");
     exit (-1);

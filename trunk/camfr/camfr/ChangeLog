@@ -1,3 +1,7 @@
+2002-05-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* stack.cpp: Compare pointers instead of waveguides.
+
 2002-05-07  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* material.cpp: Add eps_mu.
