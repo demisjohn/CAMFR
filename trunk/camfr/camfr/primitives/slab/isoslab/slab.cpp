@@ -458,6 +458,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     if (eps_mu_lossless > min_eps_mu_lossless)
       max_eps_mu_lossless = eps_mu_lossless;
   }
+
+  bool metal = (min_eps_mu_lossless < 0.0);
   
   // Create dispersion relation for lossless structure.
   
@@ -531,7 +533,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   // Don't do this when there are branchcuts, as this can cause problems for
   // numerical stability.
 
-  vector<Complex> kt_lossless;
+  vector<Complex> kt_lossless, kt_complex;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
   { 
     if ( branchcut && (abs(disp(I*kt_prop_lossless[i])) > 1e-2) )
@@ -546,12 +548,16 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     {
       bool error = false;
 
-      Real kt_new = imag(mueller(disp, I*kt_prop_lossless[i],
-                                 I*kt_prop_lossless[i]+0.002,1e-11,
-                                 0,100,&error));
+      Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
+                               I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
 
-      if (!error)
-        kt_lossless.push_back(I*kt_new);
+      if (!error && metal && abs(real(kt_new)) > 0.1)
+      {
+        py_print("Found complex mode pair.");
+        kt_complex.push_back(kt_new);
+      }
+      else if (!error)
+        kt_lossless.push_back(I*imag(kt_new));
     }
   }
 
@@ -585,17 +591,23 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       {
         bool error = false;
 
-        Real kt_new = branchcut
+        Complex kt_new = branchcut
           ? kt_evan_lossless[i]
-          : real(mueller(disp,kt_evan_lossless[i],
-                         kt_evan_lossless[i]+0.002*I,1e-11,0,100,&error));
+          : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
+                    1e-11,0,100,&error);
 
-        if (!error)
-          kt_lossless.push_back(kt_new);
+        if (!error && metal && (abs(imag(kt_new)) > 0.1))
+        {
+          py_print("Found complex mode pair.");
+          kt_complex.push_back(kt_new);
+        }
+        else if (!error)
+          kt_lossless.push_back(real(kt_new));
       }
 
-      modes_left = (kt_lossless.size() >= global.N + 2) ? 0
-        : global.N - kt_lossless.size() + 2;
+      modes_left = (kt_lossless.size() + 2*kt_complex.size() >= global.N + 2) 
+        ? 0
+        : global.N - kt_lossless.size() -2*kt_complex.size() + 2;
 
       kt_begin = real(kt_lossless[kt_lossless.size()-1])+.0001;
       extra++;
@@ -633,6 +645,12 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   }
 
   bool degenerate = kt_lossless.size() > kt_lossless_single.size();
+
+  for (unsigned int i=0; i<kt_complex.size(); i++)
+  {  
+    kt_lossless.push_back(kt_complex[i]);
+    kt_lossless.push_back(-real(kt_complex[i])+I*imag(kt_complex[i]));
+  }
   
   vector<Complex> kt, forbidden;
   if (global.chunk_tracing && !degenerate)
@@ -785,6 +803,9 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
+
+    if (real(kt[i]) < 0.0) // Backward mode.
+      kz = -kz;
 
     Polarisation pol = global.polarisation;
     if (global.polarisation == TE_TM)
