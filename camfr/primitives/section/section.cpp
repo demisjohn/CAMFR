@@ -35,7 +35,7 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,false,OS,true,0,0};
+SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,OS,snap,0,0};
 
 
 
@@ -74,9 +74,9 @@ void SectionImpl::calc_overlap_matrices
     return;
   }
 
-  // TMP
+  // Overlap for partial mode correction case.
 
-  //if (global_section.mode_correction == false)  
+  if (global_section.mode_correction != full)
   {
     *O_I_II = 0.0;  
     *O_II_I = 0.0;
@@ -1587,7 +1587,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       // Compensate for numerical instability in the presence of PML.
 
       if ((real(kz) > imag(kz)) && (imag(kz) > 1e-8) 
-          && (global_section.mode_correction == false))
+          && (global_section.mode_correction == snap))
       {
         std::cout << "Snapping " << kz/2./pi*global.lambda
                   << " to the real axis" << std::endl;
@@ -1713,8 +1713,9 @@ void Section2D::find_modes_from_estimates()
 
     // Mode to be corrected.
 
-    if ((global_section.mode_correction == true)
-       && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
+    if (   ( global_section.mode_correction == full)
+        || ((global_section.mode_correction == guided_only)
+            && (real(kz/2./pi*global.lambda)>real(sqrt(min_eps_mu/eps0/mu0)))))
     {    
       Complex kt = sqrt(C0*min_eps_mu - estimates[i]->kz2);
 
@@ -1788,11 +1789,27 @@ void Section2D::find_modes_from_estimates()
       if (imag(kz) > 0)
         kz = -kz;
 
-    Section2D_Mode* newmode = new Section2D_Mode(TE_TM,kz,this);
+    Section2D_Mode* newmode = new Section2D_Mode(TE_TM, kz, this);
 
     newmode->normalise();
 
     modeset.push_back(newmode);
+  }
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {    
+      Section2D_Mode* dummy = new Section2D_Mode(TE_TM, 0.0, this);
+      modeset.push_back(dummy);
+    }
   }
 
   // Free estimates.

@@ -22,6 +22,8 @@
 
 typedef enum {lowest_loss, highest_index} Sort_type;
 typedef enum {OS, NT, L} Section_solver;
+typedef enum {none, snap, guided_only, full} Mode_correction;
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -39,9 +41,8 @@ struct SectionGlobal
     Real right_PML;
     Section_wall_type  leftwall;
     Section_wall_type rightwall;
-    bool guided_only; // TMP variable?
     Section_solver section_solver;
-    bool mode_correction;
+    Mode_correction mode_correction;
     int M;
     int N;
 };
