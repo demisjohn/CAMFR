@@ -155,6 +155,8 @@ class Section2D : public SectionImpl
 
     Complex get_height() const
       {return dynamic_cast<Slab*>(left.get_inc())->get_width();}
+
+    int get_M() const {return M;}
     
     void find_modes();
 
