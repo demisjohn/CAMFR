@@ -308,7 +308,7 @@ def plot_neff(waveguide):
     
     x,y = [],[]
     
-    for i in range(N()):
+    for i in range(waveguide.N()):
 	n = waveguide.mode(i).n_eff()
 	x.append(n.real)
         y.append(n.imag)
