@@ -10,7 +10,7 @@ import os
 class camfr_build_ext(build_ext):
     def run(self):
         
-        os.system('make')
+        os.system('cd /home/pbienst/camfr_work ; make')
         
         build_ext.run(self)
 
@@ -18,17 +18,18 @@ class camfr_build_ext(build_ext):
         ext_filename = os.path.join(self.build_lib, \
                                     self.get_ext_filename(fullname))
 
-#        os.system('strip ' + ext_filename)
+        os.system('strip ' + ext_filename)
 
 # Define the camfr extension module.
 
 camfr_extension = Extension(
-    "camfr_work", ["./camfr/camfr_wrap.cpp"],                         \
-    library_dirs=["./camfr",                                          \
-                  "../boost_1_25_0/libs/python/src",                  \
-                  "../blitz-20001213/lib",                            \
+    "camfr_work", ["/home/pbienst/camfr_work/camfr/camfr_wrap.cpp"],  \
+    library_dirs=["/home/pbienst/camfr_work/camfr",                   \
+                  "/home/pbienst/boost_1_25_0/libs/python/src",       \
+                  "/home/pbienst/blitz-20001213/lib",                 \
                   "/opt/intel/mkl/lib/32"],                           \
-    include_dirs=["camfr", "../boost_1_25_0","../blitz-20001213"],    \
+    include_dirs=["camfr", "/home/pbienst/boost_1_25_0",              \
+                  "/home/pbienst/blitz-20001213"],                    \
     libraries=["camfr", "boost_python", "blitz", "mkl_lapack",        \
                "mkl_p3", "m", "g2c", "stdc++"] )
 
@@ -42,6 +43,6 @@ setup(name="camfr_work", version="1.0pre",                            \
       py_modules=['geometry', 'camfr_tk', 'TkPlotCanvas'],            \
       package_dir={'': 'camfr', '': 'visualisation'},                 \
       # FIXME: ugly hack
-      data_files=[('lib/python2.1', ['camfr/geometry.py'])],           \
+      data_files=[('lib/python2.1', ['camfr/geometry.py'])],          \
       ext_modules=[camfr_extension],                                  \
       cmdclass={'build_ext' : camfr_build_ext} )
