@@ -104,7 +104,7 @@ def phasormovie(z, x=arange(0,1,0.1), y=arange(0,1,0.1),
 #
 ##############################################################################
 
-from camfr_work import *
+from camfr import *
 
 def plot_n(stack, r_x, r_z, axis="none", filename=""):
     

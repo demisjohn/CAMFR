@@ -120,6 +120,15 @@ class Rectangle:
         self.p1, self.p2 = p
         self.mat = mat
 
+    def center(self):
+        return Point((self.p1.x+self.p2.x)/2., (self.p1.y+self.p2.y)/2.)
+
+    def width(self):
+        return self.p2.x - self.p1.x
+
+    def height(self):
+        return self.p2.y - self.p1.y
+
     def intersection_at_x(self, x):
         if (x < self.p1.x) or (x > self.p2.x):
             return []
@@ -148,6 +157,10 @@ class Square:
             return []
         else:
             return [self.c.y - self.a/2., self.c.y + self.a/2.]
+
+    def to_rectangle(self):
+        return Rectangle(Point(self.c.x - self.a/2., self.c.y - self.a/2),
+                         Point(self.c.x + self.a/2., self.c.y + self.a/2))
     
 
 
