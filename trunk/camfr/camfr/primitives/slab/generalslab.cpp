@@ -25,7 +25,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabGlobal global_slab = {0.0, 0.0, NULL, NULL};
+SlabGlobal global_slab = {0.0, 0.0, NULL, NULL, 1.0};
 
 
 
