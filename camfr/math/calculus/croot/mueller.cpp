@@ -24,7 +24,7 @@ using namespace std;
 Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
                 Real eps, const vector<Complex>* prev_zeros,
                 int maxiter, bool *errorptr, bool verbose)
-{
+{  
   // Check input.
   
   if (1. + abs(a-b) <= 1.)
@@ -60,8 +60,19 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
   Complex z1 = z2 - f2 / dz23;
 
   // Detect convergence problems.
+
+  if (1. + abs(f2-f3) <= 1.)
+  {
+    if (verbose)
+      cout << "The two initial estimates are too close together." << endl;
+
+    //if (errorptr)
+    //  *errorptr = true;
+    
+    return a;
+  }
   
-  if ( (abs(z1-z2) > 1e4*abs(z2)) || (1. + abs(f2-f3) <= 1.) )
+  if (abs(z1-z2) > 1e4*abs(z2))
   {
     if (verbose)
       cout << "Convergence problems. Possible bad initial estimates." << endl;
