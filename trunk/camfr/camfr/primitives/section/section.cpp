@@ -176,6 +176,15 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
                      int M_)
   : left(left_ex), right(right_ex), M(M_)
 {
+  // Check values.
+
+  if (left.get_inc() != right.get_inc())
+  {
+    cerr << "Error: left and right part have different incidence media."
+         << endl;
+    exit (-1);
+  }
+  
   uniform = false;
 
   symmetric = (&left_ex == &right_ex);
@@ -542,12 +551,12 @@ void Section2D::find_modes_from_scratch_by_track()
   
   SectionDisp disp(left, right, lambda, M, symmetric);
   params = disp.get_params();
-  
-  SectionDisp disp_lossless(left, right, lambda, M, symmetric);
+
   vector<Complex> params_lossless;
   for (unsigned int i=0; i<params.size(); i++)
     params_lossless.push_back(real(params[i]));
-  disp_lossless.set_params(params_lossless);
+
+  disp.set_params(params_lossless);
 
   // Make a rough estimate of separation between modes.
 
@@ -570,7 +579,7 @@ void Section2D::find_modes_from_scratch_by_track()
 
   //global.eigen_calc = arnoldi;
   
-  Wrap_real_to_abs prop_wrap(disp_lossless);
+  Wrap_real_to_abs prop_wrap(disp);
 
   if (d_beta > k0*max_n)
     d_beta = k0*max_n;
@@ -593,30 +602,29 @@ void Section2D::find_modes_from_scratch_by_track()
   
   reverse(beta_guided_lossless.begin(), beta_guided_lossless.end());
 
+  // Eliminate false zeros.
+
+  remove_elems(&beta_guided_lossless, 0.0, eps_copies);
+
+  global_slab.beta = 0.0;
+  for (unsigned int i=1; i<=left.get_inc()->N(); i++)
+  {    
+    Real beta_i = real(left.get_inc()->get_mode(i)->get_kz());
+
+    remove_elems(&beta_guided_lossless,  beta_i, eps_copies);
+    remove_elems(&beta_guided_lossless, -beta_i, eps_copies);
+  }
+
   if (beta_guided_lossless[0] > 
       real(left.get_inc()->get_mode(1)->get_kz()))
     cout << "n_eff higher than expected!" << endl;
   cout << "Slab kz: " << left.get_inc()->get_mode(1)->get_kz() << endl;
 
-
   cout << setprecision(15);
-  
+  cout << "Done lossless:" << endl;
   for (unsigned int i=0; i<beta_guided_lossless.size(); i++)
-    cout << i << " lossless " 
-         << beta_guided_lossless[i]/2/pi*global.lambda << endl;
-
-  cout << "Calls " << disp_lossless.times_called() << endl;
-
-  // Eliminate false zeros.
-
-  for (unsigned int i=0; i<n_lossless.size(); i++)
-  {
-    Real beta_i = k0*n_lossless[i];
-
-    remove_elems(&beta_guided_lossless,  beta_i, eps_copies);
-    remove_elems(&beta_guided_lossless, -beta_i, eps_copies);   
-    remove_elems(&beta_guided_lossless,    0.0,  eps_copies);
-  }
+    cout << i << beta_guided_lossless[i]/2/pi*global.lambda << endl;
+  cout << "Calls " << disp.times_called() << endl;
   
   // Check if the minima found correspond really to zeros and increase
   // precision using a mueller solver (in the absense of branchcuts).
@@ -626,7 +634,7 @@ void Section2D::find_modes_from_scratch_by_track()
   vector<Complex> beta_lossless;
   for (unsigned int i=0; i<beta_guided_lossless.size(); i++)
   { 
-    const Real fx = abs(disp_lossless(beta_guided_lossless[i]));
+    const Real fx = abs(disp(beta_guided_lossless[i]));
     
     if (fx > 1e-2)
     {
@@ -639,7 +647,7 @@ void Section2D::find_modes_from_scratch_by_track()
       Real beta_new;
       
       if ( (!branchcut) && (global.precision_enhancement == 1) )
-        beta_new = real(mueller(disp_lossless, beta_guided_lossless[i],
+        beta_new = real(mueller(disp, beta_guided_lossless[i],
                                 beta_guided_lossless[i]+0.002*I));
       else
         beta_new = beta_guided_lossless[i];
@@ -651,8 +659,7 @@ void Section2D::find_modes_from_scratch_by_track()
   cout << "Done refining" << endl;
   for (unsigned int i=0; i<beta_lossless.size(); i++)
     cout << i << " " << beta_lossless[i] /2. /pi * global.lambda << endl;
-
-  cout << "Calls " << disp_lossless.times_called() << endl;
+  cout << "Calls " << disp.times_called() << endl;
 
   //
   // II: Find propagating radiation modes of lossless structure.
@@ -667,18 +674,17 @@ void Section2D::find_modes_from_scratch_by_track()
 
   reverse(beta_prop_rad_lossless.begin(), beta_prop_rad_lossless.end());
 
-  cout << "Calls prop rad"  << disp_lossless.times_called() << endl;
-
-  cout << "prop rad" << endl;
+  cout << "Done prop rad" << endl;
       for (unsigned int i=0; i<beta_prop_rad_lossless.size(); i++)
         cout << beta_prop_rad_lossless[i] /2./pi*global.lambda << endl;
+  cout << "Calls prop rad "  << disp.times_called() << endl;
   
   // Check if the minima found correspond really to zeros and increase
   // precision using a mueller solver (in the absense of branchcuts).
 
   for (unsigned int i=0; i<beta_prop_rad_lossless.size(); i++)
   { 
-    const Real fx = abs(disp_lossless(beta_prop_rad_lossless[i]));
+    const Real fx = abs(disp(beta_prop_rad_lossless[i]));
     
     if (fx > 1e-2)
     {
@@ -691,7 +697,7 @@ void Section2D::find_modes_from_scratch_by_track()
       Real beta_new;
       
       if (!branchcut)
-        beta_new = real(mueller(disp_lossless, beta_prop_rad_lossless[i],
+        beta_new = real(mueller(disp, beta_prop_rad_lossless[i],
                                 beta_prop_rad_lossless[i]+0.002*I));
       else
         beta_new = beta_prop_rad_lossless[i];
@@ -700,11 +706,11 @@ void Section2D::find_modes_from_scratch_by_track()
     }
   }
 
-  cout << "Calls prop rad refined" << disp_lossless.times_called() << endl;
-  cout << "prop rad refin" << endl;
+
+  cout << "Done prop rad refin" << endl;
   for (unsigned int i=0; i<beta_lossless.size(); i++)
     cout << beta_lossless[i] /2./pi*global.lambda << endl;
-
+  cout << "Calls prop rad refined " << disp.times_called() << endl;
 
   
   //
@@ -713,7 +719,7 @@ void Section2D::find_modes_from_scratch_by_track()
 
   if (!(branchcut || TBC))
   {
-    Wrap_imag_to_abs evan_wrap(disp_lossless);
+    Wrap_imag_to_abs evan_wrap(disp);
     
     Real beta_begin = .0001;
     int extra = 1;
@@ -730,17 +736,17 @@ void Section2D::find_modes_from_scratch_by_track()
         (evan_wrap,beta_begin,modes_left+extra,
          d_beta/global.precision_rad,eps,1);
 
-      cout << "evan " << endl;
+      cout << "Done evan " << endl;
       for (unsigned int i=0; i<beta_evan_lossless.size(); i++)
         cout << beta_evan_lossless[i] /2./pi*global.lambda << endl;
-      cout << "Calls evan rad " << disp_lossless.times_called() << endl;
+      cout << "Calls evan rad " << disp.times_called() << endl;
       
       // Check if the minima found correspond really to zeros and increase
       // precision with mueller solver.
 
       for (unsigned int i=0; i<beta_evan_lossless.size(); i++)
       { 
-        const Real fx = abs(disp_lossless(I*beta_evan_lossless[i]));
+        const Real fx = abs(disp(I*beta_evan_lossless[i]));
         if (fx > 1e-2)
         {
           cout << "Warning: possibly insufficient precision around beta "
@@ -752,7 +758,7 @@ void Section2D::find_modes_from_scratch_by_track()
         {
           Real beta_new = branchcut
             ? beta_evan_lossless[i]
-            : imag(mueller(disp_lossless,I*beta_evan_lossless[i],
+            : imag(mueller(disp,I*beta_evan_lossless[i],
                            I*beta_evan_lossless[i]+0.002));
 
           beta_lossless.push_back(I*beta_new);
@@ -767,10 +773,11 @@ void Section2D::find_modes_from_scratch_by_track()
     }
   }
  
-  cout << "evan refin" << endl;
+  cout << "Done evan refin" << endl;
   for (unsigned int i=0; i<beta_lossless.size(); i++)
-    cout << beta_lossless[i] /2./pi*global.lambda << endl;
-  cout << "Calls evan refined " << disp_lossless.times_called() << endl;
+    cout << i << " " << beta_lossless[i] /2./pi*global.lambda 
+         << " " << beta_lossless[i] << endl;
+  cout << "Calls evan refined " << disp.times_called() << endl;
 
   
   
@@ -782,24 +789,33 @@ void Section2D::find_modes_from_scratch_by_track()
   if (global.precision_enhancement == 1)
     remove_copies(&beta_lossless, eps_copies);
 
-  for (unsigned int i=0; i<n_lossless.size(); i++)
+  remove_elems(&beta_lossless, Complex(0.0), eps_copies);
+
+  if (beta_lossless.size() > global.N)
+    beta_lossless.erase(beta_lossless.begin()+global.N, beta_lossless.end());
+
+  global_slab.beta = 0.0;
+  vector<Complex> forbidden;
+  for (unsigned int i=1; i<=left.get_inc()->N(); i++)
   {
-    Complex beta_i = k0*n_lossless[i];
+    Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
 
-    remove_elems(&beta_lossless,   beta_i,     eps_copies);
-    remove_elems(&beta_lossless,  -beta_i,     eps_copies);   
-    remove_elems(&beta_lossless, Complex(0.0), eps_copies);
+    remove_elems(&beta_lossless,  beta_i, eps_copies);
+    remove_elems(&beta_lossless, -beta_i, eps_copies);
+
+    forbidden.push_back( beta_i);
+    forbidden.push_back(-beta_i);
   }
-
-  vector<Complex> beta, forbidden;
+  
+  vector<Complex> beta;
   if (global.chunk_tracing == true)
     beta = traceroot_chunks
-      (beta_lossless, disp_lossless, disp, forbidden, global.sweep_steps);
+      (beta_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
   else
     beta = traceroot
-      (beta_lossless, disp_lossless, disp, forbidden, global.sweep_steps);
+      (beta_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
 
-  cout << "Calls traceroot " << disp_lossless.times_called() << endl;
+  cout << "Calls traceroot " << disp.times_called() << endl;
  
 
   //
@@ -807,6 +823,9 @@ void Section2D::find_modes_from_scratch_by_track()
   //
 
 #if 0
+
+  disp.set_params(params);
+  
   if ( (branchcut || TBC) && (beta.size() < global.N) )
   {
     Real evan_beta_end = 2*(global.N-beta.size())*d_beta; // Not general!
@@ -875,6 +894,9 @@ void Section2D::find_modes_from_scratch_by_track()
   for (unsigned int i=0; i<beta.size(); i++)
   { 
     Complex kz = beta[i];
+
+    disp.set_params(params);
+    cout << "kz: " << kz << " f(kz) " << disp(kz) << endl;
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -883,8 +905,10 @@ void Section2D::find_modes_from_scratch_by_track()
       if (imag(kz) > 0)
         kz = -kz;
     
+    cVector fw_field(global.N, fortranArray);
+    
     Section2D_Mode *newmode 
-      = new Section2D_Mode(global.polarisation, kz, this);
+      = new Section2D_Mode(global.polarisation, kz, this, fw_field);
     
     newmode->normalise();
     
@@ -907,19 +931,18 @@ void Section2D::find_modes_by_sweep()
 {   
   // Trace modes from old configuration to new one.
   
-  SectionDisp disp_new(left, right, global.lambda, M, symmetric);
-  SectionDisp disp_old(left, right, global.lambda, M, symmetric);
-  disp_old.set_params(params);
-  
+  SectionDisp disp(left, right, global.lambda, M, symmetric);
+  vector<Complex> params_new = disp.get_params();
+    
   vector<Complex> beta_old;
   for (unsigned int i=0; i<modeset.size(); i++)
     beta_old.push_back(modeset[i]->get_kz());
   
   vector<Complex> forbidden;
   vector<Complex> beta =
-    traceroot(beta_old, disp_old, disp_new, forbidden, global.sweep_steps);
+    traceroot(beta_old,disp,params,params_new,forbidden,global.sweep_steps);
 
-  params = disp_new.get_params();
+  params = params_new;
 
   // Check if modes were lost during tracing.
   
@@ -946,9 +969,11 @@ void Section2D::find_modes_by_sweep()
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
+
+    cVector fw_field(global.N, fortranArray);
     
     Section2D_Mode *newmode 
-      = new Section2D_Mode(global.polarisation, kz, this);
+      = new Section2D_Mode(global.polarisation, kz, this, fw_field);
       
     newmode->normalise();
 

@@ -29,16 +29,16 @@ class SectionMode : public Mode
 {
   public:
 
-    SectionMode(Polarisation pol, const Complex& kz0, const SectionImpl* geom_)
+    SectionMode(Polarisation pol,const Complex& kz0,const SectionImpl* geom_)
       : Mode(pol, kz0, -kz0), geom(geom_) {}
 
     Complex get_kz () const {return kz;}
 
-    virtual void normalise() = 0;
-
     const SectionImpl* get_geom() const {return geom;}
     
-    Field field(const Coord& coord) const {};
+    virtual Field field(const Coord& coord) const;
+
+    virtual void normalise() = 0;
 
   protected:
 
@@ -58,9 +58,16 @@ class Section2D_Mode : public SectionMode
   public:
 
     Section2D_Mode(Polarisation pol, const Complex& kz, 
-                   const Section2D* geom) : SectionMode(pol, kz, geom) {};
+                   const Section2D* geom, const cVector& fw_field);
+
+    Field field(const Coord& coord) const;
     
-    void normalise() {};
+    void normalise();
+
+  protected:
+
+    mutable vector<FieldExpansion>  left_interface_field;
+    mutable vector<FieldExpansion> right_interface_field;
 };
 
 
@@ -76,9 +83,11 @@ class Section1D_Mode : public SectionMode
   public:
 
     Section1D_Mode(Polarisation pol, const Complex& kz,
-                   const Section1D* geom) : SectionMode(pol, kz, geom) {};
+                   const Section1D* geom);
 
-    void normalise() {};
+    Field field(const Coord& coord) const;
+
+    void normalise();
 };
 
 
