@@ -1,5 +1,9 @@
 2002-05-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* expression.cpp: Fix Term(Stack).
+
+2002-05-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* stack.cpp: Corner case of single waveguide stack.
 
 2002-05-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

@@ -213,7 +213,7 @@ Expression Expression::flatten() const
   Expression flat;
   
   for (unsigned int i=0; i<terms.size(); i++)
-  {
+  { 
     if (    (terms[i]->get_type() == STACK_EXPRESSION)
          || (terms[i]->get_type() == MAT_EXPRESSION)   )
     {
@@ -424,7 +424,7 @@ Term::Term(Scatterer& s)
 /////////////////////////////////////////////////////////////////////////////
 
 Term::Term(Stack& st_)
-  : type(SCATTERER), mat(NULL), wg(NULL), d(0.0), sc(st_.get_sc()),
+  : type(STACK_EXPRESSION), mat(NULL), wg(NULL), d(0.0), sc(st_.get_sc()),
     N(st_.get_no_of_periods()), st(&st_)
 {
   ex = new Expression(st_.get_expression());
@@ -729,7 +729,7 @@ const Expression operator+(const Term& L, const Term& R)
 /////////////////////////////////////////////////////////////////////////////
 
 const Expression operator+(const Expression& L, const Term& R)
-{
+{  
   Waveguide* wg1 = L.get_ext();
   Waveguide* wg2 = R.get_inc();
   
