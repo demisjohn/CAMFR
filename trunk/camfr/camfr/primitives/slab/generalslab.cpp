@@ -100,7 +100,7 @@ Complex slab_signedsqrt(const Complex& kz2)
   if (abs(imag(new_kz)) < abs(real(new_kz)))
     if (real(new_kz) < 0)
       new_kz = -new_kz;
-
+  
   return new_kz;
 }
 
@@ -258,8 +258,13 @@ void SlabImpl::calc_overlap_matrices
 
     // Note that cos needs to be in sync with the ones in slabmode.cpp.
 
-    cos_I (i) = slab_signedsqrt(1.0 - sin_I (i) * sin_I (i));
-    cos_II(i) = slab_signedsqrt(1.0 - sin_II(i) * sin_II(i));
+    cos_I (i) 
+      = slab_signedsqrt((1.0 - sin_I (i) * sin_I (i))*kz0_I * kz0_I) / kz0_I;
+    cos_II(i) 
+      = slab_signedsqrt((1.0 - sin_II(i) * sin_II(i))*kz0_II*kz0_II) / kz0_II;
+
+    //std::cout << i <<sin_I (i) << sin_II (i)<<cos_I (i) << cos_II (i)
+    //          << sqrt(cos_I (i)) << sqrt(cos_II (i)) << std::endl;
   }
 
   // Calculate O_I_II and O_II_I.
