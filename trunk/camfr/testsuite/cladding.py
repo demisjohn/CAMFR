@@ -20,13 +20,14 @@ class cladding(unittest.TestCase):
         
         set_N(4)
         set_polarisation(TE)
+        set_mode_surplus(40)
 
         set_lambda(1.5)
 
         GaAs = Material(3.5)
         air  = Material(1.0)
       
-        core = Slab(air(10)+ GaAs(1)+ air(10))
+        core = Slab(air(10.1)+ GaAs(1)+ air(10.1))
         core.calc()
       
         E_field = core.mode(0).field(Coord(core.width()-0.01,0,0)).E2()

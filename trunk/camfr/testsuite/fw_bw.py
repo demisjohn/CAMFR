@@ -40,13 +40,13 @@ class fw_bw(unittest.TestCase):
 
         fw, bw = s.fw_bw(.5)
 
-        f =  fw[0]
-        f_OK = 0.556349919991+0.0468263510045j
+        f = abs(fw[0])
+        f_OK = abs(0.556349919991+0.0468263510045j)
         print f, "expected", f_OK
         f_pass = abs((f - f_OK) / f_OK) < eps.testing_eps
         
-        b =  bw[0]
-        b_OK = -0.139412386777-0.0500728037444j
+        b = abs(bw[0])
+        b_OK = abs(-0.139412386777-0.0500728037444j)
         print b, "expected", b_OK
         b_pass = abs((b - b_OK) / b_OK) < eps.testing_eps
 

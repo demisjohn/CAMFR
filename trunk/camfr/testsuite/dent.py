@@ -20,6 +20,7 @@ class dent(unittest.TestCase):
 	
 	set_lambda(1.55)
 	set_N(40)
+        set_mode_surplus(2)
 
         core = Material(3.45)
         clad = Material(2)

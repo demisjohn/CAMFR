@@ -110,7 +110,7 @@ class PhC_splitter(unittest.TestCase):
 
         E_field_pass = abs((E_field-E_field_OK)/E_field_OK) \
                            < 100*eps.testing_eps
-
+        
         free_tmps()
 
         set_lower_wall(slab_E_wall)

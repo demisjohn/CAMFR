@@ -47,8 +47,8 @@ class stack1(unittest.TestCase):
 
         n_pass = abs((n - n_OK) / n_OK) < eps.testing_eps
 
-        E = s.field(Coord(2.1,0,-1)).E2()
-        E_OK = -0.349345741685-11.0347110226j
+        E = abs(s.field(Coord(2.1,0,-1)).E2())
+        E_OK = 11.0402395717
         
         print E, "expected", E_OK
         

@@ -17,8 +17,9 @@ class precision(unittest.TestCase):
 
         print
         print "Running precision..."
-
+        
         set_N(20)
+        set_mode_surplus(3.0)
         set_polarisation(TE)
         set_lambda(.98)
 

@@ -20,6 +20,7 @@ class gaussian(unittest.TestCase):
 
         set_N(40)
         set_lambda(1.55)
+        set_mode_surplus(2)
         
         GaAs = Material(3.5)
         air  = Material(1.0)

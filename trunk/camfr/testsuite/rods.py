@@ -20,6 +20,7 @@ class rods(unittest.TestCase):
         
         set_lambda(1.5)
         set_N(100)
+        set_mode_surplus(3)
 
         GaAs = Material(sqrt(11.4))
         air = Material(1.0)

@@ -21,6 +21,7 @@ class grating(unittest.TestCase):
         set_N(10)
         set_lambda(1.5)
         set_polarisation(TE)
+        set_mode_surplus(20)
 
         GaAs = Material(3.5)
         air  = Material(1.0)
@@ -46,6 +47,9 @@ class grating(unittest.TestCase):
         E2_OK = 7.03164255766-6.9718563713e-11j
         print E2, "expected", E2_OK
         E2_pass = abs((E2 - E2_OK) / E2_OK) < eps.testing_eps
+
+        print s1
+        print s2
 
         free_tmps()
         

@@ -19,6 +19,8 @@ class coupled(unittest.TestCase):
         print "Running coupled..."
 
         set_N(4)
+        set_mode_surplus(10)
+        
         set_lambda(1.55)
         set_polarisation(TE)
 

@@ -14,13 +14,14 @@ import unittest, eps
 class polariton(unittest.TestCase):
     def testpolariton(self):
 
-        """Polariton 2"""
+        """Polariton"""
 
         print
         print "Running polariton..."
 
         set_N(40)
         set_polarisation(TM)
+        set_mode_surplus(2)
 
         # Geometry parameters.
 
