@@ -25,8 +25,8 @@ class grating(unittest.TestCase):
         GaAs = Material(3.5)
         air  = Material(1.0)
 
-        set_left_wall (slab_H_wall)
-        set_right_wall(slab_H_wall)
+        set_upper_wall(slab_H_wall)
+        set_lower_wall(slab_H_wall)
 
         gp = 0.5*get_lambda()
         s1 = Slab(5*(air(gp/4.) + GaAs(gp/2.) + air(gp/4.))+air(0))
@@ -49,8 +49,8 @@ class grating(unittest.TestCase):
 
         free_tmps()
         
-        set_left_wall (slab_E_wall)
-        set_right_wall(slab_E_wall)
+        set_upper_wall (slab_E_wall)
+        set_lower_wall(slab_E_wall)
            
         self.failUnless(E1_pass and E2_pass)
 

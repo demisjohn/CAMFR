@@ -22,7 +22,7 @@ air  = Material(1.0)
 
 PML = -0.1
 
-set_left_wall(slab_H_wall)
+set_lower_wall(slab_H_wall)
 
 slab  = Slab(GaAs(.25) + air(2 + PML*1j))
 space = Slab(air(2.25 + PML*1j))

@@ -148,9 +148,15 @@ inline void set_circ_fieldtype(long f)
   {global_circ.fieldtype = Fieldtype(f);}
 
 inline void set_left_wall(SlabWall* w)
-  {global_slab.leftwall = w;}
+  {py_print("Warning: CAMFR <1.0 set_left_wall replaced by set_lower_wall.");}
 
 inline void set_right_wall(SlabWall* w)
+  {py_print("Warning: CAMFR <1.0 set_right_wall replaced by set_upper_wall.");}
+
+inline void set_lower_wall(SlabWall* w)
+  {global_slab.leftwall = w;}
+
+inline void set_upper_wall(SlabWall* w)
   {global_slab.rightwall = w;}
 
 inline void set_beta(const Complex& beta)
@@ -448,7 +454,7 @@ struct cMatrix_to_python : to_python_converter<cMatrix, cMatrix_to_python>
 Term material_to_term(BaseMaterial& m, const Complex& d)
 {
   if (real(d) < 0)
-    std::cout << "Warning: negative real length of material." << std::endl;
+    py_print("Warning: negative real length of material.");
   
   return Term(m(d));
 } 
@@ -456,7 +462,7 @@ Term material_to_term(BaseMaterial& m, const Complex& d)
 Term waveguide_to_term(Waveguide& w, const Complex& d)
 {
   if (real(d) < 0)
-    std::cout << "Warning: negative real length of waveguide." << std::endl;
+    py_print("Warning: negative real length of waveguide.");
   
   return Term(w(d));
 }
@@ -678,6 +684,8 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("set_circ_field_type",        set_circ_fieldtype)
     .def("set_left_wall",              set_left_wall)
     .def("set_right_wall",             set_right_wall)
+    .def("set_upper_wall",             set_upper_wall)
+    .def("set_lower_wall",             set_lower_wall)
     .def("set_beta",                   set_beta)
     .def("free_tmps",                  free_tmps);
 

@@ -33,7 +33,7 @@ class PhC_splitter(unittest.TestCase):
         a = .600     # period
         r = .150/2.0 # rod radius
 
-        set_left_wall(slab_H_wall)
+        set_lower_wall(slab_H_wall)
 
         PML = 0
 
@@ -116,7 +116,7 @@ class PhC_splitter(unittest.TestCase):
 
         free_tmps()
 
-        set_left_wall(slab_E_wall)
+        set_lower_wall(slab_E_wall)
         
         self.failUnless(guided_kz_pass and R_pass and E_field_pass)
 

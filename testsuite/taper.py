@@ -30,7 +30,7 @@ class taper(unittest.TestCase):
         r = 0.3 * a * sqrt(pi)/2.
         r_wg = 0.25 * a * sqrt(pi)/2.
 
-        set_left_wall(slab_H_wall)
+        set_lower_wall(slab_H_wall)
 
         PML = -0.1
 
@@ -89,7 +89,7 @@ class taper(unittest.TestCase):
 
         free_tmps()
 
-        set_left_wall(slab_E_wall) 
+        set_lower_wall(slab_E_wall) 
        
         self.failUnless(R_pass)
 
