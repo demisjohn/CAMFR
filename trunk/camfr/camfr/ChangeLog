@@ -1,3 +1,7 @@
+2004-06-10  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* geometry3d.py: Fix rounding errors.
+
 2004-06-03  Pieter Dumon  <Pieter.Dumon@UGent.be>
 
 	* field.cpp: Don't propagate inside a BlochStack.
