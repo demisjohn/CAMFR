@@ -142,22 +142,6 @@ Complex SlabMode::get_cos() const
   if (abs(imag(cs*kz)) < abs(real(cs*kz)))
     if (real(cs*kz) < 0)
       cs = -cs;
-
-/*
-  if (abs(geom->get_core()->n() - 3.5) < 1e-6)
-  {
-    //std::cout << kz*cs << std::endl;
-    if (abs(imag(cs*kz)) < .21)
-    {    
-      std::cout << "Swap " << kz*cs << std::endl;
-      cs = -cs;
-    }
-  }
-  
-  return cs;
-*/
-
-
 }
 
 
@@ -278,6 +262,25 @@ Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz,
   B = (pol == TE) ? 1.0 : 0.0;
 
   calc_fw_bw(calc_fw);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M_Mode::Slab_M_Mode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz, 
+                         const Complex& kt_, const Slab_M* geom,
+                         Stack& lower_stack, Stack& upper_stack)
+    : SlabMode(pol, kz, geom), kt(kt_)
+{
+  A = (pol == TE) ? 0.0 : 1.0;
+  B = (pol == TE) ? 1.0 : 0.0;
+
+  calc_fw_bw(lower_stack, upper_stack);
 }
 
 
@@ -488,7 +491,7 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
   }
 
   // Assemble fw_/bw_ into fw/bw. Note that the first element in
-  // left/right is always duplicated.
+  // fw/bw is always duplicated.
 
   fw.clear();
   bw.clear();
@@ -496,7 +499,7 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
   if (calc_fw)
   {
     fw = fw_;
-    bw= bw_;
+    bw = bw_;
   }
   else
   {
@@ -532,6 +535,116 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
 }
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M_Mode::calc_fw_bw
+//
+//   'fw' refers to waves propagating in +x. 
+//   'bw' refers to waves propagating in -x.
+//
+//   Alternative method, calculate fields from within a give core.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Real zabs(const Complex& z)
+{
+  if (abs(z) < 1e-6)
+    return 0.0;
+  else
+    return abs(z);
+}
+
+Real f(const Real& x)
+{
+  if (abs(x) < 1e-6)
+    return 0.0;
+  else
+    return x;
+}
+
+void Slab_M_Mode::calc_fw_bw(Stack& lower_stack, Stack& upper_stack)
+{
+  const Slab_M* slab = dynamic_cast<const Slab_M*>(geom);  
+  const Complex k0_2 = pow(2*pi/global.lambda, 2);
+
+  // Calculate kx in each section.
+
+  kx.clear();
+  for (unsigned int i=0; i<slab->materials.size(); i++)
+  {
+    Material* mat = slab->materials[i];
+    Complex n_2 = mat->epsr() * mat->mur();
+    
+    Complex kx_i = sqrt(k0_2*n_2 - kz*kz);
+
+    if (abs(k0_2*n_2 - kz*kz) < 1e-10) // Improve stability for TEM mode.
+      kx_i = 0.0;
+
+    pick_sign_k(&kx_i);
+
+    //std::cout << i << " " << f(real(kz/2./pi*global.lambda)) << " " 
+    //          <<f(imag(kz/2./pi*global.lambda)) << " " << mat->n() << " " 
+    //          << f(real(kx_i)) << " " << f(imag(kx_i)) << std::endl;
+    
+    kx.push_back(kx_i);
+  }
+
+  // Calculate fields in left and right stacks.
+
+  Planar::set_kt(kz);
+  
+  cVector lower_inc(1,fortranArray); lower_inc = 1.0;
+  lower_stack.set_inc_field(lower_inc);  
+  vector<FieldExpansion> lower_field;
+  lower_stack.get_interface_field(&lower_field);
+
+  cVector upper_inc(1,fortranArray); upper_inc = lower_stack.R12(0,0);
+  upper_stack.set_inc_field(upper_inc);
+  vector<FieldExpansion> upper_field;
+  upper_stack.get_interface_field(&upper_field);
+
+  //for (int i=0; i<lower_field.size(); i++)
+  //  std::cout << "lower field " << i << " " 
+  //            << lower_field[i].fw(1) << lower_field[i].bw(1) << std::endl;
+
+  //for (int i=0; i<upper_field.size(); i++)
+  //  std::cout << "upper field " << i << " " 
+  //            << upper_field[i].fw(1) << upper_field[i].bw(1) << std::endl;
+
+  // Assemble into fw/bw. Note that the first element in
+  // fw/bw is always duplicated. Also skip the elements related to 
+  // artificial midway interface and to the walls in upper_field/lower_field.
+
+  fw.clear();
+  bw.clear();
+
+  fw.push_back(lower_field[lower_field.size()-3].bw(1));
+  bw.push_back(lower_field[lower_field.size()-3].fw(1));
+
+  for (int i=lower_field.size()-3; i>=2; i--)
+  {  
+    fw.push_back(lower_field[i].bw(1));
+    bw.push_back(lower_field[i].fw(1));
+  }
+ 
+  for (int i=2; i<=upper_field.size()-3; i++)
+  {  
+    fw.push_back(upper_field[i].fw(1));
+    bw.push_back(upper_field[i].bw(1));
+  }
+
+  //std::cout << "n_eff " << kz/2./pi*global.lambda << std::endl;
+  //for (unsigned int i=0; i<fw.size(); i++
+  //std::cout << "field" << i << " " << fw[i] << bw[i] << std::endl;
+  //std::cout << "field " << i << " "
+  //          << f(real(fw[i])) << " "
+  //          << f(imag(fw[i])) << " "
+  //          << f(real(bw[i])) << " "
+  //          << f(imag(bw[i])) << std::endl;
+  //std::cout << std::endl;
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -547,15 +660,30 @@ void Slab_M_Mode::normalise()
     py_print("Warning: mode close to cutoff.");
     power = 1;
   }
-  
-  A /= sqrt(power);
-  B /= sqrt(power);
 
   for (unsigned int i=0; i<fw.size(); i++)
   {
     fw[i] /= sqrt(power);
     bw[i] /= sqrt(power);
   }
+
+  // Set A and B to give same results as uniform mode.
+
+  SlabWall* wall = geom->lowerwall ? geom->lowerwall : global_slab.lowerwall;
+  Complex R = wall ? wall->get_R12() : -1.0;
+
+  A = (pol == TE) ? 0.0 : R*bw[0];
+  B = (pol == TE) ? R*bw[0] : 0.0;
+
+  //std::cout << "n_eff " << kz/2./pi*global.lambda << std::endl;
+  //for (unsigned int i=0; i<fw.size(); i++)
+  //  std::cout << "after norm " << i  << fw[i] << bw[i] << std::endl;
+  //std::cout << i << " "
+  //            << zabs(real(fw[i])) << " "
+  //            << zabs(imag(fw[i])) << " "              
+  //            << zabs(real(bw[i])) << " "
+  //            << zabs(imag(bw[i])) << std::endl;
+  //std::cout << std::endl;
 }
 
 
@@ -692,7 +820,7 @@ void UniformSlabMode::normalise()
 
   A /= sqrt(power);
   B /= sqrt(power);
-  
+
   fw0 /= sqrt(power);
   bw0 /= sqrt(power);
 }

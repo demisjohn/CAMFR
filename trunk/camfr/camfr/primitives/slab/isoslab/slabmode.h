@@ -73,7 +73,11 @@ class Slab_M_Mode : public SlabMode
     Slab_M_Mode(Polarisation pol,  const Complex& kz, 
                 const Complex& kt, const Slab_M* geom,
                 bool calc_fw = true);
-    
+
+    Slab_M_Mode(Polarisation pol,   const Complex& kz,
+                const Complex& kt,  const Slab_M* geom,
+                Stack& lower_stack, Stack& upper_stack);   
+
     void normalise();
     
     void forw_backw_at(const Coord& coord, Complex* fw, Complex* bw) const;
@@ -86,6 +90,7 @@ class Slab_M_Mode : public SlabMode
   protected:
 
     void calc_fw_bw(bool calc_fw = true);
+    void calc_fw_bw(Stack& lower_stack, Stack& upper_stack);
 
     // Expansion coeff. of forward and backward waves at each interface.
         
