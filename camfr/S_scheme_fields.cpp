@@ -290,7 +290,7 @@ void calc_S_S(const vector<Chunk>& chunks,
       fw_prop(i) = fw_int(i) 
         * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
-    // Calculate bw field after interface.
+    // Calculate bw field after propagation.
     
     vector<Chunk> right_chunks;
     for (unsigned int j=k+1; j<chunks.size(); j++)
@@ -313,7 +313,7 @@ void calc_S_S(const vector<Chunk>& chunks,
       else
         bw_prop = 0.0;
 
-    // Calculate bw field after propagation.
+    // Calculate bw field after interface.
 
     cVector bw_int(N,fortranArray);
     for (int i=1; i<=N; i++)
@@ -374,7 +374,7 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
       fw_prop(i) = fw_int(i) 
         * exp(-I * wg->get_mode(i)->get_kz() * chunks[k].d);
 
-    // Calculate bw field after interface.
+    // Calculate bw field after propagation.
     
     vector<Chunk> right_chunks;
     for (unsigned int j=k+1; j<chunks.size(); j++)
@@ -397,7 +397,7 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
       else
         bw_prop = 0.0;
 
-    // Calculate bw field after propagation.
+    // Calculate bw field after interface.
 
     cVector bw_int(N,fortranArray);
     for (int i=1; i<=N; i++)
@@ -454,7 +454,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
     cVector fw_prop(1,fortranArray);
     fw_prop(1) = fw_int(1) * exp(-I * wg->get_mode(1)->get_kz() * chunks[k].d);
 
-    // Calculate bw field after interface.
+    // Calculate bw field after propagation.
     
     vector<Chunk> right_chunks;
     for (unsigned int j=k+1; j<chunks.size(); j++)
@@ -477,7 +477,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
       else
         bw_prop = 0.0;
 
-    // Calculate bw field after propagation.
+    // Calculate bw field after interface.
 
     cVector bw_int(1,fortranArray);
     bw_int(1) = bw_prop(1) * exp(-I * wg->get_mode(1)->get_kz() * chunks[k].d);
