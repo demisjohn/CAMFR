@@ -859,7 +859,13 @@ FieldExpansion Stack::ext_field_expansion()
 void Stack::set_interface_field(const vector<FieldExpansion>& field)
 {
   interface_field.clear();
-  interface_field = field;
+  for (unsigned int i=0; i<field.size(); i++)
+    interface_field.push_back(field[i]);
+
+  inc_field = interface_field[0].fw;
+
+  if (bw_inc) // FIXME: not entirely general.
+    inc_field_bw = interface_field.back().bw;
 }
 
 
@@ -877,7 +883,8 @@ void Stack::get_interface_field(vector<FieldExpansion>* field)
   if (interface_field.size() <= 1)
     calc_interface_fields();
 
-  *field = interface_field;
+  for (unsigned int i=0; i<interface_field.size(); i++)
+    field->push_back(interface_field[i]);
 }
 
 
@@ -890,6 +897,42 @@ void Stack::get_interface_field(vector<FieldExpansion>* field)
 
 Field Stack::field(const Coord& coord)
 {
+  // Calculate field expansion.
+
+  const unsigned int index =
+    index_lookup(coord.z, coord.z_limit, interface_positions);
+
+  const vector<Chunk>* chunks
+    = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
+
+  Waveguide* wg = (*chunks)[index].sc->get_ext();
+
+  cVector fw(wg->N(),fortranArray);
+  cVector bw(wg->N(),fortranArray);
+
+  fw_bw_field(coord, &fw, &bw);
+
+  // Calculate total field. Note that the z-dependence has already been
+  // taken care of.
+
+  FieldExpansion field_expansion(*wg, fw, bw);
+
+  const Coord c(coord.c1,       coord.c2,       0,
+                coord.c1_limit, coord.c2_limit, coord.z_limit);
+
+  return field_expansion.field(c);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// fw_bw_field
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
+{
   // If needed, calculate field at each interface.
   
   if (interface_field.size() <= 1)
@@ -899,16 +942,20 @@ Field Stack::field(const Coord& coord)
 
   if (    (real(coord.z) < 0)
        || ((abs(coord.z) < 1e-10) && (coord.z_limit == Min)) )
-    return interface_field[0].field(coord);
+  {
+    FieldExpansion f(interface_field[0].propagate(coord.z));
+    *fw = f.fw; *bw = f.bw;
+    return;
+  }
   
   const Complex last_z = interface_positions.back();
 
   if (    (real(coord.z) > real(last_z))
        || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus)) )
   {
-    Coord c_new = coord;
-    c_new.z -= get_total_thickness();
-    return interface_field.back().field(c_new);
+    FieldExpansion f(interface_field.back().propagate(-get_total_thickness()));
+    *fw = f.fw; *bw = f.bw;
+    return;
   }
 
   // Calculate index in chunk vector (first chunk is zero).
@@ -937,34 +984,21 @@ Field Stack::field(const Coord& coord)
 
   // Calculate field expansion at desired z position.
 
-  cVector fw(wg->N(),fortranArray);
-  cVector bw(wg->N(),fortranArray);
-
   for (int i=1; i<=wg->N(); i++)
   {
     const Complex kz = wg->get_mode(i)->get_kz();
     
     if (imag(kz) < 0) // Propagate forwards.
     {
-      fw(i) = interface_field[prev_index].fw(i) * exp(-I * kz * d_prev);
-      bw(i) = interface_field[next_index].bw(i) * exp(-I * kz * d_next);
+      (*fw)(i) = interface_field[prev_index].fw(i) * exp(-I * kz * d_prev);
+      (*bw)(i) = interface_field[next_index].bw(i) * exp(-I * kz * d_next);
     }
     else // Propagate backwards.
     {
-      fw(i) = interface_field[next_index].fw(i) * exp( I * kz * d_next);
-      bw(i) = interface_field[prev_index].bw(i) * exp( I * kz * d_prev);
+      (*fw)(i) = interface_field[next_index].fw(i) * exp( I * kz * d_next);
+      (*bw)(i) = interface_field[prev_index].bw(i) * exp( I * kz * d_prev);
     }
   }
-
-  // Calculate total field. Note that the z-dependence has already been
-  // taken care of.
-
-  FieldExpansion field_expansion(*wg, fw, bw);
-
-  const Coord c(coord.c1,       coord.c2,       0,
-                coord.c1_limit, coord.c2_limit, coord.z_limit);
-
-  return field_expansion.field(c);
 }
 
 
@@ -1288,7 +1322,7 @@ void Stack::calc_interface_fields()
     return;
   
   // Calculate field at each interface.
-
+  
   const vector<Chunk>* chunks
     = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
 

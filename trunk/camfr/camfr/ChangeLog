@@ -1,5 +1,10 @@
 2002-06-21  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* stack.h: Add fw_bw_field.
+	* stack.cpp: Ditto.
+
+2002-06-21  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* scatterer.cpp: Add spurious warnings in walls.
 
 2002-06-21  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

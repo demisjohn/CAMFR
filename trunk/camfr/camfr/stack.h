@@ -232,6 +232,7 @@ class Stack
     FieldExpansion ext_field_expansion();
     
     Field field(const Coord& coord);
+    void fw_bw_field(const Coord& coord, cVector* fw, cVector* bw);
 
     void set_interface_field(const std::vector<FieldExpansion>& field);
     void get_interface_field(      std::vector<FieldExpansion>* field);
