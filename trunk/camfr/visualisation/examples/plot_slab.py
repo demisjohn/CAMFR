@@ -6,7 +6,7 @@
 #
 #############################################################################
 
-from camfr_work import *
+from camfr import *
 
 set_lambda(1)
 

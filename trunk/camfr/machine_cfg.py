@@ -25,7 +25,7 @@ base_flags = "-ftemplate-depth-60 \
 flags_noopt = base_flags
 
 flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium3 \
-                       -funroll-loops -fstrict-aliasing -g"
+                       -funroll-loops -fstrict-aliasing"
 
 fflags = flags
 
@@ -42,7 +42,7 @@ library_dirs = ["/home/pbienst/blitz-20001213/lib",
 
 # Library names.
 
-libs = ["boost_python", "blitz", "mkl_lapack", "mkl_def", "guide", "g2c"]
+libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
 
 # Command to strip library of excess symbols:
 

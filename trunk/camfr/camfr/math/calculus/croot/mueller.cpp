@@ -485,7 +485,7 @@ std::vector<Complex> mueller
     for (unsigned int j=1; j<duplicates[i].size(); j++)
     {
       deflate.push_back(z_cluster);
-      std::cout << "Deflating cluster " << i << " " << (*transform)(z_cluster)
+      std::cout << "Deflating cluster " << i <<" "<< (*transform)(z_cluster)
                 << z_cluster << std::endl;
       
       bool error = false;

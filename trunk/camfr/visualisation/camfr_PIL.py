@@ -8,7 +8,7 @@
 #
 ##############################################################################
 
-from camfr_work import *
+from camfr import *
 from Numeric import *
 
 # Colormap codes.
@@ -173,7 +173,7 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0,
 ##############################################################################
 
 def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
-                                 min_area = 100000, scale =1):
+                              min_area = 100000, scale =1):
     import Image, ImageDraw
     
     # Determine width and height of a vector.
