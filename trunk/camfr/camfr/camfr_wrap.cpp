@@ -13,6 +13,7 @@
 // TODO
 //
 // Try implicit conversions (note: const arg for constructor required)
+//   implicitly_convertible<Stack,Term>();
 // Enums and constants
 // Default arguments
 
@@ -331,13 +332,16 @@ Term waveguide_to_term(Waveguide& w, const Complex& d)
 #define TERM_PLUS_TERM_F(t1, t2) (const Expression (*) (t1&, t2&)) &operator+
 
 TERM_PLUS_TERM(Stack,      Stack)
+TERM_PLUS_TERM(Stack,      InfStack)
 TERM_PLUS_TERM(Stack,      const Expression)
 TERM_PLUS_TERM(Stack,      const Term)
 TERM_PLUS_TERM(Stack,      Scatterer)
 TERM_PLUS_TERM(const Term, Stack)
+TERM_PLUS_TERM(const Term, InfStack)
 TERM_PLUS_TERM(const Term, const Expression)
 TERM_PLUS_TERM(const Term, Scatterer)
 TERM_PLUS_TERM(Scatterer,  Stack)
+TERM_PLUS_TERM(Scatterer,  InfStack)
 TERM_PLUS_TERM(Scatterer,  const Expression)
 TERM_PLUS_TERM(Scatterer,  const Term)
 TERM_PLUS_TERM(Scatterer,  Scatterer)
@@ -349,6 +353,7 @@ TERM_PLUS_TERM(Scatterer,  Scatterer)
       &operator+
   
 EX_PLUS_TERM(Stack)
+EX_PLUS_TERM(InfStack)
 EX_PLUS_TERM(const Expression)
 EX_PLUS_TERM(Scatterer)
 
@@ -661,6 +666,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
          return_value_policy<reference_existing_object>())
     .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Term))
     .def("__add__", TERM_PLUS_TERM_F(Scatterer, Stack))
+    .def("__add__", TERM_PLUS_TERM_F(Scatterer, InfStack))
     .def("__add__", TERM_PLUS_TERM_F(Scatterer, const Expression))
     .def("__add__", TERM_PLUS_TERM_F(Scatterer, Scatterer))
     );
@@ -731,6 +737,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("__iadd__", &Expression::operator+=)
     .def("__add__",  EX_PLUS_TERM_F(const Term))
     .def("__add__",  EX_PLUS_TERM_F(Stack))
+    .def("__add__",  EX_PLUS_TERM_F(InfStack))
     .def("__add__",  EX_PLUS_TERM_F(const Expression))
     .def("__add__",  EX_PLUS_TERM_F(Scatterer))
     .def("__rmul__",
@@ -753,6 +760,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("__repr__", &Term::repr)
     .def("__add__",  TERM_PLUS_TERM_F(const Term, const Term))
     .def("__add__",  TERM_PLUS_TERM_F(const Term, Stack))
+    .def("__add__",  TERM_PLUS_TERM_F(const Term, InfStack))
     .def("__add__",  TERM_PLUS_TERM_F(const Term, const Expression))
     .def("__add__",  TERM_PLUS_TERM_F(const Term, Scatterer))
     .def("__rmul__", (const Term (*) (const Term&, unsigned int)) &operator*)
@@ -795,6 +803,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("T21",            stack_T21)
     .def("__add__", TERM_PLUS_TERM_F(Stack, const Term))
     .def("__add__", TERM_PLUS_TERM_F(Stack, Stack))
+    .def("__add__", TERM_PLUS_TERM_F(Stack, InfStack))
     .def("__add__", TERM_PLUS_TERM_F(Stack, const Expression))
     .def("__add__", TERM_PLUS_TERM_F(Stack, Scatterer))
     );
