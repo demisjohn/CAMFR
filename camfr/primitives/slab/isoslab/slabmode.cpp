@@ -348,7 +348,7 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
     if (real(kx_i) < 0)
       kx_i = -kx_i;
 
-    if (abs(real(kx_i)) < 1e-12)
+    if (abs(real(kx_i)) < 1e-10)
       if (imag(kx_i) > 0)
         kx_i = -kx_i;
     
