@@ -1,13 +1,9 @@
 CAMFR 1.0:
 
--Field.S1(), Field.S2(), Field.Sz() (add to manual, Changelog)
--remove PML from geometry figure.
 -upgrade boost: contants
--complex modes metal: .1 --> .001 (KC's structure)
--NaN in tutorial6.out
--test field in incidence or exit medium.
--thin structures
 -memory management (matlab)
+-thin structures
+-remove PML from geometry figure.
 
 CAMFR 3D:
 
