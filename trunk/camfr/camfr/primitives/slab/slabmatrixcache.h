@@ -30,13 +30,14 @@ class SlabCache; // forward declation - see generalslab.h
 struct OverlapMatrices
 {
   OverlapMatrices(const SlabImpl* medium_I, const SlabImpl* medium_II, 
-                  const SlabCache* cache, const std::vector<Complex>* disc);
+                  const SlabCache* cache, const std::vector<Complex>* disc,
+                  bool calc_all = true);
 
   int n; // Auxiliary variable to simplify comstructor.  
     
-  cMatrix TE_TE_I_II, TM_TM_I_II, TE_TE_II_I,  TM_TM_II_I;
-  cMatrix Ex_Hz_I_II, Ez_Hx_I_II, Ex_Hz_II_I,  Ez_Hx_II_I;
-  cMatrix Ex_Hz_I_I,  Ez_Hx_I_I,  Ex_Hz_II_II, Ez_Hx_II_II;
+  cHyperM TE_TE,       TM_TM;
+  cHyperM Ex_Hz_cross, Ez_Hx_cross;
+  cHyperM Ex_Hz_self,  Ez_Hx_self;
 };
 
 

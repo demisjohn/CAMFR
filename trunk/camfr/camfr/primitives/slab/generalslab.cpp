@@ -60,8 +60,7 @@ class SlabFlux : public RealFunction
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabImpl::~SlabImpl() 
-{
+SlabImpl::~SlabImpl(){
   slabmatrix_cache.deregister(this);
 }
 
@@ -109,25 +108,15 @@ Complex slab_signedsqrt(const Complex& kz2)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// SlabImpl::calc_overlap_matrices()
+// SlabImpl::disc_intersect
+//
+//   Make sorted list of evaluation points for field cache.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-// Dirty includes. Refactor this code after the design of moslab has settled.
-
-#include "isoslab/slabmode.h"
-#include "isoslab/slaboverlap.h"
-
-void SlabImpl::calc_overlap_matrices
-  (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
-   cMatrix* O_I_I, cMatrix* O_II_II)
-{ 
-  SlabImpl* medium_I  = this;
-  SlabImpl* medium_II = dynamic_cast<SlabImpl*>(w);
-
-  // Make sorted list of evaluation points for field cache.
-
-  vector<Complex> disc = medium_I->discontinuities;
+vector<Complex> SlabImpl::disc_intersect(SlabImpl* medium_II)
+{
+  vector<Complex> disc = discontinuities;
 
   disc.push_back(0.0);
   
@@ -138,16 +127,29 @@ void SlabImpl::calc_overlap_matrices
 
   sort(disc.begin(), disc.end(), RealSorter());
 
-  // Fill field cache.
+  return disc;
+}
 
-  const unsigned int N = global.N;
 
-  SlabCache cache(N, disc.size()-1);
-  
-  for (int i=1; i<=int(N); i++)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabImpl::fill_field_cache
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// Dirty includes. Refactor this code after the design of moslab has settled.
+
+#include "isoslab/slabmode.h"
+#include "isoslab/slaboverlap.h"
+
+void SlabImpl::fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
+                                const vector<Complex>& disc)
+{  
+  for (int i=1; i<=int(N()); i++)
   {
     const SlabMode* mode_I
-      = dynamic_cast<const SlabMode*>(medium_I ->get_mode(i));
+      = dynamic_cast<const SlabMode*>(get_mode(i));
     
     const SlabMode* mode_II
       = dynamic_cast<const SlabMode*>(medium_II->get_mode(i));
@@ -165,17 +167,41 @@ void SlabImpl::calc_overlap_matrices
       mode_II->forw_backw_at(lower, &fw_II_l, &bw_II_l);  
       mode_II->forw_backw_at(upper, &fw_II_u, &bw_II_u);
 
-      cache.fw_l(1,i,k+1) = fw_I_l;
-      cache.bw_l(1,i,k+1) = bw_I_l;
-      cache.fw_u(1,i,k+1) = fw_I_u;
-      cache.bw_u(1,i,k+1) = bw_I_u;
+      cache->fw_l(1,i,k+1) = fw_I_l;
+      cache->bw_l(1,i,k+1) = bw_I_l;
+      cache->fw_u(1,i,k+1) = fw_I_u;
+      cache->bw_u(1,i,k+1) = bw_I_u;
 
-      cache.fw_l(2,i,k+1) = fw_II_l;
-      cache.bw_l(2,i,k+1) = bw_II_l;
-      cache.fw_u(2,i,k+1) = fw_II_u;
-      cache.bw_u(2,i,k+1) = bw_II_u;
+      cache->fw_l(2,i,k+1) = fw_II_l;
+      cache->bw_l(2,i,k+1) = bw_II_l;
+      cache->fw_u(2,i,k+1) = fw_II_u;
+      cache->bw_u(2,i,k+1) = bw_II_u;
     }
   }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabImpl::calc_overlap_matrices()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void SlabImpl::calc_overlap_matrices
+  (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
+   cMatrix* O_I_I, cMatrix* O_II_II)
+{ 
+  // Fill field cache.
+
+  SlabImpl* medium_I  = this;
+  SlabImpl* medium_II = dynamic_cast<SlabImpl*>(w);
+
+  vector<Complex> disc = medium_I->disc_intersect(medium_II);
+
+  const unsigned int N = global.N;
+  SlabCache cache(N, disc.size()-1);
+  medium_I->fill_field_cache(&cache, medium_II, disc);
 
   // Calculate overlap matrices (y-invariant case).
   
@@ -211,9 +237,9 @@ void SlabImpl::calc_overlap_matrices
   // Calculate overlap matrices for off-angle incidence.
 
   if (!O_I_I)
-  {
+  { 
     py_error(
-     "Internal error: non-orthogonality of modes not taken into account");
+     "Internal error: non-orthogonality of modes not taken into account.");
     exit (-1);
   }
 
@@ -246,17 +272,17 @@ void SlabImpl::calc_overlap_matrices
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
-      (*O_I_II)(i,    j) =   m->TE_TE_I_II(i,j) * cos_I (  i);
+      (*O_I_II)(i,    j) =   m->TE_TE      (1,i,j) * cos_I (  i);
       (*O_I_II)(i,  n+j) =   0.0;
-      (*O_I_II)(n+i,  j) =   m->Ex_Hz_I_II(i,j) * sin_II(  j)
-                           - m->Ez_Hx_I_II(i,j) * sin_I (n+i);   
-      (*O_I_II)(n+i,n+j) =   m->TM_TM_I_II(i,j) * cos_II(n+j);
+      (*O_I_II)(n+i,  j) =   m->Ex_Hz_cross(1,i,j) * sin_II(  j)
+                           - m->Ez_Hx_cross(1,i,j) * sin_I (n+i);   
+      (*O_I_II)(n+i,n+j) =   m->TM_TM      (1,i,j) * cos_II(n+j);
 
-      (*O_II_I)(i,    j) =   m->TE_TE_II_I(i,j) * cos_II(  i);
+      (*O_II_I)(i,    j) =   m->TE_TE      (2,i,j) * cos_II(  i);
       (*O_II_I)(i,  n+j) =   0.0;
-      (*O_II_I)(n+i,  j) =   m->Ex_Hz_II_I(i,j) * sin_I (  j)
-                           - m->Ez_Hx_II_I(i,j) * sin_II(n+i);
-      (*O_II_I)(n+i,n+j) =   m->TM_TM_II_I(i,j) * cos_I (n+j);  
+      (*O_II_I)(n+i,  j) =   m->Ex_Hz_cross(2,i,j) * sin_I (  j)
+                           - m->Ez_Hx_cross(2,i,j) * sin_II(n+i);
+      (*O_II_I)(n+i,n+j) =   m->TM_TM      (2,i,j) * cos_I (n+j);  
     }
 
   for (int i=1; i<=N; i++)
@@ -276,12 +302,12 @@ void SlabImpl::calc_overlap_matrices
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
-      (*O_I_I)(n+i,j)   = (  m->Ex_Hz_I_I(i,j) * sin_I(  j)
-                           - m->Ez_Hx_I_I(i,j) * sin_I(n+i)) 
+      (*O_I_I)(n+i,j)   = (  m->Ex_Hz_self(1,i,j) * sin_I(  j)
+                           - m->Ez_Hx_self(1,i,j) * sin_I(n+i)) 
                               / sqrt(cos_I(n+i)) / sqrt(cos_I(j));
 
-      (*O_II_II)(n+i,j) = (  m->Ex_Hz_II_II(i,j) * sin_II(  j)
-                           - m->Ez_Hx_II_II(i,j) * sin_II(n+i))
+      (*O_II_II)(n+i,j) = (  m->Ex_Hz_self(2,i,j) * sin_II(  j)
+                           - m->Ez_Hx_self(2,i,j) * sin_II(n+i))
                               / sqrt(cos_II(n+i)) / sqrt(cos_II(j));
     }
 }

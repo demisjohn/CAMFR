@@ -26,14 +26,11 @@ using std::pair;
 
 OverlapMatrices::OverlapMatrices
   (const SlabImpl* medium_I, const SlabImpl* medium_II,
-   const SlabCache* cache, const vector<Complex>* disc)
-    : n(global.N/2), 
-      TE_TE_I_II (n,n,fortranArray), TM_TM_I_II (n,n,fortranArray),
-      TE_TE_II_I (n,n,fortranArray), TM_TM_II_I (n,n,fortranArray),
-      Ex_Hz_I_II (n,n,fortranArray), Ez_Hx_I_II (n,n,fortranArray),
-      Ex_Hz_II_I (n,n,fortranArray), Ez_Hx_II_I (n,n,fortranArray),
-      Ex_Hz_I_I  (n,n,fortranArray), Ez_Hx_I_I  (n,n,fortranArray),
-      Ex_Hz_II_II(n,n,fortranArray), Ez_Hx_II_II(n,n,fortranArray)
+   const SlabCache* cache, const vector<Complex>* disc, bool calc_all)
+    : n(medium_I->N()/2), 
+      TE_TE      (2,n,n,fortranArray), TM_TM      (2,n,n,fortranArray),
+      Ex_Hz_cross(2,n,n,fortranArray), Ez_Hx_cross(2,n,n,fortranArray),
+      Ex_Hz_self (2,n,n,fortranArray), Ez_Hx_self (2,n,n,fortranArray)
 {
   Complex Ex_Hz_I_II_ij, Ez_Hx_I_II_ij, Ex_Hz_II_I_ij,  Ez_Hx_II_I_ij;
   Complex Ex_Hz_I_I_ij,  Ez_Hx_I_I_ij,  Ex_Hz_II_II_ij, Ez_Hx_II_II_ij;
@@ -41,22 +38,22 @@ OverlapMatrices::OverlapMatrices
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
-      TE_TE_I_II(i,j) = overlap
+      TE_TE(1,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
          cache, disc, i, j, 1, 2);
 
-      TE_TE_II_I(i,j) = overlap
+      TE_TE(2,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
          cache, disc, i, j, 2, 1);
 
-      TM_TM_I_II(i,j) = overlap
+      TM_TM(1,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
          dynamic_cast<const SlabMode*>(medium_II->get_mode(n+j)),
          cache, disc, n+i, n+j, 1, 2);
 
-      TM_TM_II_I(i,j) = overlap
+      TM_TM(2,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+j)),
          cache, disc, n+i, n+j, 2, 1);
@@ -69,22 +66,26 @@ OverlapMatrices::OverlapMatrices
       overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
                     dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
                     &Ex_Hz_II_I_ij, &Ez_Hx_II_I_ij,
-                    cache, disc, n+i, j, 2, 1);
+                    cache, disc, n+i, j, 2, 1);      
 
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
-                    &Ex_Hz_I_I_ij, &Ez_Hx_I_I_ij,
-                    cache, disc, n+i, j, 1, 1);
+      Ex_Hz_cross(1,i,j) = Ex_Hz_I_II_ij;  Ez_Hx_cross(1,i,j) = Ez_Hx_I_II_ij;
+      Ex_Hz_cross(2,i,j) = Ex_Hz_II_I_ij;  Ez_Hx_cross(2,i,j) = Ez_Hx_II_I_ij;
 
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
-                    &Ex_Hz_II_II_ij, &Ez_Hx_II_II_ij,
-                    cache, disc, n+i, j, 2, 2);
+      if (calc_all)
+      {
+        overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
+                      dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
+                      &Ex_Hz_I_I_ij, &Ez_Hx_I_I_ij,
+                      cache, disc, n+i, j, 1, 1);
 
-      Ex_Hz_I_II (i,j) = Ex_Hz_I_II_ij;  Ez_Hx_I_II (i,j) = Ez_Hx_I_II_ij;
-      Ex_Hz_II_I (i,j) = Ex_Hz_II_I_ij;  Ez_Hx_II_I (i,j) = Ez_Hx_II_I_ij;
-      Ex_Hz_I_I  (i,j) = Ex_Hz_I_I_ij;   Ez_Hx_I_I  (i,j) = Ez_Hx_I_I_ij;
-      Ex_Hz_II_II(i,j) = Ex_Hz_II_II_ij; Ez_Hx_II_II(i,j) = Ez_Hx_II_II_ij;
+        overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
+                      dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
+                      &Ex_Hz_II_II_ij, &Ez_Hx_II_II_ij,
+                      cache, disc, n+i, j, 2, 2);
+
+        Ex_Hz_self(1,i,j)=Ex_Hz_I_I_ij;   Ez_Hx_self(1,i,j)=Ez_Hx_I_I_ij;
+        Ex_Hz_self(2,i,j)=Ex_Hz_II_II_ij; Ez_Hx_self(2,i,j)=Ez_Hx_II_II_ij;
+      }
     }
 }
 

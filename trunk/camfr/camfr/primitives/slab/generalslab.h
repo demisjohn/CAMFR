@@ -75,6 +75,11 @@ class SlabImpl : public MultiWaveguide
 
     cVector expand_field(ComplexFunction* f, Real eps);
 
+    std::vector<Complex> disc_intersect(SlabImpl* medium_II);
+
+    void fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
+                          const std::vector<Complex>& disc);
+
   protected:
 
     SlabWall*  leftwall; // NULL means use wall from global_slab.
@@ -161,6 +166,8 @@ class Slab : public MultiWaveguide
 
     cVector expand_field(ComplexFunction* f, Real eps=1e-4)
       {return s->expand_field(f, eps);}
+
+    SlabImpl* get_impl() const {return s;}
     
     std::string repr() const {return s->repr();}
     
