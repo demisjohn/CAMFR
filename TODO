@@ -2,7 +2,7 @@ SHORT TERM
 
 -check sign of cos_I cos_II in overlap
 
--check E/H wall for TM
+-check E/H wall for TM, make slab_wall polarisation safe
 
 -default planar::set_theta (Peter)
  
@@ -31,6 +31,8 @@ MEDIUM TERM:
 -related: PhC waveguide, no symmetry trick: large no of cl periods (Peter)
 -possible to remove hack for removing unstable exp, extra signed sqrt (Peter)
 -idem: hack for tails in slabmodes (Peter)
+
+-check for presence of gain medium in cavity
 
 -new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
  Ability to cache field profiles and speed up.

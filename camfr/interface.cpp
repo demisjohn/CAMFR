@@ -202,6 +202,7 @@ void DenseInterface::calcRT_fast()
   iVector  p(  N,fortranArray);
   
   LU(A,&lu,&p);
+  
   T12.reference(LU_solve(lu,p,B));
   
   // Calculate R12 from T12.

@@ -79,10 +79,13 @@ Field SlabMode::field(const Coord& coord_) const
   forw_backw_at(coord, &right_x, &left_x);
 
   // Calculate total field.
+
+  const Complex s = global_slab.beta / kz;
+  const Complex c = sqrt(1.0 - s*s);
   
   Field field;
 
-  if (global.polarisation == TE)
+  if (pol == TE)
   {
     const Complex C = 1.0 / (k0*c) / geom->mu_at(coord);
         
@@ -93,6 +96,15 @@ Field SlabMode::field(const Coord& coord_) const
     field.H1 = C * (-right_x - left_x) * kz;
     field.H2 = 0.0;
     field.Hz = C * ( right_x - left_x) * kx;
+
+    if (abs(global_slab.beta) > 1e-6)
+    {
+      field.Ez *= field.E2 * s;
+      field.E2 *= c;
+ 
+      field.H2 *= -field.Hz * s;
+      field.Hz *= c;
+    }
   }
   else 
   { 
@@ -105,6 +117,15 @@ Field SlabMode::field(const Coord& coord_) const
     field.E1 = C * ( right_x - left_x) * kz;
     field.E2 = 0.0;
     field.Ez = C * (-right_x - left_x) * kx;
+
+    if (abs(global_slab.beta) > 1e-6)
+    {
+      field.E2 *= -field.Ez * s;
+      field.Ez *= c;
+ 
+      field.Hz *= field.H2 * s;
+      field.H2 *= c;
+    }
   }
 
   return field;
@@ -226,11 +247,11 @@ void Slab_M_Mode::calc_left_right()
     Material* mat1 = slab->materials[i1];
     Material* mat2 = slab->materials[i2];
     
-    const Complex a = (global.polarisation == TE)
+    const Complex a = (pol == TE)
       ? kx[i1] / kx[i2] * mat2->mu()  / mat1->mu()
       : kx[i1] / kx[i2] * mat2->eps() / mat1->eps();
     
-    const Real sign = (global.polarisation == TE) ? 1 : -1;
+    const Real sign = (pol == TE) ? 1 : -1;
   
     // Cross the interface.
     
