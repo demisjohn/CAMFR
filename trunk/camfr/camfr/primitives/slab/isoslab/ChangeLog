@@ -1,3 +1,8 @@
+2003-03-07 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.cpp: Tuner series solver.
+	* slabdisp.cpp: Ditto.
+
 2003-02-17 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slab.h: Add series solver.

@@ -825,9 +825,10 @@ std::vector<Complex> Slab_M::find_kt_from_series()
   const int n = M_series ? M_series : int(global.N * global.mode_surplus);
   const Real omega = 2*pi/global.lambda * c;
  
-  // Find min eps mu.
+  // Find min and max eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
@@ -835,9 +836,21 @@ std::vector<Complex> Slab_M::find_kt_from_series()
     
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
+
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
   }
 
   const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  Complex max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
+    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+  else
+    max_eps_eff = max_eps_mu;
+
+  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
 
   // Calc overlap matrices.
 
@@ -847,7 +860,7 @@ std::vector<Complex> Slab_M::find_kt_from_series()
   Material ref_mat(1.0);
   UniformSlab ref(get_width(),ref_mat);
   ref.find_modes();
-
+  
   global.N = old_N;
 
   cMatrix O_tt(n,n,fortranArray);
@@ -869,8 +882,12 @@ std::vector<Complex> Slab_M::find_kt_from_series()
     for (int i=1; i<=n; i++)
     {
       SlabMode* TE_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
-   
-      const Complex factor = omega * TE_i->get_kz();
+
+      Complex kz_i = TE_i->get_kz();
+      if (abs(kz_i) < 1e-6)
+        py_print("WARNING: reference mode close to cutoff!");
+      
+      const Complex factor = omega * kz_i;
       for (int j=1; j<=n; j++)
         E(i,j) *= factor;
 
@@ -911,13 +928,18 @@ std::vector<Complex> Slab_M::find_kt_from_series()
   }
 
   cVector kz2(n,fortranArray);
-  kz2 = eigenvalues(E);
+
+  if (global.stability == normal)
+    kz2 = eigenvalues(E);
+  else
+    kz2 = eigenvalues_x(E);
 
   // Refine estimates.
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=1; i<=n; i++)
-    kz2_coarse.push_back(kz2(i));
+    if (real(sqrt(kz2(i))) < 1.2*max_kz)
+      kz2_coarse.push_back(kz2(i));
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
