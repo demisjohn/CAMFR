@@ -57,8 +57,8 @@ Real Sigma_n_imag::operator()(const Real& n_imag)
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Cavity::Cavity(Stack& top_, Stack& bot_)
-  : top(&top_), bot(&bot_),
+Cavity::Cavity(Stack& bot_, Stack& top_)
+  : bot(&bot_), top(&top_),
     sigma_lambda(this), sigma_n_imag(this)
 {
   if (!(    dynamic_cast<MultiScatterer*>(top->get_sc())
