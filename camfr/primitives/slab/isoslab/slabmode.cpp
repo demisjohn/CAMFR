@@ -374,8 +374,8 @@ void Slab_M_Mode::calc_fw_bw(bool calc_fw)
 
   if (!inc_wall)
   {
-    fw_chunk_begin_scaled =  1.0;
-    bw_chunk_begin_scaled = -1.0;
+    fw_chunk_begin_scaled = -1.0;
+    bw_chunk_begin_scaled =  1.0;
   }
   else
     inc_wall->get_start_field(&bw_chunk_begin_scaled, &fw_chunk_begin_scaled);
@@ -644,8 +644,8 @@ UniformSlabMode::UniformSlabMode(Polarisation pol,
   
   if (!l_wall)
   {
-    fw0 =  1;
-    bw0 = -1;
+    fw0 = -1;
+    bw0 =  1;
   }
   else
     l_wall->get_start_field(&bw0, &fw0);
