@@ -29,7 +29,8 @@ struct SlabGlobal
 {
     SlabWall*  leftwall; // NULL: electric wall.
     SlabWall* rightwall;
-    Complex beta; // Not kz, The out-of plane component for off-angle propagationk_y, not k_z.
+    Complex beta; // The out-of plane component for off-angle
+                  // propagation k_y, not k_z.
 };
 
 extern SlabGlobal global_slab;
