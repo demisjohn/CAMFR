@@ -62,6 +62,8 @@ void Planar::set_theta(Complex theta_radians)
 
 Complex Planar::calc_kz() const
 {
+  global.N = 1;
+
   // Calculate kz.
 
   Complex k  = 2.0*pi / global.lambda * core->n() * sqrt(core->mur());
