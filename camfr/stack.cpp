@@ -897,6 +897,11 @@ void Stack::get_interface_field(vector<FieldExpansion>* field)
 
 Field Stack::field(const Coord& coord)
 {
+  // If needed, calculate field at each interface.
+  
+  if (interface_field.size() <= 1)
+    calc_interface_fields();
+
   // Calculate field expansion.
 
   const unsigned int index =
