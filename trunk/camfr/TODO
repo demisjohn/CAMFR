@@ -1,3 +1,4 @@
+
 -get_min_n in slab trace
 -infstack recalc modes, inf*(notation), diagslab
 -Section: SymmetricSection, UniformSection, Auto-partitioned section, 
@@ -7,6 +8,8 @@
 SHORT TERM 
 
 -default planar::set_theta (Peter)
+
+-cleverer inc/ext_field_expansion that does not calculate internal fields
  
 -try out LAPACK 3.0 special svd routine (zgesdd)
 
