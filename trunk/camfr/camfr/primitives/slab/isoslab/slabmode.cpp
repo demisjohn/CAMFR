@@ -191,7 +191,7 @@ Slab_M_Mode::Slab_M_Mode(Polarisation pol,   const Complex& kz,
 /////////////////////////////////////////////////////////////////////////////
 
 Complex safe_mult_(const Complex& a, const Complex& b)
-{    
+{
   if (    (abs(a) < global.unstable_exp_threshold)
        || (abs(b) < global.unstable_exp_threshold) )
     return 0.0;
@@ -294,6 +294,16 @@ void Slab_M_Mode::calc_left_right()
     bw_chunk_end_scaled = sign * (1.0-a)/2.0 * fw_chunk_begin_scaled +
                                  (1.0+a)/2.0 * bw_chunk_begin_scaled;
 
+    // After a core region, reset the scaling.
+
+    if ( real(mat1->eps()*mat1->mu()) > real(mat2->eps()*mat2->mu()) )
+    {
+      fw_chunk_end_scaled = safe_mult_(fw_chunk_end_scaled, exp(scaling));
+      bw_chunk_end_scaled = safe_mult_(bw_chunk_end_scaled, exp(scaling));
+
+      scaling = 0.0;
+    }
+
     right.push_back(safe_mult_(fw_chunk_end_scaled, exp(scaling)));
      left.push_back(safe_mult_(bw_chunk_end_scaled, exp(scaling)));
 
@@ -340,9 +350,15 @@ void Slab_M_Mode::calc_left_right()
   
   if (abs(R_wall_r) < 1e-10)
   {
-     left[ left.size()-1] = 0;
-    right[right.size()-1] = 0;
+     left.back() = 0;
+    right.back() = 0;
   }
+
+  // For metallic boundaries, correct for any rounding errors.
+
+  if (real(kz) > imag(kz))
+    if (abs(abs(R_wall_r) - 1.0) < 1e-10)
+      left.back() = -right.back();
 }
 
 
