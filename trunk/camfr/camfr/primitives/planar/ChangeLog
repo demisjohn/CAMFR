@@ -1,4 +1,10 @@
+2002-11-08 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* planar.h: Warn if wavelength not set.
+	* planar.cpp: Ditto.
+
 2002-05-31 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* planar.h: Allow dynamic polarisation change.
 	* planar.cpp: Ditto.
+
