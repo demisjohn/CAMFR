@@ -12,6 +12,7 @@
 
 #include "sectionoverlap.h"
 #include "sectionmode.h"
+#include "../slab/slabmatrixcache.h"
 #include "../slab/isoslab/slabmode.h"
 #include "../slab/isoslab/slaboverlap.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
@@ -177,7 +178,8 @@ Complex z_integral
 
 Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
                       const Complex& z_start, const Complex& z_stop,
-                      FieldExpansion* field_I, FieldExpansion* field_II)
+                      FieldExpansion* field_I, FieldExpansion* field_II,
+                      OverlapMatrices* m, int I_index, int II_index)
 {
   // Calculate field expansion at start of slice.
 
@@ -236,7 +238,7 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
 
   Complex term1 = 0.0;
   for (int jj=1; jj<=sec_II_M; jj++)
-  {
+  { 
     SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
 
     Complex sn_II = kz_II / mode_II->get_kz0();
@@ -253,13 +255,31 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
         // Integration over x.
 
         Complex x_factor;
-        if (mode_I->pol == TE)
-          x_factor = sn_I/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
-        else
+        if (mode_I->pol == TE) // Same polarisation.
         {
-          Complex E1_Hz, Ez_H1;
-          overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
-          x_factor = cs_I/sqrt(cs_II)/sqrt(cs_I) * Ez_H1;
+          Complex o;
+          if (mode_I == mode_II)
+            o = (ii == jj) ? 1.0 : 0.0;
+          else
+          {
+            if (!m)
+              o = overlap(mode_I,mode_II);
+            else
+              o = m->TE_TE(I_index,ii,jj); 
+          }
+          x_factor = sn_I/sqrt(cs_II)/sqrt(cs_I) * o;
+        }
+        else // Cross polarisation.
+        {
+          if (!m)
+          {
+            Complex Ex_Hz, Ez_Hx;
+            overlap_TM_TE(mode_I, mode_II, &Ex_Hz, &Ez_Hx);
+            x_factor = cs_I/sqrt(cs_II)/sqrt(cs_I) * Ez_Hx;
+          }
+          else
+            x_factor = cs_I/sqrt(cs_II)/sqrt(cs_I) 
+                            * m->Ez_Hx_cross(I_index,ii-sec_I_M/2,jj);
         }
 
         // Integration over z.
@@ -297,15 +317,33 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
         // Integration over x.
 
         Complex x_factor;
-        if (mode_II->pol == TE)
+        if (mode_II->pol == TE) // Cross polarisation.
         {
-          Complex E1_Hz, Ez_H1;
-          overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
-          x_factor = cs_II/sqrt(cs_II)/sqrt(cs_I) * E1_Hz;
+          if (!m)
+          {
+            Complex Ex_Hz, Ez_Hx;
+            overlap_TM_TE(mode_I, mode_II, &Ex_Hz, &Ez_Hx);
+            x_factor = cs_II/sqrt(cs_II)/sqrt(cs_I) * Ex_Hz;
+          }
+          else
+            x_factor = cs_II/sqrt(cs_II)/sqrt(cs_I) 
+                            * m->Ex_Hz_cross(I_index,ii-sec_I_M/2,jj);
         }
-        else
-          x_factor = -sn_II/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
-
+        else // Same polarisation.
+        {
+          Complex o;         
+          if (mode_I == mode_II)
+            o = (ii == jj) ? 1.0 : 0.0;
+          else
+          {
+            if (!m)
+              o = overlap(mode_I,mode_II);
+            else
+              o = m->TM_TM(I_index,ii-sec_I_M/2,jj-sec_II_M/2);
+          }
+          x_factor = -sn_II/sqrt(cs_II)/sqrt(cs_I) * o;
+        }
+        
         // Integration over z.
 
         Complex z_factor = z_integral((*fw_I )(ii),(*bw_I )(ii),mode_I,
