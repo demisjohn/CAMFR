@@ -2,6 +2,7 @@ from TkPlotCanvas import *
 from camfr import *
 from Numeric import *
 from MLab import *
+import math
 
 ##############################################################################
 #
@@ -35,51 +36,111 @@ def plot_vector(v):
 
 def plot2D(z):
 
-    # Create color map.
-    
-    colormap = [] 
-    # black-blue
-    for j in range(0,16):
-        colormap.append('#0000%x%x'%(j,j))    
-    # blue-sea
-    for j in range(0,16):
-        colormap.append('#00%x%xFF'%(j,j))
-    # sea-green
-    for j in range(0,16):
-        colormap.append('#00FF%x%x'%(15-j,15-j))
-    # green-yellow
-    for j in range(0,16):
-        colormap.append('#%x%xFF00'%(j,j))
-    # yellow-red        
-    for j in range(0,16):
-        colormap.append('#FF%x%x00'%(15-j,15-j))
-
-    # Scale z.
+    # Scale z and find appropriate colormap.
 
     height = z.shape[1]
     width  = z.shape[0]
     
     zmax = max(max(z))
     zmin = min(min(z))
+
+    if (zmin < 0) and (0 < zmax) :
+        colormap = create_bipolar_color_map()
+        zmax = max([-zmin, zmax])
+        zmin = -zmax
+    else:
+        colormap = create_unipolar_colormap_2()
+
+    interval = zmax - zmin
     z -= zmin
-    
+
     colors = len(colormap)
-    
-    interval =  zmax - zmin
+ 
     if (interval != 0):
         z *= (colors-1)/interval
+
+    # (re)size picture.
+
+    area, scale = 100000, 1
+    if (height*width < area):
+        scale = int(math.sqrt(area/(height*width)))
 
     # Put picture on canvas.
 
     root = Tk()
-    canvas = Canvas(root, width=width, height=height, bg="White")
+    canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
     canvas.pack()
-    
+
     for y in range(0,height):
         for x in range(0,width):
-            canvas.create_line(x+2,y+2,x+3,y+2, fill=colormap[int(z[x,y])])
-
+            canvas.create_rectangle(scale*x+2,       scale*y+2,          \
+                                    scale*x+2+scale, scale*y+2+scale,    \
+                                    fill=colormap[int(z[x,y])], width=0)
+ 
     root.mainloop()
+
+
+
+##############################################################################
+#
+# Different colormaps.
+#
+##############################################################################
+
+def create_bipolar_color_map():
+
+    colormap = []
+    
+    # blue-white-1
+    for j in range(0,255):
+        colormap.append('#%02X%02XFF'%(j,j))
+    # white-red 
+    for j in arange(255,-1,-1):
+        colormap.append('#FF%02X%02X'%(j,j))
+  
+    return colormap
+
+def create_unipolar_colormap():
+
+    colormap = [] 
+    # black-blue-1
+    for j in range(0,255):
+        colormap.append('#0000%02X'%j)    
+    # blue-sea-1
+    for j in range(0,255):
+        colormap.append('#00%02XFF'%j)
+    # sea-green+1
+    for j in arange(255,0,-1):
+        colormap.append('#00FF%02X'%j)
+    # green-yellow-1
+    for j in range(0,255):
+        colormap.append('#%02XFF00'%j)
+    # yellow-red        
+    for j in arange(255,-1,-1):
+        colormap.append('#FF%02X00'%j)
+
+    return colormap
+
+def create_unipolar_colormap_2():
+
+    colormap = []
+    # black-blue-1
+    for j in range(0,255):
+        colormap.append('#0000%02X'%j)    
+    # blue-purple-1
+    for j in range(0,255):
+        colormap.append('#%02X00FF'%j)
+    # purple-red+1
+    for j in arange(255,0,-1):
+        colormap.append('#FF00%02X'%j)      
+    # red-yellow-1
+    for j in range(0,255):
+        colormap.append('#FF%02X00'%j)
+    # yellow-white       
+    for j in range(0,256):
+        colormap.append('#FFFF%02X'%j)
+
+    return colormap
 
 
 
