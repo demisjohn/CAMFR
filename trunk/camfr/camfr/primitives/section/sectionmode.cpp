@@ -146,10 +146,9 @@ Field Section2D_Mode::field(const Coord& coord) const
         f.E2 += (*Ey)(i1)*expon;
         f.H1 += (*Hx)(i1)*expon;
         f.H2 += (*Hy)(i1)*expon;
-      }
-    
+      } 
 
-    f.Ez = f.Hz = -666.0; // TMP.
+    f.Ez = f.Hz = 0.0; // TMP.
 
     return f;
   }

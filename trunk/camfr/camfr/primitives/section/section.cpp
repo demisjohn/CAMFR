@@ -66,20 +66,20 @@ void SectionImpl::calc_overlap_matrices
 
     for (int i=1; i<=int(medium_I->N()); i++)   
       for (int j=1; j<=int(medium_I->N()); j++)
-      {
-        (*O_I_II)(i,j) += overlap_pw
+      { 
+        (*O_I_II)(i,j) = overlap_pw
           (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
 
-        (*O_II_I)(i,j) += overlap_pw
+        (*O_II_I)(i,j) = overlap_pw
           (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
         
-        if (O_I_I) (*O_I_I)(i,j) += overlap_pw
+        if (O_I_I) (*O_I_I)(i,j) = overlap_pw
           (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
            dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
       
-        if (O_II_II) (*O_II_II)(i,j) += overlap_pw
+        if (O_II_II) (*O_II_II)(i,j) = overlap_pw
          (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
           dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
       }
@@ -1244,7 +1244,7 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
         G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
 
         if (i1==i2) 
-        {     
+        {
           G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
           G(i1+MN,i2)    -=  beta(i2)*beta(i2);
         }    
@@ -1428,13 +1428,16 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
   for (int i=1; i<=eig_.columns(); i++)
   {
     std::cout << "eig_ " << i << " " << sqrt(E_(i)/k0/k0)/k0 << std::endl;
+
+    //for (int j=1; j<=eig_.rows(); j++)
+    //  std::cout << j << " " << eig_(j,i) << std::endl;
     
     for (int m=0; m<=M; m++)
       for (int n=0; n<=N; n++)
       {
-        int i1 = (m+1) + (n+N)*(M+1);
-        std::cout << i << " " <<m << " " << n << " " 
-                  << eig_(i1,i) <<eig_(MN+i1,i)<< std::endl;
+        int i1 = (m+1) + n*(M+1);
+        std::cout << i << " " << " " <<m << " " << n << " " 
+                  << eig_(i1,i) <<eig_(MN_+i1,i)<< std::endl;
       }
     std::cout << std::endl;
   }
@@ -1544,19 +1547,43 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
   vector<ModeEstimate> estimates;
 
   blitz::Range r1(1,MN); blitz::Range r2(MN+1,2*MN);
+
+  bool TEM = false;
   
+  //for (int i=1; i<=E_.rows(); i++)
+  //  std::cout << E_(i)/k0/k0 << " " << sqrt(E_(i)/k0/k0)/k0 << std::endl;
+
+  const Real Y0 = sqrt(eps0/mu0);
+ 
   for (int i=1; i<=E_.rows(); i++)
-  {
-    if (abs(E_(i)) > 1e-6)
+  { 
+    // Compensate for spurious TEM mode.
+
+    if (abs(E_(i) - pow(k0*k0*core->n(), 2)) < 1e-6)
+    {
+      TEM = true;
+      continue;
+    }
+    
+    if ((abs(E_(i)) > 1e-6))
     {
       Complex kz2 = E_(i)/k0/k0;
       Complex kz = sqrt(kz2);
-    
+ 
+/*   
       if (real(kz) < 0) 
         kz = -kz;
 
       if (abs(real(kz)) < 1e-12)
         if (imag(kz) > 0)
+          kz = -kz;
+*/
+
+      if (imag(kz) > 0)
+        kz = -kz;
+
+      if (abs(imag(kz)) < abs(real(kz)))
+        if (real(kz) < 0)
           kz = -kz;
       
       cVector* Ex = new cVector(MN,fortranArray);
@@ -1566,14 +1593,21 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
       *Ex = eig_big  (r1,i); 
       *Ey = eig_big  (r2,i);
-      *Hx = eig_big_H(r1,i)/kz/k0; 
-      *Hy = eig_big_H(r2,i)/kz/k0; 
+      *Hx = eig_big_H(r1,i)/kz/k0*Y0;
+      *Hy = eig_big_H(r2,i)/kz/k0*Y0; 
 
       ModeEstimate est = ModeEstimate(kz2, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
     }  
   }
-  
+
+  std::sort(estimates.begin(), estimates.end(), kz2_sorter()); 
+
+  if (TEM == false)
+    estimates.erase(estimates.end()-4,estimates.end());
+  else
+    estimates.erase(estimates.end()-3,estimates.end());
+
   return estimates;
 }
 
@@ -1618,7 +1652,7 @@ void Section2D::find_modes_from_estimates()
 
   vector<ModeEstimate> estimates;
 
-  if (user_estimates.size() != 0) // User provided estimates
+  if (user_estimates.size() != 0) // User provided estimates.
   {
     for (unsigned int i=0; i<user_estimates.size(); i++)
     {
@@ -1678,11 +1712,20 @@ void Section2D::find_modes_from_estimates()
   { 
     Complex kz = sqrt(estimates[i].kz2);
     
+/*
     if (real(kz) < 0) 
       kz = -kz;
 
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
+        kz = -kz;  
+*/
+
+    if (imag(kz) > 0)
+      kz = -kz;
+
+    if (abs(imag(kz)) < abs(real(kz)))
+      if (real(kz) < 0)
         kz = -kz;
 
     Section2D_Mode* newmode
@@ -1698,6 +1741,8 @@ void Section2D::find_modes_from_estimates()
   sort_modes();
 
   global.N = modeset.size();
+
+  std::cout << "global.N " << global.N << std::endl;
 
   py_print("Done.");
 
@@ -1725,7 +1770,7 @@ void Section2D::find_modes_from_estimates()
   {
     Complex kt = sqrt(C0*min_eps_mu - estimates[i].kz2);
 
-    if (imag(kt) < 0) 
+    if (imag(kt) < 0) // 45 degree cut?
       kt = -kt;
 
     if (abs(imag(kt)) < 1e-12)

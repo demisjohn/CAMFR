@@ -400,7 +400,7 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
   cVector* Ex = sec_I_mode ->Ex;
   cVector* Ey = sec_I_mode ->Ey;
   cVector* Hx = sec_II_mode->Hx;
-  cVector* Hy = sec_II_mode->Hy;  
+  cVector* Hy = sec_II_mode->Hy;
 
   for (Real m=-M; m<=M; m+=1.0)
     for (Real n=-N; n<=N; n+=1.0)
@@ -413,10 +413,12 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
 
   //Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
 
+  //std::cout << "overlap " << numeric << " " << W*H*result
+  //           << " " << numeric-W*H*result << std::endl;
+  
   //if (abs(numeric - W*H*result) > 1e-4)
-  //  std::cout << "overlap " << numeric << " " << W*H*result 
-  //            << " " << numeric-W*H*result << std::endl;
-
+  //  std::cout << "****" << std::endl;
+  
   return W*H*result;
 }
 
