@@ -102,7 +102,14 @@ class Cavity
 
     Real calc_sigma(int* dominant_mode=NULL);
 
-    // Calculates total field in the cavity after introduction of a source.
+    // Calculates total field in the cavity after introduction of a 
+    // general source.
+
+    void set_source(const cVector& fw, const cVector& bw)
+      {set_source_expansion(FieldExpansion(top->get_inc(),fw,bw));}
+
+    // Calculates total field in the cavity after introduction of a 
+    // current source.
 
     void set_source(const Coord& pos, const Coord& orientation)
       {set_source_expansion(dynamic_cast<MultiWaveguide*>(top->get_inc())
@@ -111,7 +118,13 @@ class Cavity
     // Calculate field profile in cavity.
     
     Field field(const Coord& coord);
-    
+
+    // Get index profile.
+
+    Complex eps_at(const Coord& c) const;
+    Complex  mu_at(const Coord& c) const;
+    Complex   n_at(const Coord& c) const {return sqrt(eps_at(c)/eps0);}
+
   protected:
 
     void set_source_expansion(const FieldExpansion& f);
