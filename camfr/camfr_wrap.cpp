@@ -64,6 +64,9 @@ inline int get_N()
 inline void set_polarisation(Polarisation pol)
   {global.polarisation = pol;}
 
+inline Polarisation get_polarisation()
+  {return global.polarisation;}
+
 inline void set_gain_material(Material* m)
   {global.gain_mat = m;} 
 
@@ -729,7 +732,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("get_lambda",                 get_lambda);
   def("set_N",                      set_N);
   def("N",                          get_N);
-  def("set_polarisation",           set_polarisation);
+  def("set_polarisation",           set_polarisation);  
+  def("get_polarisation",           get_polarisation);
   def("set_gain_material",          set_gain_material);
   def("set_solver",                 set_solver);
   def("set_stability",              set_stability);
@@ -1054,7 +1058,9 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Planar.
 
   class_<Planar, bases<MonoWaveguide> >("Planar", init<Material&>())
-    .def("set_theta", &Planar::set_theta)
+    .def("set_theta", &Planar::set_theta)    
+    .def("set_kt",    &Planar::set_kt)
+    .def("get_kt",    &Planar::get_kt)
     ;
 
   // Wrap Circ.
