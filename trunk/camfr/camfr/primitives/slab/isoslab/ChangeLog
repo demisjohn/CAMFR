@@ -1,3 +1,7 @@
+2003-05-20 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.cpp: Even better estimation of max kz.
+
 2003-05-16 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slab.cpp: Better estimation of max kz.

@@ -1190,7 +1190,8 @@ struct sorter
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
     {
-      return ( real(beta_a) > real(beta_b) ); // highest index
+      return ( real(beta_a*beta_a) < real(beta_b*beta_b) ); // highest index
+      //return ( real(beta_a) > real(beta_b) ); // highest index
       //return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
     }
 };
@@ -1225,7 +1226,8 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   //for (unsigned int i=0; i<kz2.size(); i++)
   //  std::cout << "raw " << i << " " 
-  //            << sqrt(kz2[i])/2./pi*global.lambda << std::endl;
+  //            << sqrt(kz2[i])/2./pi*global.lambda 
+  //            << kz2[i] << std::endl;
 
   // Find min and max eps mu.
 
@@ -1261,13 +1263,13 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=0; i<kz2.size(); i++)
-    if (real(sqrt(kz2[i])) < 1.01*max_kz)
+    //if (real(sqrt(kz2[i])) < 1.2*max_kz)
       kz2_coarse.push_back(kz2[i]);
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
   
-  if (kz2_coarse.size() > global.N)
-    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+  if (kz2_coarse.size() > global.N+5)
+    kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
