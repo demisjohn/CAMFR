@@ -77,8 +77,8 @@ class Slab_M : public SlabImpl
     std::vector<Complex> find_kt_by_sweep(std::vector<Complex>& old_kt);
     std::vector<Complex> find_kt_from_estimates();
 
-    cVector estimate_kz2_from_RCWA();
-    cVector estimate_kz2_from_uniform_modes();      
+    std::vector<Complex> estimate_kz2_from_RCWA();
+    std::vector<Complex> estimate_kz2_from_uniform_modes();      
 
     void build_modeset(const std::vector<Complex>& kt);
 
@@ -89,7 +89,8 @@ class Slab_M : public SlabImpl
 
     int M_series;
 
-    cVector fourier_eps(int M, cVector* inv_eps=NULL) const;
+    cVector fourier_eps         (int M, cVector* inv_eps=NULL) const;
+    cVector fourier_eps_extended(int M, cVector* inv_eps=NULL) const;
 
     friend class Slab_M_Mode;
     friend class UniformSlab;
