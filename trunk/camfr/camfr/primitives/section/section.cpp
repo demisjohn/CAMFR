@@ -706,7 +706,9 @@ vector<ModeEstimate*> Section2D::estimate_kz2_omar_schuenemann()
   {
     ModeEstimate* est = new ModeEstimate(kz2(i));
     estimates.push_back(est);
-  }  
+  }
+
+  std::sort(estimates.begin(), estimates.end(), kz2_sorter());
     
   return estimates;
 }
@@ -1695,7 +1697,7 @@ void Section2D::find_modes_from_estimates()
       if (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz)
         estimates.push_back(estimates_0[i]);
   }
-
+  
   user_estimates.clear();
   while (estimates.size() > global.N)
   {
