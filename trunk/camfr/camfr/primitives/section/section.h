@@ -40,6 +40,8 @@ class SectionImpl : public MultiWaveguide
     virtual Complex get_height() const = 0;
     virtual Complex c1_size()    const {return get_width();}
 
+    int get_M() const {return M;}
+
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
                 Real precision = 1e-10) const
@@ -51,18 +53,17 @@ class SectionImpl : public MultiWaveguide
 
   protected:
 
+    int M;
+
     // z-values of the interfaces, not including left wall, including
     // right wall.
     
     std::vector<Complex> discontinuities;
     std::vector<Slab*> slabs;
 
-    friend Complex overlap(const SectionMode*, const SectionMode*,
-                           const SectionCache*,const std::vector<Complex>*,
-                           int,int,int,int);
-
-    friend void overlap_matrices
-      (cMatrix* O, SectionImpl* medium_I, SectionImpl* medium_II);
+    friend Complex overlap_slice(SectionMode*, SectionMode*,
+                                 const Complex&, const Complex&,
+                                 FieldExpansion*, FieldExpansion*);
 };
 
 
@@ -174,14 +175,10 @@ class Section2D : public SectionImpl
 
     Complex get_height() const
       {return dynamic_cast<Slab*>(left.get_inc())->get_width();}
-
-    int get_M() const {return M;}
     
     void find_modes();
 
   protected:
-
-    int M;
 
     Stack left;
     Stack right;
@@ -214,7 +211,7 @@ class Section1D : public SectionImpl
   public:
 
     Section1D(Slab& slab, const Complex& width) 
-      : s(&slab), d(width) {uniform = false; core = s->get_core();}
+      : s(&slab), d(width) {uniform = false; core = s->get_core(); M=1;}
 
     ~Section1D() {}
     

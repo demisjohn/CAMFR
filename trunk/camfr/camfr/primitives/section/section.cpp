@@ -32,39 +32,102 @@ void SectionImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
 {
-  SectionImpl* medium_I  = this;
-  SectionImpl* medium_II = dynamic_cast<SectionImpl*>(w);
-
-  overlap_matrices(O_I_II, medium_I,  medium_II);
-  overlap_matrices(O_II_I, medium_II, medium_I); 
-
-  if(O_I_I)
-    overlap_matrices(O_I_I, medium_I, medium_I);
-
-  if(O_II_II)
-    overlap_matrices(O_II_II, medium_II, medium_II);
+  Section2D* medium_I  = dynamic_cast<Section2D*>(this);
+  Section2D* medium_II = dynamic_cast<Section2D*>(w);
   
-  return;
+  // Widths equal?
+
+  const Real eps = 1e-10; // Don't choose too low.
   
-  for (int i=1; i<=int(global.N); i++)
-    for (int j=1; j<=int(global.N); j++)
+  if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
+  {
+    std::ostringstream s;
+    s << "Warning: complex widths don't match: "
+      << medium_I ->get_width() << " and " << medium_II->get_width();
+    py_error(s.str());
+    exit (-1);
+  }
+  
+  // Make sorted list of separation points between different slabs.
+
+  vector<Complex> disc = medium_I->discontinuities;
+
+  disc.push_back(0.0);
+
+  for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
+    disc.push_back(medium_II->discontinuities[k]);
+
+  remove_copies(&disc, 1e-6);
+
+  sort(disc.begin(), disc.end(), RealSorter());
+
+  // Calculate overlap matrices.
+
+  *O_I_II = 0.0;  
+  *O_II_I = 0.0;
+
+  if (O_I_I) 
+    *O_I_I = 0.0;
+  if (O_II_II) 
+    *O_II_II = 0.0;
+  
+  for (unsigned int k=0; k<disc.size()-1; k++) // Loop over slices.
+  {
+    // Create field cache.
+
+    vector<FieldExpansion> field_I, field_II;
+    
+    for (int i=1; i<=int(global.N); i++)
     {
-      (*O_I_II)(i,j) = overlap
-        (dynamic_cast<const SectionMode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const SectionMode*>(medium_II->get_mode(j)));
+      cVector fw_I(medium_I->get_M(),fortranArray);
+      cVector bw_I(medium_I->get_M(),fortranArray);
 
-      (*O_II_I)(i,j) = overlap
-        (dynamic_cast<const SectionMode*>(medium_II->get_mode(i)),
-         dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)));
-      
-      if (O_I_I) (*O_I_I)(i,j) = overlap
-         (dynamic_cast<const SectionMode*>(medium_I ->get_mode(i)),
-          dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)));
-      
-      if (O_II_II) (*O_II_II)(i,j) = overlap
-         (dynamic_cast<const SectionMode*>(medium_II->get_mode(i)),
-          dynamic_cast<const SectionMode*>(medium_II->get_mode(j)));
+      dynamic_cast<SectionMode*>(medium_I->get_mode(i))
+        ->get_fw_bw(disc[k], Plus, &fw_I, &bw_I);
+
+      field_I.push_back(FieldExpansion(NULL, fw_I, bw_I));
+
+      cVector fw_II(medium_II->get_M(),fortranArray);
+      cVector bw_II(medium_II->get_M(),fortranArray);
+
+      dynamic_cast<SectionMode*>(medium_II->get_mode(i))
+        ->get_fw_bw(disc[k], Plus, &fw_II, &bw_II);
+
+      field_II.push_back(FieldExpansion(NULL, fw_II, bw_II));
     }
+
+    // Calc overlap slice.
+
+    for (int i=1; i<=int(global.N); i++)   
+      for (int j=1; j<=int(global.N); j++)
+      {
+        (*O_I_II)(i,j) += overlap_slice
+          (dynamic_cast<SectionMode*>(medium_I ->get_mode(i)),
+           dynamic_cast<SectionMode*>(medium_II->get_mode(j)),
+           disc[k], disc[k+1], &field_I[i-1], &field_II[j-1]);
+
+        std::cout << i << " " << j << " " << k <<  " " << (*O_I_II)(i,j)
+                  << std::endl;
+
+        (*O_II_I)(i,j) += overlap_slice
+          (dynamic_cast<SectionMode*>(medium_II->get_mode(i)),
+           dynamic_cast<SectionMode*>(medium_I ->get_mode(j)),
+           disc[k], disc[k+1], &field_II[i-1], &field_I[j-1]);
+      
+        if (O_I_I) (*O_I_I)(i,j) += overlap_slice
+          (dynamic_cast<SectionMode*>(medium_I ->get_mode(i)),
+           dynamic_cast<SectionMode*>(medium_I ->get_mode(j)),
+           disc[k], disc[k+1], &field_I[i-1], &field_I[j-1]);
+      
+        if (O_II_II) (*O_II_II)(i,j) += overlap_slice
+         (dynamic_cast<SectionMode*>(medium_II->get_mode(i)),
+          dynamic_cast<SectionMode*>(medium_II->get_mode(j)),
+          disc[k], disc[k+1], &field_II[i-1], &field_II[j-1]);
+      }
+  }
+
+  std::cout << *O_I_II << *O_II_I << std::endl;
+  
 }
 
 
@@ -129,7 +192,7 @@ Section::Section(const Expression& left_ex, const Expression& right_ex, int M)
 
 Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
                      int M_)
-  : left(left_ex), right(right_ex), M(M_)
+  : left(left_ex), right(right_ex)
 {
   // Check values.
 
@@ -142,6 +205,8 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
   uniform = false;
 
   symmetric = (&left_ex == &right_ex);
+
+  M = M_;
 
   // Determine core.
 
@@ -481,7 +546,23 @@ void Section2D::find_modes_from_scratch_by_ADR()
 #include "sectionoverlap.h"
 
 void Section2D::find_modes_from_scratch_by_track()
-{
+{  
+
+  Complex min_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
+
+
+  vector<Complex> kt;
+  for (int i=0; i<global.N; i++)
+    kt.push_back(Complex(i));
+
   // Set constants.
   
   const Real eps        = 1e-13;
@@ -572,6 +653,8 @@ void Section2D::find_modes_from_scratch_by_track()
     max_eps_eff = max_eps_mu_lossless;
 
   Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
+
+#if 0
   
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
@@ -751,7 +834,7 @@ void Section2D::find_modes_from_scratch_by_track()
     kt_lossless.push_back(kt_complex[i]);
     kt_lossless.push_back(-real(kt_complex[i])+I*imag(kt_complex[i]));
   }
-  
+
   vector<Complex> kt, forbidden;
   if (global.chunk_tracing && !degenerate)
     kt = traceroot_chunks
@@ -828,6 +911,7 @@ void Section2D::find_modes_from_scratch_by_track()
   //                                     && (abs(R_right - 1.0) < 1e-10) ) )
   //    kt.insert(kt.begin(), 0);
 
+#endif
 
   // Create modeset.
 
@@ -855,16 +939,14 @@ void Section2D::find_modes_from_scratch_by_track()
     
     Section2D_Mode *newmode = new Section2D_Mode(global.polarisation,kz,this);
     
-    newmode->normalise();
-    
-    modeset.push_back(newmode);
+    newmode->normalise();    modeset.push_back(newmode);
   }
 
   sort_modes();
   truncate_N_modes();
 
   // Test orthogonality.
-
+/*
   return;
 
   cMatrix O(modeset.size(), modeset.size(), fortranArray);
@@ -881,6 +963,7 @@ void Section2D::find_modes_from_scratch_by_track()
                   << std::endl << std::flush;
 
   exit(-1);
+*/
 }
 
 
@@ -1008,9 +1091,7 @@ void Section1D::find_modes()
     Section2D tmp = (*core)(get_width()/2.) + (*core)(get_width()/2.);
 
     if (l_wall)
-      tmp.set_left_wall(*l_wall);
-
-    if (r_wall)
+      tmp.set_left_wall(*l_wall)    if (r_wall)
       tmp.set_right_wall(*r_wall);
     
     tmp.find_modes();

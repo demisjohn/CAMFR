@@ -74,8 +74,6 @@ class Overlap : public ComplexFunction
       Wrap_real_to_real f_r(f);
       Wrap_real_to_imag f_i(f);
 
-      // TODO: PML
-
       Real y_stop = real(m1->get_geom()->get_height());
       
       return patterson_quad(f_r, 0, y_stop, 1e-2, 4)
@@ -92,24 +90,22 @@ class Overlap : public ComplexFunction
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// overlap
+// overlap_numeric
+//
+//   Verification function which calculates the overlap integrals 
+//   numerically. Slower and less acurate.
+//   TODO: check PML in z direction.
+//   To be removed after the analytical overlap calculation matures.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex overlap(const SectionMode* mode_I,
-                const SectionMode* mode_II,
-                const SectionCache* cache,
-                const std::vector<Complex>* disc,
-                int i, int j, int I_index, int II_index)
+Complex overlap_numeric(const SectionMode* mode_I,
+                        const SectionMode* mode_II)
 {
-  // Numeric calculation.
-
   Overlap f(mode_I, mode_II);
 
   Wrap_real_to_real f_r(f);
   Wrap_real_to_imag f_i(f);
-
-  // TODO: PML.
 
   Real x_stop = real(mode_I->get_geom()->get_width());
 
@@ -117,30 +113,6 @@ Complex overlap(const SectionMode* mode_I,
      + I*patterson_quad(f_i, 0, x_stop, 1e-2, 4);
 
   return numeric;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// signedsqrt2__
-//
-//   Square root with branch cut at 45 degrees.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex signedsqrt2__(const Complex& kz2)
-{
-  Complex new_kz = sqrt(kz2);
-
-  if (imag(new_kz) > 0)
-    new_kz = -new_kz;
-
-  if (abs(imag(new_kz)) < abs(real(new_kz)))
-    if (real(new_kz) < 0)
-      new_kz = -new_kz;
-
-  return new_kz;
 }
 
 
@@ -203,181 +175,154 @@ Complex z_integral
 //
 /////////////////////////////////////////////////////////////////////////////
 
-// TODO: Sectioncache for get_fw_bw.
-
-void overlap_slice(const Section2D& sec_I, const Section2D& sec_II, 
-                   const Slab& slab_I,     const Slab& slab_II,
-                   const Complex& z_start, const Complex& z_stop,
-                   cMatrix* O)
+Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
+                      const Complex& z_start, const Complex& z_stop,
+                      FieldExpansion* field_I, FieldExpansion* field_II)
 {
-  std::cout << "overlap between" 
-            << *slab_I.get_core() << " " << *slab_II.get_core()
-            << z_start << z_stop << std::endl;
+  // Calculate field expansion at start of slice.
+
+  const Complex kz_I  = sec_I_mode ->get_kz();
+  const Complex kz_II = sec_II_mode->get_kz();
   
   const Complex d = z_stop-z_start;
-  
-  for (int i=1; i<=global.N; i++)
+
+  const SectionImpl* sec_I  
+    = dynamic_cast<SectionImpl*>( sec_I_mode->get_geom());
+  const SectionImpl* sec_II 
+    = dynamic_cast<SectionImpl*>(sec_II_mode->get_geom());
+
+  const Slab& slab_I  
+    = *sec_I ->slabs[index_lookup(z_start, Plus, sec_I ->discontinuities)];
+
+  const Slab& slab_II 
+    = *sec_II->slabs[index_lookup(z_start, Plus, sec_II->discontinuities)];
+
+  const int sec_I_M  = sec_I ->get_M();
+  const int sec_II_M = sec_II->get_M();
+
+  // Get field expansion from cache or calculate it from scratch.
+
+  cVector* fw_I; cVector* bw_I;
+  if (field_I)
   {
-    std::cout << "overlap " << i << std::endl << std::flush;
-    
-    cVector fw_I(sec_I.get_M(),fortranArray);
-    cVector bw_I(sec_I.get_M(),fortranArray); 
+    fw_I = &(field_I->fw);
+    bw_I = &(field_I->bw);
+  }
+  else
+  {
+    fw_I = new cVector(sec_I_M, fortranArray);
+    bw_I = new cVector(sec_I_M, fortranArray);
 
-    dynamic_cast<SectionMode*>(sec_I.get_mode(i))
-      ->get_fw_bw(z_start, Plus, &fw_I, &bw_I);
-    
-    for (int j=1; j<=global.N; j++)
-    {
-      cVector fw_II(sec_II.get_M(),fortranArray);
-      cVector bw_II(sec_II.get_M(),fortranArray); 
+    sec_I_mode->get_fw_bw(z_start, Plus, fw_I, bw_I);
+  } 
 
-      dynamic_cast<SectionMode*>(sec_II.get_mode(j))
-        ->get_fw_bw(z_start, Plus, &fw_II, &bw_II);
+  cVector* fw_II; cVector* bw_II;
+  if (field_II)
+  {
+    fw_II = &(field_II->fw);
+    bw_II = &(field_II->bw);    
+  }
+  else
+  {
+    fw_II = new cVector(sec_II_M, fortranArray);
+    bw_II = new cVector(sec_II_M, fortranArray);
 
-      //
-      // Term 1: Ez_I * H1_II
-      //
+    sec_II_mode->get_fw_bw(z_start, Plus, fw_II, bw_II);
+  }
 
-      Complex term1 = 0.0;
-      for (int jj=1; jj<=sec_II.get_M(); jj++)
-      {
-        SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
-        Complex kz_II = sec_II.get_mode(j)->get_kz();
+  //
+  // Term 1: Ez_I * H1_II
+  //
 
-        Complex sn_II = kz_II / mode_II->get_kz0();
-        Complex cs_II = signedsqrt2__(1.0 - sn_II*sn_II);
-        
-        if (slab_II.get_mode(jj)->pol != TM)
-          for (int ii=1; ii<=sec_I.get_M(); ii++)
-          {
-            SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
-            Complex kz_I = sec_I.get_mode(i)->get_kz();
+  Complex term1 = 0.0;
+  for (int jj=1; jj<=sec_II_M; jj++)
+  {
+    SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
 
-            Complex sn_I = kz_I / mode_I->get_kz0();
-            Complex cs_I = signedsqrt2__(1.0 - sn_I*sn_I);
+    Complex sn_II = kz_II / mode_II->get_kz0();
+    Complex cs_II = slab_signedsqrt(1.0 - sn_II*sn_II);
 
-            // Integration over x.
-
-            Complex x_factor;
-            if (mode_I->pol == TE)
-              x_factor = sn_I/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
-            else
-            {
-              Complex E1_Hz, Ez_H1;
-              overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
-              x_factor = cs_I/sqrt(cs_II)/sqrt(cs_I) * Ez_H1;
-            }
-
-            // Integration over z.
-
-            Complex z_factor = z_integral(fw_I (ii),bw_I (ii),mode_I,
-                                          fw_II(jj),bw_II(jj),mode_II, 
-                                          kz_I,kz_II,d,true);
-
-            term1 += x_factor*z_factor;
-          }
-      }
-      (*O)(i,j) += term1;
-
-
-
-      //
-      // Term 2: -E1_I * Hz_II
-      //
-
-      Complex term2 = 0.0;
-      for (int ii=1; ii<=sec_I.get_M(); ii++)
+    if (slab_II.get_mode(jj)->pol != TM)
+      for (int ii=1; ii<=sec_I_M; ii++)
       {
         SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
-        Complex kz_I = sec_I.get_mode(i)->get_kz();
-        
+
         Complex sn_I = kz_I / mode_I->get_kz0();
-        Complex cs_I = signedsqrt2__(1.0 - sn_I*sn_I);
+        Complex cs_I = slab_signedsqrt(1.0 - sn_I*sn_I);
 
-        if (mode_I->pol != TE)
-          for (int jj=1; jj<=sec_II.get_M(); jj++)
-          {
-            SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
-            Complex kz_II = sec_II.get_mode(j)->get_kz();
+        // Integration over x.
 
-            Complex sn_II = kz_II / mode_II->get_kz0();
-            Complex cs_II = signedsqrt2__(1.0 - sn_II*sn_II);
+        Complex x_factor;
+        if (mode_I->pol == TE)
+          x_factor = sn_I/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
+        else
+        {
+          Complex E1_Hz, Ez_H1;
+          overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
+          x_factor = cs_I/sqrt(cs_II)/sqrt(cs_I) * Ez_H1;
+        }
 
-            // Integration over x.
+        // Integration over z.
 
-            Complex x_factor;
-            if (mode_II->pol == TE)
-            {
-              Complex E1_Hz, Ez_H1;
-              overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
-              x_factor = cs_II/sqrt(cs_II)/sqrt(cs_I) * E1_Hz;
-            }
-            else
-              x_factor = -sn_II/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
-            
-            // Integration over z.
+        Complex z_factor = z_integral((*fw_I )(ii),(*bw_I )(ii),mode_I,
+                                      (*fw_II)(jj),(*bw_II)(jj),mode_II,
+                                      kz_I,kz_II,d,true);
 
-            Complex z_factor = z_integral(fw_I (ii),bw_I (ii),mode_I,
-                                          fw_II(jj),bw_II(jj),mode_II, 
-                                          kz_I,kz_II,d,false);
-
-            term2 += x_factor*z_factor;
-          }
+        term1 += x_factor*z_factor;
       }
-
-      (*O)(i,j) -= term2; 
-    } 
   }
-}
 
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// overlap_matrices
-//
-/////////////////////////////////////////////////////////////////////////////
+  //
+  // Term 2: -E1_I * Hz_II
+  //
 
-void overlap_matrices
-  (cMatrix* O, SectionImpl* medium_I_, SectionImpl* medium_II_)
-{
-
-  Section2D* medium_I  = dynamic_cast<Section2D*>(medium_I_);
-  Section2D* medium_II = dynamic_cast<Section2D*>(medium_II_);
-  
-  // Widths equal?
-
-  const Real eps = 1e-10; // Don't choose too low.
-  
-  if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
+  Complex term2 = 0.0;
+  for (int ii=1; ii<=sec_I_M; ii++)
   {
-    std::ostringstream s;
-    s << "Warning: complex widths don't match: "
-      << medium_I ->get_width() << " and " << medium_II->get_width();
-    py_error(s.str());
-    exit (-1);
+    SlabMode* mode_I = dynamic_cast<SlabMode*>(slab_I.get_mode(ii));
+
+    Complex sn_I = kz_I / mode_I->get_kz0();
+    Complex cs_I = slab_signedsqrt(1.0 - sn_I*sn_I);
+
+    if (mode_I->pol != TE)
+      for (int jj=1; jj<=sec_II_M; jj++)
+      {
+        SlabMode* mode_II = dynamic_cast<SlabMode*>(slab_II.get_mode(jj));
+
+        Complex sn_II = kz_II / mode_II->get_kz0();
+        Complex cs_II = slab_signedsqrt(1.0 - sn_II*sn_II);
+
+        // Integration over x.
+
+        Complex x_factor;
+        if (mode_II->pol == TE)
+        {
+          Complex E1_Hz, Ez_H1;
+          overlap_TM_TE(mode_I, mode_II, &E1_Hz, &Ez_H1);
+          x_factor = cs_II/sqrt(cs_II)/sqrt(cs_I) * E1_Hz;
+        }
+        else
+          x_factor = -sn_II/sqrt(cs_II)/sqrt(cs_I)*overlap(mode_I,mode_II);
+
+        // Integration over z.
+
+        Complex z_factor = z_integral((*fw_I )(ii),(*bw_I )(ii),mode_I,
+                                      (*fw_II)(jj),(*bw_II)(jj),mode_II,
+                                      kz_I,kz_II,d,false);
+
+        term2 += x_factor*z_factor;
+      }
   }
-  
-  // Make sorted list of separation points between different slabs.
 
-  vector<Complex> disc = medium_I->discontinuities;
+  // Clean up and return result.
 
-  disc.push_back(0.0);
+  if (!field_I)
+  {
+    delete fw_I;  delete bw_I;
+    delete fw_II, delete bw_II;
+  }
 
-  for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
-    disc.push_back(medium_II->discontinuities[k]);
-
-  remove_copies(&disc, 1e-6);
-
-  sort(disc.begin(), disc.end(), RealSorter());
-
-  *O = 0.0;
-  for (unsigned int k=0; k<disc.size()-1; k++)
-    overlap_slice(*medium_I, *medium_II,
-                  *medium_I ->slabs[index_lookup(disc[k], Plus,
-                                                 medium_I ->discontinuities)],
-                  *medium_II->slabs[index_lookup(disc[k], Plus,
-                                                 medium_II->discontinuities)],
-                  disc[k], disc[k+1], O);    
+  return term1 - term2;
 }
-
