@@ -1,3 +1,7 @@
+2003-06-04  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* geometry.py: Fix add_flipped.
+
 2003-05-23  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* stack.cpp: Warn if incident field not set.
