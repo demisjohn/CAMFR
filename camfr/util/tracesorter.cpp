@@ -58,7 +58,7 @@ bool Tracesorter::bad_turn(int i, const Complex& c) const
 /////////////////////////////////////////////////////////////////////////////
 
 int Tracesorter::find_best_index(int i, const cVector& row, bool* placed,
-                                 bool bad_turns_allowed=false) const
+                                 bool bad_turns_allowed) const
 {
   // Initialise.
 
