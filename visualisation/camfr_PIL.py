@@ -1,3 +1,13 @@
+#! /usr/bin/env python
+
+##############################################################################
+#
+# File:     camfr_PIL.py
+# Authors:  Lieven.Vanholme@intec.ugent.be
+#           Peter.Bienstman@ugent.be
+#
+##############################################################################
+
 from camfr_work import *
 from Numeric import *
 
@@ -7,11 +17,49 @@ whiteblack  = 1
 blackwhite  = 2
 palet       = 3
 
+# Colormap colors.
+
+NEGCOLOR    = (0,0,255)         # Blue.
+MIDCOLOR    = (255,255,255)     # White.
+POSCOLOR    = (255,0,0)         # Red.
+
+MAPCOLORS   = [(0  ,0  ,0  ),   # Black.
+               (0  ,0  ,255),   # Blue.
+               (255,0  ,255),   # Purple.
+               (255,0  ,0  ),   # Red.
+               (255,255,0  ),   # Yellow.
+               (255,255,255)]   # White.
+
 # PIL file formats.
 
 formats = ['.gif', '.GIF', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP',  
            '.dib', '.DIB', '.png', '.PNG', '.tiff', '.TIFF', '.tif', '.TIF',
            '.eps', '.EPS', '.ps', '.PS', '.pdf', '.PDF', '.xbm', '.XBM']
+
+# Arrow vector variables.
+
+ARROWSIZE = 10      # For each 10 data pixel, we got one arrow.
+
+#                   p3
+#                    | \
+#    p1-------------p2  \  
+#     |     *           p4
+#    p7-------------p6  /
+#                    | /  
+#                   p5
+# poolcoordinates
+
+p1 = [ 2.897, 0.344]
+p2 = [ 0.245, 0.344]
+p3 = [ 0.464, 0.377]
+p4 = [ 0.000, 0.667]
+p5 = [-0.464, 0.377]
+p6 = [-0.245, 0.344]
+p7 = [ 3.387, 0.344]    
+
+ARROW = array([ p1, p2, p3, p4, p5, p6, p7 ])
+
+
 
 ##############################################################################
 #
@@ -29,7 +77,8 @@ def _create_window_and_draw(drawobject):
     def display(value):
 	print value
 
-    c = PlotCanvas(window,500,500,zoom=1,select=display,relief=SUNKEN,border=2)
+    c = PlotCanvas( window, 500, 500, zoom=1, select=display,
+                    relief=SUNKEN,border=2)
     c.pack(side=TOP, fill=BOTH, expand=YES)
     c.draw(drawobject, 'automatic', 'automatic')
 
@@ -89,8 +138,8 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0):
-    
+def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0,
+                               min_area = 100000, scale =1):
     import Image
     
     def round(x):
@@ -98,26 +147,9 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0):
 
     # Determine width and height of a pixel.
 
-    height = z.shape[0]
-    width  = z.shape[1]
+    [height, width, scale_x, scale_y] = \
+    _scale_function( z, r_x, r_y, min_area, scale)
 
-    if not r_x: r_x = range(width)
-    if not r_y: r_y = range(height)
-
-    d_x = r_x[1] - r_x[0]
-    d_y = r_y[1] - r_y[0]
-    
-    min_area, scale = 100000, 1
-    if (height*width*d_x*d_y < min_area):
-        scale = math.sqrt(min_area/(height*width*d_x*d_y))
-
-    if d_x < d_y:
-        scale_x = round(scale*d_x)
-        scale_y = scale_x*round(d_y/d_x)
-    else:
-        scale_y = round(scale*d_y)
-        scale_x = scale_y*round(d_x/d_y)
-    
     # Prepare picture.
     
     pic = Image.new("RGB",(width*scale_x,height*scale_y))
@@ -129,7 +161,127 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0):
 
     return pic
 
+
             
+##############################################################################
+#
+#  _create_scaled_arrow_plot
+#
+#  Low-level routine.
+#  Scales the plot and draws black arrows on a white canvas.
+#
+##############################################################################
+
+def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
+                                 min_area = 100000, scale =1):
+    import Image, ImageDraw
+    
+    # Determine width and height of a vector.
+
+    [height, width, scale_x, scale_y] = \
+    _scale_function( pz, r_x, r_y, min_area, scale)
+
+    # Prepare picture.
+    
+    len_x   = width*scale_x
+    len_y   = height*scale_y
+
+    pic     = Image.new("RGB",(len_x,len_y))  
+    # This one is black, color is only defined in the manual.
+    pic.paste( 0xFFFFFF,(0, 0,len_x,len_y))
+    draw    = ImageDraw.Draw(pic)
+
+    # Ofsety = len(r_y) - (height-1)*ARROWSIZE.
+    pz*=scale_x
+    px*=scale_y
+    
+    for x in array(range(width))[::ARROWSIZE]:
+        for y in array(range(height))[::ARROWSIZE]:
+            X = scale_x*x
+            Y = scale_y*y
+            _create_arrow(draw,(X,Y), pz[y,x], px[y,x])
+            
+    del draw
+
+    return pic
+
+
+
+##############################################################################
+#
+#  _scale_function
+#
+#  Low-level routine.
+#  Returns the height, width and scale. Scale gives the size of one point in
+#  canvas-pixels.
+#
+##############################################################################
+
+def _scale_function(z, r_x, r_y, min_area, scale):
+
+    def round(x):
+        return int(math.floor(x+.5))
+        
+    height = z.shape[0]
+    width  = z.shape[1]
+
+    if not r_x: r_x = range(width)
+    if not r_y: r_y = range(height)
+
+    if len(r_x)>1:  d_x = r_x[1] - r_x[0]
+    else :          d_x = 1
+    if len(r_y)>1:  d_y = r_y[1] - r_y[0]
+    else:           d_y = 1
+
+    if (height*width*d_x*d_y < min_area):
+        scale = math.sqrt(min_area/(height*width*d_x*d_y))
+
+    if d_x < d_y:
+        scale_x = round(scale*d_x)
+        scale_y = scale_x*round(d_y/d_x)
+    else:
+        scale_y = round(scale*d_y)
+        scale_x = scale_y*round(d_x/d_y)
+
+    return [height, width, scale_x, scale_y]
+
+
+
+##############################################################################
+#
+#  _create_arrow
+#
+#  Draws an arrow on the canvas. Size is dx and dy.
+#  Center of the arrow is point p.
+#
+##############################################################################
+
+
+def _create_arrow(draw, p, dx, dy):
+
+    dq  = sqrt(dx**2+dy**2)            # Distance.
+
+    if (abs(dx) <= 1e-10): dx = 1e-10  # Don't set arc yet (+/-).
+    arc = arctan(dy/dx)
+    if dx < 0: arc += pi
+
+    arrow   = array(ARROW)
+
+    # Turn the arrow.
+    arrow[:,0] += arc
+    # Size the arrow.
+    arrow[:,1] *= dq
+
+    points  = []
+    # Calc every point.
+    for pt in arrow:
+        dpx = pt[1]*cos(pt[0])
+        dpy = pt[1]*sin(pt[0])
+        points.append((p[0]+dpx,p[1]-dpy))
+
+    draw.polygon(points, fill=0x000000)
+
+
 
 ##############################################################################
 #
@@ -139,7 +291,8 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0):
 #
 ##############################################################################
 
-def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0):
+def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0,
+                        min_area=100000, scale=1):
 
     import MLab
         
@@ -148,7 +301,7 @@ def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0):
     zmax = MLab.max(MLab.max(z))
     zmin = MLab.min(MLab.min(z))
 
-    if (zmin < 0) and (0 < zmax) :
+    if (zmin < 0) and (0 < zmax) and (not colorcode):
         colormap = create_bipolar_colormap()
         zmax = MLab.max([-zmin, zmax])
         z += zmax
@@ -165,7 +318,32 @@ def _create_matrix_plot(z, r_x=0, r_y=0, colorcode=0):
         if (zmax != zmin):
             z *= (len(colormap)-1)/(zmax-zmin)
 
-    return _create_scaled_matrix_plot(colormap, z, r_x, r_y)
+    return _create_scaled_matrix_plot(colormap, z, r_x, r_y,
+                                      min_area = min_area, scale = scale)
+
+
+
+##############################################################################
+#
+#  _create_arrow_plot
+#
+#  Giving the arrows the right size.
+#
+##############################################################################
+
+def _create_arrow_plot(px, pz, r_x=0, r_y=0,
+                       min_area=100000, scale=1):
+    import MLab
+    
+    # Scale pz & px
+    
+    pmax    = max( MLab.max(MLab.max(abs(pz))), MLab.max(MLab.max(abs(px))))
+    cst     = ARROWSIZE/pmax
+    pz      = pz*cst 
+    px      = px*cst     
+
+    return _create_scaled_arrow_plot(px, pz, r_x, r_y,
+                                      min_area = min_area, scale = scale)
 
 
 
@@ -244,11 +422,25 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
 
 ##############################################################################
 #
+# Plot an arrow matrix.
+#
+#  High-level routine.
+#
+##############################################################################
+
+def plot_arrow(px, pz, r_x=0, r_z=0, filename=0):
+
+    _output_pic(_create_arrow_plot(px, pz, r_z, r_x), filename)
+
+
+
+##############################################################################
+#
 # Create a phasor movie.
 #
 ##############################################################################
 
-def _create_phasor_movie(z, r_x=0, r_y=0):
+def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
     
     import MLab
     
@@ -256,20 +448,49 @@ def _create_phasor_movie(z, r_x=0, r_y=0):
     
     movie    = []
     frames   = 16
-    colormap = create_bipolar_colormap()
 
-    # Scale factors for z.
+    if ln:
+        colormap = create_unipolar_colormap()
+        
+        # Scale factors for z.
+        # We're not sure about the lowest zmin value during the calculations.
+        # So, we make it our own by adding a 'zcst' to each one.
+        # Log(z**2) gives a (much) nicer plot than log(abs(z)).
+        # We should get positive values anyhow.
 
-    zmax = MLab.max(MLab.max(abs(z)))
-    z_scale = (len(colormap)-1)/(2*zmax)
+        zmax    = 2*log(MLab.max(MLab.max(abs(z))))
+        
+        # Supplement to make sure the z isn't zero this really changes
+        # the feeling of the image.. so not that correct.
+        zcst    = 1e-8
+        zmin    = log(zcst)                 # Arround -23.
+        z_scale = (len(colormap)-1)/(zmax-zmin)
 
-    # Calculate each frame.
-    
-    for Nr in range(0,frames):
-        pic = \
-          _create_scaled_matrix_plot(colormap,((z+zmax)*z_scale).real,r_x,r_y)
-        movie.append(pic)
-        z *= exp(2j*pi/frames)
+        # Calculate each frame.
+        
+        for Nr in range(0,frames):
+            pic = _create_scaled_matrix_plot(colormap,
+                        ((log(z.real**2 + zcst) - zmin)*z_scale),
+                        r_x, r_y, min_area = min_area, scale = scale)
+            movie.append(pic)
+            z *= exp(2j*pi/frames)
+            
+    else:
+        colormap = create_bipolar_colormap()
+        # Scale factors for z.
+
+        zmax    = MLab.max(MLab.max(abs(z)))
+        z_scale = (len(colormap)-1)/(2*zmax)
+
+        # Calculate each frame.
+        
+        for Nr in range(0,frames):
+            pic = \
+              _create_scaled_matrix_plot(
+                  colormap,((z+zmax)*z_scale).real,r_x,r_y,
+                            min_area = min_area, scale = scale)
+            movie.append(pic)
+            z *= exp(2j*pi/frames)
 
     return movie
 
@@ -314,7 +535,7 @@ def _output_movie(movie, filename):
         gifmaker.makedelta(fp, movie)
         fp.close()
         print  "Created", userpath
-        
+
     else:
         root = Tkinter.Tk()
         
@@ -348,9 +569,9 @@ def _output_movie(movie, filename):
 #
 ##############################################################################
 
-def phasormovie(z, r_x=0, r_y=0, filename=0):
+def phasormovie(z, r_x=0, r_y=0, filename=0, ln=0):
 
-    _output_movie(_create_phasor_movie(z, r_x, r_y), filename)
+    _output_movie(_create_phasor_movie(z, r_x, r_y, ln=ln), filename)
 
 
 
@@ -358,65 +579,50 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
 #
 # Different colormaps.
 #
+# _create_color_range creates a range of colors, making a
+# smooth trannsition between two colors.
+#
 ##############################################################################
 
 def create_bipolar_colormap():
 
-    colormap = []
-    
-    # blue-white-1              -#FF0000-#FFFEFE
-    for j in range(0,255): 
-        colormap.append( 0xFF0000 + j*0x101 )
-    # white-red                 -#FFFFFF-#0000FF
-    for j in arange(255,-1,-1):
-        colormap.append( 0xFF + j*0x10100 )
-  
-    return colormap
-
+    return _create_color_range(NEGCOLOR,MIDCOLOR ) +\
+           _create_color_range(MIDCOLOR,POSCOLOR, 1 )
 
 
 def create_unipolar_colormap():
 
-    colormap = []
-    # black-blue-1              -#000000-#FE0000
-    for j in range(0,255):
-        colormap.append( j*0x10000 )    
-    # blue-purple-1             -#FF0000-#FF00FF
-    for j in range(0,255):
-        colormap.append( 0xFF0000 + j)
-    # purple-red+1              -#FF00FF-#0100FF
-    for j in arange(255,0,-1):
-        colormap.append( 0x0000FF + j*0x10000)      
-    # red-yellow-1              -#0000FF-#00FEFF
-    for j in range(0,255):
-        colormap.append( 0xFF + j*0x100)
-    # yellow-white              -#00FFFF-#FFFFFF
-    for j in range(0,256):
-        colormap.append( 0xFFFF + j*0x10000)
+    colormap, l, end = [], len(MAPCOLORS), 0
 
+    if (l > 1) :
+        for x in range(l-1):
+            if (x == l-2): end = 1            
+            colormap += _create_color_range(MAPCOLORS[x],MAPCOLORS[x+1], end)
+            
     return colormap
-
 
 
 def create_white_black_colormap():
-
-    colormap = []
-    # white-black              -#FFFFFF-#000000
-    for j in arange(255,-1,-1):
-        colormap.append( j*0x10101 )    
-
-    return colormap
-
+    return  _create_color_range((255,255,255), (0,0,0), 1 )
 
 
 def create_black_white_colormap():
+    return  _create_color_range((0,0,0), (255,255,255), 1 )
 
-    colormap = []
-    # black-white              -#000000-#FFFFFF
-    for j in range(0,256):
-        colormap.append( j*0x10101 )    
+def _create_color_range(c1=(0,0,0), c2=(255,255,255), ad_last = 0 ):
 
-    return colormap
+    # Calc max range.
+    diff    = array(c2)-array(c1)  
+    colors  = float(max(abs(diff)))
+
+    # Dred,dgreen,dblue.
+    dc = diff / colors
+
+    # Start_to_end + dc.
+    if ad_last: colors +=1
+
+    return [sum( (c1 + (x*dc).astype(Int))*[1, 0x100, 0x10000] )
+            for x in range(colors)]
 
 
 
@@ -492,12 +698,26 @@ def plot_n_waveguide(waveguide, r_x):
 def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
     
     n = zeros([len(r_x),len(r_z)], Float)
-
-    for i_x in range(len(r_x)):
-      for i_z in range(len(r_z)):
-        n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
+    
 
     plot_matrix(n, r_z, r_x, filename, colormap)
+
+
+
+##############################################################################
+#
+# Plot the poynting arrows in a stack.
+#
+##############################################################################
+
+def plot_arrow_stack(stack, r_x, r_z, filename=0):
+
+    px   = zeros([len(r_x),len(r_z)], Float)
+    pz   = zeros([len(r_x),len(r_z)], Float)
+    _calc_arrow_stack(px, pz, stack, r_x[::-1], r_z)
+
+    plot_arrow(px, pz, r_x, r_z, filename)
 
 
 
@@ -510,10 +730,7 @@ def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
 def plot_n_section(stack, r_x, r_y, filename, colormap):
     
     n = zeros([len(r_y),len(r_x)], Float)
-
-    for i_x in range(len(r_x)):
-      for i_y in range(len(r_y)):
-        n[len(r_y)-1-i_y,i_x] = stack.n(Coord(r_x[i_x], r_y[i_y], 0)).real
+    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
 
     plot_matrix(n, r_x, r_y, filename, colormap)    
 
@@ -562,32 +779,96 @@ def plot_field_waveguide(mode, component, r_x):
 ##############################################################################
 
 def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
-                     overlay_n=1, contour=1):
+                     overlay_n=1, contour=1, arrow=0):
 
     f = zeros([len(r_x),len(r_z)], Float)
+    _calc_field_stack(f, stack, array(r_x)[::-1], r_z, component)
 
-    for i_x in range(len(r_x)):
-        for i_z in range(len(r_z)):
-            f[len(r_x)-1-i_x,i_z] = \
-                  component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
-
-    if not overlay_n:
+    
+    if not (overlay_n or arrow) :
         return plot_matrix(f, r_z, r_x, filename, colormap)
 
-    # Overlay index profile.
-        
-    n = zeros([len(r_x),len(r_z)], Float)
-        
-    for i_x in range(len(r_x)):
-        for i_z in range(len(r_z)):
-            n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+    # Overlay index/arrow profile.
+    if overlay_n:
+        n = zeros([len(r_x),len(r_z)], Float)
+        _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
+        pic_n = _create_matrix_plot(n, r_z, r_x, whiteblack)
+    
+    if arrow:
+        px   = zeros([len(r_x),len(r_z)], Float)
+        pz   = zeros([len(r_x),len(r_z)], Float)
+        _calc_arrow_stack(px, pz, stack, r_x[::-1], r_z)
+        pic_p = _create_arrow_plot(px, pz, r_z, r_x)
 
-    pic_n = _create_matrix_plot(n, r_z, r_x, whiteblack)
+    if arrow:
+        if overlay_n:
+            pic_n = _overlay_pictures(pic_p, pic_n, 0)
+        else:
+            pic_n = pic_p
+
     pic_f = _create_matrix_plot(f, r_z, r_x, colormap)
-
+    
     _output_pic(_overlay_pictures(pic_f, pic_n, contour), filename)
 
 
+
+##############################################################################
+#
+# Calculates the field values for all the points of the matrix.
+#
+##############################################################################
+
+def _calc_field_stack(f, stack, r_x, r_z ,component):
+
+    for x in range(len(r_x)):
+        for z in range(len(r_z)):
+            f[x,z] = component(stack.field(Coord(r_x[x], 0, r_z[z])))  
+
+
+
+##############################################################################
+#
+# Asks the refractive index for all the points of teh matrix.
+#
+##############################################################################
+
+def _calc_n_stack(n, stack, r_x, r_z):
+
+    for x in range(len(r_x)):
+        for z in range(len(r_z)):
+            n[x,z] = stack.n(Coord(r_x[x], 0, r_z[z])).real  
+
+
+
+##############################################################################
+#
+# Calculates the poynting values for some points of the matrix.
+# The number of points depends on the size of the arrow.
+#
+##############################################################################
+
+def _calc_arrow_stack(px, pz, stack, r_x, r_z):
+
+    if get_polarisation() == TM:
+        for x in array(range(len(r_x)))[::ARROWSIZE]:
+            for z in array(range(len(r_z)))[::ARROWSIZE]:
+                f       = stack.field(Coord(r_x[x], 0, r_z[z]))
+                h2      = f.H2().conjugate()
+                px[x,z] = (-f.Ez() * h2).real
+                pz[x,z] = ( f.E1() * h2).real
+
+    elif get_polarisation() == TE:
+        for x in array(range(len(r_x)))[::ARROWSIZE]:
+            for z in array(range(len(r_z)))[::ARROWSIZE]:
+                f       = stack.field(Coord(r_x[x], 0, r_z[z]))
+                e2      = f.E2()
+                px[x,z] = ( e2 * f.Hz().conjugate()).real
+                pz[x,z] = (-e2 * f.H1().conjugate()).real
+
+    else:
+        print "Error: no polarisation defined."
+
+    
 
 ##############################################################################
 #
@@ -630,12 +911,13 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 ##############################################################################
 
 def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
-               overlay_n=1, contour=1):
+               overlay_n=1, contour=1, arrow=0):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        plot_field_stack(o,component,r1,r2,filename,colormap,overlay_n,contour)
+        plot_field_stack(o, component, r1, r2, filename, colormap,
+                         overlay_n,contour,arrow)
     elif type(o) == SectionMode:
         plot_field_section_mode(o,component,r1,r2,filename,colormap,overlay_n,
                                 contour)
@@ -651,28 +933,22 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
 ##############################################################################
 
 def animate_field_stack(stack, component, r_x, r_z, filename=0,
-                        overlay_n=1, contour=1):
+                        overlay_n=1, contour=1, ln=0):
 
     f = zeros([len(r_x),len(r_z)], Complex)
-
-    for i_x in range(len(r_x)):
-        for i_z in range(len(r_z)):
-            f[len(r_x)-1-i_x,i_z] = \
-                  component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
-
+    _calc_field_stack(f, stack, array(r_x)[::-1], r_z, component)
+    
     if not overlay_n:
-        return phasormovie(f, r_z, r_x, filename)
+        return phasormovie(f, r_z, r_x, filename, ln)
 
     # Overlay index profile.
         
     n = zeros([len(r_x),len(r_z)], Float)
-        
-    for i_x in range(len(r_x)):
-        for i_z in range(len(r_z)):
-            n[len(r_x)-1-i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
+    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
 
+    
     pic_n = _create_matrix_plot (n, r_z, r_x, whiteblack)
-    mov_f = _create_phasor_movie(f, r_z, r_x)
+    mov_f = _create_phasor_movie(f, r_z, r_x, ln=ln)
 
     for Nr in range(len(mov_f)):
         mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
@@ -724,13 +1000,33 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
 #
 ##############################################################################
 
-def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
+def animate_field(o, component, r1, r2, filename=0, overlay_n=1,
+                  contour=1, ln=0):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        animate_field_stack(o,component,r1,r2,filename,overlay_n,contour)
+        animate_field_stack(o,component,r1,r2,filename,
+                            overlay_n,contour,ln)
     elif type(o) == SectionMode:
-        animate_field_section_mode(o,component,r1,r2,filename,overlay_n,
-                                   contour)
+        animate_field_section_mode(o,component,r1,r2,filename,
+                                   overlay_n,contour)
     else:
         print "Unsupported argument for animate_field."
-        
+
+
+
+##############################################################################
+#
+# Wrapper for stack_plot (for Stack, Cavity and BlochStack)
+# and slabPlot (for Slab).
+#
+##############################################################################
+
+def plot(o):
+    import slab_plot, stack_plot
+    if (type(o) == Stack) or (type(o) == BlochStack) or (type(o) == Cavity):
+        stack_plot.StackPlot(o)
+    elif (type(o) == Slab):
+        slab_plot.SlabPlot(o)
+    else:
+        print "Unsupported argument for plot."
+    
