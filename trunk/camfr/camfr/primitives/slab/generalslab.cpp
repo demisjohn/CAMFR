@@ -205,6 +205,7 @@ void SlabImpl::calc_overlap_matrices
   SlabImpl* medium_II = dynamic_cast<SlabImpl*>(w);
 
   vector<Complex> disc = medium_I->disc_intersect(medium_II);
+  bool mirrored = this->is_mirror_image_of(medium_II);
 
   const unsigned int N = global.N;
   SlabCache cache(N, disc.size()-1);
@@ -220,22 +221,22 @@ void SlabImpl::calc_overlap_matrices
         (*O_I_II)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-           &cache, &disc, i, j, 1, 2);
+           &cache, &disc, i, j, 1, 2, mirrored);
       
         (*O_II_I)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
-           &cache, &disc, i, j, 2, 1);
+           &cache, &disc, i, j, 2, 1, mirrored);
 
         if (O_I_I) (*O_I_I)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
-           &cache, &disc, i, j, 1, 1);
+           &cache, &disc, i, j, 1, 1, mirrored);
 
         if (O_II_II) (*O_II_II)(i,j) = overlap
           (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
            dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-           &cache, &disc, i, j, 2, 2);
+           &cache, &disc, i, j, 2, 2, mirrored);
       }
 
     return;
@@ -247,6 +248,13 @@ void SlabImpl::calc_overlap_matrices
   { 
     py_error(
      "Internal error: non-orthogonality of modes not taken into account.");
+    exit (-1);
+  }
+
+  if (mirrored)
+  {
+    py_error(
+     "Internal error: mirrored overlaps not yeat implemented.");
     exit (-1);
   }
 

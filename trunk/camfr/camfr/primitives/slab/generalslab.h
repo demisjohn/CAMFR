@@ -82,6 +82,9 @@ class SlabImpl : public MultiWaveguide
 
     std::vector<Complex> disc_intersect(const SlabImpl* medium_II) const;
 
+    virtual bool is_mirror_image_of(const SlabImpl* medium_II) const
+      {return false;}
+
     void fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
                           const std::vector<Complex>& disc);
 
@@ -114,7 +117,7 @@ class SlabImpl : public MultiWaveguide
     friend Complex overlap(const SlabMode*, const SlabMode*,
                            const SlabCache* c,
                            const std::vector<Complex>* v,
-                           int, int, int, int);
+                           int, int, int, int, bool);
 
     friend void overlap_TM_TE(const SlabMode*, const SlabMode*,
 			      Complex* Ex_Hz, Complex* Ez_Hx,
