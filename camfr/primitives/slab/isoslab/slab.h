@@ -56,6 +56,8 @@ class Slab_M : public SlabImpl
     Complex eps_at(const Coord& coord) const;    
     Complex  mu_at(const Coord& coord) const;
 
+    Complex eps_avg() const;
+
     Complex get_width() const
       {return discontinuities.back();}
 
@@ -110,6 +112,9 @@ class UniformSlab : public SlabImpl
     
     std::vector<Material*> get_materials() const
       {std::vector<Material*> m; m.push_back(core); return m;}
+
+    Complex eps_avg() const 
+      {return core->eps();}
     
     bool contains(const Material& m) const
       {return *core == m;}

@@ -65,6 +65,8 @@ class SlabImpl : public MultiWaveguide
                 Real precision = 1e-10) const;
     
     virtual Complex get_width() const = 0;
+
+    virtual Complex eps_avg() const = 0;
     
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
@@ -143,7 +145,9 @@ class Slab : public MultiWaveguide
     
     Complex eps_at(const Coord& coord) const {return s->eps_at(coord);}
     Complex  mu_at(const Coord& coord) const {return s-> mu_at(coord);}
-    
+
+    Complex eps_avg() const {return s->eps_avg();}
+
     int N() const {return s->N();}
 
     Complex get_width() const {return s->get_width();}

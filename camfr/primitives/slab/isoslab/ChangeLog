@@ -1,3 +1,8 @@
+2002-11-27 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.h: Add eps_avg.
+	* slab.cpp: Ditto.
+
 2002-10-30 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slab.cpp: Better check for uniform Slabs.
