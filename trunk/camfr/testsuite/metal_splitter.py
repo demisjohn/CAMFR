@@ -86,6 +86,9 @@ class metal_splitter(unittest.TestCase):
 
         free_tmps()
 
+        set_unstable_exp_threshold(1e-10)
+        set_left_wall(slab_E_wall)
+
         self.failUnless(R_pass)
 
 suite = unittest.makeSuite(metal_splitter, 'test')        

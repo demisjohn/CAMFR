@@ -20,6 +20,7 @@ class degenerate(unittest.TestCase):
 
         set_N(10)
         set_lambda(1)
+        set_polarisation(TE)
 
         m = Material(3.5)
         a = Material(1.0)
