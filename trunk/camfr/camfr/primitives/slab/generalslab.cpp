@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "slabmatrixcache.h"
 #include "generalslab.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
 #include "../../util/vectorutil.h"
@@ -52,6 +53,19 @@ class SlabFlux : public RealFunction
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// SlabImpl::~SlabImpl
+//
+/////////////////////////////////////////////////////////////////////////////
+
+SlabImpl::~SlabImpl() 
+{
+  slabmatrix_cache.deregister(this);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // SlabImpl::S_flux()
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -80,8 +94,8 @@ void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
 { 
-  const SlabImpl* medium_I  = this;
-  const SlabImpl* medium_II = dynamic_cast<const SlabImpl*>(w);
+  SlabImpl* medium_I  = this;
+  SlabImpl* medium_II = dynamic_cast<SlabImpl*>(w);
 
   // Make sorted list of evaluation points for field cache.
 
@@ -168,76 +182,6 @@ void SlabImpl::calc_overlap_matrices
 
   // Calculate overlap matrices for off-angle incidence.
 
-  // Part I: beta-independent part.
-
-  // TODO: cache this part across invocations and for different media.
-
-  const int n = int(N/2);
-
-  cMatrix TE_TE_I_II(n,n,fortranArray), TM_TM_I_II(n,n,fortranArray);
-  cMatrix TE_TE_II_I(n,n,fortranArray), TM_TM_II_I(n,n,fortranArray);
-
-  cMatrix Ex_Hz_I_II (n,n,fortranArray), Ez_Hx_I_II (n,n,fortranArray);
-  cMatrix Ex_Hz_II_I (n,n,fortranArray), Ez_Hx_II_I (n,n,fortranArray);
-  cMatrix Ex_Hz_I_I  (n,n,fortranArray), Ez_Hx_I_I  (n,n,fortranArray);
-  cMatrix Ex_Hz_II_II(n,n,fortranArray), Ez_Hx_II_II(n,n,fortranArray);
-  
-  for (int i=1; i<=n; i++)
-    for (int j=1; j<=n; j++)
-    {
-      TE_TE_I_II(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-         &cache, &disc, i, j, 1, 2);
-
-      TE_TE_II_I(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
-         dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
-         &cache, &disc, i, j, 2, 1);
-
-      TM_TM_I_II(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
-         dynamic_cast<const SlabMode*>(medium_II->get_mode(n+j)),
-         &cache, &disc, n+i, n+j, 1, 2);
-
-      TM_TM_II_I(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
-         dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+j)),
-         &cache, &disc, n+i, n+j, 2, 1);
-
-      Complex Ex_Hz_I_II_ij,  Ez_Hx_I_II_ij;
-      Complex Ex_Hz_II_I_ij,  Ez_Hx_II_I_ij;
-      Complex Ex_Hz_I_I_ij,   Ez_Hx_I_I_ij;
-      Complex Ex_Hz_II_II_ij, Ez_Hx_II_II_ij;
-
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
-                    &Ex_Hz_I_II_ij, &Ez_Hx_I_II_ij,
-                    &cache, &disc, n+i, j, 1, 2);
-
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
-                    &Ex_Hz_II_I_ij, &Ez_Hx_II_I_ij,
-                    &cache, &disc, n+i, j, 2, 1);
-
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
-                    &Ex_Hz_I_I_ij, &Ez_Hx_I_I_ij,
-                    &cache, &disc, n+i, j, 1, 1);
-
-      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
-                    dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
-                    &Ex_Hz_II_II_ij, &Ez_Hx_II_II_ij,
-                    &cache, &disc, n+i, j, 2, 2);
-
-      Ex_Hz_I_II (i,j) = Ex_Hz_I_II_ij;  Ez_Hx_I_II (i,j) = Ez_Hx_I_II_ij;
-      Ex_Hz_II_I (i,j) = Ex_Hz_II_I_ij;  Ez_Hx_II_I (i,j) = Ez_Hx_II_I_ij;
-      Ex_Hz_I_I  (i,j) = Ex_Hz_I_I_ij;   Ez_Hx_I_I  (i,j) = Ez_Hx_I_I_ij;
-      Ex_Hz_II_II(i,j) = Ex_Hz_II_II_ij; Ez_Hx_II_II(i,j) = Ez_Hx_II_II_ij;
-    }
-  
-  // Part II: beta-dependent part.
-
   if (!O_I_I)
   {
     cerr << "Internal error: non-orthogonality of modes not taken "
@@ -264,20 +208,25 @@ void SlabImpl::calc_overlap_matrices
 
   // Calculate O_I_II and O_II_I.
 
+  const int n = int(N/2);
+
+  const OverlapMatrices* m 
+    = slabmatrix_cache.get_matrices(medium_I, medium_II, &cache, &disc);
+
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
-      (*O_I_II)(i,    j) =   TE_TE_I_II(i,j) * cos_I (  i);
+      (*O_I_II)(i,    j) =   m->TE_TE_I_II(i,j) * cos_I (  i);
       (*O_I_II)(i,  n+j) =   0.0;
-      (*O_I_II)(n+i,  j) = + Ex_Hz_I_II(i,j) * sin_II(  j)
-                           - Ez_Hx_I_II(i,j) * sin_I (n+i);   
-      (*O_I_II)(n+i,n+j) =   TM_TM_I_II(i,j) * cos_II(n+j);
+      (*O_I_II)(n+i,  j) =   m->Ex_Hz_I_II(i,j) * sin_II(  j)
+                           - m->Ez_Hx_I_II(i,j) * sin_I (n+i);   
+      (*O_I_II)(n+i,n+j) =   m->TM_TM_I_II(i,j) * cos_II(n+j);
 
-      (*O_II_I)(i,    j) =   TE_TE_II_I(i,j) * cos_II(  i);
+      (*O_II_I)(i,    j) =   m->TE_TE_II_I(i,j) * cos_II(  i);
       (*O_II_I)(i,  n+j) =   0.0;
-      (*O_II_I)(n+i,  j) = + Ex_Hz_II_I(i,j) * sin_I (  j)
-                           - Ez_Hx_II_I(i,j) * sin_II(n+i);
-      (*O_II_I)(n+i,n+j) =   TM_TM_II_I(i,j) * cos_I (n+j);  
+      (*O_II_I)(n+i,  j) =   m->Ex_Hz_II_I(i,j) * sin_I (  j)
+                           - m->Ez_Hx_II_I(i,j) * sin_II(n+i);
+      (*O_II_I)(n+i,n+j) =   m->TM_TM_II_I(i,j) * cos_I (n+j);  
     }
 
   for (int i=1; i<=N; i++)
@@ -297,12 +246,12 @@ void SlabImpl::calc_overlap_matrices
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
-      (*O_I_I)(n+i,j)   = (+ Ex_Hz_I_I(i,j) * sin_I(  j)
-                           - Ez_Hx_I_I(i,j) * sin_I(n+i)) 
+      (*O_I_I)(n+i,j)   = (  m->Ex_Hz_I_I(i,j) * sin_I(  j)
+                           - m->Ez_Hx_I_I(i,j) * sin_I(n+i)) 
                               / sqrt(cos_I(n+i)) / sqrt(cos_I(j));
 
-      (*O_II_II)(n+i,j) = (+ Ex_Hz_II_II(i,j) * sin_II(  j)
-                           - Ez_Hx_II_II(i,j) * sin_II(n+i))
+      (*O_II_II)(n+i,j) = (  m->Ex_Hz_II_II(i,j) * sin_II(  j)
+                           - m->Ez_Hx_II_II(i,j) * sin_II(n+i))
                               / sqrt(cos_II(n+i)) / sqrt(cos_II(j));
     }
 }

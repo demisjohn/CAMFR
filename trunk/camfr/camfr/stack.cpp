@@ -15,6 +15,7 @@
 #include "S_scheme.h"
 #include "S_scheme_fields.h"
 #include "T_scheme_fields.h"
+#include "primitives/slab/generalslab.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -378,7 +379,7 @@ DenseStack::DenseStack(const Expression& e, unsigned int no_of_periods=1)
 /////////////////////////////////////////////////////////////////////////////
 
 void DenseStack::calcRT()
-{  
+{
   if (!recalc_needed())
     return;
 
@@ -394,6 +395,7 @@ void DenseStack::calcRT()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
+  last_beta = global_slab.beta;
 }
 
 
@@ -468,6 +470,7 @@ void DiagStack::calcRT()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
+  last_beta = global_slab.beta;
 }
 
 
@@ -668,7 +671,7 @@ bool Stack::single_material() const
 /////////////////////////////////////////////////////////////////////////////
 
 void Stack::calcRT()
-{
+{  
   if (sc)
     sc->calcRT();
   else

@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "interface.h"
+#include "primitives/slab/generalslab.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +60,7 @@ void DenseInterface::calcRT()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
+  last_beta = global_slab.beta;
 }
 
 

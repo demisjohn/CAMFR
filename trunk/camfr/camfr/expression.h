@@ -223,4 +223,17 @@ inline ostream& operator<<(ostream& s, const Expression& e)
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Convert material expressions to tables with eps, mu and d's.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void material_expression_to_table(const Expression& e, 
+                                  vector<Complex>* eps, 
+                                  vector<Complex>* mu,
+                                  vector<Complex>* d);
+
+
+
 #endif
