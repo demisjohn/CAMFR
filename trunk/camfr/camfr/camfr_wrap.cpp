@@ -136,6 +136,9 @@ inline void set_eigen_calc(long s)
 inline void set_orthogonal(bool b)
   {global.orthogonal = b;}
 
+inline void set_degenerate(bool b)
+  {global.degenerate = b;}
+
 inline void set_circ_order(int n)
   {global_circ.order = n;}
 
@@ -530,6 +533,7 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("set_bloch_calc",             set_bloch_calc)
     .def("set_eigen_calc",             set_eigen_calc)
     .def("set_orthogonal",             set_orthogonal)
+    .def("set_degenerate",             set_degenerate)
     .def("set_circ_order",             set_circ_order)
     .def("set_circ_field_type",        set_circ_fieldtype)
     .def("set_left_wall",              set_left_wall)

@@ -231,6 +231,9 @@ struct Global
     // TMP switch that tells CAMFR is the local modes are orthogonal.
     // CAMFR should later figure this out by itself.
     bool orthogonal;
+
+    // Determines whether special case should be given to degenerate modes.
+    bool degenerate;
 };
 
 extern Global global;
