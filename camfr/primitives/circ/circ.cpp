@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 #include "circ.h"
@@ -18,9 +19,6 @@
 #include "circoverlap.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "../../math/calculus/calculus.h"
 #include "../../math/calculus/quadrature/patterson_quad.h"
@@ -172,7 +170,7 @@ void Circ_M::find_modes()
     delete modeset[i];
   modeset.clear();
   
-  cerr << "Circ_M::findModes to be implemented." << endl;
+  py_error("Circ_M::findModes to be implemented.");
   exit (-1);
 }
 
@@ -312,13 +310,13 @@ void Circ_2::find_modes()
 
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return;
   }
 
@@ -391,7 +389,7 @@ void Circ_2::find_modes_from_scratch_by_ADR()
   
   vector<Complex> kr2 = N_roots(disp, global.N, lowerleft, upperright);
   
-  cout << "Calls to circ dispersion relation : "<< disp.times_called() << endl;
+  // cout << "Calls to circ dispersion relation : "<<disp.times_called()<<endl;
   
   // Eliminate copies and false zeros.
 
@@ -407,8 +405,10 @@ void Circ_2::find_modes_from_scratch_by_ADR()
 
   if (kr2.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << kr2.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kr2.size() << "/" << global.N << "). ";
+    py_error(s.str());
     exit (-1);
   }
   
@@ -531,9 +531,9 @@ void Circ_2::find_modes_from_scratch_by_track()
               guided_disp_lossless_params, guided_disp_params,
               forbidden, global.sweep_steps);
   
-  cout << "Calls to guided dispersion relation: "
-       << guided_disp_lossless.times_called() + guided_disp.times_called()
-       << endl;
+  //cout << "Calls to guided dispersion relation: "
+  //     << guided_disp_lossless.times_called() + guided_disp.times_called()
+  //     << endl;
 
 
   
@@ -561,7 +561,7 @@ void Circ_2::find_modes_from_scratch_by_track()
   
   if (rad_modes <= 0)
   {
-    cout << "Warning: no radiation modes included." << endl;
+    py_print("Warning: no radiation modes included.");
     rad_k_end_lossless = 0.0;
   }
   else
@@ -600,9 +600,9 @@ void Circ_2::find_modes_from_scratch_by_track()
          || ( (imag(kr2_rad[i]) > 0) && (hankel == kind_2) ) )
       kr2_rad[i] = -kr2_rad[i]; // Pick stable sign.
   
-  cout << "Calls to radiation dispersion relation: "
-       << rad_disp_lossless.times_called() + rad_disp.times_called()
-       << endl;
+  //cout << "Calls to radiation dispersion relation: "
+  //     << rad_disp_lossless.times_called() + rad_disp.times_called()
+  //     << endl;
 
   
 /*  
@@ -695,8 +695,10 @@ void Circ_2::find_modes_from_scratch_by_track()
   
   if (kr2.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << kr2.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kr2.size() << "/" << global.N << "). ";
+    py_error(s.str());
     exit (-1);
   }
   else
@@ -840,8 +842,10 @@ void Circ_2::find_modes_by_sweep()
   
   if (kr2.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << kr2.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kr2.size() << "/" << global.N << "). ";
+    py_error(s.str());
     exit (-1);
   }
 
@@ -909,13 +913,13 @@ void Circ_1::find_modes()
 
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return;
   }
   
@@ -961,8 +965,10 @@ void Circ_1::find_modes()
   
   if (kr.size() < N) // Shouldn't happen.
   {
-    cerr << "Error: didn't find enough modes ("
-         << kr.size() << "/" << global.N << ")."  << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kr.size() << "/" << global.N << ").";
+    py_error(s.str());
     exit (-1);
   }
   else
@@ -1022,7 +1028,7 @@ Circ::Circ(const Expression& ex)
   for (unsigned int i=0; i<e.get_size(); i++)
     if (!dynamic_cast<Material*>(e.get_term(i)->get_mat()))
     {
-      cerr << "Error: expression contains non-material term." << endl;
+      py_error("Error: expression contains non-material term.");
       return;
     }
 
@@ -1046,8 +1052,7 @@ Circ::Circ(const Expression& ex)
     c = new Circ_2(d1, *m1, d1+d2, *m2);
   }
   else
-    cout << "Error: more than two materials not yet supported in Circ."
-         << endl;
+    py_error("Error: more than two materials not yet supported in Circ.");
 
   uniform = c->is_uniform();
   core = c->get_core();
@@ -1068,7 +1073,7 @@ Circ::Circ(const Term& t)
 
   if (!m)
   {
-    cerr << "Error: expression contains non-material term." << endl;
+    py_error("Error: expression contains non-material term.");
     return;
   }
 

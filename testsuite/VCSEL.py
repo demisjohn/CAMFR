@@ -17,6 +17,7 @@ class VCSEL(unittest.TestCase):
         set_lambda(.980)
         set_N(100)
         set_circ_order(1)
+	set_sweep_from_previous(1)
 
         # Define materials.
 

@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "slab.h"
 #include "slabwall.h"
 #include "slabdisp.h"
@@ -19,9 +20,6 @@
 #include "../../../math/calculus/calculus.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "../../../util/vectorutil.h"
 
@@ -42,7 +40,7 @@ Slab_M::Slab_M(const Expression& expression)
 
     if (!m)
     {
-      cerr << "Error: expression contains non-material term." << endl;
+      py_error("Error: expression contains non-material term.");
       exit (-1);
     }
 
@@ -161,18 +159,18 @@ bool Slab_M::no_gain_present() const
 /////////////////////////////////////////////////////////////////////////////
 
 void Slab_M::find_modes()
-{
+{ 
   // Check values.
 
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return;
   }
 
@@ -201,7 +199,7 @@ void Slab_M::find_modes()
 
     const int n = int(global.N/2);
     if (2*n != global.N)
-      cout << "Warning: changing N to even number." << endl;
+      py_print("Warning: changing N to even number.");
     global.N = n;
 
     const Complex old_beta = global_slab.beta;
@@ -326,7 +324,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
   unsigned int zeros = global.N + 2 + materials.size();
   vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright);
   
-  cout << "Calls to slab dispersion relation : "<< disp.times_called() << endl;
+  //cout << "Calls to slab dispersion relation : "<<disp.times_called()<<endl;
   
   // Eliminate false zeros.
 
@@ -502,9 +500,11 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     
     if (fx > 1e-2)
     {
-      cout << "Warning: possibly insufficient precision around kt "
-           << kt_prop_lossless[i] << "." << endl;
-      cout << "Removing this candidate with abs(fx) " << fx << "." << endl;
+      std::ostringstream s;
+      s << "Warning: possibly insufficient precision around kt "
+        << kt_prop_lossless[i] << "." << std::endl;
+      s << "Removing this candidate with abs(fx) " << fx << ".";
+      py_print(s.str());
     }
     else
     {
@@ -538,8 +538,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     while (modes_left)
     {
       if (extra > 1)
-        cout << "Lost too many candidate modes. Expanding search region."
-             << endl;
+        py_print("Lost too many candidate modes. Expanding search region.");
       
       vector<Real> kt_evan_lossless = brent_N_minima
         (evan_wrap,kt_begin,modes_left+extra,d_kt/global.precision_rad,eps,1);
@@ -552,10 +551,11 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
         const Real fx = abs(disp(kt_evan_lossless[i]));
         if (fx > 1e-2)
         {
-          cout << "Warning: possibly insufficient precision around kt "
-               <<  kt_evan_lossless[i] << "." << endl;
-          cout << "Removing this candidate with abs(fx) "
-               << fx << "." << endl;
+          std::ostringstream s;
+          s << "Warning: possibly insufficient precision around kt "
+            <<  kt_evan_lossless[i] << "." << std::endl;
+          s << "Removing this candidate with abs(fx) " << fx << ".";
+          py_print(s.str());
         }
         else
         {
@@ -639,8 +639,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       remove_elems(&kt_complex, -kt_i, eps_copies);
     }
 
-    cout << "Found " << kt_complex.size() << " complex zeros in region "
-         << lowerleft << " " << upperright << "." <<endl;
+    std::ostringstream s;
+    s << "Found " << kt_complex.size() << " complex zeros in region "
+      << lowerleft << " " << upperright << ".";
+    py_print(s.str());
 
     for (unsigned int i=0; i<kt_complex.size(); i++)
       kt.push_back(kt_complex[i]);
@@ -707,8 +709,10 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
 
   if (kt.size() < global.N)
   {
-    cout << "Error: didn't find enough modes ("
-         << kt.size() << "/" << global.N << "). " << endl;
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << kt.size() << "/" << global.N << "). ";
+    py_error(s.str());
     exit (-1);
   }
   
@@ -839,13 +843,13 @@ void UniformSlab::find_modes()
 
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return;
   }
 
@@ -865,7 +869,7 @@ void UniformSlab::find_modes()
 
     const int n = int(global.N/2);
     if (2*n != global.N)
-      cout << "Warning: changing N to even number." << endl;
+      py_print("Warning: changing N to even number.");
     global.N = n;
 
     const Complex old_beta = global_slab.beta;
@@ -921,13 +925,13 @@ vector<Complex> UniformSlab::find_kt()
   
   if (global.lambda == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return kt;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
     return kt;
   }
 

@@ -10,15 +10,13 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "../../planar/planar.h"
 #include "slaboverlap.h"
 #include "slabwall.h"
 #include "slabmode.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -88,7 +86,9 @@ Field SlabMode::field(const Coord& coord_) const
 
   if ( (x < 0) || (x > d) )
   {
-    cerr << "Error: x-value " << coord.c1 << " out of range." << endl;
+    std::ostringstream s;
+    s << "Error: x-value " << coord.c1 << " out of range.";
+    py_error(s.str());
     exit (-1);
   }
 
@@ -358,7 +358,7 @@ void Slab_M_Mode::normalise()
   Complex power = overlap(this, this);
   if (abs(power) < 1e-10)
   {
-    cout << "Warning: mode close to cutoff." << endl;
+    py_print("Warning: mode close to cutoff.");
     power = 1;
   }
   
@@ -497,7 +497,7 @@ void UniformSlabMode::normalise()
 
   if (abs(power) < 1e-10)
   {
-    cout << "Warning: mode close to cutoff." << endl;
+    py_print("Warning: mode close to cutoff.");
     power = 1;
   }
 

@@ -10,13 +10,11 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "slaboverlap.h"
 #include "slabmode.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "../../../util/vectorutil.h"
 
@@ -38,12 +36,12 @@ Complex overlap(const SlabMode* mode_I,
   {
     if ( (I_index < 1) || (I_index > 2) )
     {
-      cerr << "Error: I_index should be 1 or 2." << endl;
+      py_error("Error: I_index should be 1 or 2.");
       exit (-1);
     }
     if ( (II_index < 1) || (II_index > 2) )
     {
-      cerr << "Error: II_index should be 1 or 2." << endl;
+      py_error("Error: II_index should be 1 or 2.");
       exit (-1);
     }
   }
@@ -66,9 +64,10 @@ Complex overlap(const SlabMode* mode_I,
   
   if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
   {
-    cerr << "Warning: complex widths don't match: "
-         << medium_I ->get_width() << " and "
-         << medium_II->get_width() << endl;
+    std::ostringstream s;
+    s << "Warning: complex widths don't match: "
+      << medium_I ->get_width() << " and " << medium_II->get_width();
+    py_error(s.str());
     exit (-1);
   }
   
@@ -205,20 +204,20 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
   {
     if ( (I_index < 1) || (I_index > 2) )
     {
-      cerr << "Error: I_index should be 1 or 2." << endl;
+      py_error("Error: I_index should be 1 or 2.");
       exit (-1);
     }
     if ( (II_index < 1) || (II_index > 2) )
     {
-      cerr << "Error: II_index should be 1 or 2." << endl;
+      py_error("Error: II_index should be 1 or 2.");
       exit (-1);
     }
   }
 
   if ( (mode_I->pol != TM) || (mode_II->pol != TE) )
   {
-     cerr << "Wrong polarisation of modes in overlap_TM_TE." << endl;
-     exit (-1);
+    py_error("Wrong polarisation of modes in overlap_TM_TE.");
+    exit (-1);
   }
 
   // Set variables.
@@ -234,9 +233,10 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
   
   if (abs(medium_I->get_width() - medium_II->get_width()) > eps)
   {
-    cerr << "Warning: complex widths don't match: "
-         << medium_I ->get_width() << " and "
-         << medium_II->get_width() << endl;
+    std::ostringstream s;
+    s << "Warning: complex widths don't match: "
+      << medium_I ->get_width() << " and " << medium_II->get_width();
+    py_error(s.str());
     exit (-1);
   }
   
