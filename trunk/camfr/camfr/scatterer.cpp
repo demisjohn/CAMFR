@@ -439,6 +439,8 @@ void TransparentScatterer::calcRT()
 /////////////////////////////////////////////////////////////////////////////
 //
 // E_Wall::calcRT
+//
+//  Note: T is set to unity to avoid spurious warnings in field_calc.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
@@ -449,7 +451,7 @@ void E_Wall::calcRT()
   allocRT(); 
 
   R12 = -1.0; R21 = -1.0; 
-  T12 =  0.0; T21 =  0.0;
+  T12 =  0.0; T21 =  1.0;
 }
 
 
@@ -467,6 +469,6 @@ void H_Wall::calcRT()
   allocRT(); 
 
   R12 = 1.0; R21 = 1.0; 
-  T12 = 0.0; T21 = 0.0;
+  T12 = 0.0; T21 = 1.0;
 }
 
