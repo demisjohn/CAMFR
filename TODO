@@ -1,10 +1,7 @@
-CAMFR 1.0:
-
--website
-
 CAMFR 3D:
 
--consolidate cs sn
+-normalise modes
+-free slabmatrixcache?
 -PC walls, non-ortho
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
@@ -13,7 +10,9 @@ CAMFR 3D:
    -do not handle left and right walls through expressions
    -try to eliminate need for O_II_I in interface.cpp
 -Don't set walls through scatterer, remove kludge.
+-PML in z direction (check field profiles, numeric overlap integral)
 -Complex modes in presence of PML
+
 
 
 MEDIUM TERM:
