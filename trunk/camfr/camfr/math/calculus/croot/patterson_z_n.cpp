@@ -298,7 +298,8 @@ vector<Complex> patterson_quad_z_n(ComplexFunction& f,
   // Try patterson on the entire interval.
 
   bool error;
-  vector<Complex> result = patterson_z_n(f, a, b, M, eps, mu, &error, max_k);
+  vector<Complex> result 
+    = patterson_z_n(f, a, b, M, eps, mu, &error, max_k, NULL);
 
   if (error == false)
     return result;
