@@ -157,72 +157,6 @@ void SlabImpl::fill_field_cache(SlabCache* cache, SlabImpl* medium_II,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: ModalOverlapFunction
-//
-//  Integrandum for overlap integral between two modes.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-class ModalOverlapFunction : public ComplexFunction
-{
-  public:
-
-    ModalOverlapFunction(SlabMode* m1_, SlabMode* m2_) 
-      : m1(m1_), m2(m2_) {}
-
-    Complex operator()(const Complex& x)
-    {     
-      counter++;
-      
-      Field f1 = m1->field(Coord(x,0,0));
-      Field f2 = m2->field(Coord(x,0,0));
-      
-      return f1.E1*f2.H2 - f1.E2*f2.H1;
-    }
-
-  protected:
-
-    SlabMode* m1;
-    SlabMode* m2;
-};
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// modal_overlap
-//
-//  For numerical verification only.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex modal_overlap(SlabMode* m1, SlabMode* m2)
-{
-  ModalOverlapFunction o(m1, m2);
-
-  Wrap_real_to_real f_re(o);
-  Wrap_real_to_imag f_im(o);
-
-  // Speed up convergence by splitting the integrals.
-
-  Complex result;
-
-  vector<Complex> disc = m1->get_geom()->disc_intersect(m2->get_geom());
-
-  for(int k=0; k<int(disc.size()-1); k++)
-  {
-    Real begin = real(disc[k]);
-    Real end   = real(disc[k+1]);
-    result +=   patterson_quad(f_re, begin, end, 1e-6);
-    result += I*patterson_quad(f_im, begin, end, 1e-6);
-  }
-
-  return result;
-}
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -330,32 +264,7 @@ void SlabImpl::calc_overlap_matrices
       (*O_I_II)(i,j) /= sqrt(cos_I (i)) * sqrt(cos_II(j));
       (*O_II_I)(i,j) /= sqrt(cos_II(i)) * sqrt(cos_I (j));
     }
-/*
-  for (int i=1; i<=N; i++)
-    for (int j=1; j<=N; j++)
-    {
-      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_I ->get_mode(i));
-      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_II->get_mode(j));  
-      
-      std::cout << "O_I_II " << i << " " << j << " "
-                << abs((*O_I_II)(i,j) - modal_overlap(mode_I,mode_II))
-                << (*O_I_II)(i,j) << modal_overlap(mode_I,mode_II) 
-                << std::endl;
-    }
-
-
-  for (int i=1; i<=N; i++)
-    for (int j=1; j<=N; j++)
-    {
-      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_II->get_mode(i));
-      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_I ->get_mode(j));
-
-      std::cout << "O_II_I " << i << " " << j << " "
-                << abs((*O_II_I)(i,j) - modal_overlap(mode_I,mode_II))
-                << (*O_II_I)(i,j) << modal_overlap(mode_I,mode_II) 
-                << std::endl;
-    }
-*/ 
+  
 
   // Calculate O_I_I and O_II_II.
 
@@ -375,54 +284,6 @@ void SlabImpl::calc_overlap_matrices
                            - m->Ez_Hx_self(2,i,j) * sin_II(n+i))
                              / sqrt(cos_II(n+i)) / sqrt(cos_II(j));
     }
-/*
-  for (int i=1; i<=N; i++)
-    for (int j=1; j<=N; j++)
-    {
-      if (i==j)
-        continue;
-
-      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_I->get_mode(i));
-      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_I->get_mode(j));  
-      
-      std::cout << "O_I_I " << i << " " << j << " "
-                << abs((*O_I_I)(i,j) - modal_overlap(mode_I,mode_II))
-                << (*O_I_I)(i,j) << modal_overlap(mode_I,mode_II) 
-                << std::endl;
-    }
-
-
-  for (int i=1; i<=N; i++)
-    for (int j=1; j<=N; j++)
-    {
-      if (i==j)
-        continue;
-      
-      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_II->get_mode(i));
-      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_II->get_mode(j));  
-      
-      std::cout << "O_II_II " << i << " " << j << " "
-                << abs((*O_II_II)(i,j) - modal_overlap(mode_I,mode_II)) 
-                << (*O_II_II)(i,j) << modal_overlap(mode_I,mode_II) 
-                << std::endl;
-    }
-*/
-
-/*
-  cMatrix inv(N,N,fortranArray); inv.reference(invert(*O_I_II));
-  cMatrix mul(N,N,fortranArray); mul = *O_II_I-multiply(*O_II_II,inv,*O_I_I);
-  
-  std::cout << mul << std::endl;
-
-  std::cout << "KY" << global.slab_ky << " " 
-            << medium_I->get_mode(1)->get_kz() << " "
-            << medium_II->get_mode(1)->get_kz() << std::endl
-            << medium_II->get_mode(2)->get_kz() 
-            << medium_II->get_mode(3)->get_kz() 
-            << std::endl;
-
-  exit(-1);
-*/
 }
 
 

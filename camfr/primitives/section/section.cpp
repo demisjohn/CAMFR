@@ -20,7 +20,6 @@
 #include "../slab/slabmatrixcache.h"
 #include "../slab/isoslab/slaboverlap.h"
 #include "../slab/isoslab/slabmode.h"
-#include <fstream> // TMP
 
 using std::vector;
 using std::cout;
@@ -249,9 +248,6 @@ Section::Section(Expression& expression, int M1, int M2)
       }
     }
   }
-
-  std::cout << "Core" << ex.get_term(max_eps_i)->get_wg()->get_core()->n() 
-            << std::endl;
 
   // Create right hand side expression.
 
@@ -584,10 +580,12 @@ void Section2D::find_modes()
     find_modes_by_sweep();
   else
   {
-    if (global.solver == series)
-      find_modes_from_series();
-    else
-      find_modes_from_scratch_by_track();
+    find_modes_from_series();
+    
+    //if (global.solver == series)
+    //  find_modes_from_series();
+    //else
+    //  find_modes_from_scratch_by_track();
   }
 
   // Remember wavelength and gain these modes were calculated for.
@@ -609,6 +607,16 @@ struct sorter
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
       {return ( real(beta_a) > real(beta_b) );}
+};
+
+struct kt_to_neff : ComplexFunction
+{
+  Complex C;
+
+  kt_to_neff(const Complex& C_) : C(C_) {}
+
+  Complex operator()(const Complex& kt)
+    {return sqrt(C - kt*kt)/2./pi*global.lambda;}
 };
 
 void Section2D::find_modes_from_series()
@@ -637,6 +645,8 @@ void Section2D::find_modes_from_series()
   const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
   // Calc overlap matrices.
+
+  py_print("Creating estimates...");
 
   Material ref_mat(1.0);
   RefSection ref(ref_mat, get_width(), get_height(), M1);
@@ -712,25 +722,13 @@ void Section2D::find_modes_from_series()
 
   // Refine estimates.
 
+  py_print("Refining estimates...");
+
   vector<Complex> kz2_coarse;
   for (unsigned int i=1; i<=M1; i++)
     kz2_coarse.push_back(kz2(i));
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(),sorter());
-
-  for (unsigned int i=0; i<kz2_coarse.size(); i++)
-    std::cout << "coarse" << i << " " << kz2_coarse[i] 
-              << sqrt(kz2_coarse[i])/2./pi*global.lambda
-              << sqrt(C0*min_eps_mu - kz2_coarse[i]) << std::endl;
-
-  std::ofstream ofile("coarse");
-  for (unsigned int i=0; i<kz2_coarse.size(); i++)
-  {
-    Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
-    ofile << real(kt) << " " << imag(kt) << std::endl;
-  }
-  ofile.close();
-
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
@@ -748,41 +746,27 @@ void Section2D::find_modes_from_series()
     kt_coarse.push_back(kt);
   }
 
+  kt_to_neff transform(C0*min_eps_mu);
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50);
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 50, &transform);
 
   f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
   // Eliminate false zeros.
 
-  // TODO: beta's of all sections are parasitic zeros.
-
-  std::ofstream branch_file("branch");
   for (unsigned int k=0; k<slabs.size(); k++)
-  {
-    std::cout << "Slab" << k << std::endl;
-    
-    for (unsigned int i=1; i<=left.get_inc()->N(); i++)
+    for (unsigned int i=1; i<=slabs[k]->N(); i++)
     {
-      Complex beta_i = slabs[k]->get_mode(i)->get_kz(); // = kz0
+      Complex beta_i = slabs[k]->get_mode(i)->get_kz();
       Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
 
-      std::cout << "False" << kt_i << std::endl;
-      branch_file << k << " " << real(kt_i) << " " << imag(kt_i) << std::endl;
+      remove_elems(&kt,  kt_i, 1e-6);
+      remove_elems(&kt, -kt_i, 1e-6);
     }
-  }
-  branch_file.close();
-
-  for (unsigned int i=1; i<=left.get_inc()->N(); i++)
-  {
-    Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
-    Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
-
-    remove_elems(&kt,  kt_i, 1e-6);
-    remove_elems(&kt, -kt_i, 1e-6);
-  }
 
   // Create modeset.
+
+  py_print("Creating mode profiles...");
 
   for (unsigned int i=0; i<kt.size(); i++)
   { 
@@ -804,7 +788,9 @@ void Section2D::find_modes_from_series()
   }
 
   sort_modes();
-  truncate_N_modes();  
+  truncate_N_modes(); 
+
+  py_print("Done.");
 }
 
 
