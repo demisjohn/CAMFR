@@ -82,12 +82,12 @@ class Slab_M_Mode : public SlabMode
     
   protected:
 
-    void calc_left_right(bool calc_fw = true);
+    void calc_fw_bw(bool calc_fw = true);
 
     // Expansion coeff. of forward and backward waves at each interface.
         
-    std::vector<Complex> right; // towards x=+inf
-    std::vector<Complex> left;  // towards x=-inf
+    std::vector<Complex> fw; // towards x=+inf
+    std::vector<Complex> bw;  // towards x=-inf
 
     // x-component of wavevector.
     

@@ -405,7 +405,7 @@ Slab::Slab(const Expression& ex)
   {
     Material* m = dynamic_cast<Material*>(e.get_term(0)->get_mat());
     Complex   d = e.get_term(0)->get_d() 
-      + I*global_slab.left_PML + I*global_slab.right_PML;
+      + I*global_slab.lower_PML + I*global_slab.upper_PML;
     
     if (!m)
     {
@@ -433,7 +433,7 @@ Slab::Slab(const Expression& ex)
 Slab::Slab(const Term& t)
 {
   Material* m = dynamic_cast<Material*>(t.get_mat());
-  Complex   d = t.get_d() + I*global_slab.left_PML + I*global_slab.right_PML;
+  Complex   d = t.get_d() + I*global_slab.lower_PML + I*global_slab.upper_PML;
 
   if (!m)
   {
