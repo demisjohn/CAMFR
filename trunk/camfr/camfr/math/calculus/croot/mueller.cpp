@@ -12,6 +12,13 @@
 
 #include "mueller.h"
 
+#ifdef _WIN32
+#include <float.h>
+#define ISNAN _isnan
+#else
+#define ISNAN isnan
+#endif
+
 #include <iostream>
 using namespace std;
 
@@ -221,7 +228,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     }
   }
 
-  if (n == maxiter)
+  if ( (n == maxiter) || ISNAN(abs(z1)) )
     converged = false;
 
   // Print diagnostics and return result.
@@ -240,7 +247,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     }
 
   if (errorptr)
-    *errorptr = !converged;  
+    *errorptr = !converged;
   
   return z1;
 }
