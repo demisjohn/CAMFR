@@ -1,6 +1,8 @@
 # This Python script contains all the machine dependent settings
 # needed during the build process.
 
+# Debian unstable file contributed by Stephen Leary <sleary@elec.gla.ac.uk>
+
 # Compilers to be used.
 
 cc  = "/usr/bin/gcc"
