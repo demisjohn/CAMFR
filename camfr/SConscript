@@ -63,5 +63,6 @@ env.SharedLibrary(target = '_camfr',
 		      'primitives/section/section.cpp',
 		      'primitives/section/sectionmode.cpp',
 		      'primitives/section/sectiondisp.cpp',
-		      'primitives/section/sectionoverlap.cpp']
+		      'primitives/section/sectionoverlap.cpp',
+		      'primitives/section/refsection.cpp']
 		      + noopt + fortran_files)
