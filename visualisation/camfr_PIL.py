@@ -5,6 +5,7 @@
 # File:     camfr_PIL.py
 # Authors:  Lieven.Vanholme@intec.ugent.be
 #           Peter.Bienstman@ugent.be
+#           Pieter.Dumon@intec.ugent.be
 #
 ##############################################################################
 
@@ -38,7 +39,11 @@ formats = ['.gif', '.GIF', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP',
 
 # Arrow vector variables.
 
-ARROWSIZE = 10      # For each 10 data pixel, we got one arrow.
+ARROWSIZE = 10      # For each 10 data pixel, we get one arrow.
+
+def set_arrowsize(arrsz=10):
+   global ARROWSIZE
+   ARROWSIZE = arrsz
 
 #                   p3
 #                    | \
@@ -173,8 +178,9 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0,
 ##############################################################################
 
 def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
-                                 min_area = 100000, scale =1):
+                              min_area = 100000, scale =1):
     import Image, ImageDraw
+    global ARROWSIZE
     
     # Determine width and height of a vector.
 
@@ -263,20 +269,20 @@ def _scale_function(z, r_x, r_y, min_area, scale):
 
 def _create_arrow(draw, p, dx, dy):
 
-    dq  = sqrt(dx**2+dy**2)            # Distance.
+    dq = sqrt(dx**2+dy**2)            # Distance.
 
     if (abs(dx) <= 1e-10): dx = 1e-10  # Don't set arc yet (+/-).
     arc = arctan(dy/dx)
     if dx < 0: arc += pi
 
-    arrow   = array(ARROW)
+    arrow = array(ARROW)
 
     # Turn the arrow.
     arrow[:,0] += arc
     # Size the arrow.
     arrow[:,1] *= dq
 
-    points  = []
+    points = []
     # Calc every point.
     for pt in arrow:
         dpx = pt[1]*cos(pt[0])
@@ -711,14 +717,45 @@ def plot_n_waveguide(waveguide, r_x):
 #
 ##############################################################################
 
-def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
-    
-    n = zeros([len(r_x),len(r_z)], Float)
-    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
-    
+def plot_n_stack(stack, r_x, r_z, r_y=0, filename=0, colormap=whiteblack):
+   
+    rxrange = False
+    ryrange = False
+    rzrange = False
+    try:
+      rx = float(r_x)
+      ax1 = r_y
+      ax2 = r_z
+      r_x = [r_x]
+      axc = r_x
+    except TypeError:
+      rxrange = True
+    try:
+      ry = float(r_y)
+      ax1 = r_x
+      ax2 = r_z
+      r_y = [r_y]
+      axc = r_y
+    except TypeError:
+      ryrange = True
+    try:
+      rz = float(r_z)
+      ax1 = r_y
+      ax2 = r_x
+      r_z = [r_z]
+      axc = r_z
+    except TypeError:
+      rzrange = True
+    if rxrange and ryrange and rzrange:
+      print "Error: plot_n_stack can only make cross sections."
 
-    plot_matrix(n, r_z, r_x, filename, colormap)
-
+    n = zeros([len(ax1),len(ax2)],Float)
+    if rzrange:
+     _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
+    else:
+     _calc_n_stack(n, stack, r_x, r_y[::-1], r_z)
+     
+    plot_matrix(n,ax2,ax1,filename,colormap)
 
 
 ##############################################################################
@@ -727,13 +764,41 @@ def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
 #
 ##############################################################################
 
-def plot_arrow_stack(stack, r_x, r_z, filename=0):
-
+def plot_arrow_stack(stack, r_x, r_z, r_y = 0, filename=0):
+   
+    rxrange = False
+    ryrange = False
+    rzrange = False
+    try:
+      rx = float(r_x)
+      r_x = [r_x]
+    except TypeError:
+      rxrange = True
+    try:
+      ry = float(r_y)
+      r_y = [r_y]
+    except TypeError:
+      ryrange = True
+    try:
+      rz = float(r_z)
+      r_z = [r_z]
+    except TypeError:
+      rzrange = True
+    if rxrange and ryrange and rzrange:
+      print "Error: plot_n_stack can only make cross sections"
     px   = zeros([len(r_x),len(r_z)], Float)
+    py   = zeros([len(r_y),len(r_z)], Float)
     pz   = zeros([len(r_x),len(r_z)], Float)
-    _calc_arrow_stack(px, pz, stack, r_x[::-1], r_z)
-
-    plot_arrow(px, pz, r_x, r_z, filename)
+    if rzrange:
+      _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
+    else:
+      _calc_arrow_stack(px, py, pz, stack, r_x, r_y[::-1], r_z)
+    if not rxrange:
+      plot_arrow(py, pz, r_y, r_z, filename)
+    elif not ryrange:
+      plot_arrow(px, pz, r_x, r_z, filename)
+    else:
+      plot_arrow(px, py, r_x, r_y, filename)
 
 
 
@@ -758,12 +823,15 @@ def plot_n_section(stack, r_x, r_y, filename, colormap):
 #
 ##############################################################################
 
-def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
+def plot_n(o, r1, r2=0, r3=0, filename=0, colormap=whiteblack):
 
     if not r2:
         plot_n_waveguide(o, r1)
     elif type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
-        plot_n_stack(o, r1, r2, filename, colormap)
+        if not r3:
+          plot_n_stack(o, r1, r2, 0.0, filename, colormap)
+        else:
+          plot_n_stack(o, r1, r3, r2, filename, colormap)
     elif type(o) == Section:
         plot_n_section(o, r1, r2, filename, colormap)
     else:
@@ -794,27 +862,71 @@ def plot_field_waveguide(mode, component, r_x):
 #
 ##############################################################################
 
-def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
-                     overlay_n=1, contour=1, arrow=0):
+def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
+                     colormap=whiteblack, overlay_n=1, contour=1, arrow=0):
 
-    f = zeros([len(r_x),len(r_z)], Float)
-    _calc_field_stack(f, stack, array(r_x)[::-1], r_z, component)
+    rxrange = False
+    ryrange = False
+    rzrange = False
+    try:
+      rx = float(r_x)
+      ax1 = r_y
+      ax2 = r_z
+      r_x = [r_x]
+      axc = r_x
+    except TypeError:
+      rxrange = True
+    try:
+      ry = float(r_y)
+      ax1 = r_x
+      ax2 = r_z
+      r_y = [r_y]
+      axc = r_y
+    except TypeError:
+      ryrange = True
+    try:
+      rz = float(r_z)
+      ax1 = r_y
+      ax2 = r_x
+      r_z = [r_z]
+      axc = r_z
+    except TypeError:
+      rzrange = True
+    if rxrange and ryrange and rzrange:
+      print "Error: plot_n_stack can only make cross sections"
 
-    
+    f = zeros([len(ax1),len(ax2)], Float)
+    if rzrange:
+      _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
+    else:
+      _calc_field_stack(f, stack, r_x, r_y[::-1], component, r_z)
     if not (overlay_n or arrow) :
-        return plot_matrix(f, r_z, r_x, filename, colormap)
+        return plot_matrix(f, ax2, ax1, filename, colormap)
 
     # Overlay index/arrow profile.
-    if overlay_n:
-        n = zeros([len(r_x),len(r_z)], Float)
-        _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
-        pic_n = _create_matrix_plot(n, r_z, r_x, whiteblack)
     
+    if overlay_n:
+        n = zeros([len(ax1),len(ax2)], Float)
+        if rzrange:
+          _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
+        else:
+          _calc_n_stack(n, stack, r_x, r_y[::-1], r_z)
+        pic_n = _create_matrix_plot(n, ax2, ax1, whiteblack)
+
     if arrow:
         px   = zeros([len(r_x),len(r_z)], Float)
+        py   = zeros([len(r_y),len(r_z)], Float)
         pz   = zeros([len(r_x),len(r_z)], Float)
-        _calc_arrow_stack(px, pz, stack, r_x[::-1], r_z)
-        pic_p = _create_arrow_plot(px, pz, r_z, r_x)
+        if rzrange:
+          _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
+        else:
+          _calc_arrow_stack(px, py, pz, stack, r_x, r_y[::-1], r_z)
+        if not rxrange:
+          pic_p = _create_arrow_plot(py, pz, r_z, r_y)
+        elif not ryrange:
+          pic_p = _create_arrow_plot(px, pz, r_z, r_x)
+        else:
+          pic_p = _create_arrow_plot(px, py, r_x, r_y)
 
     if arrow:
         if overlay_n:
@@ -822,8 +934,8 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
         else:
             pic_n = pic_p
 
-    pic_f = _create_matrix_plot(f, r_z, r_x, colormap)
-    
+    pic_f = _create_matrix_plot(f, ax2, ax1, colormap)
+
     _output_pic(_overlay_pictures(pic_f, pic_n, contour), filename)
 
 
@@ -834,11 +946,26 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
 #
 ##############################################################################
 
-def _calc_field_stack(f, stack, r_x, r_z ,component):
+def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
+   if not r_z:
+        # 2D 
+ 	for x in range(len(r_x)):
+		for z in range(len(r_y)):
+			f[x,z] = component(stack.field(Coord(r_x[x],0,r_y[z])))
+			
+   elif len(r_x)==1:
+    for y in range(len(r_y)):
+        for z in range(len(r_z)):
+            f[y,z] = component(stack.field(Coord(r_x[0], r_y[y], r_z[z])))
+   elif len(r_y)==1:
     for x in range(len(r_x)):
         for z in range(len(r_z)):
-            f[x,z] = component(stack.field(Coord(r_x[x], 0, r_z[z])))  
+            f[x,z] = component(stack.field(Coord(r_x[x], r_y[0], r_z[z])))
+   else:
+    for x in range(len(r_x)):
+        for y in range(len(r_y)):
+            f[x,y] = component(stack.field(Coord(r_x[x], r_y[y], r_z[0])))
 
 
 
@@ -848,11 +975,28 @@ def _calc_field_stack(f, stack, r_x, r_z ,component):
 #
 ##############################################################################
 
-def _calc_n_stack(n, stack, r_x, r_z):
+def _calc_n_stack(n, stack, r_x, r_y, r_z=0):
 
-    for x in range(len(r_x)):
-        for z in range(len(r_z)):
-            n[x,z] = stack.n(Coord(r_x[x], 0, r_z[z])).real  
+    if not r_z:
+    	# 2D
+	for x in range(len(r_x)):
+		for z in range(len(r_y)):
+			n[x,z] = stack.n(Coord(r_x[x],0,r_y[z])).real
+			
+    elif len(r_x)==1:
+      for y in range(len(r_y)):
+         for z in range(len(r_z)):
+            n[y,z] = stack.n(Coord(r_x[0], r_y[y], r_z[z])).real
+
+    elif len(r_y)==1:
+      for x in range(len(r_x)):
+         for z in range(len(r_z)):
+            n[x,z] = stack.n(Coord(r_x[x], r_y[0], r_z[z])).real
+
+    else:
+      for x in range(len(r_x)):
+         for y in range(len(r_y)):
+            n[y,x] = stack.n(Coord(r_x[x], r_y[y], r_z[0])).real
 
 
 
@@ -864,7 +1008,8 @@ def _calc_n_stack(n, stack, r_x, r_z):
 ##############################################################################
 
 def _calc_arrow_stack(px, pz, stack, r_x, r_z):
-
+    
+    global ARROWSIZE
     if get_polarisation() == TM:
         for x in array(range(len(r_x)))[::ARROWSIZE]:
             for z in array(range(len(r_z)))[::ARROWSIZE]:
@@ -880,6 +1025,32 @@ def _calc_arrow_stack(px, pz, stack, r_x, r_z):
                 e2      = f.E2()
                 px[x,z] = ( e2 * f.Hz().conjugate()).real
                 pz[x,z] = (-e2 * f.H1().conjugate()).real
+
+    elif get_polarisation() == TE_TM: # 3D stack
+        if len(r_x)==1:
+          for y in array(range(len(r_y)))[::ARROWSIZE]:
+             for z in array(range(len(r_z)))[::ARROWSIZE]:
+                f = stack.field(Coord(x,r_y[y], r_z[z]))
+                py[y,z] = (f.H1().conjugate()*f.Ez() \
+                           -f.E1()*f.Hz().conjugate()).real
+                pz[y,z] = (f.E1()*f.H2().conjugate() \
+                           -f.H1().conjugate()*f.E2()).real
+        elif len(r_y)==1:
+          for x in array(range(len(r_x)))[::ARROWSIZE]:
+             for z in array(range(len(r_z)))[::ARROWSIZE]:
+                f = stack.field(Coord(r_x[x],y, r_z[z]))
+                px[x,z] = (f.E2()*f.Hz().conjugate() \
+                           -f.H2().conjugate()*f.Ez()).real
+                pz[x,z] = (f.E1()*f.H2().conjugate() \
+                           -f.H1().conjugate()*f.E2()).real
+        else:
+          for x in array(range(len(r_x)))[::ARROWSIZE]:
+             for y in array(range(len(r_y)))[::ARROWSIZE]:
+                f = stack.field(Coord(r_x[x],r_y[y], z))
+                px[y,x] = (f.E2()*f.Hz().conjugate() \
+                           -f.H2().conjugate()*f.Ez()).real
+                py[y,x] = (f.E1()*f.H2().conjugate() \
+                           -f.H1().conjugate()*f.E2()).real
 
     else:
         print "Error: no polarisation defined."
@@ -926,14 +1097,19 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 #
 ##############################################################################
 
-def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
-               overlay_n=1, contour=1, arrow=0):
+def plot_field(o, component, r1, r2=0, r3=0, filename=0,
+               colormap=whiteblack, overlay_n=1, contour=1, arrow=0):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        plot_field_stack(o, component, r1, r2, filename, colormap,
+        if not r3: # 2D stack.
+          plot_field_stack(o, component, r1, r2, 0, filename, colormap,
                          overlay_n,contour,arrow)
+        else:
+          plot_field_stack(o, component, r1, r3, r2, filename, colormap,
+                         overlay_n,contour,arrow)
+
     elif type(o) == SectionMode:
         plot_field_section_mode(o,component,r1,r2,filename,colormap,overlay_n,
                                 contour)
@@ -948,28 +1124,62 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
 #
 ##############################################################################
 
-def animate_field_stack(stack, component, r_x, r_z, filename=0,
+def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
                         overlay_n=1, contour=1, ln=0):
 
-    f = zeros([len(r_x),len(r_z)], Complex)
-    _calc_field_stack(f, stack, array(r_x)[::-1], r_z, component)
-    
+    rxrange = False
+    ryrange = False
+    rzrange = False
+    try:
+      rx = float(r_x)
+      ax1 = r_y
+      ax2 = r_z
+      r_x = [r_x]
+      axc = r_x
+    except TypeError:
+      rxrange = True
+    try:
+      ry = float(r_y)
+      ax1 = r_x
+      ax2 = r_z
+      r_y = [r_y]
+      axc = r_y
+    except TypeError:
+      ryrange = True
+    try:
+      rz = float(r_z)
+      ax1 = r_y
+      ax2 = r_x
+      r_z = [r_z]
+      axc = r_z
+    except TypeError:
+      rzrange = True
+    if rxrange and ryrange and rzrange:
+      print "Error: plot_n_stack can only make cross sections"
+
+    f = zeros([len(ax1),len(ax2)], Complex)
+    if rzrange:
+      _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
+    else:
+      _calc_field_stack(f, stack, r_x, r_y[::-1], component, r_z)
     if not overlay_n:
-        return phasormovie(f, r_z, r_x, filename, ln)
+        return phasormovie(f, ax2, ax1, filename, ln)
 
     # Overlay index profile.
-        
-    n = zeros([len(r_x),len(r_z)], Float)
-    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
 
-    
-    pic_n = _create_matrix_plot (n, r_z, r_x, whiteblack)
-    mov_f = _create_phasor_movie(f, r_z, r_x, ln=ln)
+    n = zeros([len(ax1),len(ax2)], Float)
+    if rzrange:
+      _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
+    else:
+      _calc_n_stack(n, stack, r_x, r_y[::-1], r_z)
+
+    pic_n = _create_matrix_plot (n, ax2, ax1, whiteblack)
+    mov_f = _create_phasor_movie(f, ax2, ax1, ln=ln)
 
     for Nr in range(len(mov_f)):
         mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
 
-    _output_movie(mov_f, filename)        
+    _output_movie(mov_f, filename)
 
 
 
@@ -1016,11 +1226,15 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
 #
 ##############################################################################
 
-def animate_field(o, component, r1, r2, filename=0, overlay_n=1,
+def animate_field(o, component, r1, r2, r3=0, filename=0, overlay_n=1,
                   contour=1, ln=0):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        animate_field_stack(o,component,r1,r2,filename,
+      if not r3: # 2D
+         animate_field_stack(o,component,r1,r2,0.0,filename,
+                            overlay_n,contour,ln)
+      else:
+         animate_field_stack(o,component,r1,r3,r2,filename,
                             overlay_n,contour,ln)
     elif type(o) == SectionMode:
         animate_field_section_mode(o,component,r1,r2,filename,
