@@ -1437,7 +1437,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
   for (unsigned int i=0; i<kt.size(); i++)
   {
     vector<Real> error_i;
-    Real best_error;;
+    Real best_error;
     for (unsigned int j=0; j<core_index.size(); j++)
     {
       Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
@@ -1457,7 +1457,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
       upper_stacks[j].calcRT();
 
       Real error = abs(lower_stacks[j].R12(0,0)*upper_stacks[j].R12(0,0)-1.0);
-      
+
       error_i.push_back(error);
 
       if (j==0)
