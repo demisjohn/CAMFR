@@ -894,12 +894,16 @@ Field Stack::field(const Coord& coord)
   if (    (real(coord.z) < 0)
        || ((abs(coord.z) < 1e-10) && (coord.z_limit == Min)) )
     return interface_field[0].field(coord);
-
-  const Complex last_z = interface_positions[interface_positions.size()-1];
+  
+  const Complex last_z = interface_positions.back();
 
   if (    (real(coord.z) > real(last_z))
        || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus)) )
-    return interface_field[interface_field.size()-1].field(coord);
+  {
+    Coord c_new = coord;
+    c_new.z -= get_total_thickness();
+    return interface_field.back().field(c_new);
+  }
 
   // Calculate index in chunk vector (first chunk is zero).
   
