@@ -1,16 +1,9 @@
--bug: symmetric cavity (top,top) gives problems
 -bug: stack field for points in incidence or exit medium
--check if flipped scatterers work
 -push limit for # lateral periods
--core in get/set params
--circ_mode check: 0/0
 -infstack recalc modes, inf*(notation), diagslab, unexpected powerflow
  in bandgap crow_wg
--check for presence of gain medium in cavity
--prevent user from from making a stack with uniform layers with different
- widths
 -default planar::set_theta (Peter)
--improve documentation for Planar, flipped scatteres, walls
+-improve documentation for Planar
 
 
 CAMFR 3D
@@ -32,6 +25,10 @@ MEDIUM TERM:
 
 -eliminate warning for zero transmission through wall when calculating 
  fields in stack.
+
+-implementation of flipped stacks.
+
+-prevent GC of temporary objects in expressions (walls, flipped, infstack)
 
 -new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
  Ability to cache field profiles and speed up.
