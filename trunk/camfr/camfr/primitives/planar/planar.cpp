@@ -32,7 +32,7 @@ Planar::Planar(Material& m) : MonoWaveguide(&m)
 { 
   // Create dummy mode and update it in calc_kz.
 
-  mode = new Mode(TE, 0.0, 0.0, 0.0, 0.0);
+  mode = new PlanarMode(TE, 0.0, 0.0, 0.0, 0.0, *this);
   calc_kz();
 }
 
@@ -99,4 +99,50 @@ Complex Planar::calc_kz() const
   // Return result.
 
   return kz;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PlanarMode::field
+//
+//   Note that the z-dependence is taken care of elsewhere.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Field PlanarMode::field(const Coord& coord) const
+{
+  Complex k0 = 2*pi/global.lambda;
+  Complex kt = geom->get_kt();
+  geom->calc_kz();
+
+  Field field;
+
+  if (pol == TE)
+  {
+    const Complex C = 1.0 / (k0*c) * B;
+        
+    field.E1 = 0.0;
+    field.E2 = 1.0;
+    field.Ez = 0.0;
+    
+    field.H1 = -C * kt * exp(-I*kt*coord.c1);
+    field.H2 = 0.0;
+    field.Hz =  C * kz;
+  }
+  else
+  {
+    const Complex C = 1.0 / (k0*c) * A;
+ 
+    field.H1 = 0.0;
+    field.H2 = 1.0;
+    field.Hz = 0.0;
+
+    field.E1 =  C * kt * exp(-I*kt*coord.c1);
+    field.E2 = 0.0;
+    field.Ez = -C * kz;
+  }
+  
+  return field;
 }
