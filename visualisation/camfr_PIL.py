@@ -1098,7 +1098,7 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 ##############################################################################
 
 def plot_field(o, component, r1, r2=0, r3=0, filename=0,
-               colormap=whiteblack, overlay_n=1, contour=1, arrow=0):
+               colormap=0, overlay_n=1, contour=1, arrow=0):
 
     if not r2:
         plot_field_waveguide(o, component, r1)
