@@ -26,7 +26,8 @@ using std::endl;
 #include "../../../util/stringutil.h"
 
 #ifdef _WIN32
-#define ISNAN isnan_
+#include <float.h>
+#define ISNAN _isnan
 #else
 #define ISNAN isnan
 #endif
