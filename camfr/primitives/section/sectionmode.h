@@ -37,7 +37,7 @@ class SectionMode : public Mode
     SectionImpl* get_geom() const {return geom;}
 
     virtual void get_fw_bw(const Complex& c, Limit c_limit,
-                           cVector* fw, cVector* bw) = 0;
+                           cVector* fw, cVector* bw) const = 0;
 
     virtual void normalise() = 0;
 
@@ -60,18 +60,22 @@ class Section2D_Mode : public SectionMode
   public:
 
     Section2D_Mode(Polarisation pol, const Complex& kz, Section2D* geom,
-                   cVector* Ex=0,cVector* Ey=0,cVector* Hx=0,cVector* Hy=0);
+                   cVector* Ex=0,cVector* Ey=0,cVector* Hx=0,cVector* Hy=0,
+                   bool corrected=false);
   
     ~Section2D_Mode();
 
     Field field(const Coord& coord) const;
 
-    void get_fw_bw(const Complex& c, Limit c_limit, cVector* fw, cVector* bw);
+    void get_fw_bw(const Complex&, Limit, cVector*, cVector*) const;
     
     void normalise();
 
     friend Complex overlap_pw(const Section2D_Mode* sec_I_mode, 
-                              const Section2D_Mode* sec_II_mode);
+                              const Section2D_Mode* sec_II_mode);    
+
+    friend Complex overlap(const Section2D_Mode* sec_I_mode,
+                           const Section2D_Mode* sec_II_mode);
 
   protected:
 
@@ -79,6 +83,8 @@ class Section2D_Mode : public SectionMode
     mutable std::vector<FieldExpansion> right_interface_field;
 
     cVector *Ex, *Ey, *Hx, *Hy;
+
+    bool corrected;
 };
 
 
@@ -98,7 +104,7 @@ class Section1D_Mode : public SectionMode
 
     Field field(const Coord& coord) const;
 
-    void get_fw_bw(const Complex& c, Limit c_limit, cVector* fw, cVector* bw);
+    void get_fw_bw(const Complex&, Limit, cVector*, cVector*) const;
 
     void normalise();
 

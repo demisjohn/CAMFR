@@ -27,8 +27,9 @@ using std::endl;
 
 Section2D_Mode::Section2D_Mode
   (Polarisation pol, const Complex& kz, Section2D* geom,
-   cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_)
-     : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_)
+   cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_, bool corrected_)
+    : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_), 
+      corrected(corrected_)
 {
   // TMP
 
@@ -234,7 +235,7 @@ Field Section2D_Mode::field(const Coord& coord) const
 /////////////////////////////////////////////////////////////////////////////
 
 void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
-                               cVector* fw, cVector* bw)
+                               cVector* fw, cVector* bw) const
 {
   // Initialise.
 
@@ -429,7 +430,7 @@ void Section1D_Mode::get_fw_bw(const Complex& c,
 /////////////////////////////////////////////////////////////////////////////
 
 void Section1D_Mode::get_fw_bw(const Complex& c, Limit c_limit, 
-                               cVector* fw, cVector* bw)
+                               cVector* fw, cVector* bw) const
 {
 }
 

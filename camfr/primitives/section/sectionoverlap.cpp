@@ -176,12 +176,12 @@ Complex z_integral
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
+Complex overlap_slice(const SectionMode* sec_I_mode, 
+                      const SectionMode* sec_II_mode,
                       const Complex& z_start, const Complex& z_stop,
                       FieldExpansion* field_I, FieldExpansion* field_II,
                       OverlapMatrices* m, int I_index, int II_index)
 {
-
   Complex old_beta = global.slab_ky;
 
   // Calculate field expansion at start of slice.
@@ -421,5 +421,153 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
   
   return W*H*result;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap
+//
+//   General overlap function.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex overlap(const Section2D_Mode* sec_I_mode,
+                const Section2D_Mode* sec_II_mode)
+{
+  //
+  // Two uncorrected modes.
+  //
+
+  if (!sec_I_mode->corrected && !sec_II_mode->corrected)
+    return overlap_pw(sec_I_mode, sec_II_mode);
+
+
+
+  // Make sorted list of separation points between different slabs.
+
+  Section2D* medium_I  = dynamic_cast<Section2D*>(sec_I_mode ->geom);
+  Section2D* medium_II = dynamic_cast<Section2D*>(sec_II_mode->geom);
+
+  vector<Complex> disc = medium_I->discontinuities;
+
+  disc.push_back(0.0);
+
+  for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
+    disc.push_back(medium_II->discontinuities[k]);
+
+  remove_copies(&disc, 1e-6);
+
+  sort(disc.begin(), disc.end(), RealSorter());
+
+
+
+  //
+  // Two corrected modes.
+  //
+  
+  if (!sec_I_mode->corrected && sec_II_mode->corrected)
+  {
+    // Loop over slices.
+
+    Complex result = 0.0;
+    for (unsigned int k=0; k<disc.size()-1; k++) // Loop over slices.
+      result += overlap_slice(sec_I_mode, sec_II_mode, disc[k], disc[k+1]);
+    return result;
+  }
+
+
+
+  //
+  // Corrected and uncorrected mode.
+  //
+
+  Complex old_ky = global.slab_ky;
+
+  const Section2D_Mode* sec_mode = (sec_I_mode->corrected) ? sec_I_mode
+                                                           : sec_II_mode;
+
+  global.slab_ky = sec_mode->get_kz();
+
+  const int M = global_section.M;
+  const int N = global_section.N;
+
+  int sec_M = sec_mode->get_geom()->get_M2();
+
+  cVector fw(sec_M, fortranArray);
+  cVector bw(sec_M, fortranArray);
+
+  cVector* Ex = sec_I_mode ->Ex;
+  cVector* Ey = sec_I_mode ->Ey;
+  cVector* Hx = sec_II_mode->Hx;
+  cVector* Hy = sec_II_mode->Hy;
+
+  global.slab_ky = sec_mode->get_kz();
+
+  const Complex W = sec_mode->get_geom()->get_width();
+  const Complex H = sec_mode->get_geom()->get_height();
+
+  Complex result = 0.0;    
+
+  for (unsigned int k=0; k<disc.size()-1; k++) // Loop over slices.
+  {
+    SlabImpl* slab = medium_I->
+      slabs[index_lookup(disc[k],Plus,medium_I ->discontinuities)]->get_impl();
+
+    sec_mode->get_fw_bw(disc[k], Plus, &fw, &bw);
+
+    const Complex d = disc[k+1] - disc[k];
+
+    for (int jj=1; jj<=sec_M; jj++)
+    { 
+      const SlabMode* slab_mode = dynamic_cast<SlabMode*>(slab->get_mode(jj));
+
+      for (Real m=-M; m<=M; m+=1.0)
+      {
+        // TODO: alpha0, beta0
+
+        Complex alpha = 2.*pi*(m/W/2.);
+        
+        for (Real n=-N; n<=N; n+=1.0)
+        {
+          int i1 = int((m+M+1) + (n+N)*(2*M+1));
+
+          Complex beta = 2.*pi*(n/H/2.);
+
+          Complex fw_jj = fw(jj)*int_exp(-I*slab_mode->get_kz()+I*alpha,d);
+          Complex bw_jj = bw(jj)*int_exp(+I*slab_mode->get_kz()+I*alpha,d);
+
+          Complex Ox, Oy;
+
+          if (sec_I_mode->corrected)
+          {
+            overlap_pw(slab_mode, beta, true, &Ox, &Oy);
+            result += (fw_jj+bw_jj)*Ox*(*Hy)(i1) - (fw_jj+bw_jj)*Oy*(*Hx)(i1);
+          }
+          else
+          {            
+            overlap_pw(slab_mode, beta, false, &Ox, &Oy);
+            result += (*Ex)(i1)*(fw_jj-bw_jj)*Oy - (*Ey)(i1)*(fw_jj-bw_jj)*Ox;
+          }
+        }
+      }
+    }
+  }
+
+  global.slab_ky = old_ky;
+
+  Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
+
+  std::cout << "overlap " << numeric << " " << result
+             << " " << numeric-result << std::endl;
+  
+  //if (abs(numeric - result) > 1e-4)
+  //  std::cout << "****" << std::endl;
+  
+
+  return result;
+}
+
+
 
 
