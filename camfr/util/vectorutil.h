@@ -75,4 +75,36 @@ void remove_copies(vector<T>* v, Real eps=0)
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// remove_opposites
+//
+//   Remove opposites elements from vector if abs(v[i]+v[j]) < eps.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+template <class T>
+void remove_opposites(vector<T>* v, Real eps=0)
+{
+  vector<T>    v_bis(*v);
+  vector<bool> unique(v_bis.size(), true);
+  
+  for (unsigned int i=0; i<v_bis.size(); i++)
+  {
+    if (unique[i] == false)
+      continue;
+    
+    for (unsigned int j=i+1; j<v_bis.size(); j++)
+      if (abs(v_bis[i] + v_bis[j]) <= eps)
+        unique[j] = false;   
+  }
+
+  v->clear();
+  for (unsigned int i=0; i<v_bis.size(); i++)
+    if (unique[i])
+      v->push_back(v_bis[i]);  
+}
+
+
+
 #endif
