@@ -22,7 +22,6 @@ class metal_splitter(unittest.TestCase):
 
         set_lambda(1.5)
         set_N(60)
-        set_unstable_exp_threshold(1e-8)
 
         # Set geometry parameters
 
@@ -78,7 +77,7 @@ class metal_splitter(unittest.TestCase):
         splitter.calc()
 
         R = splitter.R12(0,0)
-        R_OK = 0.759051112391+0.364101270668j
+        R_OK = 0.844654989543+0.499289083195j
 
         print R, "expected", R_OK
         
