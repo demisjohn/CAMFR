@@ -1469,10 +1469,10 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
 
-  for (unsigned int i=0; i<kz2.size(); i++)
-    std::cout << "raw sorted" << i << " " 
-              << sqrt(kz2_coarse[i])/2./pi*global.lambda 
-              << kz2_coarse[i] << std::endl;
+  //for (unsigned int i=0; i<kz2.size(); i++)
+  //  std::cout << "raw sorted" << i << " " 
+  //            << sqrt(kz2_coarse[i])/2./pi*global.lambda 
+  //            << kz2_coarse[i] << std::endl;
   
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
