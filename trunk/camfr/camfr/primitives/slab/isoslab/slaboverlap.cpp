@@ -10,6 +10,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// Work around MS linker bug.
+
+#ifndef _WIN32
+
 #include <sstream>
 #include "slaboverlap.h"
 #include "slabmode.h"
@@ -362,3 +366,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
   *Ex_Hz =  mode_I->get_kz0() / omega / omega * (term1_xz - term2_xz);
   *Ez_Hx = mode_II->get_kz0() / omega / omega * (term1_zx + term2_zx);
 }
+
+
+
+#endif
