@@ -538,8 +538,8 @@ void DiagInterface::calcRT()
 
   if (!global.orthogonal)
   {
-    py_error("Error: uniform waveguide with PC_Walls is not diagonal.");
-    exit (-1);
+    //py_error("Error: uniform waveguide with PC_Walls is not diagonal.");
+    //exit (-1);
   }
   
   // Calc RT according to Fresnel laws.

@@ -234,7 +234,7 @@ class Stack
     Field field(const Coord& coord);
 
     void set_interface_field(const std::vector<FieldExpansion>& field);
-    void get_interface_field(      std::vector<FieldExpansion>* field) const;
+    void get_interface_field(      std::vector<FieldExpansion>* field);
 
     Complex lateral_S_flux(const Complex& c1, std::vector<Complex>* S_k=NULL);
 
@@ -285,7 +285,7 @@ class Stack
     Scatterer* create_sc(const Expression& e, unsigned int no_of_periods=1);
 
     void calc_interface_positions();
-    
+
     void calc_interface_fields();
 };
 
