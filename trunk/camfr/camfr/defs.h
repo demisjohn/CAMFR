@@ -248,6 +248,9 @@ struct Global
 
     // Tmp switch to enable backward modes.
     bool backward_modes;
+
+    // Switch to enable overlap matrices output for Davy.
+    bool davy;
 };
 
 extern Global global;

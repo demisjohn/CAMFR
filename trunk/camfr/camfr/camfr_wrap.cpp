@@ -198,6 +198,9 @@ inline void set_mode_correction(Mode_correction c)
 inline void set_keep_all_estimates(bool b)
   {global_section.keep_all_estimates = b;}
 
+inline void set_davy(bool b)
+  {global.davy = b;}
+
 inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -828,6 +831,7 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes); 
+  def("set_davy",                   set_davy);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
 
