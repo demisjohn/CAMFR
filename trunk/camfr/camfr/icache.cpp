@@ -35,7 +35,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   // Transparent DiagScatterer?
 
   if ( (wg1 == wg2) && (!dynamic_cast<MonoWaveguide*>(wg1)) )
-  { 
+  {
     sc = new TransparentScatterer(*wg1);
     cache.store(std::pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
     return sc;
