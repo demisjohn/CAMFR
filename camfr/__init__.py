@@ -19,7 +19,7 @@ Min  = 1
 
 ADR    = 0
 track  = 1
-series = 3
+series = 2
 
 normal = 0
 extra  = 1
