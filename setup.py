@@ -39,7 +39,9 @@ setup(name="camfr_work", version="1.0pre",                            \
       author="Peter Bienstman",                                       \
       author_email="Peter.Bienstman@rug.ac.be",                       \
       url="http://camfr.sourceforge.net/",                            \
-      package_dir={'': 'visualisation'},                              \
-      py_modules=["camfr_tk", "TkPlotCanvas"],                        \
+      py_modules=['geometry', 'camfr_tk', 'TkPlotCanvas'],            \
+      package_dir={'': 'camfr', '': 'visualisation'},                 \
+      # FIXME: ugly hack
+      data_files=[('lib/python21', ['camfr/geometry.py'])],           \
       ext_modules=[camfr_extension],                                  \
       cmdclass={'build_ext' : camfr_build_ext} )
