@@ -140,6 +140,9 @@ class Slab : public MultiWaveguide
     Complex get_width() const {return s->get_width();}
     Complex   c1_size() const {return s->c1_size();}
 
+    Real get_imag_start_thickness() const 
+      {return s->get_imag_start_thickness();}
+
     std::vector<Complex> get_params() const {return s->get_params();}
     void set_params(const std::vector<Complex>& p) {s->set_params(p);}
 
