@@ -314,15 +314,33 @@ Complex SectionDisp::calc_split()
   else
     e.reference(eigenvalues_x(Q));
 
-  // Return minimum distance of eigenvalues to 1.
+  // Return product of K best eigenvalues (i.e. closest to 1).
 
-  int min_index = 1;
+  int K = 2;
 
-  for (int i=2; i<=M; i++)
-    if (abs(e(i) - 1.0) < abs(e(min_index) - 1.0))
-      min_index = i;
+  Complex product = 1.0;
+  vector<unsigned int> min_indices;
 
-  return e(min_index) - 1.0;
+  for (unsigned int k=0; k<K; k++)
+  {
+    int min_index = 1;
+    Real min_distance = 1e200;
+
+    for (int i=1; i<=M; i++)
+
+      if ( (abs(e(i) - 1.0) < min_distance) &&
+           ( find(min_indices.begin(),min_indices.end(),i)==min_indices.end()))
+      {
+        min_index = i;
+        min_distance = abs(e(i) - 1.0);
+      }
+
+    min_indices.push_back(min_index);
+
+    product *= e(min_index) - 1.0;
+  }
+  
+  return product;
 }
 
 
