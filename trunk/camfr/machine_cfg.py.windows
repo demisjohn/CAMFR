@@ -22,7 +22,7 @@ link = 'xilink'
 
 flags_base = "/nologo /G5 /O3 /MD -Qoption,cpp,--new_for_init \
       /Qprof_use \
-    -Qprof_dir D:\camfrcode\camfr1.1 -DNDEBUG \
+    -Qprof_dir D:\camfrcode\camfr1.2 -DNDEBUG \
     -DFORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES"
 
 
@@ -35,7 +35,7 @@ link_flags = "/NODEFAULTLIB:libc.lib"
 # Include directories.
 
 include_dirs =[ "D:/lib/blitz-20001213",
-                "D:/lib/boost/boost_1_29_0",
+                "D:/lib/boost/boost_1_30_0",
                 "C:/Python22/include"]
 
 # Library directories.
@@ -44,7 +44,7 @@ library_dirs = [  "D:/lib/blitz-20001213/lib",
                   "D:/Micros~/VB98",     
                   "D:/progra~1/compiler70/ia32/lib",
                   "C:/python22/libs",
-                  "D:/lib/boost/boost_1_29_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic"]
+                  "D:/lib/boost/boost_1_30_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic"]
 		
 # Library names.
 
@@ -68,7 +68,7 @@ for n in all_pil_files: pillist.append(pilpath+ n)
 extra_files = [ \
 		("doc", ["D:\\camfrcode/doc/camfr.pdf"]),
 		(".", [ "D:\\camfrcode/pymat/build/lib.win32-2.2/pymat.pyd",
-                "D:\\lib/boost/boost_1_29_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic/boost_python.dll",
+                "D:\\lib/boost/boost_1_30_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic/boost_python.dll",
                 "D:\\progra~1/Intel/Compiler70/IA32/Lib/libmmd.dll",
                 "D:\\progra~1/Intel/Compiler70/IA32/Lib/libIEPCF90MD.dll",
                 "D:\\progra~1/Intel/Compiler70/IA32/Lib/libF90MD.dll",
