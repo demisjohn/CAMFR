@@ -1,3 +1,7 @@
+2002-10-30  Peter Bienstman <Peter.Bienstman@rug.ac.be>
+
+	* coupled.py: New test.
+
 2002-06-06  Peter Bienstman <Peter.Bienstman@rug.ac.be>
 
 	* dent.py: New test.

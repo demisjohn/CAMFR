@@ -9,13 +9,13 @@
 import unittest
 
 import blazed_grating, substacks, planarTE, planarTM, VCSEL, SpE, \
-       PhC_splitter, expressions, cladding, grating, \
+       PhC_splitter, expressions, cladding, grating, coupled, \
        degenerate, precision, infstack, taper, rods, \
        TEM_field, grating2, polariton, gaussian, wg, dent
 
 alltests = unittest.TestSuite((blazed_grating.suite, substacks.suite, 
        planarTE.suite, planarTM.suite, VCSEL.suite, SpE.suite,
-       PhC_splitter.suite, expressions.suite,
+       PhC_splitter.suite, expressions.suite, coupled.suite,
        cladding.suite, grating.suite, degenerate.suite,
        precision.suite, infstack.suite, taper.suite, rods.suite, wg.suite,
        TEM_field.suite, grating2.suite, polariton.suite, gaussian.suite,
