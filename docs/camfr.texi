@@ -7,7 +7,7 @@
 @ifinfo
 CAMFR manual v1.3.
 
-Copyright @copyright{} 2001-2004 Peter Bienstman - Ghent University.
+Copyright @copyright{} 1998-2005 Peter Bienstman - Ghent University.
 @end ifinfo
 
 @ignore
@@ -30,7 +30,7 @@ END-INFO-DIR-ENTRY
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2001-2004 Peter Bienstman - Ghent University.
+Copyright @copyright{} 1998-2005 Peter Bienstman - Ghent University.
 @end titlepage
 
 @contents 
@@ -1258,6 +1258,12 @@ waveguide mode (with calls to @code{kz()}, @code{field()}, ...). The only
 difference is that a BlochStack has @code{2N} modes rather than @code{N},
 because it contains both forward and backward Bloch modes.
 
+(Note that if we wanted to calculate the full band diagram of this periodic
+structure in the direction of @code{z}, we simply have to place this 
+calculation inside a loop over all frequencies of interest, and look at 
+the BlochModes where the imaginary part of the propagation constant is
+sufficiently small.) 
+
 After we inspect the propagation factors to determine to locate the fundamental
 mode, we excite the splitter with the forward field of this mode:
 
@@ -1824,6 +1830,30 @@ print abs(s.R12(0,0))**2
 @end group
 @end example
 
+If you are only interested in the reflection coefficient of the fundamental 
+mode of the incoupling waveguide, this works fine. However, when using 
+@code{InfStack}, the transmission to the Bloch modes of the semi-infinite 
+stack is not calculated to save time.
+
+If you are interested in these quantanties, you have to make some small 
+modifications:
+
+@example
+@group
+
+s_inf = BlochStack(cen(2*r) + no_rods(a-2*r))
+s = Stack(inc_wg(a) + s_inf(0))
+
+@end group
+@end example
+
+When you are using a @code{BlochStack} instead of an @code{InfStack}, all the
+scattering matrices are calculated. Moreover, @code{s.T12(0,0)} refers to the
+transmission to the Bloch mode of the semi-infinite stack, rather than to the
+transmission to some waveguide mode of one of the slabs making up the 
+semi-infinite structure, which is usually not of interest.
+
+Note that @code{BlochStack} can be used in the beginning of a @code{Stack} too.
 
 @page
 
