@@ -1,5 +1,7 @@
 SHORT TERM 
 
+-check sign of cos_I cos_II in overlap
+
 -check E/H wall for TM
 
 -default planar::set_theta (Peter)

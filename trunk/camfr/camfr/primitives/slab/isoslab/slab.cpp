@@ -190,6 +190,7 @@ void Slab_M::find_modes()
     for (unsigned int i=0; i<modeset.size(); i++)
     {
       Slab_M_Mode* mode = new Slab_M_Mode(TE, modeset[i]->get_kz(), this);
+      mode->normalise();
       TE_modeset.push_back(mode);
     }
 
@@ -785,6 +786,7 @@ void UniformSlab::find_modes()
     {
       UniformSlabMode* mode 
         = new UniformSlabMode(TE, modeset[i]->get_kz(), this);
+      mode->normalise();
       TE_modeset.push_back(mode);
     }
 
