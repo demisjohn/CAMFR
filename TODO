@@ -1,13 +1,8 @@
 SHORT TERM 
 
--check sign of cos_I cos_II in overlap
-
--check E/H wall for TM, make slab_wall polarisation safe
-
 -default planar::set_theta (Peter)
  
 -try out LAPACK 3.0 special svd routine (zgesdd)
--binary packages for Windows
 
 -tune new complex zero finder
 -related: make definition of C_upperright uniform
@@ -47,8 +42,6 @@ MEDIUM TERM:
 -related: implement Bloch modes for MonoScatterers
 -related: speed this up for symmetric structures
 
--speed up S scheme if only R matrices are needed
-
 -use asymptotic expansions for circular structures
 -more general interactive visualisation of mode profiles (phase, components)
 -write a GUI for defining complicated structures
@@ -56,16 +49,24 @@ MEDIUM TERM:
 -better integration with SciPy?
 -add Python docbook comments
 
--Try to eliminate need for O_II_I in interface.cpp
+-Matlab link under Windows
+
+-dispersion relation of 2D slabs:
+   -do not handle left and right walls through expressions
+   -check E/H wall for TM, make slab_wall polarisation safe
+   -speed up symmetric structures
+   -speed up structures varying only in 1D
+   -try to speed up S scheme if only R matrices are needed
+   -try to eliminate need for O_II_I in interface.cpp
 
 -making stripping of executable dependent on debug switches
-
--Python: make Stack + Term, ... work without explicit Term() conversion.
 
 -implement CoordStretcher for slabs
 -implement eps_at/mu_at in Stack
 -automatic setting of global.orthogonal
 -explicitly return *all* modes found in Cavity::find_all_modes
+-make 'precision' dynamic
+-global numeric status register?
 
 -cavity::calc_sigma: instead of using only the fw field, is it more robust
  to use fw_backward field to determine dominant mode?
