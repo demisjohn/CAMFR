@@ -68,7 +68,7 @@ Complex overlap(const SlabMode* mode_I,
     s << "Warning: complex widths don't match: "
       << medium_I ->get_width() << " and " << medium_II->get_width();
     py_error(s.str());
-    exit (-1);
+    return 0.0;
   }
   
   // Make sorted list of evaluation points for integrals (discontinuities).
@@ -237,7 +237,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
     s << "Warning: complex widths don't match: "
       << medium_I ->get_width() << " and " << medium_II->get_width();
     py_error(s.str());
-    exit (-1);
+    return;
   }
   
   // Make sorted list of evaluation points for integrals (discontinuities).

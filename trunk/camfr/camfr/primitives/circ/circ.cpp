@@ -247,12 +247,12 @@ Complex Circ_M::kz_to_kt(const Complex& kz)
 
   Complex kt = sqrt(klast*klast - kz*kz);
 
-  // always put kt in the semicircle centered on the first quadrant
+  // Always put kt in the semicircle centered on the first quadrant.
 
   if ((real(kt)+imag(kt))<0)
   {
     kt = -kt;
-    // give a warning if kt is close to this branch-cut
+    // Give a warning if kt is close to this branch-cut.
     if (abs(real(kt)+imag(kt))<0.01*abs(kt))
       std::cout << "Warning: branch-cut in circ.cpp: " << -kt
                 << "became " << kt << std::endl;
@@ -313,7 +313,7 @@ void Circ_M::find_modes_from_scratch_by_track()
   // Create dispersion relation for lossless structure.
 
   Circ_M_closed disp
-    (M, radius, material, global.lambda, global_circ.order, global.polarisation);
+    (M,radius,material,global.lambda,global_circ.order,global.polarisation);
 
   params = disp.get_params();
 
@@ -347,11 +347,13 @@ void Circ_M::find_modes_from_scratch_by_track()
 
   int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
 
-  Real kt_min = 1e-4; //don't go to abs(kt) < kt_min because disp is ill-behaved
+  // Don't go to abs(kt) < kt_min because disp is ill-behaved
 
-  kt_guided_lossless = brent_all_minima(guided_disp, kt_min, guided_kt_end-1e-9,
-                                        guided_dkt/global.precision, eps,
-                                        sec);
+  Real kt_min = 1e-4;
+
+  kt_guided_lossless 
+    = brent_all_minima(guided_disp, kt_min, guided_kt_end-1e-9,
+                       guided_dkt/global.precision, eps, sec);
 
   reverse(kt_guided_lossless.begin(), kt_guided_lossless.end());
     
@@ -430,7 +432,8 @@ void Circ_M::find_modes_from_scratch_by_track()
       }
     }
     else
-      std::cout << "Removing bad minimum " << kt_guided_lossless[i] << std::endl;
+      std::cout << "Removing bad minimum " << kt_guided_lossless[i] 
+                << std::endl;
   }
 
   const Real eps_copies = 1e-6;
@@ -482,7 +485,7 @@ void Circ_M::find_modes_from_scratch_by_track()
         v1_right = radiation_disp(kt0 + dk/ratio);
       
         // test to see if we have type 1 (true zero)
-        Real average = (v1_left*ratio + v1_right*ratio + v2_left + v2_right)/4.0;
+        Real average = (v1_left*ratio+v1_right*ratio+v2_left+v2_right)/4.0;
         Real maxerr = 0.1;
       if ((abs(v1_left *ratio - average) < maxerr * average) &&
 	  (abs(v1_right*ratio - average) < maxerr * average) &&
@@ -527,7 +530,8 @@ void Circ_M::find_modes_from_scratch_by_track()
       }
     }
     else
-      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] << std::endl;
+      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] 
+                << std::endl;
     }
     
     modes_left = (kt_lossless.size() >= global.N + 2) ? 0 
@@ -556,16 +560,6 @@ void Circ_M::find_modes_from_scratch_by_track()
   //remove_elems(&kr2, + k0*sqrt(delta_k), eps_copies);
   //remove_elems(&kr2, - k0*sqrt(delta_k), eps_copies);
 
-  // Check if enough modes are found.
-
-  if (kt_lossless.size() < global.N)
-  {
-    std::cout << "Error: didn't find enough modes ("
-         << kt_lossless.size() << "/" << global.N << "). " << std::endl;
-    exit (-1);
-  }
-
-
 
   //
   // IV. Traceroot
@@ -582,7 +576,7 @@ void Circ_M::find_modes_from_scratch_by_track()
   std::cout << "Calls to dispersion relation: " 
             << disp.times_called() << std::endl;
 
-  // Create mode set
+  // Create mode set.
 
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
@@ -605,6 +599,23 @@ void Circ_M::find_modes_from_scratch_by_track()
   
   sort_modes();
   truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Circ_M_Mode *dummy = new Circ_M_Mode(unknown, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
+
 }
 
 
@@ -822,7 +833,8 @@ void Circ_2::find_modes_from_scratch_by_ADR()
   
   vector<Complex> kr2 = N_roots(disp, global.N, lowerleft, upperright);
   
-  // cout << "Calls to circ dispersion relation : "<<disp.times_called()<<std::endl;
+  // cout << "Calls to circ dispersion relation : "
+  // <<disp.times_called()<<std::endl;
   
   // Eliminate copies and false zeros.
 
@@ -876,6 +888,22 @@ void Circ_2::find_modes_from_scratch_by_ADR()
   
   sort_modes();
   truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Circ_2_Mode *dummy = new Circ_2_Mode(unknown, 0.0, 0.0, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
 }
 
 
@@ -1121,23 +1149,7 @@ void Circ_2::find_modes_from_scratch_by_track()
   
   remove_elems(&kr2,   Complex(0.0),     eps_copies);  
   remove_elems(&kr2, + k0*sqrt(delta_k), eps_copies);
-  remove_elems(&kr2, - k0*sqrt(delta_k), eps_copies);
-
-  // Check if enough modes are found. If needed, eliminate the highest
-  // order radiation modes.
-  
-  if (kr2.size() < global.N)
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << kr2.size() << "/" << global.N << "). ";
-    py_error(s.str());
-    exit (-1);
-  }
-  else
-    kr2.erase(kr2.begin() + global.N, kr2.end());
-
-  
+  remove_elems(&kr2, - k0*sqrt(delta_k), eps_copies);  
   
   //
   // Create modeset.
@@ -1176,6 +1188,23 @@ void Circ_2::find_modes_from_scratch_by_track()
   }
   
   sort_modes();
+  truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Circ_2_Mode *dummy = new Circ_2_Mode(unknown, 0.0, 0.0, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
 }
 
 
@@ -1271,17 +1300,6 @@ void Circ_2::find_modes_by_sweep()
   for (unsigned int i=0; i<kr2_rad.size(); i++)
     kr2.push_back(kr2_rad[i]);
 
-  // Check if modes were lost during tracing.
-  
-  if (kr2.size() < global.N)
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << kr2.size() << "/" << global.N << "). ";
-    py_error(s.str());
-    exit (-1);
-  }
-
   // Create modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
@@ -1313,6 +1331,23 @@ void Circ_2::find_modes_by_sweep()
   }
 
   sort_modes();
+  truncate_N_modes();
+
+  // Gracefully handle case when not enough modes were found.
+
+  if (modeset.size() < global.N)
+  {
+    std::ostringstream s;
+    s << "Error: didn't find enough modes ("
+      << modeset.size() << "/" << global.N << "). ";
+    py_error(s.str());
+    
+    while (modeset.size() != global.N)
+    {
+      Circ_2_Mode *dummy = new Circ_2_Mode(unknown, 0.0, 0.0, 0.0, this);
+      modeset.push_back(dummy);
+    }
+  }
 }
 
 
@@ -1395,17 +1430,6 @@ void Circ_1::find_modes()
 
   sort(kr.begin(), kr.end(), betasorter());
   reverse(kr.begin(), kr.end());
-  
-  if (kr.size() < N) // Shouldn't happen.
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << kr.size() << "/" << global.N << ").";
-    py_error(s.str());
-    exit (-1);
-  }
-  else
-    kr.erase(kr.begin() + N, kr.end());
   
   // Create layerset.
   

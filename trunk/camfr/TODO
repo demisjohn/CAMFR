@@ -10,7 +10,7 @@ CAMFR 3D:
 -dispersion relation of 2D slabs:
    -do not handle left and right walls through expressions
    -try to eliminate need for O_II_I in interface.cpp
--Don't set walls through scatterer, remove kludge.
+-Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
 -Complex modes in presence of PML
 
@@ -48,6 +48,8 @@ MEDIUM TERM:
 
 -investigate worse convergence for TM modes
 -generalise: make lambda complex
+
+-investigate throwing exceptions to Python
 
 -tune new complex zero finder
 -related: make definition of C_upperright uniform

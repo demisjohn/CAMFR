@@ -72,7 +72,7 @@ Cavity::Cavity(Stack& top_, Stack& bot_)
   {
     py_error(
      "Error: top and bottom half of cavity have different incidence media.");
-    exit (-1);
+    return;
   }
 }
 
@@ -163,7 +163,7 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     if (!global.gain_mat)
     {
       py_error("Error: no gain material defined for cavity.");
-      exit (-1);
+      return;
     }
     
     Real n_imag = brent_minimum

@@ -212,7 +212,6 @@ void checkerror(int underflows, int ierr, const char* function,
     s << "Error " << ierr << ": overflow in " << function << "("
       << n << "," << z << "), try exp. scaling.";
     py_error(s.str());
-    exit(-1);
   }
     
   if (ierr==3)

@@ -701,7 +701,7 @@ const Expression operator+(const Term& L, const Term& R)
   if ( (l_mat && !r_mat) || (r_mat && !l_mat))
   {
     py_error("Error: unexpected material term in expression.");
-    exit (-1);
+    return e;
   }
 
   // Special case of propagation in incidence medium.
@@ -755,7 +755,7 @@ const Expression operator+(const Expression& L, const Term& R)
   if ( (l_mat && !r_mat) || (r_mat && !l_mat))
   {
     py_error("Error: unexpected material term in expression.");
-    exit (-1);
+    return L;
   }
 
   // Normal case.
@@ -838,7 +838,7 @@ void material_expression_to_table(const Expression& e,
     if (!m)
     {
       py_error("Error: expression contains non-material term.");
-      exit (-1);
+      return;
     }
 
     Complex thickness = ex.get_term(i)->get_d();

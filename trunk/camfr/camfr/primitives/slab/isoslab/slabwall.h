@@ -125,7 +125,7 @@ class SlabWall_PC : public SlabWall
         {
           py_error(
            "Currently, incidence and exit media should match in SlabWall_PC.");
-          exit (-1);
+          return;
         }
 
         if (!e.no_gain_present())

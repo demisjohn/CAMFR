@@ -36,7 +36,7 @@ cMatrix transfer_matrix(const Complex& r,
   if ((mat1.mur() != 1.0) || (mat2.mur() != 1.0))
   {
     cout << "Only mur=1 case implemented in transfer_matrix" << endl;
-    exit(-1);
+    return cMatrix();
   }
 
   const Complex kz = - kz_; // exp(-ikz) in CAMFR, versus exp(ikz) in Matlab
