@@ -1586,7 +1586,8 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
       // Compensate for numerical instability in the presence of PML.
 
-      if ((real(kz) > imag(kz)) && (imag(kz) > 1e-8))
+      if ((real(kz) > imag(kz)) && (imag(kz) > 1e-8) 
+          && (global_section.mode_correction == false))
       {
         std::cout << "Snapping " << kz/2./pi*global.lambda
                   << " to the real axis" << std::endl;
@@ -1722,9 +1723,10 @@ void Section2D::find_modes_from_estimates()
   for (unsigned int i=0; i<estimates.size(); i++)
   { 
     Complex kz = sqrt(estimates[i].kz2);
+    bool corrected = false;
 
-    if ((global_section.mode_correction == true) 
-        && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
+    if ((global_section.mode_correction == true)
+       && (real(kz/2./pi*global.lambda) > real(sqrt(min_eps_mu/eps0/mu0))) )
     {
       std::cout << "Refining " << kz/2./pi*global.lambda;
       
@@ -1740,11 +1742,13 @@ void Section2D::find_modes_from_estimates()
       if ((abs(real(kt)) < .001) && (real(kt) < 0))
         kt -= 2*real(kt);
 
-      Complex kt_new = mueller(disp, kt, 1e-8);
+      Complex kt_new = mueller(disp, kt+0.001, kt+.001*I, 1e-8);
 
       kz = sqrt(C0*min_eps_mu - kt_new*kt_new);      
 
       std::cout << " to " << kz/2./pi*global.lambda << std::endl;
+
+      corrected = true;
     }    
 
     if (imag(kz) > 0)
@@ -1758,7 +1762,7 @@ void Section2D::find_modes_from_estimates()
       Section2D_Mode(global.polarisation, kz, this,
                      estimates[i].Ex, estimates[i].Ey,
                      estimates[i].Hx, estimates[i].Hy, 
-                     global_section.mode_correction);
+                     corrected);
 
     newmode->normalise();
 
