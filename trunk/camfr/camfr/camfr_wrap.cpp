@@ -32,6 +32,7 @@
 #include <boost/python/to_python_converter.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/errors.hpp>
+#include <boost/python/call.hpp>
 #include <libs/python/src/converter/builtin_converters.cpp>
 
 #include "Numeric/arrayobject.h"
@@ -222,7 +223,92 @@ inline Real stack_ext_S_flux(Stack& s, Real c1_start, Real c1_stop, Real eps)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Functions convertion C++ objects to and from Python objects.
+// The following functions and classes are used when expanding an
+// abritrarily shaped field in slabmodes.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: PythonFunction
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class PythonFunction : public ComplexFunction
+{
+  public:
+
+    PythonFunction(PyObject* f_): f(f_) {}
+
+    Complex operator()(const Complex& z)
+      {counter++; return boost::python::call<Complex>(f, z);}
+
+  protected:
+
+    PyObject* f;
+};
+
+inline cVector slab_expand_field(Slab& s, PyObject* o, Real eps)
+  {PythonFunction f(o); return s.expand_field(&f, eps);}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: GaussianFunction
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class GaussianFunction : public ComplexFunction
+{
+  public:
+
+    GaussianFunction (Real height, Real width, Real position)
+      : h(height), w(width), p(position) {}
+
+    Complex operator()(const Complex& x)
+	{counter++; return h*exp(-(x-p)*(x-p)/(w*w*2));}
+
+  protected:
+
+    Real h, w, p;
+};
+
+inline cVector slab_expand_gaussian(Slab& s, Real height, Real width,
+                                    Real pos, Real eps)
+  {GaussianFunction f(height,width,pos); return s.expand_field(&f, eps);}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: PlaneWaveFunction
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class PlaneWaveFunction : public ComplexFunction
+{
+  public:
+
+    PlaneWaveFunction (Complex height, Complex slope)
+      : h(height), s(slope) {}
+
+    Complex operator()(const Complex& x) {counter++; return h + x*s;}
+
+  protected:
+
+    Complex h, s;
+};
+
+inline cVector slab_expand_plane_wave(Slab& s, Complex height,
+                                      Complex slope, Real eps)
+  {PlaneWaveFunction f(height,slope); return s.expand_field(&f, eps);}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Functions converting C++ objects to and from Python objects.
 //
 // Note on memory management: as the Blitz ref-counting system might free
 // data that is still in use in the Python environment, we have to make
@@ -930,9 +1016,12 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     class_<Slab, bases<MultiWaveguide> >("Slab")
     .def_init(args<const Term&>())
     .def_init(args<const Expression&>())
-    .def("set_left_wall",  &Slab::set_left_wall)
-    .def("set_right_wall", &Slab::set_right_wall)
-    .def("width",          &Slab::get_width)
+    .def("set_left_wall",     &Slab::set_left_wall)
+    .def("set_right_wall",    &Slab::set_right_wall)
+    .def("width",             &Slab::get_width)
+    .def("expand_field",      slab_expand_field)
+    .def("expand_gaussian",   slab_expand_gaussian) 
+    .def("expand_plane_wave", slab_expand_plane_wave)
     );
 
   // Wrap SectionDisp.
