@@ -610,8 +610,7 @@ BOOST_PYTHON_MODULE(_camfr)
   import_array();
 
   to_python_converter<cVector, cVector_to_python>();
-  to_python_converter<cMatrix, cMatrix_to_python>();  
-
+  to_python_converter<cMatrix, cMatrix_to_python>();
   register_cVector_from_python();
 
   // Wrap Limit enum.
