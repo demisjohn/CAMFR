@@ -746,7 +746,8 @@ cVector fourier(const vector<Complex>& f, const vector<Complex>& disc, int M,
 /////////////////////////////////////////////////////////////////////////////
 
 cMatrix fourier_eps_2D(const vector<Slab*>& slabs, 
-                       const vector<Complex>& disc, int M, int N)
+                       const vector<Complex>& disc, int M, int N, 
+                       bool invert=false)
 {
   const Complex Lx = disc.back() - disc.front();
   cMatrix result(2*M+1,2*N+1,fortranArray);
@@ -761,7 +762,14 @@ cMatrix fourier_eps_2D(const vector<Slab*>& slabs,
     
     vector<Complex> f_i_y;
     for (int k=0; k<disc_i_y.size()-1; k++)
-      f_i_y.push_back(slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus)));
+    {
+      Complex eps = slabs[i]->eps_at(Coord(disc_i_y[k],0,0,Plus))/eps0;
+      
+      if (invert)
+        eps = 1.0/eps;
+      
+      f_i_y.push_back(eps);
+    }
     
     cVector fourier_1D_y(2*N+1,fortranArray);   
     fourier_1D_y = fourier(f_i_y, disc_i_y, N);
@@ -846,13 +854,127 @@ cVector Section2D::estimate_kz2_li()
       for (int m=-M; m<=M; m++)      
         for (int n=-N; n<=N; n++)
           result += F(m+M+1,n+N+1)*exp(I*Real(m)*2.*pi/d_x*x)
-                                  *exp(I*Real(n)*2.*pi/d_y*y)/eps0;
+                                  *exp(I*Real(n)*2.*pi/d_y*y);
 
       std::cout << x << " " << y << " " << real(result) << std::endl;
     }
   }
 #endif
 
+  // Calculate M and N. 
+  // TODO: take aspect ratio into account.
+
+  const Complex k0 = 2*pi/global.lambda;
+
+  int M = int(sqrt(Real(M1)));
+  int N = int(sqrt(Real(M1)));
+
+  // Calculate eps and inv_eps matrix.
+
+  vector<Complex> disc(discontinuities);
+  disc.insert(disc.begin(), 0.0);
+  
+  cMatrix eps_(4*M+1,4*N+1,fortranArray);
+  eps_ = fourier_eps_2D(slabs, disc, 2*M, 2*N);
+
+  cMatrix inv_eps_(4*M+1,4*N+1,fortranArray);
+  inv_eps_ = fourier_eps_2D(slabs, disc, 2*M, 2*N, true);  
+
+  const int MN = (2*M+1)*(2*N+1);
+  
+  cMatrix     eps(MN,MN,fortranArray);
+  cMatrix inv_eps(MN,MN,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {
+      int i1 = (m+M+1) + (n+N)*(2*M+1);
+      
+      for (int j=-M; j<=M; j++)
+        for (int l=-N; l<=N; l++)
+        {
+          int i2 = (j+M+1) + (l+N)*(2*M+1);
+
+              eps(i1,i2) =     eps_(m-j + 2*M+1, n-l + 2*N+1);          
+          inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
+        }
+    }
+  
+  // Calculate alpha and beta vector.
+
+  Complex alpha0, beta0;
+  alpha0 = beta0 = 0.0;
+
+  cVector alpha(MN,fortranArray);
+  cVector  beta(MN,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {      
+      int i = (m+M+1) + (n+N)*(2*M+1);
+      alpha(i) = alpha0 + m*2.*pi/get_width();
+       beta(i) =  beta0 + n*2.*pi/get_height();     
+    }
+
+  // Constuct F matrix.
+
+  cMatrix F(2*MN,2*MN,fortranArray);
+  
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      F(i1,   i2)    =  alpha(i1) * inv_eps(i1,i2) *  beta(i2);      
+      F(i1,   i2+MN) = -alpha(i1) * inv_eps(i1,i2) * alpha(i2);        
+      F(i1+MN,i2)    =   beta(i1) * inv_eps(i1,i2) *  beta(i2);
+      F(i1+MN,i2+MN) =  -beta(i1) * inv_eps(i1,i2) * alpha(i2);      
+
+      if (i1==i2)   
+      {
+        F(i1,   i2+MN) += k0*k0;
+        F(i1+MN,i2)    -= k0*k0;
+      }
+    }
+  
+  // Construct G matrix.
+
+  cMatrix G(2*MN,2*MN,fortranArray);
+  
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      G(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+      G(i1,   i2+MN) = -k0*k0 * eps(i1,i2);        
+      G(i1+MN,i2)    =  k0*k0 * eps(i1,i2);
+      G(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+
+      if (i1==i2) 
+      {     
+        G(i1,   i2+MN) += alpha(i1)*alpha(i1);  
+        G(i1+MN,i2)    -=  beta(i2)*beta(i2);
+      }
+      
+    }
+  
+  // Solve eigenproblem.
+
+  cMatrix FG(2*MN,2*MN,fortranArray); 
+  FG.reference(multiply(F,G));
+
+  cVector E(2*MN,fortranArray);
+  
+  if (global.stability == normal)
+    E = eigenvalues(FG);
+  else
+    E = eigenvalues_x(FG);
+
+  E /= k0*k0;
+
+  std::cout << "Eigenproblem size " << 2*MN << std::endl;
+  for (int i=1; i<2*MN; i++)
+    std::cout << i << " " << E(i) << " " << sqrt(E(i)) << " " 
+              << sqrt(E(i))/2./pi*global.lambda << std::endl;
+  
+  return E;
 }
 
 
@@ -939,6 +1061,10 @@ void Section2D::find_modes_from_series()
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), index_sorter());
   else
     std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
+
+  //for (unsigned int i=0; i<kz2_coarse.size(); i++)
+  //  std::cout << i << " " << sqrt(kz2_coarse[i])/2./pi*global.lambda 
+  //            << std::endl;  
 
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
