@@ -426,6 +426,8 @@ void MonoScatterer::swap_RT_with(MonoScatterer& sc_m)
 
 void TransparentScatterer::calcRT()
 {
+  inc->find_modes();
+  
   allocRT(); 
 
   R12 = 0.0; R21 = 0.0; 
@@ -442,6 +444,8 @@ void TransparentScatterer::calcRT()
 
 void E_Wall::calcRT()
 {
+  inc->find_modes();
+
   allocRT(); 
 
   R12 = -1.0; R21 = -1.0; 
@@ -458,6 +462,8 @@ void E_Wall::calcRT()
 
 void H_Wall::calcRT()
 {
+  inc->find_modes();
+
   allocRT(); 
 
   R12 = 1.0; R21 = 1.0; 
