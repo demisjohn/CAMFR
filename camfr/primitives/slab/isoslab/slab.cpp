@@ -1,4 +1,5 @@
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     slab.cpp
@@ -339,7 +340,7 @@ vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
   // from scratch.
 
   if (global.solver == series)
-    return find_kt_from_series();
+    return find_kt_from_estimates();
 
   if (global.sweep_from_previous && (modeset.size() >= global.N))
     return find_kt_by_sweep(old_kt);
@@ -798,64 +799,161 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::find_kt_from_series
+// Slab_M::fourier_eps
+//
+//  Returns fourier expansion of eps with order m = -M,...,M
+//  Basis functions are exp(j.m.2.pi/d.x)
+//  Can optionally also calculate the expansion of 1/eps.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-struct sorter
+cVector Slab_M::fourier_eps(int M, cVector* inv_result) const
 {
-    bool operator()(const Complex& beta_a, const Complex& beta_b)
+  const Complex K = 2*pi/get_width();
+
+  cVector result(2*M+1,fortranArray);
+
+  vector<Complex> disc = discontinuities;
+  disc.insert(disc.begin(), 0.0);
+
+  for (int m=-M; m<=M; m++)
+  {
+    Complex E_m     = 0.0;
+    Complex inv_E_m = 0.0;
+
+    for (unsigned int k=0; k<int(disc.size()-1); k++)
     {
-      //return ( real(beta_a) > real(beta_b) ); // highest index
-      return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+      const Complex eps = eps_at(Coord(disc[k], 0, 0, Plus))/eps0;
+
+      Complex factor;
+      if (m==0)
+        factor = disc[k+1]-disc[k];
+      else
+      {
+        const Complex t = -I*Real(m)*K;
+        factor = (exp(t*disc[k+1])-exp(t*disc[k])) / t;
+      }
+
+      E_m += factor * eps;
+
+      if (inv_result)
+        inv_E_m += factor / eps;
     }
-};
 
-struct kt_to_neff : ComplexFunction
+    result(m+M+1) = E_m / get_width();
+    if (inv_result)
+      (*inv_result)(m+M+1) = inv_E_m / get_width();      
+  }
+  
+  return result;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::estimate_kz2_from_RCWA
+//
+// Note: this only works for E_walls on both sides for TE, and for H_walls 
+// on both sides for TM.
+//
+// Matrix sizes are twice that of the uniform mode method, and radiation
+// modes are found twice.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector Slab_M::estimate_kz2_from_RCWA()
 {
-  Complex C;
+  // Calculate eps matrices.
 
-  kt_to_neff(const Complex& C_) : C(C_) {}
+  const int M = M_series ? M_series : int(global.N * global.mode_surplus);
 
-  Complex operator()(const Complex& kt)
-    {return sqrt(C - kt*kt)/2./pi*global.lambda;}
-};
+  cVector f_eps    (4*M+1,fortranArray);
+  cVector f_inv_eps(4*M+1,fortranArray);
 
-std::vector<Complex> Slab_M::find_kt_from_series()
-{
+  if (global.polarisation == TE)
+    f_eps = fourier_eps(2*M);
+  else
+    f_eps = fourier_eps(2*M, &f_inv_eps);
+
+  const int n = 2*M + 1;  
+  cMatrix Eps(n,n,fortranArray);
+  for (int i=1; i<=n; i++)
+    for (int j=1; j<=n; j++)
+      Eps(i,j) = f_eps(i-j + 2*M+1);
+  
+  cMatrix A(fortranArray);
+  if (global.polarisation == TM)
+  {
+    A.resize(n,n);
+    for (int i=1; i<=n; i++)
+      for (int j=1; j<=n; j++)
+        A(i,j) = f_inv_eps(i-j + 2*M+1);
+  }
+
+  // Create matrix for eigenvalue problem.
+
+  cMatrix E(n,n,fortranArray);
+
+  const Complex lambda_over_d = global.lambda / get_width();
+  
+  if (global.polarisation == TE)
+  { 
+    E = -Eps;
+    
+    for (int i=1; i<=n; i++)      
+      E(i,i) += pow( Real(i-1-M)*lambda_over_d, 2);
+  }
+  else
+  {
+    // Note: the following inversions can be sped up because these 
+    // are Toeplitz matrices.
+
+    cMatrix inv_Eps(n,n,fortranArray); inv_Eps.reference(invert(Eps));
+    cMatrix inv_A  (n,n,fortranArray); inv_A  .reference(invert(A)); 
+
+    for (int i=1; i<=n; i++)
+    {
+      for (int j=1; j<=n; j++)
+        E(i,j) = Real(i-1-M)*lambda_over_d * inv_Eps(i,j) *
+                 Real(j-1-M)*lambda_over_d;
+
+      E(i,i) -= 1.0;
+    }
+    
+    E = multiply(inv_A, E);
+  }
+
+  // Solve eigenvalue problem.
+
+  const Complex k0 = 2*pi/global.lambda;
+
+  cVector kz2(n,fortranArray);
+
+  if (global.stability == normal)
+    kz2 = -k0*k0*eigenvalues(E);
+  else
+    kz2 = -k0*k0*eigenvalues_x(E);
+
+  return kz2;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::estimate_kz2_from_uniform_modes
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector Slab_M::estimate_kz2_from_uniform_modes()
+{  
   // Set constants.
 
   const int n = M_series ? M_series : int(global.N * global.mode_surplus);
   const Real omega = 2*pi/global.lambda * c;
- 
-  // Find min and max eps mu.
 
-  Complex min_eps_mu = materials[0]->eps_mu();
-  Complex max_eps_mu = materials[0]->eps_mu();
-  
-  for (unsigned int i=1; i<materials.size(); i++)
-  {
-    Complex eps_mu = materials[i]->eps_mu();
-    
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
-
-    if (real(eps_mu) > real(max_eps_mu))
-      max_eps_mu = eps_mu;
-  }
-
-  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
-
-  Complex max_eps_eff;
-  if (    (global.polarisation == TM) // Surface plasmon.
-       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
-    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
-  else
-    max_eps_eff = max_eps_mu;
-
-  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
-
-  // Calc overlap matrices.
+  // Calculate overlap matrices.
 
   int old_N = global.N;
   global.N = n;
@@ -874,7 +972,7 @@ std::vector<Complex> Slab_M::find_kt_from_series()
 
   overlap_reference_modes(&O_tt, &O_zz, ref, *this);
 
-  // Calculate coarse estimates.
+  // Create eigenvalue problem.
 
   cMatrix E(n,n,fortranArray);
 
@@ -899,6 +997,29 @@ std::vector<Complex> Slab_M::find_kt_from_series()
   }
   else
   {
+#if 0
+    // Alternative formulation.
+
+    O_zz *= pow(omega * ref_mat.eps(), 2);
+  
+    const Complex omega_3_mu_eps 
+      = pow(omega,3) * ref_mat.eps() * ref_mat.mu();
+
+    for (int i=1; i<=n; i++)
+    {
+      SlabMode* TM_i = dynamic_cast<SlabMode*>(ref.get_mode(i));
+      Complex kz_i   = TM_i->get_kz();
+
+      if (abs(kz_i) < 1e-6)
+        py_print("WARNING: reference mode close to cutoff!");
+
+      O_zz(i,i) += omega_3_mu_eps / kz_i;
+    }
+
+     E.reference(multiply(O_tt, O_zz));
+
+#endif
+
     cMatrix inv_O_zz(n,n,fortranArray);
     inv_O_zz.reference(invert_svd(O_zz));
 
@@ -930,6 +1051,8 @@ std::vector<Complex> Slab_M::find_kt_from_series()
      E.reference(multiply(T, O_tt));
   }
 
+  // Solve eigenvalue problem.
+
   cVector kz2(n,fortranArray);
 
   if (global.stability == normal)
@@ -937,10 +1060,93 @@ std::vector<Complex> Slab_M::find_kt_from_series()
   else
     kz2 = eigenvalues_x(E);
 
+  return kz2;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Auxiliary function objects
+//
+/////////////////////////////////////////////////////////////////////////////
+
+struct sorter
+{
+    bool operator()(const Complex& beta_a, const Complex& beta_b)
+    {
+      return ( real(beta_a) > real(beta_b) ); // highest index
+      //return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+    }
+};
+
+struct kt_to_neff : ComplexFunction
+{
+  Complex C;
+
+  kt_to_neff(const Complex& C_) : C(C_) {}
+
+  Complex operator()(const Complex& kt)
+    {return sqrt(C - kt*kt)/2./pi*global.lambda;}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::find_kt_from_estimates
+//
+/////////////////////////////////////////////////////////////////////////////
+
+std::vector<Complex> Slab_M::find_kt_from_estimates()
+{
+  // Get coarse estimates.
+
+  const int M = M_series ? M_series : int(global.N * global.mode_surplus);
+
+  cVector kz2(fortranArray);
+  if (global.eigen_calc != arnoldi) // Hijacked switch.
+  {
+    kz2.resize(M);
+    kz2 = estimate_kz2_from_uniform_modes();
+  }
+  else
+  {
+    kz2.resize(2*M+1);
+    kz2 = estimate_kz2_from_RCWA();
+  }
+
+  // Find min and max eps mu.
+
+  Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
+  }
+
+  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  Complex max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
+    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+  else
+    max_eps_eff = max_eps_mu;
+
+  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
+
   // Refine estimates.
 
   vector<Complex> kz2_coarse;
-  for (unsigned int i=1; i<=n; i++)
+  for (unsigned int i=1; i<=kz2.size(); i++)
     if (real(sqrt(kz2(i))) < 1.2*max_kz)
       kz2_coarse.push_back(kz2(i));
 

@@ -1,3 +1,8 @@
+2003-04-14 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.h: Add RCWA estimate.
+	* slab.cpp: Ditto.
+
 2003-03-28 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.cpp: Relax zero check.
