@@ -173,8 +173,8 @@ void BlochStack::find_modes_GEV()
   cVector b(2*N,fortranArray); 
   cMatrix Z(2*N,2*N,fortranArray); // Holds F and e B.
 
-  gen_eigenvalues(A, B, &a, &b, &Z); 
-
+  gen_eigenvalues(A, B, &a, &b, &Z);
+ 
   // Create modeset. 
 
   modeset.clear(); 
