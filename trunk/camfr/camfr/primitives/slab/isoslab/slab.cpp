@@ -1012,7 +1012,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
   // Create eigenvalue problem.
 
   if (global.polarisation == TE) // TODO: reformulate as fourier expansion.
-  {
+  { 
     const int n = M_series ? M_series : int(global.N * global.mode_surplus);
   
     cMatrix E(n,n,fortranArray);
@@ -1121,7 +1121,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 
       E(i,i) -= 1.0;
     }
-    
+      
     E = multiply(inv_A, E);
 
     // Reduce eigenvalue problem to retain only solutions with desired
@@ -1223,6 +1223,10 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   else
     kz2 = estimate_kz2_from_RCWA();
 
+  //for (unsigned int i=0; i<kz2.size(); i++)
+  //  std::cout << "raw " << i << " " 
+  //            << sqrt(kz2[i])/2./pi*global.lambda << std::endl;
+
   // Find min and max eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
@@ -1244,23 +1248,23 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   Complex max_eps_eff;
   if (    (global.polarisation == TM) // Surface plasmon.
        && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
-    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+    max_eps_eff = 1.0/(1.0/max_eps_mu + 1.0/min_eps_mu);
   else
     max_eps_eff = max_eps_mu;
 
-  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
+  Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
 
   // Refine estimates.
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=0; i<kz2.size(); i++)
-    if (real(sqrt(kz2[i])) < 1.2*max_kz)
+    if (real(sqrt(kz2[i])) < 1.01*max_kz)
       kz2_coarse.push_back(kz2[i]);
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
-
+  
   if (kz2_coarse.size() > global.N)
-    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());  
+    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
@@ -1337,12 +1341,8 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     if (real(kz) < 0) 
       kz = -kz;
 
-    if (abs(real(kz)) < 1e-10)
+    if (abs(real(kz)) < abs(imag(kz))) // Prefer lossy modes.
       if (imag(kz) > 0)
-        kz = -kz;
-
-    if (global.backward_modes) // Temporary kludge.
-      if (real(kt[i]) < -1e-6) // Backward mode.
         kz = -kz;
 
     Polarisation pol = global.polarisation;
@@ -1353,7 +1353,7 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
     Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
 
     //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda
-    //          << " " << pol << std::endl;
+    //          << " " << pol << " " << calc_fw << std::endl;
     
     newmode->normalise();
     
