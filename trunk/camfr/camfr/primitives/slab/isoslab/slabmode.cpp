@@ -236,6 +236,9 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
     
     Complex kx_i = sqrt(k0_2*n_2 - kz*kz);
 
+    if (abs(k0_2*n_2 - kz*kz) < 1e-10) // Improve stability for TEM mode.
+      kx_i = 0.0;
+
     if (real(kx_i) < 0)
       kx_i = -kx_i;
 
@@ -302,10 +305,12 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
     
     Material* mat1 = slab->materials[i1];
     Material* mat2 = slab->materials[i2];
+
+    const Complex kx12 = ( (abs(kx[i1]) < 1e-10) && (abs(kx[i1]) < 1e-10) )
+      ? 1.0 : kx[i1] / kx[i2];
     
-    const Complex a = (pol == TE)
-      ? kx[i1] / kx[i2] * mat2->mu()  / mat1->mu()
-      : kx[i1] / kx[i2] * mat2->eps() / mat1->eps();
+    const Complex a = (pol == TE) ? kx12 * mat2->mu()  / mat1->mu()
+                                  : kx12 * mat2->eps() / mat1->eps();
     
     const Real sign = (pol == TE) ? 1 : -1;
   
@@ -408,8 +413,8 @@ void Slab_M_Mode::calc_left_right(bool calc_fw)
   {
      left.back() = 0;
     right.back() = 0;
-  } 
-
+  }
+  
   //for (unsigned int i=0; i<left.size(); i++)
   //  std::cout << i << left[i] << right[i] << std::endl;
 }
@@ -543,6 +548,9 @@ UniformSlabMode::UniformSlabMode(Polarisation pol,
   const Complex k = 2*pi/global.lambda * geom->get_core()->n();
   
   kx = sqrt(k*k - kz*kz);
+
+  if (abs(k-kz) < 1e-10) // Improve stability for TEM mode.
+    kx = 0.0;
 
   if (real(kx) < 0)
     kx = -kx;
