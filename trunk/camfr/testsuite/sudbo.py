@@ -25,6 +25,7 @@ class sudbo(unittest.TestCase):
         clad = Material(1.0)
 
         set_section_solver(OS)
+        set_mode_correction(full)
 
         set_left_wall(H_wall)
 
