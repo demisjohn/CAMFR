@@ -133,7 +133,7 @@ class UniformSlab : public SlabImpl
       {return discontinuities[0];}
 
     Real get_imag_start_thickness() const
-      {return 0.0;}
+      {return .5*imag(discontinuities[0]);}
 
     void find_modes();
 

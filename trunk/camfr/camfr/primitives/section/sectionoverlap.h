@@ -52,7 +52,7 @@ Complex overlap(const SectionMode* mode_I,
                 const SectionMode* mode_II,
                 const SectionCache* cache=NULL,
                 const std::vector<Complex>* disc=NULL,
-                int i=0, int j=0, int I_index=0, int II_index=0) {};
+                int i=0, int j=0, int I_index=0, int II_index=0);
 
 
 

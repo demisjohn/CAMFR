@@ -31,91 +31,29 @@ using std::endl;
 void SectionImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
-{ 
-
-#if 0
+{
   SectionImpl* medium_I  = this;
   SectionImpl* medium_II = dynamic_cast<SectionImpl*>(w);
-
-  // Make sorted list of evaluation points for field cache.
-
-  vector<Complex> disc = medium_I->discontinuities;
-
-  disc.push_back(0.0);
   
-  for (unsigned int k=0; k<medium_II->discontinuities.size(); k++)
-    disc.push_back(medium_II->discontinuities[k]);
-
-  remove_copies(&disc, 1e-6);
-
-  sort(disc.begin(), disc.end(), RealSorter());
-
-  // Fill field cache.
-
-  const unsigned int N = global.N;
-
-  SectionCache cache(N, disc.size()-1);
-  
-  for (int i=1; i<=int(N); i++)
-  {
-    const SectionMode* mode_I
-      = dynamic_cast<const SectionMode*>(medium_I ->get_mode(i));
-    
-    const SectionMode* mode_II
-      = dynamic_cast<const SectionMode*>(medium_II->get_mode(i));
-
-    for (int k=0; k<int(disc.size()-1); k++)
-    {
-      const Coord lower(disc[k],  0,0, Plus);
-      const Coord upper(disc[k+1],0,0, Min);
-
-      Complex fw_I_l, bw_I_l, fw_II_l, bw_II_l;
-      Complex fw_I_u, bw_I_u, fw_II_u, bw_II_u;
-
-      mode_I ->forw_backw_at(lower, &fw_I_l,  &bw_I_l);    
-      mode_I ->forw_backw_at(upper, &fw_I_u,  &bw_I_u);
-      mode_II->forw_backw_at(lower, &fw_II_l, &bw_II_l);  
-      mode_II->forw_backw_at(upper, &fw_II_u, &bw_II_u);
-
-      cache.fw_l(1,i,k+1) = fw_I_l;
-      cache.bw_l(1,i,k+1) = bw_I_l;
-      cache.fw_u(1,i,k+1) = fw_I_u;
-      cache.bw_u(1,i,k+1) = bw_I_u;
-
-      cache.fw_l(2,i,k+1) = fw_II_l;
-      cache.bw_l(2,i,k+1) = bw_II_l;
-      cache.fw_u(2,i,k+1) = fw_II_u;
-      cache.bw_u(2,i,k+1) = bw_II_u;
-    }
-  }
-
-  // Calculate overlap matrices
-
-  for (int i=1; i<=int(N); i++)
-    for (int j=1; j<=int(N); j++)
+  for (int i=1; i<=int(global.N); i++)
+    for (int j=1; j<=int(global.N); j++)
     {
       (*O_I_II)(i,j) = overlap
         (dynamic_cast<const SectionMode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const SectionMode*>(medium_II->get_mode(j)),
-         &cache, &disc, i, j, 1, 2);
+         dynamic_cast<const SectionMode*>(medium_II->get_mode(j)));
 
       (*O_II_I)(i,j) = overlap
         (dynamic_cast<const SectionMode*>(medium_II->get_mode(i)),
-         dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)),
-         &cache, &disc, i, j, 2, 1);
+         dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)));
       
       if (O_I_I) (*O_I_I)(i,j) = overlap
          (dynamic_cast<const SectionMode*>(medium_I ->get_mode(i)),
-          dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)),
-          &cache, &disc, i, j, 1, 1);
-
+          dynamic_cast<const SectionMode*>(medium_I ->get_mode(j)));
+      
       if (O_II_II) (*O_II_II)(i,j) = overlap
          (dynamic_cast<const SectionMode*>(medium_II->get_mode(i)),
-          dynamic_cast<const SectionMode*>(medium_II->get_mode(j)),
-          &cache, &disc, i, j, 2, 2);
+          dynamic_cast<const SectionMode*>(medium_II->get_mode(j)));
     }
-
-#endif
 }
 
 
@@ -202,7 +140,7 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
 
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
-    if ( real(materials[i]->n()) > real(materials[core_index]->n()) )
+    if ( real(materials[i]->eps_mu()) > real(materials[core_index]->eps_mu()) )
       core_index = i;
 
   core = materials[core_index];
@@ -495,9 +433,13 @@ void Section2D::find_modes_from_scratch_by_ADR()
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// TMP
+
+#include "sectionoverlap.h"
+
 void Section2D::find_modes_from_scratch_by_track()
 {
-  // Set constants
+  // Set constants.
   
   const Real eps        = 1e-13;
   const Real eps_zero   = 1e-10;
@@ -508,49 +450,43 @@ void Section2D::find_modes_from_scratch_by_track()
   
   // Determine reflection coefficients of walls.
 
-  //SectionWall* l_wall =  leftwall ?  leftwall : global_section. leftwall;
-  //SectionWall* r_wall = rightwall ? rightwall : global_section.rightwall;
+  //SlabWall* l_wall =  leftwall ?  leftwall : global_slab. leftwall;
+  //SlabWall* r_wall = rightwall ? rightwall : global_slab.rightwall;
 
-  //Complex R_left  = l_wall ? l_wall->get_R12() : -1;
-  //Complex R_right = r_wall ? r_wall->get_R12() : -1;
+  //Complex R_left  = l_wall ? l_wall->get_R12() : -1.0;
+  //Complex R_right = r_wall ? r_wall->get_R12() : -1.0;
 
   bool branchcut = false;
   //if ( (abs(R_left) < eps_zero) || (abs(R_right) < eps_zero) )
   //  branchcut = true; // Branchcuts exist only in open structures.
 
   bool TBC = false; // Transparent boundary conditions.
-  //if (   dynamic_cast<SectionWall_TBC*>(l_wall)
-  //    || dynamic_cast<SectionWall_TBC*>(r_wall) )
+  //if (   dynamic_cast<SlabWall_TBC*>(l_wall)
+  //    || dynamic_cast<SlabWall_TBC*>(r_wall) )
   //  TBC = true;
 
   bool PC = false; // Photonic crystal boundary conditions.
-  //if (   dynamic_cast<SectionWall_PC*>(l_wall)
-  //    || dynamic_cast<SectionWall_PC*>(r_wall) )
+  //if (   dynamic_cast<SlabWall_PC*>(l_wall)
+  //    || dynamic_cast<SlabWall_PC*>(r_wall) )
   //  PC = true;
 
-  // Find and max/min real refractive indices of lossless structure.
+  // Find min and max refractive index of lossless structure.
 
-  Real max_n = 0.0;
-  vector<Real> n_lossless;
+  Real min_eps_mu_lossless = real(materials[0]->eps_mu());
+  Real max_eps_mu_lossless = real(materials[0]->eps_mu());
   
-  for (unsigned int i=0; i<materials.size(); i++)
+  for (unsigned int i=1; i<materials.size(); i++)
   {
-    Real n = real( materials[i]->n() * sqrt( materials[i]->mur()) );
-
-    n_lossless.push_back(n);
+    Real eps_mu_lossless = real(materials[i]->eps_mu());
     
-    if (n > max_n)
-      max_n = n;
+    if (eps_mu_lossless < min_eps_mu_lossless)
+      min_eps_mu_lossless = eps_mu_lossless;
+
+    if (eps_mu_lossless > max_eps_mu_lossless)
+      max_eps_mu_lossless = eps_mu_lossless;
   }
 
-  Real min_n = max_n;
-  for (unsigned int i=0; i<n_lossless.size(); i++)
-  {
-    Real n = n_lossless[i];
-    
-    if (n < min_n)
-      min_n = n;
-  }
+  bool metal = (min_eps_mu_lossless < 0.0);
   
   // Create dispersion relation for lossless structure.
   
@@ -565,310 +501,261 @@ void Section2D::find_modes_from_scratch_by_track()
 
   // Make a rough estimate of separation between modes.
 
-  Real d_beta = real(pi/get_width());
+  Real d_kt = real(pi/get_width());
 
   // Find the modes of the structure, proceeding in a number
   // of possible steps:
   //
-  //   I:   find guided modes along real axis for lossless structure.
-  //   II:  find prop. rad.  modes along real axis for lossless structure.
-  //   III: find imag. rad.  along imag axis for lossless structrue.
-  //   IV:  track those to modes of true lossy structure.
-  //   V:   find modes in complex plane for true structure.
+  //   I:   find modes along imag axis for lossless structure.
+  //   II:  find modes along real axis for lossless structrue.
+  //   III: track those to modes of true lossy structure.
+  //   IV:  find modes in complex plane for true structure.
 
 
   
   //
-  // I: Find guided modes of lossless structure.
+  // I: Find propagating modes of lossless structure.
   //
-
-  //global.eigen_calc = arnoldi;
   
-  Wrap_real_to_abs prop_wrap(disp);
+  Wrap_imag_to_abs prop_wrap(disp);
 
-  if (d_beta > k0*max_n)
-    d_beta = k0*max_n;
+  const Real C = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
-  int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
+  Complex max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (max_eps_mu_lossless*min_eps_mu_lossless < 0.0) )
+    max_eps_eff = 1.5/(1.0/max_eps_mu_lossless + 1.0/min_eps_mu_lossless);
+  else
+    max_eps_eff = max_eps_mu_lossless;
 
-  vector<Real> beta_guided_lossless = brent_all_minima
-    (prop_wrap,k0*min_n,k0*max_n,d_beta/global.precision,eps,sec);
-
-  // If precision_enhancement is larger than 1, refine our search for
-  // the guided modes.
-
-  if (global.precision_enhancement > 1)
+  Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
+  
+  vector<Real> kt_prop_lossless;
+  if (abs(prop_kt_end_lossless) > 0)
   {
-    vector<Real> beta_fine = brent_refine_minima
-      (prop_wrap,beta_guided_lossless,global.dx_enhanced,
-       d_beta/global.precision/global.precision_enhancement,eps,1);
-    beta_guided_lossless = beta_fine;
+    if (d_kt > prop_kt_end_lossless)
+      d_kt = prop_kt_end_lossless;
+
+    kt_prop_lossless = brent_all_minima
+      (prop_wrap,0.0001,prop_kt_end_lossless,d_kt/global.precision,eps,1);
   }
+  else
+    prop_kt_end_lossless = 0.25; // To make rectangle for complex zero search.
   
-  std::reverse(beta_guided_lossless.begin(), beta_guided_lossless.end());
+  std::reverse(kt_prop_lossless.begin(), kt_prop_lossless.end());
 
   // Eliminate false zeros.
 
-  remove_elems(&beta_guided_lossless, 0.0, eps_copies);
-
-  global_slab.beta = 0.0;
+  remove_elems(&kt_prop_lossless, 0.0, eps_copies);
   for (unsigned int i=1; i<=left.get_inc()->N(); i++)
-  {    
-    Real beta_i = real(left.get_inc()->get_mode(i)->get_kz());
+  {
+    // TODO: not general for lossy incidence media.
 
-    remove_elems(&beta_guided_lossless,  beta_i, eps_copies);
-    remove_elems(&beta_guided_lossless, -beta_i, eps_copies);
+    Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
+    Real kt_i = real(C*min_eps_mu_lossless - beta_i*beta_i);
+
+    remove_elems(&kt_prop_lossless,  kt_i, eps_copies);
+    remove_elems(&kt_prop_lossless, -kt_i, eps_copies);
+  }
+  
+  // Check if the minima found correspond really to zeros by using a mueller
+  // Don't do this when there are branchcuts, as this can cause problems for
+  // numerical stability.
+
+  vector<Complex> kt_lossless, kt_complex;
+  for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
+  { 
+    if ( branchcut && (abs(disp(I*kt_prop_lossless[i])) > 1e-2) )
+    {
+      std::ostringstream s;
+      s << "Warning: possibly insufficient precision around kt "
+        << kt_prop_lossless[i] << "." << std::endl;
+      s << "Removing this candidate.";
+      py_print(s.str());
+    }
+    else
+    {
+      bool error = false;
+
+      Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
+                               I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
+
+      if (!error && metal && abs(real(kt_new)) > 0.1)
+      {
+        py_print("Found complex mode pair.");
+        kt_complex.push_back(kt_new);
+      }
+      else if (!error)
+        kt_lossless.push_back(I*imag(kt_new));
+    }
   }
 
-  if (beta_guided_lossless[0] > 
-      real(left.get_inc()->get_mode(1)->get_kz()))
+  if (kt_lossless.size())
+  {
+    if (real(sqrt(C*min_eps_mu_lossless - kt_lossless[0]*kt_lossless[0])) > 
+      real(left.get_inc()->get_mode(1)->get_kz()) )
     cout << "n_eff higher than expected!" << endl;
-  cout << "Slab kz: " << left.get_inc()->get_mode(1)->get_kz() << endl;
+    cout << "Slab kz: " << left.get_inc()->get_mode(1)->get_kz() << endl;
+  }
 
   cout << std::setprecision(15);
-  cout << "Done lossless:" << endl;
-  for (unsigned int i=0; i<beta_guided_lossless.size(); i++)
-    cout << i << beta_guided_lossless[i]/2/pi*global.lambda << endl;
-  cout << "Calls " << disp.times_called() << endl;
-  
-  // Check if the minima found correspond really to zeros and increase
-  // precision using a mueller solver (in the absense of branchcuts).
-  // Don't do this if precision_enhancement is larger than 1, since this
-  // typically indicate the presence of nearly degenerate modes.
+  cout << "Done lossless guided:" << endl;
+  for (unsigned int i=0; i<kt_lossless.size(); i++)
+    cout << i << " " << kt_lossless[i] << endl;
+  cout << "Calls " << disp.times_called() << endl << std::flush;
 
-  vector<Complex> beta_lossless;
-  for (unsigned int i=0; i<beta_guided_lossless.size(); i++)
-  { 
-    const Real fx = abs(disp(beta_guided_lossless[i]));
-    
-    if (fx > 1e-2)
-    {
-      std::ostringstream s;
-      s << "Warning: possibly insufficient precision around beta "
-        << beta_guided_lossless[i] << "." << std::endl;
-      s << "Removing this candidate with abs(fx) " << fx << ".";
-      py_print(s.str());
-    }
-    else
-    {
-      Real beta_new;
-      
-      if ( (!branchcut) && (global.precision_enhancement == 1) )
-        beta_new = real(mueller(disp, beta_guided_lossless[i],
-                                beta_guided_lossless[i]+0.002*I));
-      else
-        beta_new = beta_guided_lossless[i];
 
-      beta_lossless.push_back(beta_new);
-    }
-  }
-
-  cout << "Done refining" << endl;
-  for (unsigned int i=0; i<beta_lossless.size(); i++)
-    cout << i << " " << beta_lossless[i] /2. /pi * global.lambda << endl;
-  cout << "Calls " << disp.times_called() << endl;
 
   //
-  // II: Find propagating radiation modes of lossless structure.
-  //
-
-  global.eigen_calc = lapack;
-
-  vector<Real> beta_prop_rad_lossless;
-  if (beta_lossless.size() < global.N)
-    beta_prop_rad_lossless = brent_all_minima
-     (prop_wrap,0.0001,k0*min_n,d_beta/global.precision_rad,eps,sec);
-
-  std::reverse(beta_prop_rad_lossless.begin(), beta_prop_rad_lossless.end());
-
-  cout << "Done prop rad" << endl;
-      for (unsigned int i=0; i<beta_prop_rad_lossless.size(); i++)
-        cout << beta_prop_rad_lossless[i] /2./pi*global.lambda << endl;
-  cout << "Calls prop rad "  << disp.times_called() << endl;
-  
-  // Check if the minima found correspond really to zeros and increase
-  // precision using a mueller solver (in the absense of branchcuts).
-
-  for (unsigned int i=0; i<beta_prop_rad_lossless.size(); i++)
-  { 
-    const Real fx = abs(disp(beta_prop_rad_lossless[i]));
-    
-    if (fx > 1e-2)
-    {
-      std::ostringstream s;
-      s << "Warning: possibly insufficient precision around beta "
-        << beta_prop_rad_lossless[i] << "." << std::endl;
-      s << "Removing this candidate with abs(fx) " << fx << ".";
-      py_print(s.str());
-    }
-    else
-    {
-      Real beta_new;
-      
-      if (!branchcut)
-        beta_new = real(mueller(disp, beta_prop_rad_lossless[i],
-                                beta_prop_rad_lossless[i]+0.002*I));
-      else
-        beta_new = beta_prop_rad_lossless[i];
-
-      beta_lossless.push_back(beta_new);
-    }
-  }
-
-
-  cout << "Done prop rad refin" << endl;
-  for (unsigned int i=0; i<beta_lossless.size(); i++)
-    cout << beta_lossless[i] /2./pi*global.lambda << endl;
-  cout << "Calls prop rad refined " << disp.times_called() << endl;
-
-  
-  //
-  // III: Find evanescent radiation modes of lossless structure.
+  // II: Find evanescent modes of lossless structure.
   //
 
   if (!(branchcut || TBC))
   {
-    Wrap_imag_to_abs evan_wrap(disp);
+    Wrap_real_to_abs evan_wrap(disp);
     
-    Real beta_begin = .0001;
+    Real kt_begin = .0001;
     int extra = 1;
-    int modes_left = (beta_lossless.size() >= global.N) ? 0
-      : global.N - beta_lossless.size();
+    int modes_left = (kt_lossless.size() >= global.N + 2) ? 0
+      : global.N - kt_lossless.size() + 2;
     
     while (modes_left)
     {
       if (extra > 1)
         py_print("Lost too many candidate modes. Expanding search region.");
       
-      vector<Real> beta_evan_lossless = brent_N_minima
-        (evan_wrap,beta_begin,modes_left+extra,
-         d_beta/global.precision_rad,eps,1);
-
-      cout << "Done evan " << endl;
-      for (unsigned int i=0; i<beta_evan_lossless.size(); i++)
-        cout << beta_evan_lossless[i] /2./pi*global.lambda << endl;
-      cout << "Calls evan rad " << disp.times_called() << endl;
+      vector<Real> kt_evan_lossless = brent_N_minima
+        (evan_wrap,kt_begin,modes_left+extra,d_kt/global.precision_rad,eps,1);
       
-      // Check if the minima found correspond really to zeros and increase
-      // precision with mueller solver.
+      // Check if the minima found correspond really to zeros by using 
+      // a mueller solver.
 
-      for (unsigned int i=0; i<beta_evan_lossless.size(); i++)
-      { 
-        const Real fx = abs(disp(I*beta_evan_lossless[i]));
-        if (fx > 1e-2)
-        {
-          std::ostringstream s;
-          s << "Warning: possibly insufficient precision around beta "
-            <<  beta_evan_lossless[i] << "." << std::endl;
-          s << "Removing this candidate with abs(fx) " << fx << ".";
-          py_print(s.str());
-        }
-        else
-        {
-          Real beta_new = branchcut
-            ? beta_evan_lossless[i]
-            : imag(mueller(disp,I*beta_evan_lossless[i],
-                           I*beta_evan_lossless[i]+0.002));
+      for (unsigned int i=0; i<kt_evan_lossless.size(); i++)
+      {
+        bool error = false;
 
-          beta_lossless.push_back(I*beta_new);
+        Complex kt_new = branchcut
+          ? kt_evan_lossless[i]
+          : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
+                    1e-11,0,100,&error);
+
+        if (!error && metal && (abs(imag(kt_new)) > 0.1))
+        {
+          py_print("Found complex mode pair.");
+          kt_complex.push_back(kt_new);
         }
+        else if (!error)
+          kt_lossless.push_back(real(kt_new));
       }
 
-      modes_left = (beta_lossless.size() >= global.N + 2) ? 0
-        : global.N - beta_lossless.size() + 2;
+      modes_left = (kt_lossless.size() + 2*kt_complex.size() >= global.N + 2) 
+        ? 0
+        : global.N - kt_lossless.size() -2*kt_complex.size() + 2;
 
-      beta_begin = real(beta_lossless[beta_lossless.size()-1])+.0001;
+      kt_begin = real(kt_lossless[kt_lossless.size()-1])+.0001;
       extra++;
     }
   }
- 
-  cout << "Done evan refin" << endl;
-  for (unsigned int i=0; i<beta_lossless.size(); i++)
-    cout << i << " " << beta_lossless[i] /2./pi*global.lambda 
-         << " " << beta_lossless[i] << endl;
-  cout << "Calls evan refined " << disp.times_called() << endl;
 
   
   
   //
-  // IV: Eliminate doubles and false zeros and trace modes to those of
-  //      true structure.
+  // III: Eliminate double and false zeros, find degenerate zeros
+  //      snap them to axis and trace modes to those of the true structure.
   //
 
-  if (global.precision_enhancement == 1)
-    remove_copies(&beta_lossless, eps_copies);
+  remove_copies   (&kt_lossless, eps_copies);
+  remove_opposites(&kt_lossless, eps_copies);
+  remove_elems    (&kt_lossless, Complex(0.0), eps_copies);
 
-  remove_elems(&beta_lossless, Complex(0.0), eps_copies);
-
-  if (beta_lossless.size() > global.N)
-    beta_lossless.erase(beta_lossless.begin()+global.N, beta_lossless.end());
-
-  global_slab.beta = 0.0;
-  vector<Complex> forbidden;
   for (unsigned int i=1; i<=left.get_inc()->N(); i++)
   {
     Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
+    Complex kt_i = sqrt(C*min_eps_mu_lossless - beta_i*beta_i);
 
-    remove_elems(&beta_lossless,  beta_i, eps_copies);
-    remove_elems(&beta_lossless, -beta_i, eps_copies);
+    remove_elems(&kt_lossless,  kt_i, eps_copies);
+    remove_elems(&kt_lossless, -kt_i, eps_copies);
+  }
 
-    forbidden.push_back( beta_i);
-    forbidden.push_back(-beta_i);
+  vector<Complex> kt_lossless_single = kt_lossless;
+  if (global.degenerate)
+    kt_lossless = mueller_multiple(disp, kt_lossless_single, 1e-11, 0, 100);
+  for (unsigned int i=0; i<kt_lossless.size(); i++)
+  {
+    if (abs(real(kt_lossless[i])) < abs(imag(kt_lossless[i])))
+      kt_lossless[i] = I*imag(kt_lossless[i]);
+    else
+      kt_lossless[i] =   real(kt_lossless[i]);
+  }
+
+  bool degenerate = kt_lossless.size() > kt_lossless_single.size();
+
+  for (unsigned int i=0; i<kt_complex.size(); i++)
+  {  
+    kt_lossless.push_back(kt_complex[i]);
+    kt_lossless.push_back(-real(kt_complex[i])+I*imag(kt_complex[i]));
   }
   
-  vector<Complex> beta;
-  if (global.chunk_tracing == true)
-    beta = traceroot_chunks
-      (beta_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
+  vector<Complex> kt, forbidden;
+  if (global.chunk_tracing && !degenerate)
+    kt = traceroot_chunks
+      (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
   else
-    beta = traceroot
-      (beta_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
+    kt = traceroot
+      (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);
 
-  cout << "Calls traceroot " << disp.times_called() << endl;
- 
+
 
   //
-  // V: Find modes in complex plane
+  // IV: Find modes in complex plane
   //
-
-#if 0
 
   disp.set_params(params);
+
+  Complex min_eps_mu = materials[0]->eps_mu();
   
-  if ( (branchcut || TBC) && (beta.size() < global.N) )
+  for (unsigned int i=1; i<materials.size(); i++)
   {
-    Real evan_beta_end = 2*(global.N-beta.size())*d_beta; // Not general!
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+  }
 
-    Real Re=real(global.C_upperright);
-    Real Im=imag(global.C_upperright);
+  if ( (branchcut || TBC) && (kt.size() < global.N) )
+  {
+    Real evan_kt_end = 2*(global.N-kt.size())*d_kt; // Not general!
 
-    Complex lowerleft (0.001,          0.001);
-    //Complex upperright(Re*evan_beta_end, Im*k0*max_n);
+    Complex lowerleft(0.001, 0.001);
     Complex upperright = global.C_upperright;
 
     const int sections = int(global.C_steps);
 
-    vector<Complex> beta_complex = allroots(disp, lowerleft, upperright);
+    vector<Complex> kt_complex = allroots(disp, lowerleft, upperright);
+
+    disp.set_params(params);
 
     // Eliminate doubles and false zeros.
 
-    remove_copies(&beta_complex, eps_copies);
+    remove_copies(&kt_complex, eps_copies);
 
-    for (unsigned int i=0; i<n_lossless.size(); i++)
+    for (unsigned int i=1; i<=left.get_inc()->N(); i++)
     {
-      Complex beta_i = k0*n_lossless[i]);
+      Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
+      Complex kt_i = sqrt(C*min_eps_mu - beta_i*beta_i);
 
-      remove_elems(&beta_complex,  beta_i, eps_copies);
-      remove_elems(&beta_complex, -beta_i, eps_copies);
+      remove_elems(&kt_complex,  kt_i, eps_copies);
+      remove_elems(&kt_complex, -kt_i, eps_copies);
     }
 
-    cout << "Found " << beta_complex.size() << " complex zeros in region "
-         << lowerleft << " " << upperright << "." <<endl;
+    std::ostringstream s;
+    s << "Found " << kt_complex.size() << " complex zeros in region "
+      << lowerleft << " " << upperright << ".";
+    py_print(s.str());
 
-    for (unsigned int i=0; i<beta_complex.size(); i++)
-      beta.push_back(beta_complex[i]);
+    for (unsigned int i=0; i<kt_complex.size(); i++)
+      kt.push_back(kt_complex[i]);
   }
-#endif
 
 
 
@@ -877,37 +764,24 @@ void Section2D::find_modes_from_scratch_by_track()
   //
   
   // In case of a homogeneous medium, add a TEM mode if appropriate.
-/*  
-  if (materials.size() == 1)
-    if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
-                                       && (abs(R_right + 1.0) < 1e-10) )
-      || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
-                                       && (abs(R_right - 1.0) < 1e-10) ) )
-      beta.insert(beta.begin(), 0);
-*/  
-  // Check if enough modes are found.
-
-  if (beta.size() < global.N)
-  {
-    std::ostringstream s;
-    s << "Error: didn't find enough modes ("
-      << beta.size() << "/" << global.N << ").";
-    py_error(s.str());
-    //exit (-1);
-  }
   
+  //if (materials.size() == 1)
+  //  if ( ( (global.polarisation == TM) && (abs(R_left  + 1.0) < 1e-10)
+  //                                     && (abs(R_right + 1.0) < 1e-10) )
+  //    || ( (global.polarisation == TE) && (abs(R_left  - 1.0) < 1e-10)
+  //                                     && (abs(R_right - 1.0) < 1e-10) ) )
+  //    kt.insert(kt.begin(), 0);
+
+
   // Create modeset.
 
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
   modeset.clear();
   
-  for (unsigned int i=0; i<beta.size(); i++)
+  for (unsigned int i=0; i<kt.size(); i++)
   { 
-    Complex kz = beta[i];
-
-    disp.set_params(params);
-    cout << "kz: " << kz << " f(kz) " << disp(kz) << endl;
+    Complex kz = sqrt(C*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -915,20 +789,38 @@ void Section2D::find_modes_from_scratch_by_track()
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
+
+    if (real(kt[i]) < -1e-6) // Backward mode.
+      kz = -kz;
+
+    disp.set_params(params);
+    cout << "n_eff" << kz/2./pi*global.lambda << "kt: " << kt[i] 
+         << " f(kt) " << disp(kt[i]) << endl;
     
-    cVector fw_field(global.N, fortranArray);
-    
-    Section2D_Mode *newmode 
-      = new Section2D_Mode(global.polarisation, kz, this, fw_field);
+    Section2D_Mode *newmode = new Section2D_Mode(global.polarisation,kz,this);
     
     newmode->normalise();
     
     modeset.push_back(newmode);
   }
-  
+
   sort_modes();
   truncate_N_modes();
+
+  // Test orthogonality.
+
+  return;
+
+  for (unsigned int i=0; i<modeset.size(); i++)
+    for (unsigned int j=0; j<modeset.size(); j++)
+      if (i !=j)
+        std::cout << i << " " << j << " " 
+              << overlap(dynamic_cast<Section2D_Mode*>(modeset[i]),
+                         dynamic_cast<Section2D_Mode*>(modeset[j]))
+                  << std::endl << std::flush;
 }
+
+
 
 
 
@@ -982,11 +874,8 @@ void Section2D::find_modes_by_sweep()
     if (abs(real(kz)) < 1e-12)
       if (imag(kz) > 0)
         kz = -kz;
-
-    cVector fw_field(global.N, fortranArray);
     
-    Section2D_Mode *newmode 
-      = new Section2D_Mode(global.polarisation, kz, this, fw_field);
+    Section2D_Mode *newmode = new Section2D_Mode(global.polarisation,kz,this);
       
     newmode->normalise();
 
