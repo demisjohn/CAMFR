@@ -513,15 +513,15 @@ void S_scheme_fields_S
     py_error("Error: invalid source fields in S_scheme_fields_S.");
     exit (-1);
   }
-  
+
   // Check type of chunks and call corresponding function.
 
   for (unsigned int i=0; i<chunks.size(); i++)
-    if (dynamic_cast<DenseScatterer*>(chunks[i].sc))
+    if (! chunks[i].sc->get_inc()->is_uniform())
       return calc_S_S(chunks, field, inc_right_bw);
   
   for (unsigned int i=0; i<chunks.size(); i++)
-    if (dynamic_cast<DiagScatterer*>(chunks[i].sc))
+    if (! chunks[i].sc->is_mono())
       return calc_S_S_diag(chunks, field, inc_right_bw);
 
   return calc_S_S_mono(chunks, field, inc_right_bw);
