@@ -337,7 +337,9 @@ void S_scheme(const vector<Chunk>& chunks, MonoScatterer* result)
     Complex res = 1.0-r12*pR21;
     Complex M = 1.0/res;
 
-    if (abs(res) < 1e-12) // Regularise in case of resonance.
+    // Regularise in case of resonance.
+    
+    if (abs(res) < global.unstable_exp_threshold)
       M = 0.0;
 
     result->set_R12(pT21 * M *  r12 * pT12  +  pR12);
