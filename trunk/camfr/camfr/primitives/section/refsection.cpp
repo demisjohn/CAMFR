@@ -30,9 +30,10 @@ class Overlap_x_ : public ComplexFunction
   public:
 
     Overlap_x_(const RefSectionMode* m1_,
-              const RefSectionMode* m2_,
-              const Complex& x_)
-      : m1(m1_), m2(m2_), x(x_) {}
+               const RefSectionMode* m2_,
+               const Section2D* profile_,
+               const Complex& x_)
+      : m1(m1_), m2(m2_), profile(profile_), x(x_) {}
 
     Complex operator()(const Complex& y)
     {
@@ -41,13 +42,18 @@ class Overlap_x_ : public ComplexFunction
       Field f1 = m1->field(Coord(x,y,0));
       Field f2 = m2->field(Coord(x,y,0));
 
-      return f1.E1 * f2.H2 - f1.E2 * f2.H1;
+      Complex eps = profile->eps_at(Coord(x,y,0));
+
+      //return f1.E1 * f2.H2 - f1.E2 * f2.H1; // Normalisation
+      
+      return eps / eps0 * f1.Ez * f2.Ez; // O_zz
     }
 
   protected:
 
     const RefSectionMode* m1;
     const RefSectionMode* m2;
+    const Section2D* profile;
     Complex x;
 };
 
@@ -63,28 +69,43 @@ class Overlap_ : public ComplexFunction
 {
   public:
 
-    Overlap_(const RefSectionMode* m1_, const RefSectionMode* m2_) 
-      : m1(m1_), m2(m2_) {}
+    Overlap_(const RefSectionMode* m1_, const RefSectionMode* m2_,
+             const Section2D* profile_, Slab* s_) 
+      : m1(m1_), m2(m2_), profile(profile_), s(s_) {}
 
     Complex operator()(const Complex& x)
     {
       counter++;
 
-      Overlap_x_ f(m1, m2, x);
+      Overlap_x_ f(m1, m2, profile, x);
 
       Wrap_real_to_real f_r(f);
       Wrap_real_to_imag f_i(f);
 
-      Real y_stop = real(m1->get_geom()->get_height());
+      vector<Complex> slab_disc = s->get_discontinuities();
+
+      // Loop over y materials.
+
+      Complex result = 0.0;
       
-      return patterson_quad(f_r, 0, y_stop, 1e-2, 4)
-         + I*patterson_quad(f_i, 0, y_stop, 1e-2, 4);
+      for (unsigned int l=0; l<slab_disc.size(); l++)
+      {
+        Complex y0 = l==0 ? 0.0 : slab_disc[l-1];
+        Complex y1 = slab_disc[l];
+      
+        result += patterson_quad(f_r, real(y0), real(y1), 1e-2, 4)
+          + I*patterson_quad(f_i, real(y0), real(y1), 1e-2, 4);
+      }
+
+      return result;
     }
 
   protected:
 
     const RefSectionMode* m1;
     const RefSectionMode* m2;
+    const Section2D* profile;
+    Slab* s;
 };
 
 
@@ -101,18 +122,29 @@ class Overlap_ : public ComplexFunction
 /////////////////////////////////////////////////////////////////////////////
 
 Complex overlap_numeric_(const RefSectionMode* mode_I,
-                         const RefSectionMode* mode_II)
+                         const RefSectionMode* mode_II,
+                         const Section2D* profile)
 {
-  Overlap_ f(mode_I, mode_II);
+  vector<Complex> section_disc = profile->discontinuities;
 
-  Wrap_real_to_real f_r(f);
-  Wrap_real_to_imag f_i(f);
+  Complex numeric = 0.0;
 
-  Real x_stop = real(mode_I->get_geom()->get_width());
+  for (unsigned int k=0; k<profile->slabs.size(); k++)
+  {
+    Complex x0 = k==0 ? 0.0 : section_disc[k-1];
+    Complex x1 = section_disc[k];
 
-  Complex numeric = patterson_quad(f_r, 0, x_stop, 1e-2, 4)
-     + I*patterson_quad(f_i, 0, x_stop, 1e-2, 4);
+    Slab* s = profile->slabs[k];
 
+    Overlap_ f(mode_I, mode_II, profile, s);
+
+    Wrap_real_to_real f_r(f);
+    Wrap_real_to_imag f_i(f);
+
+    numeric += patterson_quad(f_r, real(x0), real(x1), 1e-2, 4)
+      + I*patterson_quad(f_i, real(x0), real(x1), 1e-2, 4);
+  }
+  
   return numeric;
 }
 
@@ -287,6 +319,22 @@ Complex cos_cos(const Complex& a,  const Complex& b,
 }
 
 
+class sin_sin_ : public ComplexFunction
+{
+  public:
+
+    sin_sin_(const Complex &a_, const Complex& b_, 
+             const Complex& c_,const Complex& d_)
+      :a(a_), b(b_), c(c_), d(d_) {}
+
+    Complex operator()(const Complex& x)
+    {
+      return sin(a*x+d)*sin(c*x+d);
+    }
+    Complex a,b,c,d;
+};
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -304,13 +352,24 @@ Complex sin_sin(const Complex& a,  const Complex& b,
   if (abs(a+c) > 1e-6)
     T1 = 0.5/(a+c) * (sin((a+c)*x2+(b+d)) - sin((a+c)*x1+(b+d)));
   else
-    T1 = 0.5*(x2-x1)*sin(b+d);
+    T1 = 0.5*(x2-x1)*cos(b+d);
 
   Complex T2;
   if (abs(a-c) > 1e-6)
     T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));
   else
-    T2 = 0.5*(x2-x1)*sin(b-d);
+    T2 = 0.5*(x2-x1)*cos(b-d);
+
+/*
+  sin_sin_ f(a,b,c,d);
+  Wrap_real_to_real f_r(f);
+  Wrap_real_to_imag f_i(f);
+
+  Complex num =  patterson_quad(f_r, real(x1), real(x2), 1e-2, 4)
+             + I*patterson_quad(f_i, real(x1), real(x2), 1e-2, 4);  
+
+  std::cout << "***" << num << -T1+T2 << std::endl;
+*/
 
   return -T1+T2;
 }
@@ -318,7 +377,7 @@ Complex sin_sin(const Complex& a,  const Complex& b,
 
 
 /////////////////////////////////////////////////////////////////////////////
-//
+ //
 // RefSection::calc_overlap_matrices
 //  
 /////////////////////////////////////////////////////////////////////////////
@@ -335,8 +394,15 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
 
   for (int i=1; i<=n; i++)
   {
+
+    RefSectionMode* TE_i = dynamic_cast<RefSectionMode*>(modeset[i-1]);
+    RefSectionMode* TM_i = dynamic_cast<RefSectionMode*>(modeset[n+i-1]);
+    
     for (int j=i; j<=n; j++)
     {
+
+      RefSectionMode* TE_j = dynamic_cast<RefSectionMode*>(modeset[j-1]);
+      RefSectionMode* TM_j = dynamic_cast<RefSectionMode*>(modeset[n+j-1]);
 
       Complex O_EE_ij = 0.0; Complex O_MM_ij = 0.0;
       Complex O_EM_ij = 0.0; Complex O_ME_ij = 0.0;
@@ -369,8 +435,20 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
           //          << std::endl;
 
           // Calc O_zz.
+
+          O_zz_ij += -eps * TM_i->A * TM_j->A 
+            * TM_i->kt2() * TM_j->kt2() / TM_i->kz / TM_j->kz
+            * sin_sin(TM_i->kx, TM_i->kx0, TM_j->kx, TM_j->kx0, x0, x1)
+            * sin_sin(TM_i->ky, TM_i->ky0, TM_j->ky, TM_j->ky0, y0, y1);
+
+          //std::cout << O_zz_ij/eps0 << std::endl;
         }
       }
+
+      Complex num = overlap_numeric_(TM_i,TM_j,profile);
+      const Real omega  = 2*pi/global.lambda * c;
+      std::cout << i << " " << j << " " << O_zz_ij/eps0 << " " 
+                << num << std::endl;
 
       (*O_EE)(i,j) = O_EE_ij; (*O_EE)(j,i) = O_EE_ij;
       (*O_MM)(i,j) = O_MM_ij; (*O_MM)(j,i) = O_MM_ij;
