@@ -85,7 +85,7 @@ Complex overlap(const CircMode*  mode_I,
     for (unsigned int k=0; k<medium_II->radius.size(); k++)
       local_disc.push_back(medium_II->radius[k]);
 
-    remove_copies(&local_disc, 1e-6);
+    remove_copies(&local_disc, 1e-9);
 
     sort(local_disc.begin(), local_disc.end(), RealSorter());
 
