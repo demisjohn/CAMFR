@@ -34,15 +34,15 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def plot_matrix(z):
-
-    # Scale z and find appropriate colormap.
+def plot_matrix(z, r_x, r_y):
     
+    # Scale z and find appropriate colormap.
+
     z = flipud(z)
 
     height = z.shape[0]
     width  = z.shape[1]
-    
+
     zmax = max(max(z))
     zmin = min(min(z))
    
@@ -62,22 +62,35 @@ def plot_matrix(z):
     if (interval != 0):
         z *= (colors-1)/interval
 
-    # (re)size picture.
+    # delta_x, delta_y
+    
+    d_x = (r_x[-1] - r_x[0])/len(r_x)
+    d_y = (r_y[-1] - r_y[0])/len(r_y)
+    if (d_y > d_x) : d_x, d_y = 1, d_y/d_x
+    else :           d_x, d_y = d_x/d_y, 1
+
+    # (Re)size picture.
 
     area, scale = 100000, 1
-    if (height*width < area):
-        scale = int(math.sqrt(area/(height*width)))
+    if (height*width*d_x*d_y < area):
+        scale = math.sqrt(area/(height*width*d_x*d_y))
+
+    # Maintain aspect ratio.
+
+    scale_x = int(scale*d_x)
+    scale_y = int(scale*d_y)
 
     # Put picture on canvas.
 
     root = Tk()
-    canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
+    canvas = Canvas(root, width=scale_y*width, height=scale_x*height,
+                    bg="White")
     canvas.pack()
 
     for y in range(height):
         for x in range(width):
-            canvas.create_rectangle(scale*x+2,       scale*y+2,          \
-                                    scale*x+2+scale, scale*y+2+scale,    \
+            canvas.create_rectangle(scale_y*x+2,     scale_x*y+2,       \
+                                    scale_y*(x+1)+2, scale_x*(y+1)+2,   \
                                     fill=colormap[int(z[y,x])], width=0)
  
     root.mainloop()
@@ -90,9 +103,9 @@ def plot_matrix(z):
 #
 ##############################################################################
 
-def phasormovie(z):
+def phasormovie(z, r_x, r_y):
 
-    # Make movie-memory.
+    # Make movie memory.
     
     height = z.shape[0]
     width  = z.shape[1]    
@@ -119,43 +132,55 @@ def phasormovie(z):
             movie[Nr] = movie[Nr] * (colors-1)/interval
         else:
             movie[Nr] = movie[Nr] + colors/2.
+
+    # delta_x, delta_y
+
+    d_x = (r_x[-1] - r_x[0])/len(r_x)
+    d_y = (r_y[-1] - r_y[0])/len(r_y)
+    if (d_y > d_x) : d_x, d_y = 1, d_y/d_x
+    else :           d_x, d_y = d_x/d_y, 1
     
-    # (re)size picture.
+    # (Re)size picture.
 
     area, scale = 100000, 1
-    if (height*width < area):
-        scale = int(math.sqrt(area/(height*width)))
+    if (height*width*d_x*d_y < area):
+        scale = int(math.sqrt(area/(height*width*d_x*d_y)))
 
-    # Put picture on canvas.
+    # Maintain aspect ratio.
+
+    scale_x = int(scale*d_x)
+    scale_y = int(scale*d_y)
+
+    # Make canvas-shots out of the frames.
 
     root = Tk()
+    canvas = []
 
-    canvas = Canvas(root, width=scale*width, height=scale*height, bg="White")
-    canvas.pack()
+    for frame in movie:
+        shot = Canvas(root, width=scale_y*width, height=scale_x*height,
+                      bg="White")
+        for y in range(height):
+            for x in range(0,width):
+                shot.create_rectangle(scale_y*x+2,     scale_x*y+2,
+                                      scale_y*(x+1)+2, scale_x*(y+1)+2,
+                                      fill=colormap[int(frame[y,x])], width=0)
+        canvas.append(shot)    
 
-    for y in range(height):
-        for x in range(0,width):
-            canvas.create_rectangle(scale*x+2,       scale*y+2,          \
-                                    scale*x+2+scale, scale*y+2+scale,    \
-                                    fill=colormap[int(movie[0,y,x])], width=0)
-
-    # Close window procedure
+    # Close window procedure.
     
     stop = [0]    
     def callback(): stop[0] = 1 
     root.protocol("WM_DELETE_WINDOW", callback)
 
     # Animate picture.
-    
+
     while not stop[0]:
-        for frame in movie:
+        for x in range(frames):
             if stop[0]: break
-            object = 1   
-            for y in range(height):
-                for x in range(0, width):
-                    canvas.itemconfigure(object,fill=colormap[int(frame[y,x])])
-                    object += 1  
+            canvas[x].pack()
             root.update()
+            if (height*width < 4000): root.after(int(100))
+            canvas[x].forget()
 
     root.destroy()       
 
@@ -256,7 +281,7 @@ def plot_f(f, r_x, r_y):
       for i_x in range(len(r_x)):
         fz[i_x,i_y] = abs(f(r_x[i_x] + r_y[i_y]*1j))
 
-    plot_matrix(fz)
+    plot_matrix(fz, r_x, r_y)
 
 
 
@@ -291,7 +316,7 @@ def plot_n_stack(stack, r_x, r_z):
       for i_z in range(len(r_z)):
         n[i_x,i_z] = stack.n(Coord(r_x[i_x], 0, r_z[i_z])).real
 
-    plot_matrix(n)
+    plot_matrix(n, r_x, r_z)
 
 
 
@@ -340,7 +365,7 @@ def plot_field_stack(stack, component, r_x, r_z):
       for i_z in range(len(r_z)):
         f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    plot_matrix(f)
+    plot_matrix(f, r_x, r_z)
 
 
 
@@ -372,4 +397,4 @@ def animate_field(stack, component, r_x, r_z):
       for i_z in range(len(r_z)):
         f[i_x,i_z] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
-    phasormovie(f)
+    phasormovie(f, r_x, r_z)
