@@ -274,6 +274,8 @@ inline Real section_width(Section& s)
   {return real(s.get_width());}
 inline Real section_height(Section& s)
   {return real(s.get_height());}
+inline Complex sectionmode_n(SectionMode& m, Coord &c)
+  {return m.get_geom()->n_at(c);}
 
 
 
@@ -1086,6 +1088,7 @@ BOOST_PYTHON_MODULE(_camfr)
 
   class_<SectionMode, boost::noncopyable, bases<Mode> >
     ("SectionMode", no_init)
+    .def("n", sectionmode_n)
     ;
 }
 
