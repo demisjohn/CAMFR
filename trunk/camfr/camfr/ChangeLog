@@ -1,3 +1,7 @@
+2002-12-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Add SectionMode.
+
 2002-11-28  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* expression.h: Add remove_term_front.
