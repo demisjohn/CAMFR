@@ -288,6 +288,30 @@ class FlippedScatterer : public MultiScatterer
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: SquashedScatterer
+//
+//   A MultiScatterer which copies R and T from another scatterer, but
+//   discards all other internal information, i.e. it becomes an abstract
+//   scatterer with zero thickness.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+class SquashedScatterer : public DenseScatterer
+{
+  public:
+  
+    SquashedScatterer(DenseScatterer& sc);
+
+    std::vector<Material*> get_materials() const;
+
+    bool contains(const Material& m) const
+      {return (inc->contains(m) || ext->contains(m));}
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: TransparentScatterer
 //
 //   Transparent DiagScatterer, i.e. artificial interface between two
@@ -333,6 +357,17 @@ class E_Wall : public DiagScatterer
     bool recalc_needed()                   const {return false;}
 };
 
+class E_Wall_Mono : public MonoScatterer
+{
+  public:
+
+    E_Wall_Mono(Waveguide& w) : MonoScatterer(w, w) 
+      {R12 = -1.0; R21 = -1.0; 
+       T12 =  0.0; T21 =  1.0;}
+  
+};
+
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -357,6 +392,14 @@ class H_Wall : public DiagScatterer
     bool recalc_needed()                   const {return false;}
 };
 
+class H_Wall_Mono : public MonoScatterer
+{
+  public:
 
+    H_Wall_Mono(Waveguide& w) : MonoScatterer(w, w) 
+      {R12 = 1.0; R21 = 1.0; 
+       T12 = 0.0; T21 = 1.0;}
+  
+};
     
 #endif

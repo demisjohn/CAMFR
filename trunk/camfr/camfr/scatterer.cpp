@@ -105,7 +105,7 @@ void DenseScatterer::allocRT()
 /////////////////////////////////////////////////////////////////////////////
 
 void DenseScatterer::freeRT()
-{ 
+{
   R12.free();
   R21.free();
   T12.free();
@@ -416,6 +416,40 @@ void MonoScatterer::swap_RT_with(MonoScatterer& sc_m)
   tmp=R21; R21=sc_m.R21; sc_m.R21=tmp;
   tmp=T12; T12=sc_m.T12; sc_m.T12=tmp;
   tmp=T21; T21=sc_m.T21; sc_m.T21=tmp;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SquashedScatterer::SquashedScatterer
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+SquashedScatterer::SquashedScatterer(DenseScatterer& sc)
+  : DenseScatterer(*sc.get_inc(), *sc.get_ext())
+{
+  sc.calcRT();
+  copy_RT_from(sc);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SquashedScatterer::get_materials
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+std::vector<Material*> SquashedScatterer::get_materials() const
+{
+  std::vector<Material*> inc_materials = inc->get_materials();
+  std::vector<Material*> ext_materials = ext->get_materials();
+
+  for (unsigned int i=0; i<ext_materials.size(); i++)
+    inc_materials.push_back(ext_materials[i]);
+  
+  return inc_materials;
 }
 
 
