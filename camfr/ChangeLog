@@ -1,5 +1,10 @@
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* stack.h: Improve memory management.
+	* stack.cpp: Ditto.
+
+2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* field.cpp: Improve memory management.
 
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
@@ -10,6 +15,7 @@
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* scatterer.h: Add SquashedScatterer.
+	* scatterer.cpp: Ditto.
 	* camfr_wrap.cpp: Ditto.
 
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>

@@ -548,6 +548,7 @@ MonoStack::MonoStack(const Expression& e, unsigned int no_of_periods)
 
 void MonoStack::calcRT()
 {
+  int old_N = global.N;
   global.N = 1;
 
   if (!recalc_needed())
@@ -557,6 +558,8 @@ void MonoStack::calcRT()
     chunks[i].sc->calcRT();
   
   stack_calcRT<MonoStack>(this);
+
+  global.N = old_N;
 }
 
 
@@ -568,7 +571,8 @@ void MonoStack::calcRT()
 /////////////////////////////////////////////////////////////////////////////
 
 Stack::Stack(const Expression& e, unsigned int no_of_periods_)
-  : expression(e), no_of_periods(no_of_periods_), inc_field(fortranArray)
+  : expression(e), no_of_periods(no_of_periods_), 
+    inc_field(fortranArray), inc_field_bw(fortranArray)
 {
   sc = create_sc(expression, no_of_periods);
   flat_sc = create_sc(expression.flatten());
@@ -584,7 +588,8 @@ Stack::Stack(const Expression& e, unsigned int no_of_periods_)
 /////////////////////////////////////////////////////////////////////////////
 
 Stack::Stack(const Term& t)
-  : expression(Expression(t)), no_of_periods(1), inc_field(fortranArray)
+  : expression(Expression(t)), no_of_periods(1), 
+    inc_field(fortranArray), inc_field_bw(fortranArray)
 {
   sc = create_sc(expression, no_of_periods);
   flat_sc = create_sc(expression.flatten());
@@ -603,8 +608,14 @@ Stack::Stack(const Stack& s)
   : expression(s.expression), no_of_periods(s.no_of_periods),
     interface_positions(s.interface_positions),
     interface_field(s.interface_field),
-    inc_field(s.inc_field)
+    inc_field(fortranArray), inc_field_bw(fortranArray)
 {
+  inc_field.resize(s.inc_field.shape());
+  inc_field = s.inc_field;
+
+  inc_field_bw.resize(s.inc_field_bw.shape());
+  inc_field_bw = s.inc_field_bw;
+  
   sc = create_sc(expression, no_of_periods);
   flat_sc = create_sc(expression.flatten());
 }
@@ -630,6 +641,8 @@ void Stack::operator=(const Expression& e)
   calc_interface_positions();
 
   inc_field = 0;
+  inc_field_bw = 0;
+
   interface_field.clear();
 }
 
@@ -657,6 +670,7 @@ Stack& Stack::operator=(const Stack& s)
   calc_interface_positions();
   
   inc_field = s.inc_field;
+  inc_field_bw = s.inc_field_bw;
   interface_field = s.interface_field;
   
   return *this;
@@ -739,21 +753,21 @@ void Stack::freeRT()
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-void Stack::set_inc_field(const cVector& inc_field_,
-                          cVector* inc_field_bw_)
+void Stack::set_inc_field(const cVector& inc_field_, cVector* inc_field_bw_)
 {
-  inc_field.resize(global.N);
+  inc_field.resize(inc_field_.shape());
   inc_field = inc_field_;
-  
-  inc_field_bw.resize(global.N);
+
+  inc_field_bw.resize(inc_field.shape());
   if (inc_field_bw_)
   {
     if (global.field_calc != S_S)
     {
-      py_error("Error: backward incident field only supported with S_S");
+      py_error("Error: backward incident field only supported with S_S.");
       return;
     }
 
+    inc_field_bw.resize(inc_field_bw_->shape());
     inc_field_bw = *inc_field_bw_;
     bw_inc = true;
   }
@@ -781,7 +795,7 @@ cVector Stack::get_refl_field()
 
   calcRT();
 
-  cVector refl_field(global.N, fortranArray);
+  cVector refl_field(inc_field.rows(), fortranArray);
   refl_field.reference(multiply(as_multi()->get_R12(), inc_field));
 
   if (bw_inc)
@@ -808,7 +822,7 @@ cVector Stack::get_trans_field()
 
   calcRT();
 
-  cVector trans_field(global.N, fortranArray);
+  cVector trans_field(inc_field.rows(), fortranArray);
   trans_field.reference(multiply(as_multi()->get_T12(), inc_field));
 
   if (bw_inc)
@@ -838,7 +852,7 @@ FieldExpansion Stack::inc_field_expansion()
 
   calcRT();
 
-  cVector refl_field(global.N, fortranArray);
+  cVector refl_field(inc_field.rows(), fortranArray);
   refl_field.reference(multiply(as_multi()->get_R12(), inc_field));
 
   if (bw_inc)
@@ -871,7 +885,7 @@ FieldExpansion Stack::ext_field_expansion()
 
   calcRT();
 
-  cVector trans_field(global.N, fortranArray);
+  cVector trans_field(inc_field.rows(), fortranArray);
   trans_field.reference(multiply(as_multi()->get_T12(), inc_field));
 
   if (bw_inc)
@@ -1349,7 +1363,7 @@ void Stack::calc_interface_fields()
 
     calcRT();
 
-    cVector left_bw(global.N, fortranArray);
+    cVector left_bw(inc_field.rows(), fortranArray);
 
     if (as_multi())
     {
