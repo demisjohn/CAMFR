@@ -45,6 +45,7 @@ class SectionDisp : public ComplexFunction
     Complex calc_lapack3();
     Complex calc_lapack4();
     Complex calc_band();
+    Complex calc_field();
     Complex calc_arnoldi();
 
     Stack* left;

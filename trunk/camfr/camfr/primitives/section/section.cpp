@@ -20,6 +20,7 @@
 #include "../slab/slabmatrixcache.h"
 #include "../slab/isoslab/slaboverlap.h"
 #include "../slab/isoslab/slabmode.h"
+#include <fstream> // TMP
 
 using std::vector;
 using std::cout;
@@ -249,7 +250,8 @@ Section::Section(Expression& expression, int M1, int M2)
     }
   }
 
-  std::cout << "Core" << ex.get_term(max_eps_i)->get_wg()->get_core()->n() << std::endl;
+  std::cout << "Core" << ex.get_term(max_eps_i)->get_wg()->get_core()->n() 
+            << std::endl;
 
   // Create right hand side expression.
 
@@ -721,6 +723,14 @@ void Section2D::find_modes_from_series()
               << sqrt(kz2_coarse[i])/2./pi*global.lambda
               << sqrt(C0*min_eps_mu - kz2_coarse[i]) << std::endl;
 
+  std::ofstream ofile("coarse");
+  for (unsigned int i=0; i<kz2_coarse.size(); i++)
+  {
+    Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
+    ofile << real(kt) << " " << imag(kt) << std::endl;
+  }
+  ofile.close();
+
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
@@ -747,12 +757,26 @@ void Section2D::find_modes_from_series()
 
   // TODO: beta's of all sections are parasitic zeros.
 
+  std::ofstream branch_file("branch");
+  for (unsigned int k=0; k<slabs.size(); k++)
+  {
+    std::cout << "Slab" << k << std::endl;
+    
+    for (unsigned int i=1; i<=left.get_inc()->N(); i++)
+    {
+      Complex beta_i = slabs[k]->get_mode(i)->get_kz(); // = kz0
+      Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
+
+      std::cout << "False" << kt_i << std::endl;
+      branch_file << k << " " << real(kt_i) << " " << imag(kt_i) << std::endl;
+    }
+  }
+  branch_file.close();
+
   for (unsigned int i=1; i<=left.get_inc()->N(); i++)
   {
     Complex beta_i = left.get_inc()->get_mode(i)->get_kz();
     Complex kt_i = sqrt(C0*min_eps_mu - beta_i*beta_i);
-
-    std::cout << "False" << kt_i << std::endl;
 
     remove_elems(&kt,  kt_i, 1e-6);
     remove_elems(&kt, -kt_i, 1e-6);
