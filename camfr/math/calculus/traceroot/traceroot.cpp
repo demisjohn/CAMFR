@@ -64,7 +64,8 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   vector<Complex> zeros_jump;       // The last jump made by the zeros.
   vector<Complex> *oldest, *newest; // Points to either zeros or zeros_bis.
 
-  vector<bool> valid(estimate1.size(),true);
+  vector<bool>      valid(estimate1.size(),true);
+  vector<bool> degenerate(estimate1.size(),false);
   int fine_iters, trouble_index;
   bool trouble;
 
@@ -107,10 +108,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
   
   zeros_bis.clear();
   for (unsigned int i=0; i<estimate1.size(); i++)
-    if (abs(real(estimate1[i])) > abs(imag(estimate1[i])))
-      zeros_bis.push_back(estimate1[i] + 10*eps_coarse*I);
-    else
-      zeros_bis.push_back(estimate1[i] + 10*eps_coarse);
+    zeros_bis.push_back(estimate1[i] + 10*eps_coarse);
 
   zeros      = estimate1;
   params     = params1;
@@ -128,7 +126,8 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     {
       step       *= 5;
       fine_iters  = 0;
-      //cout << "Increasing step to " << abs(step) << endl;
+      //cout << "Increasing step to " 
+      //     << abs(step)/abs(params2-params1)*100 << "%" << endl;
     }
     
     params += step;
@@ -140,10 +139,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
       Real eps_stag = 2*eps_coarse;
       while ((abs(zeros[i]-zeros_bis[i]) < 2*eps_coarse))
       {
-        if (abs(real(zeros_bis[i])) > abs(imag(zeros_bis[i])))
-          zeros_bis[i] += eps_stag*I;
-        else
-          zeros_bis[i] += eps_stag;   
+        zeros_bis[i] += eps_stag;   
         eps_stag *= 2;
       }
     }
@@ -156,27 +152,38 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     trouble       = false;
     trouble_index = -1;
     
-    //cout << "Traceroot progress " << params1.size() << ":" 
+    //cout << "Traceroot progress : "
     //     << abs(params-params1)/abs(params2-params1)*100 << "% " << endl;
+    //cout << "step : " << abs(step)/abs(params2-params1)*100 << "%" << endl;
     
     zeros_try.clear();
     for (unsigned int i=0; !trouble && i<zeros.size(); i++)
       if (valid[i])
       {
+        degenerate[i] = false;
         vector<Complex> deflate;
         for (unsigned int j=0; j<zeros_try.size(); j++)
-          if (abs(zeros_try[j]-zeros[i]) < 0.05)
+          if (abs(zeros_try[j]-(*newest)[i]) < 0.05)
+          {
+            //cout << "deflate " << zeros_try[j] << endl;
             deflate.push_back(zeros_try[j]);
+          }
         
         zeros_try.push_back(mueller(f,zeros[i],zeros_bis[i],eps_coarse,
                                     &deflate,100,&trouble));
         if (trouble)
         {
           //cout << "Mueller didn't converge for " << zeros[i] << endl;
+          //mueller(f,zeros[i],zeros_bis[i],eps_coarse,&deflate,100,
+          //        &trouble,true);
           trouble_index = i;
           break;
         }
         
+        if ( !trouble && deflate.size()
+             && (abs(zeros_try.back() - (*newest)[i]) < 0.05) )
+          degenerate[i] = degenerate[i-1] = true;
+ 
         //cout << std::setprecision(6);
         //cout << i << " " << zeros[i] << " " << zeros_bis[i]
         //<< "->" << zeros_try[i] << " " << zeros_jump[i] << endl;
@@ -201,8 +208,8 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
       
     for (unsigned int i=0; !trouble && i<zeros_try.size(); i++)
       for (unsigned int j=i+1; j<zeros_try.size(); j++)       
-        if (    valid[i] && valid[j]
-            && (abs(zeros_try[i] - zeros_try[j]) < eps_copies) )
+        if (   valid[i] && valid[j] && !(degenerate[i] && degenerate[j])
+             && (abs(zeros_try[i] - zeros_try[j]) < eps_copies) )
         {
           //cout << "Zeros " <<i<< " and " <<j<< " are the same." << endl;
           trouble       = true;
@@ -259,14 +266,16 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     
     if (trouble)
     {
-      if (abs(step) > 1e-10) // Decrease step size and undo last move.
+      if (abs(step) > 1e-3*abs(params2 - params1)) 
+      // Decrease step size and undo last move.
       {
         params     -= step;
         step       /= 10.0;
         params     += step;
         fine_iters  = 0;
 
-        //cout << "Decreasing step to " << abs(step) << endl;
+        //cout << "Decreasing step to " << abs(step)/abs(params2-params1)*100 
+        // << "%" <<endl;
 
         if (s)
           *s << "-1 "
@@ -355,10 +364,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
         Real eps_stag = 2*eps_fine;
         while (abs(zeros[i]-zeros_bis[i]) < 2*eps_fine)
         {
-          if (abs(real(zeros_bis[i])) > abs(imag(zeros_bis[i])))
-            (*oldest)[i] += eps_stag*I;
-          else
-            (*oldest)[i] += eps_stag;
+          (*oldest)[i] += eps_stag;
           eps_stag *= 2;
         }
 
