@@ -180,7 +180,7 @@ Complex overlap(const SlabMode* mode_I,
   } // End loop over all regions.
 
   // Return final result.
-  
+
   return (mode_I->pol == TE) ? mode_II->get_kz0() / omega * (term1 + term2)
                              : mode_I ->get_kz0() / omega * (term1 - term2);
 }

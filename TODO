@@ -1,5 +1,6 @@
 CAMFR 3D:
 
+-windows memory leak
 -revisit calc_global in combination with arnoldi eigensolver.
 -calc_band --> calc_overlap: need normalisation for calc_global?
 -check if creation of extra interface in middle of core is needed
