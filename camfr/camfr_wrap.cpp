@@ -695,49 +695,44 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap Coord.
 
-  camfr.add(
-    class_<Coord>("Coord")
-    .def_init(args<const Real&, const Real&, const Real&>())
+  class_<Coord>("Coord", args<const Real&, const Real&, const Real&>())
     //.def_init(args<const Complex&, const Complex&, const Complex&,
     //                          Limit,          Limit,          Limit>())
     .def("__repr__", &Coord::repr)
-    );
+    ;
 
   // Wrap Field.
 
-  camfr.add(
-    class_<Field>("Field")
+  class_<Field>("Field", no_init)
     .def("E1",       field_E1)
     .def("E2",       field_E2)
     .def("Ez",       field_Ez)
     .def("H1",       field_H1)
     .def("H2",       field_H2)
     .def("Hz",       field_Hz)
-    .def("abs_E",    &Field::abs_E)
-    .def("abs_H",    &Field::abs_H)
     .def("S1",       &Field::S1)
     .def("S2",       &Field::S2)
     .def("Sz",       &Field::Sz)
+    .def("abs_E",    &Field::abs_E)
+    .def("abs_H",    &Field::abs_H)
+    .def("abs_S",    &Field::abs_S)
     .def("__repr__", &Field::repr)
-    );
+    ;
 
   // Wrap FieldExpansion.
 
-  camfr.add(
-    class_<FieldExpansion>("FieldExpansion")
+  class_<FieldExpansion>("FieldExpansion", no_init)
     .def("field",    &FieldExpansion::field)
     .def("__repr__", &FieldExpansion::repr)
-    );
+    ;
 
   // Wrap BaseMaterial.
 
-  camfr.add(class_<BaseMaterial, boost::noncopyable>("BaseMaterial"));
+  class_<BaseMaterial, boost::noncopyable>("BaseMaterial", no_init);
 
   // Wrap Material.
 
-  camfr.add(
-    class_<Material, bases<BaseMaterial> >("Material")
-    .def_init(args<const Complex&>())
+  class_<Material, bases<BaseMaterial> >("Material", args<const Complex&>())
     .def_init(args<const Complex&, const Complex&>()) // TODO: def. arg
     .def("__call__", material_to_term)
     .def("n",        &Material::n)
@@ -747,27 +742,25 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("mu",       &Material::mu)
     .def("gain",     &Material::gain)
     .def("__repr__", &Material::repr)
-    );
+    ;
 
   // Wrap Material_length.
 
-  camfr.add(class_<Material_length>("Material_length"));
+  class_<Material_length>("Material_length", no_init);
 
   // Wrap Mode.
 
-  camfr.add(
-    class_<Mode>("Mode")
+  class_<Mode>("Mode", no_init)
     .def("field",    &Mode::field)
     .def("n_eff",    &Mode::n_eff)
     .def("kz",       &Mode::get_kz)
     .def("pol",      mode_pol)
     .def("__repr__", &Mode::repr)
-    );
+    ;
 
   // Wrap Waveguide.
-  
-  camfr.add(
-    class_<Waveguide, boost::noncopyable>("Waveguide")
+
+  class_<Waveguide, boost::noncopyable>("Waveguide", no_init)
     .def("core",     &Waveguide::get_core,
          return_value_policy<reference_existing_object>())
     .def("eps",      &Waveguide::eps_at)
@@ -783,31 +776,27 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("calc",     &Waveguide::find_modes)
     .def("__repr__", &Waveguide::repr)
     .def("__call__", waveguide_to_term)
-    );
+    ;
 
   // Wrap Waveguide_length.
 
-  camfr.add(class_<Waveguide_length>("Waveguide_length"));
+  class_<Waveguide_length>("Waveguide_length", no_init);
 
   // Wrap MultiWaveguide.
 
-  camfr.add(
-    class_<MultiWaveguide, bases<Waveguide>, boost::noncopyable>
-    ("MultiWaveguide")
+  class_<MultiWaveguide, bases<Waveguide>, boost::noncopyable>
+    ("MultiWaveguide", no_init)
     .def("field_from_source", &MultiWaveguide::field_from_source)
-    );
+    ;
 
   // Wrap MonoWaveguide.
 
-  camfr.add(
-    class_<MonoWaveguide, bases<Waveguide>, boost::noncopyable>
-    ("MonoWaveguide")
-    );
+  class_<MonoWaveguide, bases<Waveguide>, boost::noncopyable>
+    ("MonoWaveguide", no_init);
 
   // Wrap Scatterer.
 
-  camfr.add(
-    class_<Scatterer, boost::noncopyable>("Scatterer")
+  class_<Scatterer, boost::noncopyable>("Scatterer", no_init)
     .def("calc", &Scatterer::calcRT)
     .def("free", &Scatterer::freeRT)
     .def("inc",  &Scatterer::get_inc,
@@ -816,62 +805,44 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
          return_value_policy<reference_existing_object>())
     .def(self + Expression())
     .def(self + Term())
-    );
+    ;
 
   // Wrap MultiScatterer.
 
-  camfr.add(
-    class_<MultiScatterer, bases<Scatterer>, boost::noncopyable>
-    ("MultiScatterer")
-    );
+  class_<MultiScatterer, bases<Scatterer>, boost::noncopyable>
+    ("MultiScatterer", no_init);
 
   // Wrap DenseScatterer.
 
-  camfr.add(
-    class_<DenseScatterer, bases<MultiScatterer>, boost::noncopyable>
-    ("DenseScatterer")
-    );
+  class_<DenseScatterer, bases<MultiScatterer>, boost::noncopyable>
+    ("DenseScatterer", no_init);
 
   // Wrap DiagScatterer.
 
-  camfr.add(
-    class_<DiagScatterer, bases<MultiScatterer>, boost::noncopyable>
-    ("DiagScatterer")
-    );
+  class_<DiagScatterer, bases<MultiScatterer>, boost::noncopyable>
+    ("DiagScatterer", no_init);
 
   // Wrap MonoScatterer.
-  
-  camfr.add(
-    class_<MonoScatterer, bases<Scatterer>, boost::noncopyable>
-    ("MonoScatterer")
-    );
+
+  class_<MonoScatterer, bases<Scatterer>, boost::noncopyable>
+    ("MonoScatterer", no_init);
 
   // Wrap FlippedScatterer.
 
-  camfr.add(
-    class_<FlippedScatterer, bases<MultiScatterer> >("FlippedScatterer")
-    .def_init(args<MultiScatterer&>())
-    );
+  class_<FlippedScatterer, bases<MultiScatterer> >
+    ("FlippedScatterer", args<MultiScatterer&>());
 
   // Wrap E_Wall.
 
-  camfr.add(
-    class_<E_Wall, bases<DiagScatterer> >("E_Wall")
-    .def_init(args<Waveguide&>())
-    );
+  class_<E_Wall, bases<DiagScatterer> >("E_Wall", args<Waveguide&>());
 
   // Wrap H_Wall.
 
-  camfr.add(
-    class_<H_Wall, bases<DiagScatterer> >("H_Wall")
-    .def_init(args<Waveguide&>())
-    );
+  class_<H_Wall, bases<DiagScatterer> >("H_Wall", args<Waveguide&>());
 
   // Wrap Expression.
 
-  camfr.add(
-    class_<Expression>("Expression")
-    .def_init(args<>())
+  class_<Expression>("Expression")
     .def_init(args<const Term&>())
     .def_init(args<const Expression&>())
     .def("flatten",  &Expression::flatten)
@@ -886,13 +857,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def(self + Term())
     .def(self * int())
     .def(int() * self)
-    );
+    ;
 
   // Wrap Term.
 
-  camfr.add(
-    class_<Term>("Term")
-    .def_init(args<Scatterer&>())
+  class_<Term>("Term", args<Scatterer&>())
     .def_init(args<Stack&>())
     .def_init(args<const Expression&>())
     .def("inc",  &Term::get_inc,
@@ -904,13 +873,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def(self + Expression())
     .def(self * int())
     .def(int() * self)
-    );
+    ;
 
   // Wrap Stack.
 
-  camfr.add(
-    class_<Stack>("Stack")
-    .def_init(args<const Expression&>())
+  class_<Stack>("Stack", args<const Expression&>())
     .def_init(args<const Term&>())
     .def("calc",                     &Stack::calcRT)
     .def("free",                     &Stack::freeRT)
@@ -945,13 +912,11 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("T21",                      stack_T21)
     .def(self + Expression())
     .def(self + Term())
-    );
+    ;
 
   // Wrap Cavity.
 
-  camfr.add(
-    class_<Cavity>("Cavity")
-    .def_init(args<Stack&, Stack&>())
+  class_<Cavity>("Cavity", args<Stack&, Stack&>())
     .def("find_modes_in_region", cavity_find_modes_in_region_3)
     .def("find_modes_in_region", cavity_find_modes_in_region_7)
     .def("find_mode",            cavity_find_mode_2)
@@ -959,83 +924,71 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("sigma",                cavity_calc_sigma)
     .def("set_source",           cavity_set_source)
     .def("field",                &Cavity::field)
-    );
+    ;
 
   // Wrap BlochStack.
 
-  camfr.add(
-    class_<BlochStack, bases<MultiWaveguide> >("BlochStack")
-    .def_init(args<const Expression&>())
+  class_<BlochStack, bases<MultiWaveguide> >
+    ("BlochStack", args<const Expression&>())
     .def("mode",        blochstack_get_mode,
          return_value_policy<reference_existing_object>())
     .def("length",      blochstack_length)
     .def("beta_vector", &BlochStack::get_beta_vector)
     .def("__repr__",    &BlochStack::repr)
-    );
+    ;
 
   // Wrap BlochMode.
 
-  camfr.add(
-    class_<BlochMode, bases<Mode> >("BlochMode")
+  class_<BlochMode, bases<Mode> >("BlochMode", no_init)
     .def("fw_field", &BlochMode::fw_field)
     .def("bw_field", &BlochMode::bw_field)
     .def("S_flux",   &BlochMode::S_flux)
-    );
+    ;
 
   // Wrap InfStack.
 
-  camfr.add(
-    class_<InfStack, bases<DenseScatterer> >("InfStack")
-    .def_init(args<const Expression&>())
+  class_<InfStack, bases<DenseScatterer> >
+    ("InfStack", args<const Expression&>())
     .def("R12", &InfStack::get_R12,
          return_value_policy<reference_existing_object>())
-    );
+    ;
 
   // Wrap RealFunction.
-  
-  camfr.add(
-    class_<RealFunction, boost::noncopyable>("RealFunction")
+
+  class_<RealFunction, boost::noncopyable>("RealFunction", no_init)
     .def("times_called", &RealFunction::times_called)
     .def("__call__",     &RealFunction::operator())
-    );
+    ;
 
   // Wrap ComplexFunction.
 
-  camfr.add(
-    class_<ComplexFunction, boost::noncopyable>("RealFunction")
+  class_<ComplexFunction, boost::noncopyable>("RealFunction", no_init)
     .def("times_called", &ComplexFunction::times_called)
     .def("__call__",     &ComplexFunction::operator())
-    );
+    ;
 
   // Wrap Planar.
 
-  camfr.add(
-    class_<Planar, bases<MonoWaveguide> >("Planar")
-    .def_init(args<Material&>())
+  class_<Planar, bases<MonoWaveguide> >("Planar", args<Material&>())
     .def("set_theta", &Planar::set_theta)
-    );
+    ;
 
   // Wrap Circ.
 
-  camfr.add(
-    class_<Circ, bases<MultiWaveguide> >("Circ")
-    .def_init(args<Term&>())
+  class_<Circ, bases<MultiWaveguide> >("Circ", args<Term&>())
     .def_init(args<Expression&>())
-    );
+    ;
 
   // Wrap SlabWall.
 
-  camfr.add(
-    class_<SlabWall, boost::noncopyable>("SlabWall")
+  class_<SlabWall, boost::noncopyable>("SlabWall", no_init)
     .def("R", &SlabWall::get_R12)
-    );
+    ;
 
   // Wrap SlabWallMixed.
 
-  camfr.add(
-    class_<SlabWallMixed, bases<SlabWall> >("SlabWallMixed")
-    .def_init(args<const Complex&, const Complex&>())
-    );
+  class_<SlabWallMixed, bases<SlabWall> >
+    ("SlabWallMixed", args<const Complex&, const Complex&>());
 
   //camfr.add(boost::python::make_ref(slab_E_wall),    "slab_E_wall");
   //camfr.add(boost::python::make_ref(slab_H_wall),    "slab_H_wall");
@@ -1043,31 +996,24 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
 
   // Wrap SlabWall_TBC.
 
-  camfr.add(
-    class_<SlabWall_TBC, bases<SlabWall> >("SlabWall_TBC")
-    .def_init(args<const Complex&, const Material&>())
-    );
+  class_<SlabWall_TBC, bases<SlabWall> >
+    ("SlabWall_TBC", args<const Complex&, const Material&>());
 
   // Wrap SlabWall_PC.
 
-  camfr.add(
-    class_<SlabWall_PC, bases<SlabWall> >("SlabWall_PC")
-    .def_init(args<const Expression&>())
-    );
+  class_<SlabWall_PC, bases<SlabWall> >
+    ("SlabWall_PC", args<const Expression&>());
 
   // Wrap SlabDisp.
 
-  camfr.add(
-    class_<SlabDisp, bases<ComplexFunction> >("SlabDisp")
-    .def_init(args<Expression&, Real>())
+  class_<SlabDisp, bases<ComplexFunction> >
+    ("SlabDisp", args<Expression&, Real>())
     .def_init(args<Expression&, Real, SlabWall*, SlabWall*>())
-    );
+    ;
 
   // Wrap Slab.
 
-  camfr.add(
-    class_<Slab, bases<MultiWaveguide> >("Slab")
-    .def_init(args<const Term&>())
+  class_<Slab, bases<MultiWaveguide> >("Slab", args<const Term&>())
     .def_init(args<const Expression&>())
     .def("set_lower_wall",    &Slab::set_left_wall)
     .def("set_upper_wall",    &Slab::set_right_wall)
@@ -1075,24 +1021,21 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
     .def("expand_field",      slab_expand_field)
     .def("expand_gaussian",   slab_expand_gaussian) 
     .def("expand_plane_wave", slab_expand_plane_wave)
-    );
+    ;
 
   // Wrap SectionDisp.
 
-  camfr.add(
-    class_<SectionDisp, bases<ComplexFunction> >("SectionDisp")
-    .def_init(args<Stack&, Stack&, Real, int>())
-    );
+  class_<SectionDisp, bases<ComplexFunction> >
+    ("SectionDisp", args<Stack&, Stack&, Real, int>());
 
   // Wrap Section.
 
-  camfr.add(
-    class_<Section, bases<MultiWaveguide> >("Section")
-    .def_init(args<const Expression&>())
+  class_<Section, bases<MultiWaveguide> >
+  ("Section", args<const Expression&>())
     .def_init(args<const Expression&, int>())
     .def_init(args<const Expression&, const Expression&>())
     .def_init(args<const Expression&, const Expression&, int>())
     .def("width", section_width)
-    );
+    ;
 }
 

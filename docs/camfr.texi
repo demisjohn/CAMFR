@@ -24,7 +24,7 @@ END-INFO-DIR-ENTRY
 @sp 10
 @title {CAMFR manual}
 @subtitle {version 1.0}
-@subtitle {August, 2002}
+@subtitle {September, 2002}
 @author Peter Bienstman
 
 @page
@@ -2770,6 +2770,8 @@ cylindrical systems) of Poynting vector @code{E x H*}.
 @code{abs_E()}: magnitude of @code{E} field.
 @item
 @code{abs_H()}: magnitude of @code{H} field.
+@item
+@code{abs_S()}: magnitude of Poynting vector.
 @end itemize
 
 

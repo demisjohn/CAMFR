@@ -10,11 +10,12 @@ CAMFR 1.0:
    period
  - more robust method of calculating Bloch modes (Lieven Vanholme)
    and their field profiles
+ - Matlab link under Windows is by default enabled and installed
  - integrated plotting and animation routines for field profiles in a stack
-   (Lieven Vanholme)
+   (Lieven Vanholme), optionally using Matlab as backend
  - added stack.n(), stack.mu() and stack.eps()
  - added Poynting vector components field.S1(), field.S2() and field.Sz()
- - Matlab link under Windows is by default enabled and installed
+   and its magnitude field.abs_S()
  - better handling of loosely coupled or degenerate waveguides
  - better handling of metals, also metals with purely imaginary refractive
    index
