@@ -3,10 +3,10 @@
 
 # Compilers to be used.
 
-cc   = "icl"
-cxx  = "icl"
-f77  = "ifl"
-link = 'xilink' 
+cc  = "icl"
+cxx = "icl"
+f77 = "ifl"
+link = 'xilink'
 
 # Compiler flags.
 #
@@ -18,46 +18,61 @@ link = 'xilink'
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
 # compiler flags to test: /Oa /Gr /Oy /Qip(o)(-wg)
-# profiling: /Qprof_gen , run , /Qprof_use
+# profiling: /Qprof_gen , run , /Qprof_use  (use another Qprof_dir)
 
-flags_base = "/nologo /GR /GX /MD -Qoption,cpp,--new_for_init \
-	-Qprof_dir D:\camfr\camfr -DNDEBUG \
-	-DFORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES"
+flags_base = "/nologo /G5 /O3 /MD -Qoption,cpp,--new_for_init \
+      /Qprof_use \
+    -Qprof_dir D:\camfrcode\camfr1.1 -DNDEBUG \
+    -DFORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES"
 
-flags_noopt = flags_base + " /Od /Ob0"
-flags       = flags_base + " /QxK /O3"
-fflags      = flags_base + " /Qlowercase /4L132"
-link_flags = "/NODEFAULTLIB:libc.lib" 
+
+flags_noopt = flags_base + " /Od /Ob0 "
+flags       = flags_base + " /GR /GX /Qprec "                 
+fflags      = flags_base + " /Qlowercase /4L132  "
+
+link_flags = "/NODEFAULTLIB:libc.lib"
 
 # Include directories.
 
-include_dirs = ["D:/blitz/blitz-20001213", 
-                "D:/boost_cvs",
+include_dirs =[ "D:/lib/blitz-20001213",
+                "D:/lib/boost/boost_1_29_0",
                 "C:/Python22/include"]
 
 # Library directories.
 
-library_dirs = ["D:/blitz/blitz-20001213/lib", 
-                "D:/progra~1/compiler60/ia32/lib", 
-                "C:/python22/libs", 
-                "D:/boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic"] 
-
+library_dirs = [  "D:/lib/blitz-20001213/lib",
+                  "D:/Micros~/VB98",     
+                  "D:/progra~1/compiler70/ia32/lib",
+                  "C:/python22/libs",
+                  "D:/lib/boost/boost_1_29_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic"]
+		
 # Library names.
- 
-libs = ["bpl", "python22", "blitz", "libf90MD"] 
 
-# Command to strip library of excess symbols. 
+libs = ["boost_python", "python22", "blitz", "libf90MD" ]
 
-dllsuffix = ".dll" 
-strip_command = "" 
+# Command to strip library of excess symbols.
+
+dllsuffix = ".dll"
+strip_command = ""
+
+
+# all pil scripts and libs, something shorter once...?
+import os
+pilpath	    = "D:\\camfrcode\\pil\\" 
+all_pil_files = os.listdir(pilpath)
+pillist     = []
+
+for n in all_pil_files: pillist.append(pilpath+ n)
 
 # Extra files to copy to installation directory.
 extra_files = [ \
-   "D:\\camfrcode/doc/camfr.pdf", 
-   "D:\\camfrcode/pymat/build/lib.win32-2.2/pymat.pyd", 
-   "D:\\boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
-   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libmmd.dll", 
-   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libIEPCF90MD.dll", 
-   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libF90MD.dll", 
-   "D:\\progra~1/Intel/Compiler60/IA32/Lib/libintrinsMD.dll" 
-   ]
+		("doc", ["D:\\camfrcode/doc/camfr.pdf"]),
+		(".", [ "D:\\camfrcode/pymat/build/lib.win32-2.2/pymat.pyd",
+                "D:\\lib/boost/boost_1_29_0/libs/python/build/bin/boost_python.dll/intel-win32/release/runtime-link-dynamic/boost_python.dll",
+                "D:\\progra~1/Intel/Compiler70/IA32/Lib/libmmd.dll",
+                "D:\\progra~1/Intel/Compiler70/IA32/Lib/libIEPCF90MD.dll",
+                "D:\\progra~1/Intel/Compiler70/IA32/Lib/libF90MD.dll",
+                "D:\\progra~1/Intel/Compiler70/IA32/Lib/libintrinsMD.dll"]),
+		("./.." , ["visualisation/pil.pth"]),
+		("pil" , pillist )
+		]
