@@ -132,7 +132,6 @@ class Slab : public MultiWaveguide
     
     Complex eps_at(const Coord& coord) const {return s->eps_at(coord);}
     Complex  mu_at(const Coord& coord) const {return s-> mu_at(coord);}
-    Complex   n_at(const Coord& coord) const {return s->  n_at(coord);}
     
     int N() const {return s->N();}
 
