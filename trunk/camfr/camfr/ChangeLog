@@ -1,6 +1,10 @@
+2002-03-14  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* mode.h: Sort TE modes and TM modes.
+
 2002-03-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* stack.cpp: Remove unrequired casts..
+	* stack.cpp: Remove unrequired casts.
 
 2002-03-06  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
