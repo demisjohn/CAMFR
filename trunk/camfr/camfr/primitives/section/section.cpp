@@ -180,7 +180,7 @@ void SectionImpl::calc_overlap_matrices
 
     for (int i=1; i<=int(global.N); i++)   
       for (int j=1; j<=int(global.N); j++)
-      {
+      {        
         (*O_I_II)(i,j) += overlap_slice
           (dynamic_cast<SectionMode*>(medium_I ->get_mode(i)),
            dynamic_cast<SectionMode*>(medium_II->get_mode(j)),
@@ -1072,6 +1072,9 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
   if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
       N--; // Note: don't do this for HH since it has a dummy solution.
+
+  global_section.M = M;
+  global_section.N = N; 
 
   Complex alpha0 = (abs( R_left*R_right-1.0) < 1e-10) ? 0 : pi/get_width()/2.;
   Complex  beta0 = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : pi/get_height()/2.;

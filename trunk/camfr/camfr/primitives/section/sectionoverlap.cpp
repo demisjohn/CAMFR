@@ -411,7 +411,7 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
       result += (*Ex)(i1)*(*Hy)(i2) - (*Ey)(i1)*(*Hx)(i2);
     }
 
-  //Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
+  Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
 
   //if (abs(numeric - W*H*result) > 1e-4)
   //  std::cout << "overlap " << numeric << " " << W*H*result 
