@@ -35,7 +35,7 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,OS,snap,0,0};
+SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,snap,0,0,false};
 
 
 
@@ -954,12 +954,14 @@ cMatrix fourier_eps_2D_y_x(const vector<Slab*>& slabs,
     for (int m=-M; m<=M; m++)
       for (int n=-N; n<=N; n++)
       {
-        int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+        //int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+        int i1 = (n+N+1) + (m+M)*(2*N+1);
       
         for (int j=-M; j<=M; j++)
           for (int l=-N; l<=N; l++)
           {
-            int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+            //int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+            int i2 = (l+N+1) + (j+M)*(2*N+1);
 
             result(i1,i2) += fourier_1D_x(m-j + 2*M+1) *
                                 inv_eps_y(n   + N+1, l + N+1);
@@ -1025,8 +1027,9 @@ cMatrix fourier_eps_2D_y_x_safe(const vector<Slab*>& slabs,
   for (int m=-M; m<=M; m++)
     for (int n=-N; n<=N; n++)
     {
-      int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
-      
+      //int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+      int i1 = (n+N+1) + (m+M)*(2*N+1);  
+   
       for (int j=-M; j<=M; j++)
         for (int l=-N; l<=N; l++)
         {
@@ -1037,7 +1040,8 @@ cMatrix fourier_eps_2D_y_x_safe(const vector<Slab*>& slabs,
           cVector fourier_1D_x(4*M+1,fortranArray);
           fourier_1D_x = fourier(f_x, disc_x, 2*M, NULL, extend);
   
-          int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+          //int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+          int i2 = (l+N+1) + (j+M)*(2*N+1);
 
           result(i1,i2) = fourier_1D_x(m-j + 2*M+1);
         }
@@ -1110,12 +1114,14 @@ cMatrix fourier_eps_2D_y_x_bis(const vector<Slab*>& slabs,
     for (int m=-M; m<=M; m++)
       for (int n=-N; n<=N; n++)
       {
-        int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+        //int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
+        int i1 = (n+N+1) + (m+M)*(2*N+1);
       
         for (int j=-M; j<=M; j++)
           for (int l=-N; l<=N; l++)
           {
-            int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+            //int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+            int i2 = (l+N+1) + (j+M)*(2*N+1);
 
             result(i1,i2) += fourier_1D_x(m-j + 2*M+1) *
                                 inv_eps_y(n   + N+1, l + N+1);
@@ -1124,7 +1130,12 @@ cMatrix fourier_eps_2D_y_x_bis(const vector<Slab*>& slabs,
   }
 
   cMatrix inv_result(MN,MN,fortranArray);
-  inv_result.reference(invert(result));  
+
+  if (global.stability != SVD)
+    inv_result.reference(invert(result));
+  else
+    inv_result.reference(invert_svd(result));
+
   return inv_result;
 }
 
@@ -1255,6 +1266,8 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
       N--; // Note: don't do this for HH since it has a dummy solution.
+
+  // M = N = global.N; // TMP
   
   global_section.M = M;
   global_section.N = N; 
@@ -1297,11 +1310,13 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     for (int n=-N; n<=N; n++)
     {
       int i1 = (m+M+1) + (n+N)*(2*M+1); // ***
-      
+      //int i1 = (n+N+1) + (m+M)*(2*N+1); 
+     
       for (int j=-M; j<=M; j++)
         for (int l=-N; l<=N; l++)
         {
           int i2 = (j+M+1) + (l+N)*(2*M+1); // ***
+          //int i2 = (l+N+1) + (j+M)*(2*N+1);
 
           eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1);
 
@@ -1315,7 +1330,10 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   if (Li) // Li formulation.
   {
     inv_eps_2.resize(MN,MN);
-    inv_eps_2.reference(invert(eps));
+    if (global.stability != SVD)
+      inv_eps_2.reference(invert(eps));
+    else
+      inv_eps_2.reference(invert_svd(eps));      
   }
 
   // Calculate fourier_eps_2D_y_x.
@@ -1332,13 +1350,13 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     //rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
     //eps_x_y.reference(fourier_eps_2D_y_x(slabs_rot, disc_rot, N, M, extend));
 
-    eps_y_x.reference(fourier_eps_2D_y_x_safe(slabs,disc,M,N,extend));
-    rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
-    eps_x_y.reference(fourier_eps_2D_y_x_safe(slabs_rot,disc_rot,N,M,extend));
-
+    //eps_y_x.reference(fourier_eps_2D_y_x_safe(slabs,disc,M,N,extend));
     //rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
-    //eps_y_x.reference(fourier_eps_2D_y_x_bis(slabs_rot,disc_rot,N,M,extend));
-    //eps_x_y.reference(fourier_eps_2D_y_x    (slabs_rot,disc_rot,N,M,extend));
+    //eps_x_y.reference(fourier_eps_2D_y_x_safe(slabs_rot,disc_rot,N,M,extend));
+
+    rotate_slabs(slabs, disc, &slabs_rot, &disc_rot);
+    eps_y_x.reference(fourier_eps_2D_y_x_bis(slabs_rot,disc_rot,N,M,extend));
+    eps_x_y.reference(fourier_eps_2D_y_x    (slabs_rot,disc_rot,N,M,extend));
   }
 
   // Calculate alpha and beta vector.
@@ -1350,10 +1368,13 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     for (int n=-N; n<=N; n++)
     {      
       int i = (m+M+1) + (n+N)*(2*M+1); // ***
+      
+      //int i = (n+N+1) + (m+M)*(2*N+1);
 
       alpha(i) = alpha0 + m*2.*pi/get_width()/2.;
-      beta(i) =   beta0 + n*2.*pi/get_height()/2.;
+       beta(i) =  beta0 + n*2.*pi/get_height()/2.;
     }
+
 
   //
   // Li formulation.
@@ -1456,7 +1477,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   cMatrix FG(2*MN,2*MN,fortranArray); 
   FG.reference(multiply(F,G));
 
-
+/*
   cVector E(2*MN,fortranArray); 
   cMatrix eig(2*MN,2*MN,fortranArray); 
 
@@ -1467,7 +1488,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   for (int i=1; i<=eig.columns(); i++)
   {
-    std::cout << "eig " << i << " " << sqrt(E(i)/k0/k0)/k0 << std::endl;
+    //std::cout << "eig " << i << " " << sqrt(E(i)/k0/k0)/k0 << std::endl;
     
     //for (int m=-M; m<=M; m++)
     //  for (int n=-N; n<=N; n++)
@@ -1479,7 +1500,16 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     //std::cout << std::endl;
   }
 
+  vector<Complex> neff;
+  for (int i=1; i<= E.rows(); i++)
+    neff.push_back(sqrt(E(i)/k0/k0)/k0);
+  std::sort(neff.begin(), neff.end(),RealSorter());
+
+  for (int i=neff.size()-1; i>=0; i--)
+    std::cout << "full " << neff.size()-i-1  << " " << neff[i] << std::endl;
+
   exit (-1);
+*/
   
   //
   // Reduced eigenvalue problem.
@@ -1645,16 +1675,6 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   //for (int i=0; i<neff_.size(); i++)
   //  std::cout << "reduced " << i << " " << neff_[i] << std::endl;
 
-/*
-  vector<Complex> neff;
-  for (int i=1; i<= E.rows(); i++)
-    neff.push_back(sqrt(E(i)/k0/k0)/k0);
-  std::sort(neff.begin(), neff.end(),RealSorter());
-
-  for (int i=0; i<neff.size(); i++)
-    std::cout << "full " << i << " " << neff[i] << std::endl;
-*/  
-
   std::cout << "Eigenproblem size " << 2*MN_ << std::endl;
 
   // Calculate field expansion.
@@ -1804,7 +1824,11 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       delete estimates.back();
       estimates.erase(estimates.end()-1);
     }
-  
+
+  std::ostringstream s;
+  s << "Found " << estimates.size() << " estimates.";
+  py_print(s.str());
+
   return estimates;
 }
   
@@ -1827,21 +1851,25 @@ void Section2D::find_modes_from_estimates()
 
   M1 = 2*n;
 
-  // Find min and max eps mu.
+  // Find min, max and cladding eps mu.
 
-  Complex min_eps_mu = materials[0]->eps_mu();
-  Complex max_eps_mu = materials[0]->eps_mu();
+  vector<Complex> eps_mu;
+  for (unsigned int i=0; i<materials.size(); i++)
+    eps_mu.push_back(materials[i]->eps_mu());
+
+  remove_copies(&eps_mu, 1e-23);
+  std::sort(eps_mu.begin(), eps_mu.end(), RealSorter());
   
-  for (unsigned int i=1; i<materials.size(); i++)
+  Complex min_eps_mu, max_eps_mu, clad_eps_mu;
+  
+  if (eps_mu.size() >= 2)
   {
-    Complex eps_mu = materials[i]->eps_mu();
-    
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
-
-    if (real(eps_mu) > real(max_eps_mu))
-      max_eps_mu = eps_mu;
+     min_eps_mu = eps_mu[0];
+     max_eps_mu = eps_mu[eps_mu.size()-1];
+    clad_eps_mu = eps_mu[eps_mu.size()-2];
   }
+  else
+    min_eps_mu = max_eps_mu = clad_eps_mu = eps_mu[0];
 
   const Complex C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
@@ -1883,7 +1911,8 @@ void Section2D::find_modes_from_estimates()
         estimates.push_back(estimates_0[i]);
   }
 
-  // global.N = estimates.size(); // TMP
+  if (global_section.keep_all_estimates == true)
+    global.N = estimates.size();
 
   while (estimates.size() > global.N)
   {
@@ -1904,7 +1933,8 @@ void Section2D::find_modes_from_estimates()
     if (   (user_estimates.size() != 0) 
         || ( global_section.mode_correction == full)
         || ((global_section.mode_correction == guided_only)
-            && (real(kz/2./pi*global.lambda)>real(sqrt(min_eps_mu/eps0/mu0)))))
+            && (real(kz/2./pi*global.lambda) > 
+                real(sqrt(clad_eps_mu/eps0/mu0)))))
     {    
       Complex kt = sqrt(C0*min_eps_mu - estimates[i]->kz2);
 
@@ -1945,7 +1975,18 @@ void Section2D::find_modes_from_estimates()
 
   // Refine modes using transcendental function.
 
-  py_print("Refining estimates...");
+  if (kt_coarse.size())
+  {
+    if (global_section.mode_correction == guided_only)
+    {
+      std::ostringstream s;
+      s << "Refining estimates with n_eff higher than " 
+        << sqrt(clad_eps_mu/eps0/mu0) << "...";
+      py_print(s.str());
+    }
+    else
+      py_print("Refining estimates...");
+  }
 
   kt_to_neff transform(C0*min_eps_mu);
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
