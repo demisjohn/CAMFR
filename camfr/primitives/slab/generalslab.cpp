@@ -136,7 +136,7 @@ void SlabImpl::calc_overlap_matrices
   }
 
   // Calculate overlap matrices (y-invariant case).
-
+  
   if (global.polarisation != TE_TM)
   {
     for (int i=1; i<=int(N); i++)
@@ -228,8 +228,13 @@ void SlabImpl::calc_overlap_matrices
 
   for (int i=1; i<=int(N); i++)
   {
-    sin_I (i) = global_slab.beta / medium_I ->get_mode(i)->get_kz();
-    sin_II(i) = global_slab.beta / medium_II->get_mode(i)->get_kz(); 
+    Complex kz0_I  
+      = dynamic_cast<SlabMode*>(medium_I ->get_mode(i))->get_kz0();
+    Complex kz0_II 
+      = dynamic_cast<SlabMode*>(medium_II->get_mode(i))->get_kz0();
+    
+    sin_I (i) = global_slab.beta / kz0_I;
+    sin_II(i) = global_slab.beta / kz0_II; 
 
     cos_I (i) = sqrt(1.0 - sin_I (i) * sin_I (i)); // TODO: check sign
     cos_II(i) = sqrt(1.0 - sin_II(i) * sin_II(i));    
