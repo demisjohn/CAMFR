@@ -8,7 +8,7 @@
 #
 ##############################################################################
 
-from camfr import *
+from camfr_work import *
 from Numeric import *
 
 # Colormap codes.
