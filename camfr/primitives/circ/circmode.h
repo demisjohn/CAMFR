@@ -30,6 +30,8 @@ class CircMode : public Mode
 
     CircMode(Polarisation pol, const Complex& kz, const Circ_M* geom);
 
+    Real S_flux(Real precision=1e-3) const;
+
     virtual void normalise();
 
     Field field(const Coord& coord) const {return field_at(coord);}

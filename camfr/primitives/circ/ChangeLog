@@ -1,3 +1,9 @@
+2004-04-15  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* circ.cpp: Better handling of backward modes.
+	* circmode.h: Ditto.
+	* circmode.cpp: Ditto.
+
 2003-11-17  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* circ.h: Introduce material_at.

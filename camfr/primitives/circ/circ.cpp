@@ -58,7 +58,7 @@ class CircFlux : public RealFunction
     Real operator()(const Real& rho)
     {
       counter++;
-      Field f=fe.field(Coord(rho,0,0));
+      Field f=fe.field(Coord(rho,pi/4./global_circ.order,0));
       return real( pi*rho*(f.E1*conj(f.H2)-f.E2*conj(f.H1)) );
     }
 
@@ -80,7 +80,15 @@ Real Circ_M::S_flux(const FieldExpansion& f,
                     Real precision) const
 {  
   CircFlux flux(f);
-  return patterson_quad(flux, c1_start, c1_stop, precision);
+
+  Real result = 0;
+  for (unsigned int i=0; i<M; i++)
+  {
+      Real c1_start = (i==0) ? 0.0 : real(radius[i-1]);
+      Real c1_stop  = real(radius[i]);
+      result += patterson_quad(flux, c1_start, c1_stop, precision);
+  } 
+  return result;
 }
 
 
@@ -326,9 +334,11 @@ void Circ_M::find_modes_from_scratch_by_track()
 
   int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
 
-  Real kt_min = 1e-4; //don't go to abs(kt) < kt_min because disp is ill-behaved
+  Real kt_min = 1e-4; // Don't go to abs(kt) < kt_min because disp 
+  // is ill-behaved
 
-  kt_guided_lossless = brent_all_minima(guided_disp, kt_min, guided_kt_end-1e-9,
+  kt_guided_lossless = brent_all_minima(guided_disp, kt_min, 
+                                        guided_kt_end-1e-9,
                                         guided_dkt/global.precision, eps,
                                         sec);
 
@@ -409,7 +419,8 @@ void Circ_M::find_modes_from_scratch_by_track()
       }
     }
     else
-      std::cout << "Removing bad minimum " << kt_guided_lossless[i] << std::endl;
+      std::cout << "Removing bad minimum " << kt_guided_lossless[i]
+                << std::endl;
   }
 
   const Real eps_copies = 1e-6;
@@ -461,7 +472,7 @@ void Circ_M::find_modes_from_scratch_by_track()
         v1_right = radiation_disp(kt0 + dk/ratio);
       
         // test to see if we have type 1 (true zero)
-        Real average = (v1_left*ratio + v1_right*ratio + v2_left + v2_right)/4.0;
+        Real average = (v1_left*ratio+v1_right*ratio+v2_left+v2_right)/4.0;
         Real maxerr = 0.1;
       if ((abs(v1_left *ratio - average) < maxerr * average) &&
 	  (abs(v1_right*ratio - average) < maxerr * average) &&
@@ -506,7 +517,8 @@ void Circ_M::find_modes_from_scratch_by_track()
       }
     }
     else
-      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] << std::endl;
+      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] 
+                << std::endl;
     }
     
     modes_left = (kt_lossless.size() >= global.N + 2) ? 0 
@@ -578,6 +590,19 @@ void Circ_M::find_modes_from_scratch_by_track()
       = new Circ_M_Mode(Polarisation(unknown), kz, this);
 
     newmode->normalise();
+
+    if ((global.backward_modes == true) && (real(kz) > imag(kz)))
+    {
+      Real flux = newmode->S_flux(1e-2);
+      if (flux < -1e-6)
+      {
+        std::cout << "Backward mode detected: kz " << kz;
+        std::cout << ", flux " << flux << std::endl;
+        delete newmode;
+        newmode = new Circ_M_Mode(Polarisation(unknown),-kz,this);
+        newmode->normalise();
+      }
+    }
 
     modeset.push_back(newmode);
   }
@@ -801,7 +826,8 @@ void Circ_2::find_modes_from_scratch_by_ADR()
   
   vector<Complex> kr2 = N_roots(disp, global.N, lowerleft, upperright);
   
-  // cout << "Calls to circ dispersion relation : "<<disp.times_called()<<std::endl;
+  // cout << "Calls to circ dispersion relation : " 
+  // <<disp.times_called()<<std::endl;
   
   // Eliminate copies and false zeros.
 
@@ -1019,10 +1045,13 @@ void Circ_2::find_modes_from_scratch_by_track()
   //     << std::endl;
 
   
-/*  
+  
   //
   // (III) : Find kr2 of complex modes (rare modes not lying on the axes).
   //
+
+  if (global.backward_modes == true)
+  {
 
   // Find modes for lossless structure.
     
@@ -1031,6 +1060,9 @@ void Circ_2::find_modes_from_scratch_by_track()
   Circ_2_closed_cutoff complex_disp_lossless
     (radius[0], real(radius[1]), co_lossless, cl_lossless, lambda,
      global_circ.order, rad, hankel, global.polarisation, scale_complex);
+
+  vector<Complex> complex_disp_lossless_params 
+    = complex_disp_lossless.get_params();
 
   if (abs(guided_k_end_lossless) == 0)
     guided_k_end_lossless = 1; // To make a rectangle.
@@ -1048,13 +1080,14 @@ void Circ_2::find_modes_from_scratch_by_track()
   for (unsigned int i=0; i<kr2_complex_lossless_try.size(); i++)
     if (    ( abs(real(kr2_complex_lossless_try[i])) < eps_copies)
          || ( abs(imag(kr2_complex_lossless_try[i])) < eps_copies) )
-    cout << "Warning: unable to locate possible complex mode." << std::endl;
+    std::cout << "Warning: unable to locate possible complex mode." 
+              << std::endl;
   else
     kr2_complex_lossless.push_back(kr2_complex_lossless_try[i]);
   
   if (kr2_complex_lossless.size() > 0)
-    cout << "Found " << kr2_complex_lossless.size()
-         << " set(s) of complex modes!" << std::endl;
+    std::cout << "Found " << kr2_complex_lossless.size()
+              << " set(s) of complex modes!" << std::endl;
 
   // Add other complex mode of symmetric quartet.
   
@@ -1070,22 +1103,28 @@ void Circ_2::find_modes_from_scratch_by_track()
     (radius[0], radius[1], *material[0], *material[1],lambda,
      global_circ.order, rad, hankel, global.polarisation, scale_complex);
 
+  vector<Complex> complex_disp_params = complex_disp.get_params();
+
   for (unsigned int i=0; i<kr2_rad.size(); i++)
     forbidden.push_back(kr2_rad[i]);
   
   vector<Complex> kr2_complex = traceroot
-    (kr2_complex_lossless, complex_disp_lossless, complex_disp,
-     forbidden, global.sweep_steps);
+      (kr2_complex_lossless, complex_disp_lossless,
+       complex_disp_lossless_params, complex_disp_params,
+       forbidden, global.sweep_steps);
 
   // Remember second half of complex modes as backward modes.
   
   for (unsigned int i=int(kr2_complex.size()/2); i<kr2_complex.size(); i++)
     kr2_backward.push_back(kr2_complex[i]);
  
-  cout << "Calls to complex dispersion relation: "
-       << complex_disp_lossless.times_called() + complex_disp.times_called()
-       << std::endl;
-*/ 
+  std::cout << "Calls to complex dispersion relation: "
+            << complex_disp_lossless.times_called()+complex_disp.times_called()
+            << std::endl;
+  }
+  
+
+ 
   //
   // Join modes, eliminate double zeros and false zeros at kr2=0 and kr1=0.
   //
@@ -1151,6 +1190,19 @@ void Circ_2::find_modes_from_scratch_by_track()
       = new Circ_2_Mode(Polarisation(unknown), kz, kr1, kr2[i], this);
 
     newmode->normalise();
+
+    if ((global.backward_modes == true) && (real(kz) > imag(kz)))
+    {
+      Real flux = newmode->S_flux(1e-2);
+      if (flux < -1e-6)
+      {
+        std::cout << "Backward mode detected: kz " << kz;
+        std::cout << ", flux " << flux << std::endl;
+        delete newmode;
+        newmode = new Circ_2_Mode(Polarisation(unknown),-kz,kr1,kr2[i],this);
+        newmode->normalise();
+      }
+    }
 
     modeset.push_back(newmode);
 
