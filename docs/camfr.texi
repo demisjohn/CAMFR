@@ -799,7 +799,7 @@ outfile = file("tutorial5.out",'w')
 
 for x in arange(0.000, 4.500, 0.100):
     for z in arange(0.000, 0.500, 0.010):
-	print >> outfile, abs(stack.field(Coord(x,0,z)).E2()),
+        print >> outfile, abs(stack.field(Coord(x,0,z)).E2()),
     print >> outfile
 
 outfile.close()
@@ -2027,8 +2027,8 @@ of longer run times.
 @item
 If there are problems due to inverting numerically unstable matrices, you
 can change the way these situations are handled. Use 
-@code{set_stability(enhanced)} to use extra row and column equilibration.
-With @code{set_stability(SVD)} a pseudo inverse in calculated using singular
+@code{set_stability(extra)} to use extra row and column equilibration.
+With @code{set_stability(SVD)} a pseudo inverse is calculated using singular
 value decomposition.
 @item
 If your waveguide don't have multiple cores, try using 
