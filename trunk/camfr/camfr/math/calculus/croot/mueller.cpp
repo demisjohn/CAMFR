@@ -354,6 +354,10 @@ std::vector<Complex> mueller_multiple
       if (abs(new_root+z0[i]) < eps)
         error = true;
 
+      //std::cout << "candidate " << z0[i] << " ->" << new_root;  
+      //std::cout << (error ? " reject " : " accept ") << std::endl;
+      //std::cout << "----------" << std::endl;
+
       if (!error)
       {
         deflate.push_back(new_root);
@@ -378,7 +382,7 @@ std::vector<Complex> mueller_multiple
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// mueller_multiple
+// mueller
 //
 /////////////////////////////////////////////////////////////////////////////
 
