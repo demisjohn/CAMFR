@@ -1,5 +1,7 @@
 CAMFR 1.3:
 
+ - Better stability when joining together two slabs which are each other's
+   mirror image. (This can occur when modelling triangular lattices.)
  - Stack.fw_bw() and BlochMode.fw_bw() can now take an optional extra argument
    to specify the limit value of z, i.e. Plus or Min.
  - The wavelength can now be complex (Thanks to KC Huang for requesting this)
