@@ -1,4 +1,4 @@
-from camfr import *
+from camfr_work import *
 from Numeric import *
 
 # Colormap codes.
@@ -6,6 +6,12 @@ from Numeric import *
 whiteblack  = 1
 blackwhite  = 2
 palet       = 3
+
+# PIL file formats.
+
+formats = ['.gif', '.GIF', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP',  
+           '.dib', '.DIB', '.png', '.PNG', '.tiff', '.TIFF', '.tif', '.TIF',
+           '.eps', '.EPS', '.ps', '.PS', '.pdf', '.PDF', '.xbm', '.XBM']
 
 ##############################################################################
 #
@@ -82,9 +88,9 @@ def plot_vector(v):
 #
 ##############################################################################
 
-def plot_scaled_matrix(root, colormap, z, r_x=0, r_y=0):
-
-    import Tkinter
+def plot_scaled_matrix(colormap, z, r_x=0, r_y=0):
+    
+    import Image
     
     def round(x):
         return int(math.floor(x+.5))
@@ -112,16 +118,14 @@ def plot_scaled_matrix(root, colormap, z, r_x=0, r_y=0):
         scale_x = scale_y*round(d_x/d_y)
     
     # Prepare picture.
-
-    pic = Tkinter.Canvas(root, width=scale_x*width,
-                         height=scale_y*height, bg="White")
     
+    pic = Image.new("RGB",(width*scale_x,height*scale_y))
     for x in range(width):
         for y in range(height):
-            pic.create_rectangle(scale_x*x+2,     scale_y*y+2,
-                                 scale_x*(x+1)+2, scale_y*(y+1)+2,
-                                 fill=colormap[round(z[y,x])], width=0)
-    
+            pic.paste(colormap[round(z[y,x])],
+                      (scale_x* x,   scale_y* y,
+                       scale_x*(x+1),scale_y*(y+1)))
+
     return pic
 
             
@@ -134,10 +138,7 @@ def plot_scaled_matrix(root, colormap, z, r_x=0, r_y=0):
 
 def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
 
-    if filename:
-        print "Saving to file not supported."
-
-    import MLab, Tkinter, ImageTk
+    import MLab, Tkinter, ImageTk, os, sys
         
     # Scale z and find appropriate colormap.
     
@@ -161,12 +162,34 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
         if (zmax != zmin):
             z *= (len(colormap)-1)/(zmax-zmin)
             
-    # Put picture on canvas.
+    # Write picture to a file or put picture on canvas.
 
-    root = Tkinter.Tk()  
-    pic = plot_scaled_matrix(root, colormap, z, r_x, r_y)
-    pic.pack()
-    root.mainloop()
+    pic = plot_scaled_matrix(colormap, z, r_x, r_y)
+    
+    if filename:
+        if '.' in filename:
+            suffix  = filename[filename.index('.'):]
+        else:
+            suffix  = '.jpg'
+            filename += suffix
+        slash       = '/'
+        script      = sys.argv[0]
+        script_path = os.path.abspath(script)
+        pic_path    = os.path.dirname(script_path)+slash+filename
+        if not suffix in formats:
+            print "File format not supported. Defaulting to jpg."
+            pic_path += ".jpg"
+
+        pic.save(pic_path)    
+        print "Created", pic_path
+    else:
+        root     = Tkinter.Tk()    
+        canvas   = Tkinter.Canvas(width=pic.size[0], height=pic.size[1])
+        backdrop = ImageTk.PhotoImage(pic)
+        canvas.create_image(0, 0, image=backdrop, anchor=Tkinter.NW)
+        canvas.pack()
+
+        root.mainloop()
 
 
 
@@ -177,11 +200,8 @@ def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
 ##############################################################################
 
 def phasormovie(z, r_x=0, r_y=0, filename=0):
-
-    if filename:
-        print "Saving to file not supported."
-        
-    import MLab, Tkinter
+    
+    import MLab, Tkinter, ImageTk, gifmaker, os, sys
     
     # Make movie memory.
     
@@ -196,30 +216,56 @@ def phasormovie(z, r_x=0, r_y=0, filename=0):
 
     # Calculate each frame.
     
-    root = Tkinter.Tk()    
     for Nr in range(0,frames):
-        pic = plot_scaled_matrix(root, colormap, ((z+zmax)*z_scale).real,
-                                 r_x, r_y)
+        pic = plot_scaled_matrix(colormap, ((z+zmax)*z_scale).real, r_x, r_y)
         movie.append(pic)
         z *= exp(2j*pi/frames)
+
+    # Write the movie to a file if wanted.
+    
+    if filename:
+        for Nr in range(0,frames):
+            movie[Nr] = movie[Nr].convert("P")  
+        if '.' in filename:
+            if filename[filename.index('.'):] != '.gif':
+                print "File format not supported. Defaulting to gif."
+                filename = filename[:filename.index('.')] + ".gif"
+        else:
+            filename += ".gif"
+        slash     = '/'
+        script    = sys.argv[0]
+        totalpath = os.path.abspath(script)
+        userpath  = os.path.dirname(totalpath)+slash+filename
+        fp = open(userpath,"wb")
+        gifmaker.makedelta(fp, movie)
+        fp.close()
+        print  "Created", userpath
         
-    # Close window procedure.
+    else:
+        
+        root = Tkinter.Tk()
+        
+        # Close window procedure.
 
-    stop = [0]    
-    def callback(): stop[0] = 1 
-    root.protocol("WM_DELETE_WINDOW", callback)
-            
-    # Animate picture.
+        stop = [0]    
+        def callback(): stop[0] = 1 
+        root.protocol("WM_DELETE_WINDOW", callback)
+        
+        # Animate picture.
+        
+        canvas = Tkinter.Canvas(width=movie[0].size[0],
+                                height=movie[0].size[1])
 
-    while not stop[0]:
-        for x in range(frames):
-            if stop[0]: break
-            movie[x].pack()
-            root.update()
-            root.after(int(100))
-            movie[x].forget()
+        while not stop[0]:
+            for x in range(frames):
+                if stop[0]: break
+                backdrop = ImageTk.PhotoImage(movie[x])
+                canvas.create_image(0, 0, image=backdrop, anchor=Tkinter.NW)
+                canvas.pack()
+                root.update()
+                root.after(int(100))
 
-    root.destroy()  
+        root.destroy()       
 
 
 
@@ -233,12 +279,12 @@ def create_bipolar_colormap():
 
     colormap = []
     
-    # blue-white-1
-    for j in range(0,255):
-        colormap.append('#%02X%02XFF'%(j,j))
-    # white-red 
+    # blue-white-1              -#FF0000-#FFFEFE
+    for j in range(0,255): 
+        colormap.append( 0xFF0000 + j*0x101 )
+    # white-red                 -#FFFFFF-#0000FF
     for j in arange(255,-1,-1):
-        colormap.append('#FF%02X%02X'%(j,j))
+        colormap.append( 0xFF + j*0x10100 )
   
     return colormap
 
@@ -247,21 +293,21 @@ def create_bipolar_colormap():
 def create_unipolar_colormap():
 
     colormap = []
-    # black-blue-1
+    # black-blue-1              -#000000-#FE0000
     for j in range(0,255):
-        colormap.append('#0000%02X'%j)    
-    # blue-purple-1
+        colormap.append( j*0x10000 )    
+    # blue-purple-1             -#FF0000-#FF00FF
     for j in range(0,255):
-        colormap.append('#%02X00FF'%j)
-    # purple-red+1
+        colormap.append( 0xFF0000 + j)
+    # purple-red+1              -#FF00FF-#0100FF
     for j in arange(255,0,-1):
-        colormap.append('#FF00%02X'%j)      
-    # red-yellow-1
+        colormap.append( 0x0000FF + j*0x10000)      
+    # red-yellow-1              -#0000FF-#00FEFF
     for j in range(0,255):
-        colormap.append('#FF%02X00'%j)
-    # yellow-white       
+        colormap.append( 0xFF + j*0x100)
+    # yellow-white              -#00FFFF-#FFFFFF
     for j in range(0,256):
-        colormap.append('#FFFF%02X'%j)
+        colormap.append( 0xFFFF + j*0x10000)
 
     return colormap
 
@@ -272,7 +318,7 @@ def create_white_black_colormap():
     colormap = []
     # white-black              -#FFFFFF-#000000
     for j in arange(255,-1,-1):
-        colormap.append('#%02X%02X%02X'%(j,j,j))
+        colormap.append( j*0x10101 )    
 
     return colormap
 
@@ -283,10 +329,9 @@ def create_black_white_colormap():
     colormap = []
     # black-white              -#000000-#FFFFFF
     for j in range(0,256):
-        colormap.append('#%02X%02X%02X'%(j,j,j))
+        colormap.append( j*0x10101 )    
 
     return colormap
-
 
 
 
