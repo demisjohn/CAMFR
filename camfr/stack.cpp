@@ -761,12 +761,6 @@ void Stack::set_inc_field(const cVector& inc_field_, cVector* inc_field_bw_)
   inc_field_bw.resize(inc_field.shape());
   if (inc_field_bw_)
   {
-    if (global.field_calc != S_S)
-    {
-      py_error("Error: backward incident field only supported with S_S.");
-      return;
-    }
-
     inc_field_bw.resize(inc_field_bw_->shape());
     inc_field_bw = *inc_field_bw_;
     bw_inc = true;
@@ -1306,15 +1300,15 @@ Scatterer* Stack::create_sc(const Expression& e, unsigned int no_of_periods)
   Scatterer* sc;
   
   if (e.all_layers_uniform())
-  {
+  { 
     if (e.is_mono())
-      sc = new MonoStack(e, no_of_periods);
+      sc = new MonoStack(e, no_of_periods);    
     else
       sc = new DiagStack(e, no_of_periods);
   }
   else
     sc = new DenseStack(e, no_of_periods);
-  
+
   return sc;
 }
 
