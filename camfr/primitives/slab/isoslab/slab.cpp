@@ -689,7 +689,7 @@ void Slab_M::find_modes_from_scratch_by_track()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_N::find_modes_by_sweep
+// Slab_M::find_modes_by_sweep
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -761,6 +761,53 @@ void Slab_M::find_modes_by_sweep()
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Slab_M::get_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> Slab_M::get_params() const
+{
+  vector<Complex> params;
+
+  for (unsigned int i=0; i<thicknesses.size(); i++)
+  {
+    params.push_back(thicknesses[i]);
+    params.push_back(materials[i]->n());
+    params.push_back(materials[i]->mur());
+  }
+  
+  return params;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Slab_M::set_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Slab_M::set_params(const vector<Complex>& params)
+{
+  unsigned int params_index = 0;
+  Complex current_x = 0.0;
+    
+  for (unsigned int i=0; i<thicknesses.size(); i++)
+  {
+    thicknesses[i] = params[params_index++];
+    
+    current_x += thicknesses[i];
+    discontinuities[i] = current_x;
+    
+    materials[i]->set_n  (params[params_index++]);
+    materials[i]->set_mur(params[params_index++]);
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // UniformSlab::find_modes
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -806,6 +853,7 @@ void UniformSlab::find_modes()
 
   find_modes_single_pol();
 }
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -934,4 +982,38 @@ void UniformSlab::find_modes_single_pol()
   last_lambda = global.lambda;
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformSlab::get_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+vector<Complex> UniformSlab::get_params() const
+{
+  vector<Complex> params;
+
+  params.push_back(discontinuities[0]);
+  params.push_back(core->n());
+  params.push_back(core->mur());
+
+  return params;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformSlab::set_params
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void UniformSlab::set_params(const vector<Complex>& params)
+{
+  discontinuities[0] = params[0];
+  core->set_n(params[1]);
+  core->set_mur(params[2]);
 }

@@ -24,48 +24,19 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
                    SlabWall* leftwall_=NULL, SlabWall* rightwall_=NULL)
   : lambda(lambda_), leftwall(leftwall_), rightwall(rightwall_)
 {
-  // From the flat expression, extract the thicknesses.
-  // Also create a table with the eps's and the mu's. This avoids repeated
+  // Create a table with the eps's and the mu's. This avoids repeated
   // virtual function calls and allows to sweep these parameters without
   // tampering with the original materials.
-  
-  Expression ex = expression.flatten();
-  
-  for (unsigned int i=0; i<ex.get_size(); i++)
-  {
-    Material* m = dynamic_cast<Material*>(ex.get_term(i)->get_mat());
 
-    if (!m)
-    {
-      cerr << "Error: expression contains non-material term." << endl;
-      exit (-1);
-    }
-
-    Complex thickness = ex.get_term(i)->get_d();
-
-    // Combine two succesive terms containing the same material.
-
-    if ( (i+1 < ex.get_size()) && (m == ex.get_term(i+1)->get_mat()) )
-    {
-      thickness += ex.get_term(i+1)->get_d();
-      i++;
-    }
-
-    if (abs(thickness))
-    {
-      eps.push_back(m->eps());
-       mu.push_back(m->mu());
-      thicknesses.push_back(thickness);
-    }
-  }
-  
+  material_expression_to_table(expression, &eps, &mu, &thicknesses);
+    
   // Find min real refractive index of structure.
 
   Complex eps_mu_min = eps[0]*mu[0];
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
-    Complex eps_mu = eps [i]*mu[i];
+    Complex eps_mu = eps[i]*mu[i];
     
     if (real(eps_mu) < real(eps_mu_min))
       eps_mu_min = eps_mu;
@@ -104,7 +75,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   
   for (unsigned int i=1; i<eps.size(); i++)
   {
-    Complex eps_mu = eps [i]*mu[i];
+    Complex eps_mu = eps[i]*mu[i];
     
     if (real(eps_mu) < real(eps_mu_min))
       eps_mu_min = eps_mu;

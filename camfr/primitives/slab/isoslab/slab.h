@@ -65,6 +65,9 @@ class Slab_M : public SlabImpl
     
     void find_modes();
 
+    vector<Complex> get_params() const;
+    void set_params(const vector<Complex>&);
+
   protected:
 
     void find_modes_from_scratch_by_ADR();
@@ -121,6 +124,9 @@ class UniformSlab : public SlabImpl
       {return discontinuities[0];}
 
     void find_modes();
+
+    vector<Complex> get_params() const;
+    void set_params(const vector<Complex>&);
 
   protected:
 
