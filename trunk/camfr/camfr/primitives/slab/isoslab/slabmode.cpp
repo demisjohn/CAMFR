@@ -583,7 +583,7 @@ void Slab_M_Mode::calc_fw_bw(Stack& lower_stack, Stack& upper_stack)
     pick_sign_k(&kx_i);
 
     //std::cout << i << " " << f(real(kz/2./pi*global.lambda)) << " " 
-    //          <<f(imag(kz/2./pi*global.lambda)) << " " << mat->n() << " " 
+    //          <<f(imag(kz/2./pi*global.lambda)) << " " << mat->n() << " "
     //          << f(real(kx_i)) << " " << f(imag(kx_i)) << std::endl;
     
     kx.push_back(kx_i);
@@ -606,7 +606,6 @@ void Slab_M_Mode::calc_fw_bw(Stack& lower_stack, Stack& upper_stack)
   //for (int i=0; i<lower_field.size(); i++)
   //  std::cout << "lower field " << i << " " 
   //            << lower_field[i].fw(1) << lower_field[i].bw(1) << std::endl;
-
   //for (int i=0; i<upper_field.size(); i++)
   //  std::cout << "upper field " << i << " " 
   //            << upper_field[i].fw(1) << upper_field[i].bw(1) << std::endl;
@@ -634,8 +633,8 @@ void Slab_M_Mode::calc_fw_bw(Stack& lower_stack, Stack& upper_stack)
   }
 
   //std::cout << "n_eff " << kz/2./pi*global.lambda << std::endl;
-  //for (unsigned int i=0; i<fw.size(); i++
-  //std::cout << "field" << i << " " << fw[i] << bw[i] << std::endl;
+  //for (unsigned int i=0; i<fw.size(); i++)
+  //  std::cout << "field" << i << " " << fw[i] << bw[i] << std::endl;
   //std::cout << "field " << i << " "
   //          << f(real(fw[i])) << " "
   //          << f(imag(fw[i])) << " "
