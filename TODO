@@ -2,13 +2,12 @@ CAMFR 1.0:
 
 -upgrade boost: contants
 -Field.S1(), Field.S2(), Field.Sz()
--set_lower/upper_wall
+-complex modes metal: .1 --> .001 (KC's structure)
 -define PML globally
 -update manual
 -test field in incidence or exit medium.
 -thin structures
 -memory management
--KC complex modes stability
 
 CAMFR 3D:
 
@@ -21,6 +20,7 @@ CAMFR 3D:
    -do not handle left and right walls through expressions
    -try to eliminate need for O_II_I in interface.cpp
 -Don't set walls through scatterer, remove kludge.
+-Complex modes in presence of PML
 
 
 MEDIUM TERM:
