@@ -97,14 +97,14 @@ OverlapMatrices::OverlapMatrices
 
     blitz::Range r(1,n);
 
-    std::cout << "TE_TE_1 " << TE_TE(1,r,r) << std::endl;    
-    std::cout << "TE_TE_2 " << TE_TE(2,r,r) << std::endl;    
-    std::cout << "TM_TM_1 " << TM_TM(1,r,r) << std::endl;    
-    std::cout << "TM_TM_2 " << TM_TM(2,r,r) << std::endl;
-    std::cout << "Ex_Hz_cross_1 " << Ex_Hz_cross(1,r,r) << std::endl;    
-    std::cout << "Ex_Hz_cross_2 " << Ex_Hz_cross(2,r,r) << std::endl;    
-    std::cout << "Ez_Hx_cross_1 " << Ez_Hx_cross(1,r,r) << std::endl;    
-    std::cout << "Ez_Hx_cross_2 " << Ez_Hx_cross(2,r,r) << std::endl;
+    write_to_textfile("TE_TE_1.txt", TE_TE(1,r,r));
+    write_to_textfile("TE_TE_2.txt", TE_TE(2,r,r));
+    write_to_textfile("TM_TM_1.txt", TM_TM(1,r,r));
+    write_to_textfile("TM_TM_2.txt", TM_TM(2,r,r));
+    write_to_textfile("Ex_Hz_cross_1.txt", Ex_Hz_cross(1,r,r));
+    write_to_textfile("Ex_Hz_cross_2.txt", Ex_Hz_cross(2,r,r));
+    write_to_textfile("Ez_Hx_cross_1.txt", Ez_Hx_cross(1,r,r));
+    write_to_textfile("Ez_Hx_cross_2.txt", Ez_Hx_cross(2,r,r));
   }
 }
 

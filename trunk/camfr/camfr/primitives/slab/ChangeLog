@@ -1,5 +1,9 @@
 2004-08-18 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* slabmatrixcache.cpp: Write to text file.
+
+2004-08-18 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* slabmatrixcache.cpp: Add possibility to write out overlap 
 	                       matrices for Davy.
 
