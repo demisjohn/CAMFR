@@ -244,7 +244,7 @@ def plot_n_section(stack, r_x, r_y):
 def plot_n(o, r1, r2=0):
     if not r2:
         plot_n_waveguide(o, r1)
-    if type(o) == Stack:
+    if type(o) == Stack or type(o) == BlochStack:
         plot_n_stack(o, r1, r2)
     if type(o) == Section:
         plot_n_section(o, r1, r2)
@@ -313,7 +313,7 @@ def plot_field_section_mode(mode, component, r_x, r_y):
 def plot_field(o, component, r1, r2=0):
     if not r2:
         plot_field_waveguide(o, component, r1)
-    elif type(o) == Stack:
+    elif type(o) == Stack or type(o) == BlochMode:
         plot_field_stack(o, component, r1, r2)
     elif type(o) == Mode:
         plot_field_section_mode(o, component, r1, r2)
