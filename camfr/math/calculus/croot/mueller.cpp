@@ -122,7 +122,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     
     return a;
   }
-  
+ 
   if (abs(z1-z2) > 1e4*abs(z2))
   {
     if (verbose)
