@@ -327,6 +327,58 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
                                        cMatrix* O_EE, cMatrix* O_MM,
                                        cMatrix* O_EM, cMatrix* O_zz)
 {
+  find_modes();
+
+  const int n = int(global.N/2);
+
+  vector<Complex> section_disc = profile->discontinuities;
+
+  for (int i=1; i<=n; i++)
+  {
+    for (int j=i; j<=n; j++)
+    {
+
+      Complex O_EE_ij = 0.0; Complex O_MM_ij = 0.0;
+      Complex O_EM_ij = 0.0; Complex O_ME_ij = 0.0;
+      Complex O_zz_ij = 0.0;
+     
+      // Loop over x materials.
+  
+      for (unsigned int k=0; k<profile->slabs.size(); k++)
+      {
+
+        Complex x0 = k==0 ? 0.0 : section_disc[k-1];
+        Complex x1 = section_disc[k];
+
+        Slab* s = profile->slabs[k];
+
+        //std::cout << "Slab " << k << x0 << " "<< x1 << std::endl;
+
+        vector<Complex> slab_disc = s->get_discontinuities();
+    
+        // Loop over y materials.
+
+        for (unsigned int l=0; l<slab_disc.size(); l++)
+        {
+          Complex y0 = l==0 ? 0.0 : slab_disc[l-1];
+          Complex y1 = slab_disc[l];
+
+          Complex eps = s->eps_at(Coord(slab_disc[l],0,0,Min,Min,Min));
+
+          //std::cout << "  Disc " << l << " " << y0 << y1 << sqrt(eps/eps0) 
+          //          << std::endl;
+
+          // Calc O_zz.
+        }
+      }
+
+      (*O_EE)(i,j) = O_EE_ij; (*O_EE)(j,i) = O_EE_ij;
+      (*O_MM)(i,j) = O_MM_ij; (*O_MM)(j,i) = O_MM_ij;
+      (*O_EM)(i,j) = O_EM_ij; (*O_EM)(j,i) = O_ME_ij; 
+      (*O_zz)(i,j) = O_zz_ij; (*O_zz)(j,i) = O_zz_ij;
+      
+    }
+  }
 }
 
 
