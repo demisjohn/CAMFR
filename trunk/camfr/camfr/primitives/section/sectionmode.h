@@ -35,8 +35,6 @@ class SectionMode : public Mode
     Complex get_kz () const {return kz;}
 
     const SectionImpl* get_geom() const {return geom;}
-    
-    virtual Field field(const Coord& coord) const;
 
     virtual void normalise() = 0;
 

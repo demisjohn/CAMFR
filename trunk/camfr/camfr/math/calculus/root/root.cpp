@@ -46,7 +46,7 @@
  * Therefore, the range of uncertainty is guaranteed to tighten at 
  * least by a factor of 1.6
  *
- * $Id: root.cpp,v 1.3 2002-03-18 15:40:31 pbienst Exp $
+ * $Id: root.cpp,v 1.4 2002-04-02 15:50:27 pbienst Exp $
  *
  ************************************************************************
  */
@@ -217,7 +217,7 @@ void bracket_all_roots(Function1D<Real>& f, Real ax, Real bx,
   for (Real x=ax+dx; x<=bx; x+=dx, iters++)
   {
     fx = f(x);
-    
+
     if (fx * previous_fx <= 0)
     {
       Ax.push_back(x-dx);
