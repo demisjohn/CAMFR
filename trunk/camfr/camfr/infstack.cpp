@@ -10,11 +10,11 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include "infstack.h"
+#include "primitives/slab/generalslab.h"
 
 using std::vector;
-
-// TODO: diag scatterers
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -22,8 +22,8 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-InfStack::InfStack(const Expression& e, const Complex& W_)
-  : s(e), W(W_) 
+InfStack::InfStack(const Expression& e)
+  : s(e)
 {
   Expression e1 = 1*e; // Makes sure incidence and exit media are the same.
 
@@ -40,7 +40,7 @@ InfStack::InfStack(const Expression& e, const Complex& W_)
 /////////////////////////////////////////////////////////////////////////////
 
 void InfStack::calcRT()
-{
+{ 
   if (!recalc_needed())
     return;
   
@@ -74,16 +74,25 @@ void InfStack::calcRT()
     else if (imag(mode->get_kz()) > 1e-3)
       fw = false;
     else
-    {
       fw = real(mode->get_kz()) > 0.0;
 
-      if (fw && (mode->S_flux(0,real(W), 1e-5) < 0))
-        py_print("Unexpected power flow for mode");
+    Real S = mode->S_flux(0,real(inc->c1_size()), 0.1);
+
+    if (fw && (S < 0))
+    {
+      std::ostrstream s;
+      s << "Warning: unexpected power flow for fw mode "
+        << mode->get_kz() << " : " << S;
+      py_print(s.str());
     }
-
-      if (fw && (mode->S_flux(0,real(W), 1e-5) < 0))
-        py_print("Unexpected power flow for mode");
-
+    else if (!fw && (S > 0))
+    {
+      std::ostrstream s;
+      s << "Warning: unexpected power flow for bw mode "
+        << mode->get_kz() << " : " << S;
+      py_print(s.str());
+    }
+        
     if (fw)
     {
       cVector f(N,fortranArray); f.reference(mode->fw_field());
@@ -105,7 +114,6 @@ void InfStack::calcRT()
   allocRT();
 
   R12.reference(multiply(B, invert_svd(F)));
-  // TODO: switch to LQ factorisation.
 
   T12 = 0.0;
   for (int i=1; i<=N; i++)
@@ -116,4 +124,11 @@ void InfStack::calcRT()
   T21 = 0.0;
   for (int i=1; i<=N; i++)
     T21(i,i) = 1.0;
+
+  // Remember wavelength and gain these matrices were calculated for.
+
+  last_lambda = global.lambda;
+  if (global.gain_mat)
+    last_gain_mat = *global.gain_mat;
+  last_beta = global_slab.beta;
 }

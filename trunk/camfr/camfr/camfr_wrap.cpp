@@ -848,7 +848,6 @@ BOOST_PYTHON_MODULE_INIT(_camfr)
   camfr.add(
     class_<InfStack, bases<DenseScatterer> >("InfStack")
     .def_init(args<const Expression&>())
-    .def_init(args<const Expression&, const Complex&>()) // TMP
     .def("R12", &InfStack::get_R12,
          return_value_policy<reference_existing_object>())
     );

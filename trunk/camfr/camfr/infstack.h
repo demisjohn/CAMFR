@@ -28,14 +28,13 @@ class InfStack : public DenseScatterer
 {
   public:
 
-    InfStack(const Expression& e, const Complex& W_=0);
+    InfStack(const Expression& e);
   
     void calcRT();
     
   protected:
 
     BlochStack s;
-    Complex W; // TMP
 };
 
 
