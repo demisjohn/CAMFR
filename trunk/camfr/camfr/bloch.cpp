@@ -342,10 +342,7 @@ Field BlochMode::field(const Coord& coord) const
 
   geom->set_interface_field(interface_field);
 
-  if (global.field_calc == S_T)
-    py_print("Warning: field_calc S_T can give unstable results.");
-
-  if ( (global.field_calc == S_S) && (interface_field.size() <= 1) )
+  if (interface_field.size() <= 1)
   {
     Complex d = geom->get_total_thickness();
     cVector inc_bw(global.N, fortranArray);
@@ -361,3 +358,39 @@ Field BlochMode::field(const Coord& coord) const
 
   return f;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BlochMode::fw_bw_field
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void BlochMode::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
+{
+  Coord coord2(coord);
+  
+  if (real(coord.z) > real(geom->get_total_thickness()))
+  {
+    py_print("Warning: z-value out of unit cell. Truncating z.");
+    coord2.z = geom->get_total_thickness();
+  }
+
+  geom->set_interface_field(interface_field);
+
+  if (interface_field.size() <= 1)
+  {
+    Complex d = geom->get_total_thickness();
+    cVector inc_bw(global.N, fortranArray);
+    inc_bw = interface_field[0].bw * exp(-I*kz*d);
+ 
+    geom->set_inc_field(interface_field[0].fw, &inc_bw);
+  }
+
+  geom->fw_bw_field(coord,fw,bw);
+
+  if (interface_field.size() <= 1)
+    geom->get_interface_field(&interface_field);
+}
+

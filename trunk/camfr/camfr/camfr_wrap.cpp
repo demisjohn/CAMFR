@@ -261,15 +261,22 @@ inline void cavity_set_general_source(Cavity& c,
                                       const cVector& fw, const cVector& bw) 
   {c.set_source(fw,bw);}
 
-inline void cavity_set_blochmode_source(Cavity& c, BlochMode& m)
-  {c.set_source(m.fw_field(),m.bw_field());}
-
 inline boost::python::object stack_fw_bw(Stack& s, Real z)
 {
   cVector fw(global.N,fortranArray);
   cVector bw(global.N,fortranArray);
 
   s.fw_bw_field(Coord(0,0,z), &fw, &bw);
+
+  return boost::python::make_tuple(fw, bw);
+}
+
+inline boost::python::object blochmode_fw_bw(BlochMode& b, Real z)
+{
+  cVector fw(global.N,fortranArray);
+  cVector bw(global.N,fortranArray);
+
+  b.fw_bw_field(Coord(0,0,z), &fw, &bw);
 
   return boost::python::make_tuple(fw, bw);
 }
@@ -968,7 +975,6 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("sigma",          cavity_calc_sigma)
     .def("set_source",     cavity_set_current_source)
     .def("set_source",     cavity_set_general_source)
-    .def("set_source",     cavity_set_blochmode_source)
     .def("field",          &Cavity::field)
     .def("n",              &Cavity::n_at)
     ;
@@ -989,6 +995,7 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<BlochMode, bases<Mode> >("BlochMode", no_init)
     .def("fw_field", &BlochMode::fw_field)
     .def("bw_field", &BlochMode::bw_field)
+    .def("fw_bw",    blochmode_fw_bw)
     .def("S_flux",   &BlochMode::S_flux)
     .def("n",        blochmode_n)
     ;
