@@ -17,6 +17,7 @@
 #include "circoverlap.h"
 #include "circ_M_util.h"
 #include "../../util/index.h"
+#include "../../math/calculus/quadrature/patterson_quad.h"
 
 using std::vector;
 using std::cout;
@@ -102,6 +103,54 @@ CircMode::CircMode(Polarisation pol, const Complex& kz,
                                      * geom->material[i]->mur(); 
     kr.push_back(signedsqrt(ki_2 - kz*kz, geom->material[i]));
   } 
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CircModeFlux
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class CircModeFlux : public RealFunction
+{
+  public:
+
+    CircModeFlux(const CircMode* m_) : m(m_) {}
+
+    Real operator()(const Real& rho)
+    {
+      counter++;
+      Field f=m->field(Coord(rho,pi/4./global_circ.order,0));
+      return real( pi*rho*(f.E1*conj(f.H2)-f.E2*conj(f.H1)) );
+    }
+
+  protected:
+
+    const CircMode* m;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CircMode::S_flux()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Real CircMode::S_flux(Real precision) const
+{  
+  CircModeFlux flux(this);
+
+  Real result = 0;
+  for (unsigned int i=0; i<geom->M; i++)
+  {
+      Real c1_start = (i==0) ? 0.0 : real(geom->radius[i-1]);
+      Real c1_stop  = real(geom->radius[i]);
+      result += patterson_quad(flux, c1_start, c1_stop, precision);
+  } 
+  return result;
 }
 
 
@@ -781,7 +830,7 @@ Circ_1_Mode::Circ_1_Mode(Polarisation pol_,  const Complex& kz_,
   // Check boundary conditions.
 
   //cout << "---" << endl;
-  //cout << "Mode with neff " << kz/2/pi*global.lambda << endl;
+  //cout << "Mode with neff " << kz/2./pi*global.lambda << endl;
   //cout << "pol " << Pol_string[pol] << endl;
   //cout << "kr  : " << kr[0] << endl;
   
