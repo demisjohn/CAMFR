@@ -104,10 +104,8 @@ class Cavity
 
     // Calculates total field in the cavity after introduction of a source.
 
-    void set_source(const FieldExpansion& f);
-
     void set_source(const Coord& pos, const Coord& orientation)
-      {set_source(dynamic_cast<MultiWaveguide*>(top->get_inc())
+      {set_source_expansion(dynamic_cast<MultiWaveguide*>(top->get_inc())
                   ->field_from_source(pos, orientation));}
     
     // Calculate field profile in cavity.
@@ -115,6 +113,8 @@ class Cavity
     Field field(const Coord& coord);
     
   protected:
+
+    void set_source_expansion(const FieldExpansion& f);
 
     Stack* top;
     Stack* bot;
