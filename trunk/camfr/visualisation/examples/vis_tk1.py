@@ -33,10 +33,10 @@ print "Plotting mode distribution (close window to continue)"
 plot_neff(slab)
 
 print "Plotting E field (close window to continue)"
-plot_E2(slab, modenumber, PML)
+plot_field(slab, modenumber, lambda f : f.E2().real)
 
 print "Plotting H field (close window to continue)"
-plot_H2(slab, modenumber, PML)
+plot_field(slab, modenumber, lambda f : f.H2().real)
 
 print "Plotting refractive index profile (close window to continue)"
 plot_n(slab)

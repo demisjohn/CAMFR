@@ -34,11 +34,11 @@ plot_neff(slab)
 raw_input("Press <enter> to continue")
 
 print "Plotting E field"
-plot_E2(slab, modenumber, PML)
+plot_field(slab, modenumber, lambda f : f.E2().real)
 raw_input("Press <enter> to continue")
 
 print "Plotting H field"
-plot_H2(slab, modenumber, PML)
+plot_field(slab, modenumber, lambda f : f.H2().real)
 raw_input("Press <enter> to continue")
 
 print "Plotting refractive index profile"
