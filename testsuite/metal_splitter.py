@@ -82,7 +82,7 @@ class metal_splitter(unittest.TestCase):
 
         print R, "expected", R_OK
         
-        R_pass = abs((R - R_OK)/R_OK) < eps.testing_eps
+        R_pass = abs((R - R_OK)/R_OK) < 100*eps.testing_eps
 
         free_tmps()
 

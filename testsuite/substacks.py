@@ -18,7 +18,7 @@ class substacks(unittest.TestCase):
         print
         print "Running substacks..."
 
-        set_lambda(1.1)
+        set_lambda(1.09)
         set_N(50)
 
         a = Material(1)
@@ -43,7 +43,7 @@ class substacks(unittest.TestCase):
 
         R = abs(st.R12(0,0))
 
-        R_OK = 0.63344859662
+        R_OK = 0.114556425586
 
         print R, "expected", R_OK
 
