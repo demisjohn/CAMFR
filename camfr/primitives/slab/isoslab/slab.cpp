@@ -342,7 +342,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
 
-    if (real(eps_mu) > real(min_eps_mu))
+    if (real(eps_mu) > real(max_eps_mu))
       max_eps_mu = eps_mu;
   }
 
@@ -455,7 +455,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     if (eps_mu_lossless < min_eps_mu_lossless)
       min_eps_mu_lossless = eps_mu_lossless;
 
-    if (eps_mu_lossless > min_eps_mu_lossless)
+    if (eps_mu_lossless > max_eps_mu_lossless)
       max_eps_mu_lossless = eps_mu_lossless;
   }
 
@@ -502,7 +502,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     max_eps_eff = max_eps_mu_lossless;
 
   Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
-
+  
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
   {
