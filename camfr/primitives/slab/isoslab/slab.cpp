@@ -215,6 +215,34 @@ Complex Slab_M::eps_avg() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Slab_M::is_mirror_image_of
+//
+/////////////////////////////////////////////////////////////////////////////
+
+bool Slab_M::is_mirror_image_of(const SlabImpl* m) const
+{
+  const Slab_M* medium_II = dynamic_cast<const Slab_M*>(m);
+  if (!medium_II)
+    return false;
+
+  const unsigned int K = thicknesses.size();
+  if (K != medium_II->thicknesses.size())
+    return false;
+
+  const Real eps = 1e-8;
+
+  for (int i=0; i<K; i++)
+    if (    (abs(thicknesses[i] - medium_II->thicknesses[K-1-i]) > eps)
+         || (*materials[i] != *(medium_II->materials[K-1-i])) )
+      return false;
+  
+  return true;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Slab_M::find_modes
 //
 /////////////////////////////////////////////////////////////////////////////

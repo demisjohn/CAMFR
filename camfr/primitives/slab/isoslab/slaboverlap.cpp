@@ -36,9 +36,6 @@ bool same(const Complex& fw_I_l, const Complex& fw_II_l,
 {
   const Real eps = 1e-4;
 
-  // TODO: also return true if it are two waveguides 
-  // which are each other's image under inversion symmetry.
-
   if (abs(fw_I_l - fw_II_l) > eps)
     return false;
   if (abs(bw_I_l - bw_II_l) > eps)
@@ -63,7 +60,7 @@ Complex overlap(const SlabMode* mode_I,
                 const SlabMode* mode_II,
                 const SlabCache* cache,
                 const vector<Complex>* disc,
-                int i, int j, int I_index, int II_index)
+                int i, int j, int I_index, int II_index, bool mirrored)
 {
   // Check arguments.
   
@@ -188,7 +185,7 @@ Complex overlap(const SlabMode* mode_I,
       // + f(upper_Min) - f(lower_Plus)
 
       if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
-               fw_I_u, fw_II_u, bw_I_u, bw_II_u))
+               fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
         term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
     }
     
@@ -210,7 +207,7 @@ Complex overlap(const SlabMode* mode_I,
     {
       // + f(upper_Min) - f(lower_Plus)
       if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
-               fw_I_u, fw_II_u, bw_I_u, bw_II_u))
+               fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
         term2 += C * d * ( fw_I_l * bw_II_l + bw_I_l * fw_II_l );
     }
         

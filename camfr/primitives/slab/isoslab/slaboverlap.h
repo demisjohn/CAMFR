@@ -44,6 +44,8 @@ struct SlabCache
 // I_index is either 1 or 2, indicating which part of the cache to use.
 // II_index is complementary to I_index.
 // The list of discontinuities is in the vector disc.
+// If the two modes are from slabs which are each other's image under
+// inversion symmetry, mirrored should be set to true.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +55,8 @@ Complex overlap(const SlabMode* mode_I,
                 const SlabMode* mode_II,
                 const SlabCache* cache=NULL,
                 const std::vector<Complex>* disc=NULL,
-                int i=0, int j=0, int I_index=0, int II_index=0);
+                int i=0, int j=0, int I_index=0, int II_index=0,
+                bool mirrored=false);
 
 
 
