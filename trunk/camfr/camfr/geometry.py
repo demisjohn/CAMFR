@@ -132,6 +132,27 @@ class Rectangle:
 
 ############################################################################
 #
+# class Square
+#
+############################################################################
+
+class Square:
+
+    def __init__(self, c, a, mat):
+        self.c = c
+        self.a = a
+        self.mat = mat
+
+    def intersection_at_x(self, x):
+        if (x < self.c.x - self.a/2.) or (x > self.c.x + self.a/2.):
+            return []
+        else:
+            return [self.c.y - self.a/2., self.c.y + self.a/2.]
+    
+
+
+############################################################################
+#
 # class Triangle
 #
 ############################################################################
@@ -193,6 +214,9 @@ def similar(slab1, slab2, dy):
             return 0
 
     # Same interface positions?
+
+    if abs(dy) < 1e-12:
+        dy = 1e-12
 
     for i in range(len(slab1)):
         if abs(slab1[i][0] - slab2[i][0]) >= dy:
@@ -387,7 +411,7 @@ class Geometry:
                                               
             i = i_end
 
-        d[-1] += x1 - sum(d)
+        d[-1] += (x1-x0) - sum(d)
 
         slabs = new_slabs
 
