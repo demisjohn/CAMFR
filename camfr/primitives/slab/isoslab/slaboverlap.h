@@ -92,6 +92,17 @@ void overlap_reference_modes(cMatrix* O_tt, cMatrix* O_zz,
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Calculates overlap integral of a SlabMode with a plane wave exp(j.k.x).
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
+                Complex* Oz, Complex* O1);
+
+
+
 #endif
 
 
