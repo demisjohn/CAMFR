@@ -48,12 +48,11 @@ class Mode
 
      virtual Field bw_field(const Coord& coord) const {return field(coord);}
      // Tmp: will be corrected when dealing with non-reciproque media.
-
      virtual Complex get_kz()    const {return kz;}
      virtual Complex get_kz_bw() const {return kz_bw;}
 
-     Complex n_eff()    const {return kz   /2.0/pi*global.lambda;}
-     Complex n_eff_bw() const {return kz_bw/2.0/pi*global.lambda;}
+     Complex n_eff()    const {return get_kz()   /2.0/pi*global.lambda;}
+     Complex n_eff_bw() const {return get_kz_bw()/2.0/pi*global.lambda;}
           
      Complex E_cst() const {return A;}
      Complex H_cst() const {return B;}     
