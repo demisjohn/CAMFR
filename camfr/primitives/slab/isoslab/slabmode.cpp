@@ -24,19 +24,8 @@ Complex SlabMode::get_kz() const
 {
   if (abs(global_slab.beta) < 1e-10)
     return kz;
-
-  // Rotate kz for off-axis incidence.
-
-  Complex kz_new = sqrt(kz*kz - pow(global_slab.beta, 2));
-
-  if (real(kz_new) < 0) 
-      kz_new = -kz_new;
-
-  if (abs(real(kz_new)) < 1e-12)
-    if (imag(kz_new) > 0)
-      kz_new = -kz_new;
-
-  return kz_new;
+  else // Rotate kz for off-axis incidence.
+    return signedsqrt(kz*kz - pow(global_slab.beta, 2));
 }
 
 
@@ -81,7 +70,7 @@ Field SlabMode::field(const Coord& coord_) const
   // Calculate total field.
 
   const Complex sn = global_slab.beta / kz;
-  const Complex cs = sqrt(1.0 - sn*sn);
+  const Complex cs = signedsqrt(1.0 - sn*sn);
   
   Field field;
 
@@ -99,10 +88,10 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.Ez  = field.E2 * sn / sqrt(cs);
+      field.Ez  = -field.E2 * sn / sqrt(cs);
       field.E2 *= cs / sqrt(cs);
  
-      field.H2  = -field.Hz * sn / sqrt(cs);
+      field.H2  = field.Hz * sn / sqrt(cs);
       field.Hz *= cs / sqrt(cs);
       field.H1 /= sqrt(cs);
     }
@@ -121,11 +110,11 @@ Field SlabMode::field(const Coord& coord_) const
 
     if (abs(global_slab.beta) > 1e-6)
     {
-      field.E2  = -field.Ez * sn / sqrt(cs);
+      field.E2  = field.Ez * sn / sqrt(cs);
       field.Ez *= cs / sqrt(cs);
       field.E1 /= sqrt(cs);
  
-      field.Hz  = field.H2 * sn / sqrt(cs);
+      field.Hz  = -field.H2 * sn / sqrt(cs);
       field.H2 *= cs / sqrt(cs);
     }
   }

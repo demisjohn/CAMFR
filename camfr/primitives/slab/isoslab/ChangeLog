@@ -1,3 +1,7 @@
+2001-11-27  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slabmode.cpp: Fix signs.
+
 2001-11-16  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.cpp: Fix multiplication.
