@@ -1028,15 +1028,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
    
     global.N = old_N;
 
-    cMatrix O_tt(n,n,fortranArray);
-
-    cMatrix O_zz(fortranArray);
-    if (global.polarisation == TM)
-      O_zz.resize(n,n);
-
-    overlap_reference_modes(&O_tt, &O_zz, ref, *this);
-
-    E = O_tt;
+    overlap_reference_modes(&E, NULL, ref, *this);
     
     for (int i=1; i<=n; i++)
     {
@@ -1055,7 +1047,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 
     // Solve eigenvalue problem.
 
-    cVector e(E.rows(),fortranArray);
+    cVector e(n,fortranArray);
     if (global.stability == normal)
       e = eigenvalues(E);
     else
@@ -1063,7 +1055,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 
     vector<Complex> kz2;
     for (int i=1; i<=n; i++)
-      kz2.push_back(-k0*k0*e(i));
+      kz2.push_back(e(i));
 
     return kz2;
 
