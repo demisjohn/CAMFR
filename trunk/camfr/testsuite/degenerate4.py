@@ -10,24 +10,28 @@ from camfr_work import *
 
 import unittest, eps
 
-class degenerate3(unittest.TestCase):
-    def testdegenerate3(self):
+class degenerate4(unittest.TestCase):
+    def testdegenerate4(self):
 
-        """Degenerate 3"""
+        """Degenerate 4"""
 
         print
-        print "Running degenerate 3..."
-        
+        print "Running degenerate 4..."
+
+
         set_lambda(1.5)
         set_N(2)
 
-        core=Material(3.2)
-        clad=Material(1.0)
+        core_width = 0.3
+        clading_width = 1.5
 
-        set_unstable_exp_threshold(1e-6)
+        cladding = Material(1)
+        core = Material(3.2)
 
-        s1 = Slab(clad(1)+core(0.3)+clad(5.764))
-        s2 = Slab(clad(1)+core(0.3)+clad(4.464)+core(0.3)+clad(1))
+        s1 = Slab(cladding(1.0) + core(core_width) +
+         cladding(clading_width+ core_width + 1.0))
+        s2 = Slab(cladding(1.0) + core(core_width) +
+         cladding(clading_width) + core(core_width) + cladding(1.0))
 
         s = Stack(s1(0)+s2(0))
 
@@ -40,12 +44,10 @@ class degenerate3(unittest.TestCase):
         R_pass = abs(R - R_OK) < eps.testing_eps
 
         free_tmps()
-
-        set_unstable_exp_threshold(1e-12)
         
         self.failUnless(R_pass)
 
-suite = unittest.makeSuite(degenerate3, 'test')
+suite = unittest.makeSuite(degenerate4, 'test')
 
 if __name__ == "__main__":
     unittest.main()
