@@ -524,7 +524,7 @@ def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
     elif type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
         plot_n_stack(o, r1, r2, filename, colormap)
     elif type(o) == Section:
-        plot_n_section(o, r1, r2, filename, colormap)    
+        plot_n_section(o, r1, r2, filename, colormap)
     else:
         print "Unsupported argument for plot_n."
 
@@ -591,7 +591,7 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
                             overlay_n=1, contour=1):
     
     f = zeros([len(r_y),len(r_x)], Float)
-
+    
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
         f[len(r_y)-1-i_y,i_x] = \

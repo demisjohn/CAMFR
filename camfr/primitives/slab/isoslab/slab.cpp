@@ -552,7 +552,6 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   }
   else
     prop_kt_end_lossless = 0.25; // To make rectangle for complex zero search.
-  
   std::reverse(kt_prop_lossless.begin(), kt_prop_lossless.end());
 
   //for (int i=0; i<kt_prop_lossless.size(); i++)
