@@ -203,9 +203,9 @@ inline void check_index(int i)
   }
 }
 
-inline void check_bloch_index(int i)
+inline void check_wg_index(const Waveguide& w, int i)
 {
-  if ( (i<0) || (i>=int(2*global.N)) )
+  if ( (i<0) || (i>=int(w.N())) )
   {
     PyErr_SetString(PyExc_IndexError, "index out of bounds.");
     throw std::out_of_range("index out of bounds.");
@@ -213,14 +213,17 @@ inline void check_bloch_index(int i)
 }
 
 inline Mode* waveguide_get_mode(const Waveguide& w, int i)
-  {check_index(i); return w.get_mode(i+1);}
+  {check_wg_index(w,i); return w.get_mode(i+1);}
 inline Mode* waveguide_get_fw_mode(const Waveguide& w, int i)
-  {check_index(i); return w.get_fw_mode(i+1);}
+  {check_wg_index(w,i); return w.get_fw_mode(i+1);}
 inline Mode* waveguide_get_bw_mode(const Waveguide& w, int i)
-  {check_index(i); return w.get_bw_mode(i+1);}
+  {check_wg_index(w,i); return w.get_bw_mode(i+1);}
+
+inline SectionMode* section_get_mode(const Section& s, int i)
+  {check_wg_index(s,i); return dynamic_cast<SectionMode*>(s.get_mode(i+1));}
 
 inline BlochMode* blochstack_get_mode(BlochStack& b, int i)
-  {check_bloch_index(i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
+  {check_wg_index(b,i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
 
 inline cMatrix stack_get_R12(const Stack& s)
   {if (s.as_multi()) return s.as_multi()->get_R12();}
@@ -1058,6 +1061,8 @@ BOOST_PYTHON_MODULE(_camfr)
     .def(init<const Term&>())
     .def(init<Expression&, Expression&>())
     .def(init<Expression&, Expression&, int, int>())
+    .def("mode",   section_get_mode,
+         return_value_policy<reference_existing_object>())
     .def("width",  section_width)
     .def("height", section_height)
     .def("eps",    &Section::eps_at)
@@ -1069,6 +1074,12 @@ BOOST_PYTHON_MODULE(_camfr)
 
   class_<RefSection, bases<MultiWaveguide> >
   ("RefSection", init<Material&, const Complex&, const Complex&, int>())
+    ;  
+
+  // Wrap SectionMode.
+
+  class_<SectionMode, boost::noncopyable, bases<Mode> >
+    ("SectionMode", no_init)
     ;
 }
 
