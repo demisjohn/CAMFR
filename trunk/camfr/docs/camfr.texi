@@ -43,6 +43,82 @@ Copyright @copyright{} 2001-2002 Peter Bienstman - Ghent University.
 * Using visualisation toolkits with CAMFR::  
 * Reference guide::             
 * Index::                       
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Tutorial
+
+* Example 1::                   
+* Example 2::                   
+* Example 3::                   
+* Example 4::                   
+* Example 5::                   
+* Example 6::                   
+* Example 7::                   
+
+Modelling optical devices
+
+* Photonic crystal devices::    
+* Locating laser modes::        
+* Current source in a cavity::  
+* 1D planar structures::        
+* Semi-infinite stacks::        
+* Defining complicated structures::  
+* General excitations for slabs::  
+* Tips for troubleshooting problems::  
+
+Using visualisation toolkits with CAMFR
+
+* Tk toolkit::                  
+* Matlab interface::            
+
+Reference guide
+
+* set_lambda::                  
+* get_lambda::                  
+* set_N::                       
+* N::                           
+* set_polarisation::            
+* set_gain_material::           
+* set_stability::               
+* set_precision::               
+* set_precision_rad::           
+* set_sweep_from_previous::     
+* set_chunk_tracing::           
+* set_degenerate::              
+* set_circ_order::              
+* set_circ_field_type::         
+* set_lower_PML::               
+* set_upper_PML::               
+* set_circ_PML::                
+* set_lower_wall::              
+* set_upper_wall::              
+* free_tmps::                   
+* Coord::                       
+* Field::                       
+* Material::                    
+* Waveguide::                   
+* Mode::                        
+* E_Wall::                      
+* H_Wall::                      
+* Expression::                  
+* Term::                        
+* Stack::                       
+* Cavity::                      
+* BlochStack::                  
+* BlochMode::                   
+* InfStack::                    
+* Geometry::                    
+* Circle::                      
+* Square::                      
+* Rectangle::                   
+* Triangle::                    
+* Planar::                      
+* Circ::                        
+* Slab::                        
+
+@end detailmenu
 @end menu
 
 @node Introduction, Tutorial, top, top
@@ -493,8 +569,11 @@ air  = Material(1.0)
 @group
 # Define waveguide sections.
 
-normal = Slab(air(2.0 - 0.1j) + GaAs(0.5) + air(2.0 - 0.1j))
-thick  = Slab(air(1.9 - 0.1j) + GaAs(0.7) + air(1.9 - 0.1j))
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+normal = Slab(air(2.0) + GaAs(0.5) + air(2.0))
+thick  = Slab(air(1.9) + GaAs(0.7) + air(1.9))
 @end group
 
 @group
@@ -524,14 +603,17 @@ central section with length @code{L} (fig. 3).
 @cindex boundary conditions
 @cindex parasitic reflections
 
-An important difference with the previous examples is that the claddings have 
-a complex thickness, with an imaginary value of @code{-0.1j}. This implements
-the so-called perfectly matched layer (PML) boundary conditions.
+@code{set_lower_PML(-0.1)} gives all the lower claddings in subsequently
+defined slabs an imaginary component to its thickness of @code{-0.1j}.
+Similarly for @code{set_upper_PML}. @code{lower} refers to the layer at 
+@code{x=0}, which is the first term in the expression used to define the slab.
 
-PML can absorb radiation travelling toward the walls, without introducing
-any additional parasitic reflections, regardless of wavelength, incidence
-angle or polarisation of the incident light. The larger the imaginary
-component of the thickness, the stronger the absorption.
+This imaginary cladding thicknesses implement the so-called perfectly matched 
+layer (PML) boundary conditions. PML can absorb radiation travelling toward 
+the walls, without introducing any additional parasitic reflections, 
+regardless of wavelength, incidence angle or polarisation of the incident
+light. The larger the imaginary component of the thickness, the stronger the 
+absorption.
 
 The presence of advanced boundary conditions like PML is a very powerful
 feature of CAMFR. Without it, the PEC walls would reflect all the
@@ -589,7 +671,8 @@ air  = Material(1.0)
 
 # Define uniform circular waveguide.
 
-space = Circ(air(1 - 0.1j))
+set_circ_PML(-0.1)
+space = Circ(air(1))
 @end group
 
 @group
@@ -597,7 +680,7 @@ space = Circ(air(1 - 0.1j))
 # of the central core.
 
 for r in arange(0.100, 0.500, 0.050):
-    circ = Circ(GaAs(r) + air(1 - 0.1j - r))
+    circ = Circ(GaAs(r) + air(1 - r))
     stack = Stack(space(0) + circ(0.5) + space(0))
     stack.calc()
     print r, abs(stack.R12(0,0))
@@ -627,10 +710,9 @@ of @code{set_polarisation} will be ignored.
 
 Circular waveguides are defined in pretty much the same way as slab waveguides,
 except that the argument to Circ describes the structure from @code{r=0} to
-the wall, rather than from wall to wall as was the case with slabs. This also
-means that only the last material should have a complex thickness for circular
-waveguides. Otherwise, the core would have a complex thickness, which has no
-physical meaning.
+the wall, rather than from wall to wall as was the case with slabs. PML in
+circular structures is set by using @code{set_circ_PML}, which adds a complex
+thickness to the cladding layer.
 
 @cindex freeing temporaries
 @cindex free_temps()
@@ -687,10 +769,11 @@ air  = Material(1.0)
 @group
 # Define stack.
 
-PML = -0.1
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
 
-slab  = Slab(air(2 + PML*1j) + GaAs(.5) + air(2 + PML*1j))
-space = Slab(air(4.5 + 2*PML*1j))
+slab  = Slab(air(2) + GaAs(.5) + air(2))
+space = Slab(air(4.5))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 
@@ -710,7 +793,7 @@ outfile = file("tutorial5.out",'w')
 
 for x in arange(0.000, 4.500, 0.100):
     for z in arange(0.000, 0.500, 0.010):
-	print >> outfile, abs(stack.field(Coord(x + PML*1j, 0, z)).E2()),
+	print >> outfile, abs(stack.field(Coord(x,0,z)).E2()),
     print >> outfile
 
 outfile.close()
@@ -736,15 +819,7 @@ these vectors, we first have to import Numerical Python with
 Calculating the field at a given position inside the stack uses the same
 syntax as calculating the field of an individual eigenmode:
 
-@code{stack.field(Coord(x + PML*1j, 0, z))}
-
-@cindex field profiles and PML
-@cindex PML and field profiles
-
-Important to note is that because we have PML at @code{x=0}, we have to set the
-same imaginary component for the @code{x} coordinate if we to calculate fields
-at other positions inside the stacks. This follows directly from the physics
-underlying PML, but is beyond the topic of this tutorial to explain.
+@code{stack.field(Coord(x,0,z))}
 
 @cindex Python, preventing line break
 @cindex linebreaks, preventing
@@ -793,12 +868,12 @@ air  = Material(1.0)
 
 # Define stack.
 
-PML = -0.1
+set_upper_PML(-0.1)
 
 set_lower_wall(slab_H_wall)
 
-slab  = Slab(GaAs(.25) + air(2 + PML*1j))
-space = Slab(air(2.25 + PML*1j))
+slab  = Slab(GaAs(.25) + air(2))
+space = Slab(air(2.25))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 
@@ -816,7 +891,7 @@ outfile = file("tutorial6.out",'w')
 
 for x in arange(0.000, 2.250, 0.100):
     for z in arange(0.000, 0.500, 0.010):
-        print >> outfile, abs(stack.field(Coord(x, 0, z)).E2()),
+        print >> outfile, abs(stack.field(Coord(x,0,z)).E2()),
     print >> outfile
 
 outfile.close()
@@ -845,11 +920,11 @@ Because the structure now has half the size as the original structure, we can
 suffice with only half as many modes, which typically buys us a factor eight
 in computation time.
 
-Another thing to pay attention to is that in this case the @code{x}-coordinate
-has to be taken real in calls for @code{field}, as there is no PML at 
-@code{x=0}. For the same reason real coordinates have to be used when 
-plotting the fields in cylindrical structures, as there is also no PML at 
-@code{r=0}.
+Another thing to pay attention to is that in this case there is only PML
+at the upper wall, since the lower wall is effectively the inside of the
+structure we want to model, so we don't want any absorbing boundary
+conditions there.
+
 
 @page
 
@@ -879,8 +954,10 @@ set_lambda(1)
 set_N(20)
 set_polarisation(TE)
 
-w   =  5.0  # width of waveguide
-PML = -0.1
+w = 5.0  # width of waveguide
+
+set_upper_PML(-0.1)
+set_lower_PML(-0.1)
 
 @end group
 @group
@@ -906,10 +983,7 @@ for i in range(steps):
     x = i * w / steps
     m = Material(index(x + 0.5 * w / steps))
     materials.append(m)
-    if (i == 0) | (i == steps-1):
-	d = w / steps + PML*1j
-    else:
-	d = w / steps 
+    d = w / steps 
     expr.add(m(d))
 
 slab = Slab(expr)
@@ -949,8 +1023,7 @@ expression is gradually filled in a loop while @code{i} runs from 0 to
 @code{steps-1}.
 
 A material @code{m} is created with the refractive index from the middle of
-the current step of the index profile. If we are in the first or the last step,
-the thickness of the step is given an imaginary part to accommodate PML. 
+the current step of the index profile. 
 Finally, a term is added to the expression which describes the current step,
 consisting of material @code{m} with thickness @code{d}: 
 @code{expr.add(m(d))}.
@@ -1050,8 +1123,6 @@ r = .150/2.0 # rod radius
 
 set_lower_wall(slab_H_wall)
 
-PML = 0
-
 cl = 0 # air cladding
 
 periods = 3  # periods above outer waveguide
@@ -1061,13 +1132,13 @@ sections = 1 # intermediate 90 deg sections
 @group
 # Define slabs.
 
-no_rods = Slab(air(a-r+(sections+1+periods)*a+cl+PML*1j))
+no_rods = Slab(air(a-r+(sections+1+periods)*a+cl))
 
 # Central waveguide.
  
 cen = Slab(  air(a-r)                                               \
            + (sections+1+periods)*(GaAs(2*r) + air(a-2*r))          \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 @end group
 @group
@@ -1075,7 +1146,7 @@ cen = Slab(  air(a-r)                                               \
 
 ver = Slab(  air(a-r + (sections+1)*a)                              \
            + periods*(GaAs(2*r) + air(a-2*r) )                      \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Outer arms.
  
@@ -1083,7 +1154,7 @@ arm = Slab(  GaAs(r) + air(a-2*r)                                   \
            + sections*(GaAs(2*r) + air(a-2*r))                      \
            + air(a)                                                 \
            + periods*(GaAs(2*r) + air(a-2*r))                       \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 @end group
 @group
@@ -1119,8 +1190,8 @@ print "R", splitter.R12(0,0)
 
 outfile = open("splitter.out", 'w')
 
-for x in arange(0.000, no_rods.width().real - cl - a, a/20.):
-    for z in arange(0.000, splitter.length().real, a/20.):
+for x in arange(0.000, no_rods.width() - cl - a, a/20.):
+    for z in arange(0.000, splitter.length(), a/20.):
         print >> outfile, abs(splitter.field(Coord(x, 0, z)).E2()),
     print >> outfile
 
@@ -1218,8 +1289,10 @@ set_gain_material(gain_m)
 @group
 # Define geometry parameters
 
+set_circ_PML(-0.1)
+
 r = 4.0
-d_cladding = 4.0 - 0.1j
+d_cladding = 4.0
  
 d_GaAs   = .06949
 d_AlGaAs = .07963
@@ -1354,8 +1427,10 @@ set_circ_field_type(cos_type)
 @group
 # Define waveguide and wall.
 
+set_circ_PML(-0.5)
+
 air_m = Material(1.0)
-air = Circ(air_m(10-0.5j))
+air = Circ(air_m(10))
 air.calc()
 
 wall = E_Wall(air)
@@ -1468,13 +1543,13 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 
   set_N(M)
 
-  R = r+PML*1j
+  set_circ_PML(PML)
   
-  metal = Circ(metal_m(R))
-  air   = Circ(  air_m(R)) 
-  GaAs  = Circ( GaAs_m(R))
-  QW    = Circ(   QW_m(R))
-  AlOx  = Circ( AlOx_m(R))
+  metal = Circ(metal_m(r))
+  air   = Circ(  air_m(r)) 
+  GaAs  = Circ( GaAs_m(r))
+  QW    = Circ(   QW_m(r))
+  AlOx  = Circ( AlOx_m(r))
 
 @end group
 @group
@@ -1700,8 +1775,6 @@ r = .150/2.0 # rod radius
 
 set_lower_wall(slab_H_wall)
 
-PML = 0
-
 cl = 0       # air cladding
 periods = 4  # lateral periods
 @end group
@@ -1709,13 +1782,13 @@ periods = 4  # lateral periods
 
 # Define slabs.
 
-inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl+PML*1j))
+inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl))
 
-no_rods = Slab(air(a-r+periods*a+cl+PML*1j))
+no_rods = Slab(air(a-r+periods*a+cl))
  
 cen = Slab(  air(a-r)                                               \
            + periods*(GaAs(2*r) + air(a-2*r))                       \
-           + air(cl+PML*1j) )
+           + air(cl) )
 
 # Calculate semi-infinite stack.
 
@@ -1771,14 +1844,14 @@ g += Circle   (Point(4.5, 0.0), 0.5, mat)
 @end group
 @group
 
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
 prop0,  prop1,  d_prop  =  0.0, 5.0, 0.50
 trans0, trans1, d_trans = -2.5, 2.5, 0.01
 
-PML1, PML2 = -0.1, -0.1
-
 exp = g.to_expression(prop0,  prop1,  d_prop,
-                      trans0, trans1, d_trans,
-                      PML1, PML2)
+                      trans0, trans1, d_trans)
 
 s = Stack(exp)
 
@@ -1803,8 +1876,7 @@ If two shapes overlap, the shape that was added last takes precedence.
 Finally, we can convert the geometry object to an expression which can be
 used to create a stack. The arguments to this @code{to_expression} function
 are the range and precision in both the propagation and transverse direction
-and the values of the PML (i.e. of the imaginary part of thickness) at both
-boundaries (see Fig 2.5).
+(see Fig 2.5).
 
 The increments @code{d_prop} and @code{d_trans} deserve some additional
 explanation, because they don't correspond to a uniform rectangular grid. The
@@ -1856,7 +1928,10 @@ set_lambda(1.55)
 GaAs = Material(3.5)
 air  = Material(1.0)
 
-slab = Slab(air(2-.1j)+ GaAs(1)+ air(2-.1j))
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+slab = Slab(air(2)+ GaAs(1)+ air(2))
 s = Stack(slab(1))
 
 eps = 1e-3 # Precision for calculating overlap integrals.
@@ -1864,7 +1939,7 @@ eps = 1e-3 # Precision for calculating overlap integrals.
 # General excitation using a Python function.
 
 A     = 1.0
-x0    = slab.width().real/2.
+x0    = slab.width()/2.
 sigma = 0.5
 
 def f(x):
@@ -1887,9 +1962,7 @@ First, we define a Python function @code{f}, which describes a Gaussian. This
 field profile is then used as an excitation by calling 
 @code{s.set_inc_field_function(f, eps)}, where @code{eps} is the precision with
 which the overlap integrals are calculated. @code{f} describes the @code{Ey} 
-field in the case of TE polarisation and the @code{Hy} field for TM. Also
-worth noting is that in defining the function, PML doesn't have to be taken
-into account explicitly, this is taken care of behind the scenes.
+field in the case of TE polarisation and the @code{Hy} field for TM.
 
 By using Python's @code{lambda} expressions, this code could also have been
 written as
@@ -1959,7 +2032,8 @@ If your waveguide don't have multiple cores, try using
 If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
 soon, i.e. before you're done with the objects. Another common cause of
 crashes to look out for is defining a @code{wall} or an @code{InfStack} inside
-an expression.
+an expression. Also, if you're upgrading from a pre 1.0 version of CAMFR, make
+sure all your coordinates are purely real.
 
 Finally, we want to remind the user that in Python @code{1/3 = 0} rather than
 @code{.3333}. This will change in Python 3.0, but if you already want such 
@@ -2086,9 +2160,10 @@ air  = Material(1.0)
 @group
 # Define slabs.
 
-PML = -0.1
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
 
-space = Slab(air(4 + 2*PML*1j))
+space = Slab(air(4))
 
 @end group
 @group
@@ -2097,14 +2172,13 @@ space = Slab(air(4 + 2*PML*1j))
 v = [] # To keep track of the data points.
 
 for W in arange(0.100, 0.200, 0.005):
-    slab = Slab(air(2 + PML*1j - W/2.0) + GaAs(W)  \
-              + air(2 + PML*1j - W/2.0))
+    slab = Slab(air(2 - W/2.0) + GaAs(W) + air(2 - W/2.0))
     stack = Stack(space(0) + slab(0.5) + space(0))
     stack.calc()
 
     print W
 
-    v.append((W,abs(stack.R12(1,1))))
+    v.append((W,abs(stack.R12(0,0))))
 
     free_tmps()
 
@@ -2168,10 +2242,11 @@ air  = Material(1.0)
 @group
 # Define stack.
 
-PML = -0.1
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
 
-space = Slab(air(4 + 2*PML*1j))
-slab = Slab(air(1.5 + PML*1j) + GaAs(1) + air(1.5 + PML*1j))
+space = Slab(air(4))
+slab = Slab(air(1.5) + GaAs(1) + air(1.5))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 
@@ -2224,7 +2299,10 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_degenerate::              
 * set_circ_order::              
 * set_circ_field_type::         
-* set_lower_wall::               
+* set_lower_PML::               
+* set_upper_PML::               
+* set_circ_PML::                
+* set_lower_wall::              
 * set_upper_wall::              
 * free_tmps::                   
 * Coord::                       
@@ -2422,7 +2500,7 @@ angular dependence in cylindrical structures.
 
 
 
-@node set_circ_field_type, set_lower_wall, set_circ_order, Reference guide
+@node set_circ_field_type, set_lower_PML, set_circ_order, Reference guide
 @unnumberedsec @code{set_circ_field_type}
 @cindex @code{set_circ_field_type}
 
@@ -2433,7 +2511,53 @@ Can be either @code{cos_type} (default) or @code{sin_type}.
 
 
 
-@node set_lower_wall, set_upper_wall, set_circ_field_type, Reference guide
+@node set_lower_PML, set_upper_PML, set_circ_field_type, Reference guide
+@unnumberedsec @code{set_lower_PML}
+@cindex @code{set_lower_PML}
+
+@noindent
+@code{set_lower_PML(p)}: gives the lower cladding of all subsequently defined
+@code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
+negative for absorption. Implements PML boundary conditions. The lower 
+cladding is at @code{x=0}, at the first term in the expression to create a 
+@code{Slab}.
+
+@noindent
+@xref{set_upper_PML}, @ref{set_circ_PML}.
+
+
+
+@node set_upper_PML, set_circ_PML, set_lower_PML, Reference guide
+@unnumberedsec @code{set_upper_PML}
+@cindex @code{set_upper_PML}
+
+@noindent
+@code{set_upper_PML(p)}: gives the upper cladding of all subsequently defined
+@code{Slab}s an imaginary thickness of @code{p*1j}, with @code{p} usually 
+negative for absorption. Implements PML boundary conditions. The upper 
+cladding is at  @code{x=slab.width()}, at the last term in the expression to 
+create a @code{Slab}.
+
+@noindent
+@xref{set_lower_PML}, @ref{set_circ_PML}.
+
+
+
+@node set_circ_PML, set_lower_wall, set_upper_PML, Reference guide
+@unnumberedsec @code{set_circ_PML}
+@cindex @code{set_circ_PML}
+
+@noindent
+@code{set_circ_PML(p)}: gives the cladding of all subsequently defined
+circular waveguides an imaginary thickness of @code{p*1j}, with @code{p} 
+usually negative for absorption. Implements PML boundary conditions. 
+
+@noindent
+@xref{set_lower_PML}, @ref{set_upper_PML}.
+
+
+
+@node set_lower_wall, set_upper_wall, set_circ_PML, Reference guide
 @unnumberedsec @code{set_lower_wall}
 @cindex @code{set_lower_wall}
 
@@ -2787,8 +2911,7 @@ integrals.
 @code{set_inc_field_function(f, eps)}: set an incident field described by
 a function @code{f} and use precision @code{eps} to calculate the overlap 
 integrals. @code{f} describes the @code{E2} for TE polarisation and the 
-@code{H2} field for TM polarisation. No PML needs to be specified in @code{f},
-this is handled behind the scenes.
+@code{H2} field for TM polarisation. 
 @end itemize
 
 @noindent
@@ -2983,7 +3106,7 @@ Member functions:
 @code{Rectangle} or a @code{Triangle}. In case of overlap, shapes that are
 added later take precedence.
 @item
-@code{to_expression(prop0,prop1,d_prop,trans0,trans1,d_trans,PML1,PML2)}: see
+@code{to_expression(prop0,prop1,d_prop,trans0,trans1,d_trans)}: see
 the explanation in @xref{Defining complicated structures} of a description of 
 these arguments.
 @end itemize
