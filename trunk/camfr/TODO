@@ -1,11 +1,10 @@
--build: Eliminate as many makefiles as possible
+-build: Eliminate as many makefiles as possible, slab_global.beta
 -circ_mode check: 0/0
 -infstack recalc modes, inf*(notation), diagslab, unexpected powerflow
  in bandgap crow_wg
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
  complex modes, determinant faster than eigenvalues?
--portability: isnan,
 
 SHORT TERM 
 
