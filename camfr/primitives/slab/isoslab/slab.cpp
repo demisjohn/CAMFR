@@ -666,7 +666,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   remove_copies   (&kt_lossless, eps_copies);
   remove_opposites(&kt_lossless, eps_copies);
   remove_elems    (&kt_lossless, Complex(0.0), eps_copies);
-
+  
   for (unsigned int i=0; i<materials.size(); i++)
   {
     Complex kt_i = sqrt(C*(real(materials[i]->eps_mu())-min_eps_mu_lossless));
@@ -686,6 +686,8 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       kt_lossless[i] =   real(kt_lossless[i]);
   }
 
+  remove_elems(&kt_lossless, Complex(0.0), eps_copies);
+
   bool degenerate = kt_lossless.size() > kt_lossless_single.size();
 
   for (unsigned int i=0; i<kt_complex.size(); i++)
@@ -695,6 +697,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   }
   
   vector<Complex> kt, forbidden;
+  forbidden.push_back(Complex(0.0));
   if (global.chunk_tracing && !degenerate)
     kt = traceroot_chunks
       (kt_lossless,disp,params_lossless,params,forbidden,global.sweep_steps);

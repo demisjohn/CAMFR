@@ -1,6 +1,10 @@
+2003-03-24 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slab.cpp: Improve handling of false zeros.
+
 2003-03-07 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
-	* slab.cpp: Tuner series solver.
+	* slab.cpp: Tune series solver.
 	* slabdisp.cpp: Ditto.
 
 2003-02-17 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
