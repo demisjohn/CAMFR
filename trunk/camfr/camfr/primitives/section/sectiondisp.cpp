@@ -150,7 +150,7 @@ Complex SectionDisp::operator()(const Complex& kt)
   int old_N = global.N;
   global.N = M;
 
-  Complex res = (global.eigen_calc==lapack) ? calc_lapack () : calc_band();
+  Complex res = (global.eigen_calc==lapack) ? calc_split () : calc_global();
 
   global.N = old_N;
   global.slab_ky = old_beta;
@@ -163,17 +163,39 @@ Complex SectionDisp::operator()(const Complex& kt)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// SectionDisp::calc_band()
+// Index mapping into dense (ku=-1) or band (ku=upper diagonals) storage.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::calc_band()
+struct IndexMap
 {
-  // Create system matrix.
+  int ku;
+  IndexMap(int ku_) : ku(ku_) {}
+  int operator()(int i, int j) {return (ku == -1) ? i : ku+1+i-j;}  
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_global()
+//
+//   Handles all layers of the stack at the same time.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_global()
+{
+  // Allocate matrices.
 
   const int K = slabs.size();
+  int kl, ku; kl = ku = 3*M-1; // lower and upper diagonals.
+  bool band_storage = (K > 3 - .5/M); // only quicker if 6M-1 < 2MK
+  
+  IndexMap f(band_storage ? ku : -1);
 
-  cMatrix Q(2*M*K,2*M*K,fortranArray); Q = 0.0;
+  cMatrix Q(band_storage ? kl+1+ku : 2*M*K, 2*M*K, fortranArray);
+  Q = 0.0;
 
   cVector prop_I(M,fortranArray), prop_II(M,fortranArray);
 
@@ -185,8 +207,8 @@ Complex SectionDisp::calc_band()
 
   for (int i=1; i<=M; i++)
   {
-    Q(i,  i) = 1.0;
-    Q(i,M+i) = -R0 * exp(-I*slabs[0]->get_mode(i)->get_kz() * d[0]);
+    Q(f(i,  i), i  ) = 1.0;
+    Q(f(i,M+i), M+i) = -R0 * exp(-I*slabs[0]->get_mode(i)->get_kz() * d[0]);
   }
 
   // Interfaces.
@@ -211,7 +233,7 @@ Complex SectionDisp::calc_band()
     slabs[k-1]->calc_overlap_matrices(slabs[k],
                                       &O_I_II, &O_II_I, &O_I_I, &O_II_II);
 
-    // Index of block's top left row and column.
+    // Index of block's top left row and column (in dense storage).
 
     int r = (k-1)*2*M + M;
     int c = (k-1)*2*M;
@@ -221,17 +243,17 @@ Complex SectionDisp::calc_band()
     for (int i=1; i<=M; i++)
       for (int j=1; j<=M; j++)
       {
-        Q(  r+i,    c+j) =  O_I_II(j,i)  * prop_I(j);
-        Q(M+r+i,    c+j) =  O_II_I(i,j)  * prop_I(j);
+        Q(f(  r+i,    c+j),     c+j) =  O_I_II(j,i)  * prop_I(j);
+        Q(f(M+r+i,    c+j),     c+j) =  O_II_I(i,j)  * prop_I(j);
 
-        Q(  r+i,  M+c+j) =  O_I_II(j,i);
-        Q(M+r+i,  M+c+j) = -O_II_I(i,j);
+        Q(f(  r+i,  M+c+j),   M+c+j) =  O_I_II(j,i);
+        Q(f(M+r+i,  M+c+j),   M+c+j) = -O_II_I(i,j);
 
-        Q(  r+i,2*M+c+j) = -O_II_II(j,i);
-        Q(M+r+i,2*M+c+j) = -O_II_II(i,j);
+        Q(f(  r+i,2*M+c+j), 2*M+c+j) = -O_II_II(j,i);
+        Q(f(M+r+i,2*M+c+j), 2*M+c+j) = -O_II_II(i,j);
 
-        Q(  r+i,3*M+c+j) = -O_II_II(j,i) * prop_II(j);
-        Q(M+r+i,3*M+c+j) =  O_II_II(i,j) * prop_II(j);
+        Q(f(  r+i,3*M+c+j), 3*M+c+j) = -O_II_II(j,i) * prop_II(j);
+        Q(f(M+r+i,3*M+c+j), 3*M+c+j) =  O_II_II(i,j) * prop_II(j);
       } 
   }
 
@@ -239,29 +261,34 @@ Complex SectionDisp::calc_band()
 
   Complex Rn = (global_section.rightwall == E_wall) ? -1.0 : 1.0;
 
-  int r = Q.rows()-M;
-  int c = Q.cols()-2*M;
+  int r = 2*M*K-  M;
+  int c = 2*M*K-2*M;
 
   for (int i=1; i<=M; i++)
   {
-    Q(r+i,  c+i) = -Rn * exp(-I*slabs[K-1]->get_mode(i)->get_kz() * d[K-1]);
-    Q(r+i,M+c+i) =  1.0;
+    Q(f(r+i,  c+i),  c+i)=-Rn*exp(-I*slabs[K-1]->get_mode(i)->get_kz()*d[K-1]);
+    Q(f(r+i,M+c+i),M+c+i)= 1.0;
   }
 
   // Return determinant.
 
-  return determinant(Q);
+  if (band_storage)
+    return determinant_band(Q, 2*K*M, kl, ku);
+  else
+    return determinant(Q);
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// SectionDisp::calc_lapack()
+// SectionDisp::calc_split()
+//
+//   Splits the stack in a left and right stack.
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::calc_lapack()
+Complex SectionDisp::calc_split()
 {
   // Calculate eigenvectors.
 

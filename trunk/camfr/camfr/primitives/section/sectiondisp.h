@@ -39,8 +39,8 @@ class SectionDisp : public ComplexFunction
     
   protected:
 
-    Complex calc_lapack();
-    Complex calc_band();
+    Complex calc_split();
+    Complex calc_global();
 
     Stack* left;
     Stack* right;
