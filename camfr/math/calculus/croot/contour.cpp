@@ -55,7 +55,7 @@ int     Contour::sub_signs[4][4]    = { {+1,    +1,    +1,    -1},
 
 Contour::Contour(const Complex& bottom_left, const Complex& top_right,
                  ComplexFunction& f_, unsigned int M_,
-                 Real eps_=1e-4, Real mu_=1e-4, unsigned int max_k_=8)
+                 Real eps_, Real mu_, unsigned int max_k_)
   : bl(bottom_left), tr(top_right),
     f(&f_), M(M_), eps(eps_), mu(mu_), max_k(max_k_)
 {

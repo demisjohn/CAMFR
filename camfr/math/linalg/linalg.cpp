@@ -162,7 +162,7 @@ extern "C" void zgemv_F(const char*,const int&,const int&,
                         const Complex*,const int&,const Complex&,
                         const Complex*,const int&);
 
-cVector multiply(const cMatrix& A, const cVector& x, Op a=nrml)
+cVector multiply(const cMatrix& A, const cVector& x, Op a)
 {
   // Set dimensions.
 
@@ -209,7 +209,7 @@ extern "C" void zgemm_F(const char*,const char*,const int&,const int&,
                         const Complex*,const int&,const Complex&,
                         const Complex*,const int&);
 
-cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a=nrml, Op b=nrml)
+cMatrix multiply(const cMatrix& A, const cMatrix& B, Op a, Op b)
 {
   // Set dimensions.
 
@@ -622,7 +622,7 @@ extern "C" void zgeev_F(const char*,const char*,const int&,const Complex*,
                         const Complex*,const int&,const Complex*,const int&,
                         const Real*,int&);
 
-cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors=NULL)
+cVector eigenvalues(const cMatrix& A, cMatrix* eigenvectors)
 {
   // Check dimensions.
 
@@ -699,7 +699,7 @@ extern "C" void zgeevx_F(const char*,const char*,const char*,const char*,
                          int&,int&,const Real*,Real&,const Real*,const Real*,
                          const Complex*,const int&,const Real*,int&);
 
-cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors=NULL)
+cVector eigenvalues_x(const cMatrix& A, cMatrix* eigenvectors)
 {
   // Check dimensions.
 
@@ -788,7 +788,7 @@ extern "C" void zggev_F(const char*,const char*,const int&,const Complex*,
 
 void gen_eigenvalues(const cMatrix& A, const cMatrix& B,
                      cVector* alpha, cVector* beta,
-                     cMatrix* eigenvectors=NULL) 
+                     cMatrix* eigenvectors) 
 {
   // Check dimensions.
 
@@ -883,7 +883,7 @@ extern "C" void zgesvd_F(const char*,const char*,const int&,const int&,
                          const int&,const Complex*,const int&,const Complex*,
                          const int&,const Real*,int&);
 
-rVector svd(const cMatrix& A, cMatrix* Vh=NULL, cMatrix* U=NULL)
+rVector svd(const cMatrix& A, cMatrix* Vh, cMatrix* U)
 {
   // Check dimensions.
 
@@ -1162,7 +1162,7 @@ extern "C" void zgetrs_F(const char*,const int&,const int&,const Complex*,
                          const int&,const int*,const Complex*,const int&,int&);
 
 cMatrix LU_solve(const cMatrix& LU, const iVector& P,
-                 const cMatrix& B, Op op=nrml)
+                 const cMatrix& B, Op op)
 { 
   // Check dimensions.
 

@@ -340,7 +340,7 @@ void calc_S_S(const vector<Chunk>& chunks,
 
 void calc_S_S_diag(const vector<Chunk>& chunks,
                    vector<FieldExpansion>* field,
-                   cVector* inc_right_bw=NULL)
+                   cVector* inc_right_bw)
 {
   // Fields at left side.
 
@@ -424,7 +424,7 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
 
 void calc_S_S_mono(const vector<Chunk>& chunks,
                    vector<FieldExpansion>* field,
-                   cVector* inc_right_bw=NULL)
+                   cVector* inc_right_bw)
 {
   // Fields at left side
 
@@ -502,7 +502,7 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
 
 void S_scheme_fields_S
   (const vector<Chunk>& chunks, vector<FieldExpansion>* field,
-   cVector* inc_right_bw=NULL)
+   cVector* inc_right_bw)
 {
   // Check input.
 

@@ -22,8 +22,8 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 
 Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
-                Real eps=1e-14, const vector<Complex>* prev_zeros=0,
-                int maxiter=100, bool *errorptr=0, bool verbose=false)
+                Real eps, const vector<Complex>* prev_zeros,
+                int maxiter, bool *errorptr, bool verbose)
 {
   // Check input.
   

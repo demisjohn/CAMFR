@@ -19,7 +19,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Waveguide_length Waveguide::operator()(const Complex& d=0.0) const
+const Waveguide_length Waveguide::operator()(const Complex& d) const
 {
   if (real(d) < 0)
     cout << "Warning: negative real length of waveguide." << endl;
@@ -133,7 +133,7 @@ const FieldExpansion MultiWaveguide::field_from_source
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-void MultiWaveguide::truncate_N_modes(int N=global.N)
+void MultiWaveguide::truncate_N_modes(int N)
 {
   if (modeset.size() <= N)
     return;

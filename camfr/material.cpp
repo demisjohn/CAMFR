@@ -18,7 +18,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Material_length BaseMaterial::operator()(const Complex& d=0.0) const
+const Material_length BaseMaterial::operator()(const Complex& d) const
 {
   if (real(d) < 0)
     cout << "Warning: negative real length of material." << endl;

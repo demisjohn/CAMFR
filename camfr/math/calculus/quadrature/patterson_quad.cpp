@@ -27,7 +27,7 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 
 Real patterson_quad_sub(RealFunction& f, Real a, Real b, Real eps,
-                        Real result_estimate, unsigned int max_k=8)
+                        Real result_estimate, unsigned int max_k)
 {
   bool error;
   Real abs_error;
@@ -49,7 +49,7 @@ Real patterson_quad_sub(RealFunction& f, Real a, Real b, Real eps,
 /////////////////////////////////////////////////////////////////////////////
 
 Real patterson_quad(RealFunction& f, Real a, Real b,
-                    Real eps, unsigned int max_k=8)
+                    Real eps, unsigned int max_k)
 {
   // Try patterson on the entire interval.
 
@@ -122,7 +122,7 @@ Real patterson_quad_non_adapt_sub
 /////////////////////////////////////////////////////////////////////////////
 
 Real patterson_quad_non_adapt(RealFunction& f, Real a, Real b,
-                              Real eps, unsigned int max_k=8)
+                              Real eps, unsigned int max_k)
 {
   // Try patterson on the entire interval.
 

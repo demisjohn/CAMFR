@@ -21,7 +21,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
-                   SlabWall* leftwall_=NULL, SlabWall* rightwall_=NULL)
+                   SlabWall* leftwall_, SlabWall* rightwall_)
   : lambda(lambda_), leftwall(leftwall_), rightwall(rightwall_)
 {
   // Create a table with the eps's and the mu's. This avoids repeated
@@ -53,7 +53,7 @@ SlabDisp::SlabDisp(const Expression& expression, Real lambda_,
 
 SlabDisp::SlabDisp(const vector<Material*>& materials,
                    const vector<Complex>& thicknesses_, Real lambda_,
-                   SlabWall* leftwall_=NULL, SlabWall* rightwall_=NULL)
+                   SlabWall* leftwall_, SlabWall* rightwall_)
   : thicknesses(thicknesses_), lambda(lambda_),
     leftwall(leftwall_), rightwall(rightwall_)
 {

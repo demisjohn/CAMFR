@@ -28,7 +28,7 @@ const Real eps = 1e-15;
 
 extern "C" double dbesj0_(double&);
 
-const Real J0(Real x)
+Real J0(Real x)
 {
   return dbesj0_(x);
 }
@@ -45,7 +45,7 @@ const Real J0(Real x)
 
 extern "C" double dbesj1_(double&);
 
-const Real J1(Real x)
+Real J1(Real x)
 {
   return dbesj1_(x);
 }
@@ -62,7 +62,7 @@ const Real J1(Real x)
 
 extern "C" double dbesy0_(double&);
 
-const Real Y0(Real x)
+Real Y0(Real x)
 {
   return dbesy0_(x);
 }
@@ -79,7 +79,7 @@ const Real Y0(Real x)
 
 extern "C" double dbesy1_(double&);
 
-const Real Y1(Real x)
+Real Y1(Real x)
 {
   return dbesy1_(x);
 }
@@ -94,7 +94,7 @@ const Real Y1(Real x)
 
 extern "C" void dbesj_(double&, double&, int&, double*, int&);
 
-const Real J(Real n, Real x, bool scaled=false)
+Real J(Real n, Real x, bool scaled)
 {
   if (n==0)
      return J0(x);
@@ -103,7 +103,7 @@ const Real J(Real n, Real x, bool scaled=false)
      return J1(x);
   
   int  orders=1;       // orders=1 : only compute this order
-  Real result[orders];
+  Real result[1];
   int  underflows=0;
   
   dbesj_(x,n,orders,result,underflows);
@@ -125,7 +125,7 @@ const Real J(Real n, Real x, bool scaled=false)
 
 extern "C" void dbesy_(double&, double&, int&, double*);
 
-const Real Y(Real n, Real x, bool scaled=false)
+Real Y(Real n, Real x, bool scaled)
 {
   if (n==0)
      return Y0(x);
@@ -134,7 +134,7 @@ const Real Y(Real n, Real x, bool scaled=false)
      return Y1(x);
 
   int  orders=1;       // orders=1 : only compute this order
-  Real result[orders];
+  Real result[1];
   
   dbesy_(x,n,orders,result);
 
@@ -149,7 +149,7 @@ const Real Y(Real n, Real x, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex H1(Real n, Real x, bool scaled=false)
+const Complex H1(Real n, Real x, bool scaled)
 {  
   const Complex I(0,1);
 
@@ -168,7 +168,7 @@ const Complex H1(Real n, Real x, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex H2(Real n, Real x, bool scaled=false)
+const Complex H2(Real n, Real x, bool scaled)
 {
   const Complex I(0,1);
   
@@ -194,14 +194,14 @@ void checkerror(int underflows, int ierr, const char* function,
   {
     cerr << "Error: bad input in " << function << "("
          << n << "," << z << ")" << endl;    
-    exit(1);
+    exit(-1);
   }
 
   if ( (ierr==2) || (ierr==4) || (ierr==5) )
   {
     cerr << "Error " << ierr << ": overflow in " << function << "("
          << n << "," << z << "), try exp. scaling" << endl;
-    exit(1);
+    exit(-1);
   }
     
   if (ierr==3)
@@ -224,7 +224,7 @@ void checkerror(int underflows, int ierr, const char* function,
 extern "C" void zbesj_(double&, double&, double&, int&, int&,
                        double*, double*, int&, int&);
 
-const Complex J(Real n, const Complex& z, bool scaled=false)
+const Complex J(Real n, const Complex& z, bool scaled)
 {
   Real zr=z.real();
   Real zi=z.imag();
@@ -234,8 +234,7 @@ const Complex J(Real n, const Complex& z, bool scaled=false)
 
   int  code=(scaled ? 2 : 1); // code=2   : exponential scaling
   int  orders=1;              // orders=1 : only compute this order
-  Real yr[orders]; 
-  Real yi[orders];
+  Real yr[1], yi[1];
   int  underflows=0;
   int  ierr=0;
 
@@ -257,7 +256,7 @@ const Complex J(Real n, const Complex& z, bool scaled=false)
 extern "C" void zbesy_(double&, double&, double&, int&, int&,
                        double*, double*, int&, double*, double*, int&);
 
-const Complex Y(Real n, const Complex& z, bool scaled=false)
+const Complex Y(Real n, const Complex& z, bool scaled)
 {  
   Real zr=z.real();
   Real zi=z.imag(); 
@@ -267,10 +266,8 @@ const Complex Y(Real n, const Complex& z, bool scaled=false)
 
   int  code=(scaled ? 2 : 1); // code=2   : exponential scaling
   int  orders=1;              // orders=1 : only compute this order
-  Real workr[orders];
-  Real worki[orders];
-  Real yr[orders]; 
-  Real yi[orders];
+  Real workr[1], worki[1];
+  Real yr[1],    yi[1];
   int  underflows=0;
   int  ierr=0;
 
@@ -292,7 +289,7 @@ const Complex Y(Real n, const Complex& z, bool scaled=false)
 extern "C" void zbesh_(double&, double&, double&, int&, int&, int&,
                        double*, double*, int&, int&);
 
-const Complex H1(Real n, const Complex& z, bool scaled=false)
+const Complex H1(Real n, const Complex& z, bool scaled)
 {
   Real zr=z.real();
   Real zi=z.imag();
@@ -303,8 +300,7 @@ const Complex H1(Real n, const Complex& z, bool scaled=false)
   int  code=(scaled ? 2 : 1); // code=2   : exponential scaling
   int  type=1;                // H1
   int  orders=1;              // orders=1 : only compute this order
-  Real yr[orders]; 
-  Real yi[orders];
+  Real yr[1], yi[1];
   int  underflows=0;
   int  ierr=0;
 
@@ -323,7 +319,7 @@ const Complex H1(Real n, const Complex& z, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex H2(Real n, const Complex& z, bool scaled=false)
+const Complex H2(Real n, const Complex& z, bool scaled)
 {
   Real zr=z.real();
   Real zi=z.imag();
@@ -334,8 +330,7 @@ const Complex H2(Real n, const Complex& z, bool scaled=false)
   int  code=(scaled ? 2 : 1); // code=2   : exponential scaling
   int  type=2;                // H2
   int  orders=1;              // orders=1 : only compute this order
-  Real yr[orders]; 
-  Real yi[orders];
+  Real yr[1], yi[1];
   int  underflows=0;
   int  ierr=0;
 
@@ -368,7 +363,7 @@ const Complex H2(Real n, const Complex& z, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Real dJ(Real n, Real x, Real* Jn=0, Real* Jn_1=0, bool scaled=false)
+Real dJ(Real n, Real x, Real* Jn, Real* Jn_1, bool scaled)
 {
   if (n==0)
   {
@@ -403,7 +398,7 @@ const Real dJ(Real n, Real x, Real* Jn=0, Real* Jn_1=0, bool scaled=false)
   double startorder=n-1; // calculate orders n-1 and
   int    orders=2;       // .. and n
   int    underflows=0;
-  Real   result[orders];
+  Real   result[2];
 
   dbesj_(x,startorder,orders,result,underflows);
 
@@ -434,7 +429,7 @@ const Real dJ(Real n, Real x, Real* Jn=0, Real* Jn_1=0, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Real dY(Real n, Real x, Real* Yn=0, Real* Yn_1=0, bool scaled=false)
+Real dY(Real n, Real x, Real* Yn=0, Real* Yn_1=0, bool scaled)
 {
   if (n==0)
   {
@@ -465,7 +460,7 @@ const Real dY(Real n, Real x, Real* Yn=0, Real* Yn_1=0, bool scaled=false)
      
   double startorder=n-1; // calculate orders n-1 and
   int    orders=2;       // .. and n
-  Real   result[orders];
+  Real   result[2];
 
   dbesy_(x,startorder,orders,result);
 
@@ -489,8 +484,7 @@ const Real dY(Real n, Real x, Real* Yn=0, Real* Yn_1=0, bool scaled=false)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex dH1(Real n, Real x, Complex* Hn=0, Complex* Hn_1=0,
-                  bool scaled=false)
+const Complex dH1(Real n, Real x, Complex* Hn, Complex* Hn_1, bool scaled)
 {
   Real dj, Jn, Jn_1;
   dj = dJ(n,x,&Jn,&Jn_1,scaled);
@@ -521,8 +515,7 @@ const Complex dH1(Real n, Real x, Complex* Hn=0, Complex* Hn_1=0,
 //
 /////////////////////////////////////////////////////////////////////////////
   
-const Complex dH2(Real n, Real x, Complex* Hn=0, Complex* Hn_1=0,
-                  bool scaled=false)
+const Complex dH2(Real n, Real x, Complex* Hn, Complex* Hn_1, bool scaled)
 {
   Real dj, Jn, Jn_1;
   dj = dJ(n,x,&Jn,&Jn_1,scaled);
@@ -553,8 +546,8 @@ const Complex dH2(Real n, Real x, Complex* Hn=0, Complex* Hn_1=0,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex dJ(Real n, const Complex& z, Complex* Jn=0, Complex* Jn_1=0,
-                 bool scaled=false)
+const Complex dJ(Real n, const Complex& z, Complex* Jn, Complex* Jn_1,
+                 bool scaled)
 {
   if (n==0)
   {
@@ -590,8 +583,7 @@ const Complex dJ(Real n, const Complex& z, Complex* Jn=0, Complex* Jn_1=0,
   int    code=(scaled ? 2 : 1); // code=2 : exponential scaling
   double startorder=n-1;        // calculate orders n-1 and
   int    orders=2;              // .. and n
-  Real   yr[orders]; 
-  Real   yi[orders];
+  Real   yr[2], yi[2];
   int    underflows=0;
   int    ierr=0;
 
@@ -625,8 +617,8 @@ const Complex dJ(Real n, const Complex& z, Complex* Jn=0, Complex* Jn_1=0,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex dY(Real n, const Complex& z, Complex* Yn=0, Complex* Yn_1=0,
-                 bool scaled=false)
+const Complex dY(Real n, const Complex& z, Complex* Yn, Complex* Yn_1,
+                 bool scaled)
 {
   if (n==0)
   {
@@ -662,10 +654,8 @@ const Complex dY(Real n, const Complex& z, Complex* Yn=0, Complex* Yn_1=0,
   int    code=(scaled ? 2 : 1); // code=2 : exponential scaling
   double startorder=n-1;        // calculate orders n-1 and
   int    orders=2;              // .. and n
-  Real   workr[orders];
-  Real   worki[orders];
-  Real   yr[orders]; 
-  Real   yi[orders];
+  Real   workr[2], worki[2];
+  Real   yr[2], yi[2];
   int    underflows=0;
   int    ierr=0;
 
@@ -693,8 +683,8 @@ const Complex dY(Real n, const Complex& z, Complex* Yn=0, Complex* Yn_1=0,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex dH1(Real n, const Complex& z, Complex* Hn=0, Complex* Hn_1=0,
-                  bool scaled=false)
+const Complex dH1(Real n, const Complex& z, Complex* Hn, Complex* Hn_1,
+                  bool scaled)
 {
   if (n==0)
   {
@@ -719,8 +709,7 @@ const Complex dH1(Real n, const Complex& z, Complex* Hn=0, Complex* Hn_1=0,
   int    type=1;                // H1
   double startorder=n-1;        // calculate orders n-1 and
   int    orders=2;              // .. and n
-  Real   yr[orders]; 
-  Real   yi[orders];
+  Real   yr[2], yi[2];
   int    underflows=0;
   int    ierr=0;
 
@@ -748,8 +737,8 @@ const Complex dH1(Real n, const Complex& z, Complex* Hn=0, Complex* Hn_1=0,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-const Complex dH2(Real n, const Complex& z, Complex* Hn=0, Complex* Hn_1=0,
-                  bool scaled=false)
+const Complex dH2(Real n, const Complex& z, Complex* Hn, Complex* Hn_1,
+                  bool scaled)
 {  
   if (n==0)
   {
@@ -774,8 +763,7 @@ const Complex dH2(Real n, const Complex& z, Complex* Hn=0, Complex* Hn_1=0,
   int    type=2;                // H2
   double startorder=n-1;        // calculate orders n-1 and
   int    orders=2;              // .. and n
-  Real   yr[orders]; 
-  Real   yi[orders];
+  Real   yr[2], yi[2];
   int    underflows=0;
   int    ierr=0;
 

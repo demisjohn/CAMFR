@@ -24,7 +24,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 StackImpl::StackImpl
-(const vector<Chunk>& chunks_, unsigned int no_of_periods_=1)
+(const vector<Chunk>& chunks_, unsigned int no_of_periods_)
   : chunks(chunks_), no_of_periods(no_of_periods_)
 {
   // Check validity of chunks.    
@@ -66,7 +66,7 @@ StackImpl::StackImpl
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_=1)
+StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
   : no_of_periods(no_of_periods_)
 {
   // Check validity of expression.
@@ -348,7 +348,7 @@ void stack_calcRT(T* stack)
 /////////////////////////////////////////////////////////////////////////////
 
 DenseStack::DenseStack
- (const vector<Chunk>& chunks, unsigned int no_of_periods=1)
+ (const vector<Chunk>& chunks, unsigned int no_of_periods)
   : StackImpl(chunks, no_of_periods)
 { 
   inc = chunks[0].sc->get_inc();
@@ -363,7 +363,7 @@ DenseStack::DenseStack
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-DenseStack::DenseStack(const Expression& e, unsigned int no_of_periods=1)
+DenseStack::DenseStack(const Expression& e, unsigned int no_of_periods)
   : StackImpl(e, no_of_periods)
 { 
   inc = chunks[0].sc->get_inc();
@@ -423,7 +423,7 @@ void DenseStack::freeRT()
 /////////////////////////////////////////////////////////////////////////////
 
 DiagStack::DiagStack
- (const vector<Chunk>& chunks, unsigned int no_of_periods=1)
+ (const vector<Chunk>& chunks, unsigned int no_of_periods)
   : StackImpl(chunks, no_of_periods)
 { 
   inc = chunks[0].sc->get_inc();
@@ -438,7 +438,7 @@ DiagStack::DiagStack
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-DiagStack::DiagStack(const Expression& e, unsigned int no_of_periods=1)
+DiagStack::DiagStack(const Expression& e, unsigned int no_of_periods)
   : StackImpl(e, no_of_periods)
 { 
   inc = chunks[0].sc->get_inc();
@@ -498,7 +498,7 @@ void DiagStack::freeRT()
 /////////////////////////////////////////////////////////////////////////////
 
 MonoStack::MonoStack
- (const vector<Chunk>& chunks, unsigned int no_of_periods=1)
+ (const vector<Chunk>& chunks, unsigned int no_of_periods)
   : StackImpl(chunks, no_of_periods)
 {
   inc = chunks[0].sc->get_inc();
@@ -513,7 +513,7 @@ MonoStack::MonoStack
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-MonoStack::MonoStack(const Expression& e, unsigned int no_of_periods=1)
+MonoStack::MonoStack(const Expression& e, unsigned int no_of_periods)
   : StackImpl(e, no_of_periods)
 {   
   inc = chunks[0].sc->get_inc();
@@ -547,7 +547,7 @@ void MonoStack::calcRT()
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Stack::Stack(const Expression& e, unsigned int no_of_periods_=1)
+Stack::Stack(const Expression& e, unsigned int no_of_periods_)
   : expression(e), no_of_periods(no_of_periods_), inc_field(fortranArray)
 {
   sc = create_sc(expression, no_of_periods);
@@ -719,7 +719,7 @@ void Stack::freeRT()
 /////////////////////////////////////////////////////////////////////////////
 
 void Stack::set_inc_field(const cVector& inc_field_,
-                          cVector* inc_field_bw_=NULL)
+                          cVector* inc_field_bw_)
 {
   inc_field.resize(global.N);
   inc_field = inc_field_;
@@ -984,7 +984,7 @@ Complex safe_mult(const Complex& a, const Complex& prop_int)
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k=NULL)
+Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k)
 {  
   // If needed, calculate field at each interface.
 
@@ -1184,7 +1184,7 @@ const Complex Stack::T21(int i, int j) const
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Scatterer* Stack::create_sc(const Expression& e, unsigned int no_of_periods=1)
+Scatterer* Stack::create_sc(const Expression& e, unsigned int no_of_periods)
 {  
   Scatterer* sc;
   
