@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <fstream>
 #include <sstream>
 #include "linalg.h"
 
@@ -1337,6 +1338,32 @@ cMatrix LU_solve(const cMatrix& LU, const iVector& P,
   }
   
   return B_X;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Write cMatrix to a text file that cab be read in by Matlab.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void write_to_textfile(const std::string& filename, const cMatrix& A)
+{
+  std::ostringstream s;
+  s << "Writing matrix to " << filename;
+  py_print(s.str()); 
+
+  std::ofstream f(filename.c_str());
+
+  for (int i=1; i<=A.rows(); i++)
+  {
+    for (int j=1; j<=A.columns(); j++)
+      f << real(A(i,j)) << " " << imag(A(i,j)) << std::endl;
+    f << std::endl;
+  } 
+
+  f.close();
 }
 
   
