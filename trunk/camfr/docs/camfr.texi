@@ -795,7 +795,7 @@ air  = Material(1.0)
 
 PML = -0.1
 
-set_left_wall(slab_H_wall)
+set_lower_wall(slab_H_wall)
 
 slab  = Slab(GaAs(.25) + air(2 + PML*1j))
 space = Slab(air(2.25 + PML*1j))
@@ -835,11 +835,9 @@ structure (fig. 5).
 
 For excitation with the fundamental TE mode, we need to introduce a magnetic
 wall at the center. This is done with the command 
-@code{set_left_wall(slab_H_wall)} before defining any slabs. @code{left}
-refers to the fact that the wall is placed to the left of the expression 
-describing the slabs (i.e. before @code{GaAs(.25)...}), which in fig. 5
-corresponds to the bottom side of the slabs (@code{x=0}). Obviously, there
-exists a command @code{set_right_wall(...)} as well. It is also possible to
+@code{set_lower_wall(slab_H_wall)} before defining any slabs. @code{lower}
+refers to the bottom side of the slabs (@code{x=0}). Obviously, there
+exists a command @code{set_upper_wall(...)} as well. It is also possible to
 specify a @code{slab_E_wall} as boundary condition, but this not necessary
 as it is the default.
 
@@ -1050,7 +1048,7 @@ air  = Material(1.0)
 a = .600     # period
 r = .150/2.0 # rod radius
 
-set_left_wall(slab_H_wall)
+set_lower_wall(slab_H_wall)
 
 PML = 0
 
@@ -1700,7 +1698,7 @@ air  = Material(1.0)
 a = .600     # period
 r = .150/2.0 # rod radius
 
-set_left_wall(slab_H_wall)
+set_lower_wall(slab_H_wall)
 
 PML = 0
 
@@ -2226,8 +2224,8 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_degenerate::              
 * set_circ_order::              
 * set_circ_field_type::         
-* set_left_wall::               
-* set_right_wall::              
+* set_lower_wall::               
+* set_upper_wall::              
 * free_tmps::                   
 * Coord::                       
 * Field::                       
@@ -2424,7 +2422,7 @@ angular dependence in cylindrical structures.
 
 
 
-@node set_circ_field_type, set_left_wall, set_circ_order, Reference guide
+@node set_circ_field_type, set_lower_wall, set_circ_order, Reference guide
 @unnumberedsec @code{set_circ_field_type}
 @cindex @code{set_circ_field_type}
 
@@ -2435,43 +2433,43 @@ Can be either @code{cos_type} (default) or @code{sin_type}.
 
 
 
-@node set_left_wall, set_right_wall, set_circ_field_type, Reference guide
-@unnumberedsec @code{set_left_wall}
-@cindex @code{set_left_wall}
+@node set_lower_wall, set_upper_wall, set_circ_field_type, Reference guide
+@unnumberedsec @code{set_lower_wall}
+@cindex @code{set_lower_wall}
 
 @noindent
-@code{set_left_wall(SlabWall)}: sets the left wall (i.e. at @code{x=0}) to
+@code{set_lower_wall(SlabWall)}: sets the lower wall (i.e. at @code{x=0}) to
 the given wall. Has an effect on all @code{Slab}s that are subsequently 
 defined.
 
 @noindent
 Note that walls can also be set on a slab-by-slab basis, 
-with @code{slab.set_left_wall()}.
+with @code{slab.set_lower_wall()}.
 
 @noindent
-@xref{set_right_wall}.
+@xref{set_upper_wall}.
 
 
 
-@node set_right_wall, free_tmps, set_left_wall, Reference guide
-@unnumberedsec @code{set_right_wall}
-@cindex @code{set_right_wall}
+@node set_upper_wall, free_tmps, set_lower_wall, Reference guide
+@unnumberedsec @code{set_upper_wall}
+@cindex @code{set_upper_wall}
 
 @noindent
-@code{set_right_wall(SlabWall)}: sets the right wall (i.e. at
+@code{set_upper_wall(SlabWall)}: sets the upper wall (i.e. at
 @code{x = slab.width()}) to the given wall. Has an effect on all @code{Slab}s 
 that are subsequently defined.
 
 @noindent
 Note that walls can also be set on a slab-by-slab basis, 
-with @code{slab.set_right_wall()}.
+with @code{slab.set_upper_wall()}.
 
 @noindent
-@xref{set_left_wall}.
+@xref{set_lower_wall}.
 
 
 
-@node free_tmps, Coord, set_right_wall, Reference guide
+@node free_tmps, Coord, set_upper_wall, Reference guide
 @unnumberedsec @code{free_tmps}
 @cindex @code{free_tmps}
 
@@ -3165,11 +3163,11 @@ Member functions: same as @code{Waveguide} in addition to
 @item
 @code{width()}: returns the width along @code{x} of the slab.
 @item
-@code{set_left_wall(SlabWall)}: sets the wall at @code{x=0} for this slab.
+@code{set_lower_wall(SlabWall)}: sets the wall at @code{x=0} for this slab.
 Possible choices for SlabWall include @code{slab_E_wall} and 
 @code{slab_H_wall}.
 @item
-@code{set_right_wall(SlabWall)}: sets the wall at @code{x=slab.width()} 
+@code{set_upper_wall(SlabWall)}: sets the wall at @code{x=slab.width()} 
 for this slab. Possible choices for SlabWall include @code{slab_E_wall} and 
 @code{slab_H_wall}.
 @end itemize
