@@ -41,14 +41,14 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
     return sc;
   }
  
-  // General case.     
+  // General case.
 
   if (wg1->is_uniform() && wg2->is_uniform())
   {
     if (    dynamic_cast<MonoWaveguide*>(wg1)
          && dynamic_cast<MonoWaveguide*>(wg2) )
       sc = new MonoInterface(*wg1, *wg2);
-    else
+    else 
       sc = new DiagInterface(*wg1, *wg2);
   }
   else

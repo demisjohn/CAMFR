@@ -42,7 +42,7 @@ class Slab_M : public SlabImpl
     ~Slab_M() {}
 
     Slab_M& operator= (const Slab_M& slab);
-    bool  operator==(const Waveguide& w) const;
+    bool operator==(const Waveguide& w) const;
 
     std::vector<Material*> get_materials() const
       {return materials;}

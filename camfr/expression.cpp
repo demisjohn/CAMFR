@@ -306,7 +306,7 @@ bool Expression::all_layers_uniform() const
   for (unsigned int i=0; i<terms.size(); i++)
     if (terms[i]->all_layers_uniform() == false)
       return false;
-  
+
   return true;
 }
 
@@ -508,7 +508,6 @@ bool Term::is_interface() const
 }
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Term::all_layers_uniform
@@ -531,7 +530,6 @@ bool Term::all_layers_uniform() const
 
     case (STACK_EXPRESSION):
       return st->all_layers_uniform();
-
   }
 
   return false;

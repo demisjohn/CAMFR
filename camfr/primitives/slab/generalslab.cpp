@@ -415,7 +415,7 @@ Slab::Slab(const Term& t, int M_series)
     return;
   }
 
-  s = new UniformSlab(d, *m);
+  s = new UniformSlab(d, *m);  
 
   uniform = s->is_uniform();
   core = s->get_core();
