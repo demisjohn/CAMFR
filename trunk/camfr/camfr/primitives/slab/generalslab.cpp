@@ -80,7 +80,7 @@ Real SlabImpl::S_flux(const FieldExpansion& f,
 void SlabImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
-{  
+{ 
   const SlabImpl* medium_I  = this;
   const SlabImpl* medium_II = dynamic_cast<const SlabImpl*>(w);
 
@@ -99,9 +99,11 @@ void SlabImpl::calc_overlap_matrices
 
   // Fill field cache.
 
-  SlabCache cache(global.N, disc.size()-1);
+  const unsigned int N = global.N;
+
+  SlabCache cache(N, disc.size()-1);
   
-  for (int i=1; i<=int(global.N); i++)
+  for (int i=1; i<=int(N); i++)
   {
     const SlabMode* mode_I
       = dynamic_cast<const SlabMode*>(medium_I ->get_mode(i));
@@ -134,30 +136,120 @@ void SlabImpl::calc_overlap_matrices
     }
   }
 
-  // Calculate overlap matrices.  
+  // Calculate overlap matrices (y-invariant case).
 
-  for (int i=1; i<=int(global.N); i++)
-    for (int j=1; j<=int(global.N); j++)
-    {      
-      (*O_I_II)(i,j) = overlap
+  if (global.polarisation != TE_TM)
+  {
+    for (int i=1; i<=int(N); i++)
+      for (int j=1; j<=int(N); j++)
+      {      
+        (*O_I_II)(i,j) = overlap
+          (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
+           dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
+           &cache, &disc, i, j, 1, 2);      
+      
+        (*O_II_I)(i,j) = overlap
+          (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
+           dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
+           &cache, &disc, i, j, 2, 1);
+
+        if (O_I_I) (*O_I_I)(i,j) = overlap
+          (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
+           dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
+           &cache, &disc, i, j, 1, 1);
+
+      if (O_II_II) (*O_II_II)(i,j) = overlap
+          (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
+           dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
+           &cache, &disc, i, j, 2, 2);
+      }
+
+    return;
+  }
+
+  // Calculate overlap matrices for off-angle incidence.
+
+  // Part I: beta-independent part.
+
+  // TODO: cache this part across invocations and for different media.
+  // TODO: add normalisation matrices.
+
+  const int n = int(N/2);
+
+  cMatrix TE_TE_I_II(n,n,fortranArray), TM_TM_I_II(n,n,fortranArray);
+  cMatrix TE_TE_II_I(n,n,fortranArray), TM_TM_II_I(n,n,fortranArray);
+
+  cMatrix Ex_Hz_I_II(n,n,fortranArray), Ez_Hx_I_II(n,n,fortranArray);
+  cMatrix Ex_Hz_II_I(n,n,fortranArray), Ez_Hx_II_I(n,n,fortranArray);
+  
+  for (int i=1; i<=n; i++)
+    for (int j=1; j<=n; j++)
+    {
+      TE_TE_I_II(i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-         &cache, &disc, i, j, 1, 2);      
-      
-      (*O_II_I)(i,j) = overlap
+         &cache, &disc, i, j, 1, 2);
+
+      TE_TE_II_I(i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
          &cache, &disc, i, j, 2, 1);
 
-      if (O_I_I) (*O_I_I)(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
-         dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
-         &cache, &disc, i, j, 1, 1);
+      TM_TM_I_II(i,j) = overlap
+        (dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
+         dynamic_cast<const SlabMode*>(medium_II->get_mode(n+j)),
+         &cache, &disc, n+i, n+j, 1, 2);
 
-      if (O_II_II) (*O_II_II)(i,j) = overlap
-        (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
-         dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-         &cache, &disc, i, j, 2, 2);
+      TM_TM_II_I(i,j) = overlap
+        (dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
+         dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+j)),
+         &cache, &disc, n+i, n+j, 2, 1);
+
+      Complex Ex_Hz_I_II_ij, Ez_Hx_I_II_ij;
+      Complex Ex_Hz_II_I_ij, Ez_Hx_II_I_ij;
+
+      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
+                    dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
+                    &Ex_Hz_I_II_ij, &Ez_Hx_I_II_ij,
+                    &cache, &disc, n+i, j, 1, 2);
+
+      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
+                    dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
+                    &Ex_Hz_II_I_ij, &Ez_Hx_II_I_ij,
+                    &cache, &disc, n+i, j, 2, 1);
+
+      Ex_Hz_I_II(i,j) = Ex_Hz_I_II_ij;   Ez_Hx_I_II(i,j) = Ez_Hx_I_II_ij;
+      Ex_Hz_II_I(i,j) = Ex_Hz_II_I_ij;   Ez_Hx_II_I(i,j) = Ez_Hx_II_I_ij;
+    }
+
+  // Part II: beta-dependent part.
+
+  cVector sin_I (N, fortranArray), cos_I (N, fortranArray);
+  cVector sin_II(N, fortranArray), cos_II(N, fortranArray);
+
+  for (int i=1; i<=int(N); i++)
+  {
+    sin_I (i) = global_slab.beta / medium_I ->get_mode(i)->kz;
+    sin_II(i) = global_slab.beta / medium_II->get_mode(i)->kz; 
+
+    cos_I (i) = sqrt(1.0 - sin_I (i) * sin_I (i));
+    cos_II(i) = sqrt(1.0 - sin_II(i) * sin_II(i));    
+  }
+
+  for (int i=1; i<=n; i++)
+    for (int j=1; j<=n; j++)
+    {
+      (*O_I_II)(i,    j) =   TE_TE_I_II(i,j) * cos_I (  i);
+      (*O_I_II)(i,  n+j) =   0.0;
+      (*O_I_II)(n+i,  j) = - Ex_Hz_I_II(i,j) * sin_II(  j) 
+                           + Ez_Hx_I_II(i,j) * sin_I (n+i);
+      (*O_I_II)(n+i,n+j) =   TM_TM_I_II(i,j) * cos_II(n+j);
+
+      (*O_II_I)(i,    j) =   TE_TE_II_I(i,j) * cos_II(  i);
+      (*O_II_I)(i,  n+j) =   0.0;
+      (*O_II_I)(n+i,  j) = - Ex_Hz_II_I(i,j) * sin_I (  j) 
+                           + Ez_Hx_II_I(i,j) * sin_II(n+i);
+      (*O_II_I)(n+i,n+j) =   TM_TM_II_I(i,j) * cos_I (n+j);        
     }
 }
 

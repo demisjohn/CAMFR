@@ -126,6 +126,9 @@ inline void set_left_wall(SlabWall* w)
 inline void set_right_wall(SlabWall* w)
   {global_slab.rightwall = w;}
 
+inline void set_beta(const Complex& beta)
+  {global_slab.beta = beta;}
+
 template class enum_as_int_converters<Limit>;
 template class enum_as_int_converters<Solver>;
 template class enum_as_int_converters<Stability>;
@@ -484,6 +487,7 @@ BOOST_PYTHON_MODULE_INIT(camfr)
     camfr.def(set_circ_fieldtype,         "set_circ_field_type");
     camfr.def(set_left_wall,              "set_left_wall");
     camfr.def(set_right_wall,             "set_right_wall");
+    camfr.def(set_beta,                   "set_beta");
     camfr.def(free_tmps,                  "free_tmps");
 
     // Wrap Coord.

@@ -1,0 +1,3 @@
+2001-10-25  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * generalslab.cpp: Add overlap integrals for off-axis incidence.
