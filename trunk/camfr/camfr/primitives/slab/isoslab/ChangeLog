@@ -1,4 +1,8 @@
-2002-03-18 Lieven Vanholme  <Lieven.Vanholme@rug.ac.be>
+2002-04-30 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * slabdisp.cpp: Only scale when tracking.
+
+2002-04-30 Lieven Vanholme  <Lieven.Vanholme@rug.ac.be>
 
         * slabmode.cpp: Reset scaling after core region.
 
