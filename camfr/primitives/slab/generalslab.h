@@ -65,6 +65,8 @@ class SlabImpl : public MultiWaveguide
     
     virtual Complex get_width() const = 0;
     
+    virtual Real get_imag_start_thickness() const = 0;
+    
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);

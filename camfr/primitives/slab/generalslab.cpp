@@ -45,18 +45,22 @@ class SlabFlux : public RealFunction
 {
   public:
 
-    SlabFlux(const FieldExpansion& fe_) : fe(fe_) {}
+    SlabFlux(const FieldExpansion& fe_) : fe(fe_) 
+    {
+      PML = dynamic_cast<SlabImpl*>(fe.wg)->get_imag_start_thickness();
+    }
 
     Real operator()(const Real& x)
     {
       counter++;
-      Field f=fe.field(Coord(x,0,0));
+      Field f=fe.field(Coord(x+PML*I,0,0));
       return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
     }
 
   protected:
 
     FieldExpansion fe;
+    Real PML;
 };
 
 
