@@ -989,6 +989,10 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("set_source",     cavity_set_general_source)
     .def("field",          &Cavity::field)
     .def("n",              &Cavity::n_at)
+    .def("bot_stack",      &Cavity::get_bot,
+         return_value_policy<reference_existing_object>())
+    .def("top_stack",      &Cavity::get_top,
+         return_value_policy<reference_existing_object>())
     ;
 
   // Wrap BlochStack.
