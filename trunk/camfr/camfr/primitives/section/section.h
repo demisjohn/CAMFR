@@ -31,9 +31,10 @@ class SectionImpl : public MultiWaveguide
   public:
 
     SectionImpl() {}
-        
+     
     virtual Complex get_width()  const = 0;
     virtual Complex get_height() const = 0;
+    virtual Complex c1_size()    const {return get_width();}
 
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
@@ -84,6 +85,7 @@ class Section : public MultiWaveguide
 
     Complex get_width()  const {return s->get_width();}
     Complex get_height() const {return s->get_height();}
+    Complex c1_size()    const {return s->c1_size();}
 
     const FieldExpansion field_from_source
       (const Coord& pos, const Coord& orientation)

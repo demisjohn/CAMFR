@@ -68,6 +68,8 @@ class Waveguide
 
     bool    is_uniform() const {return uniform;}
     Material* get_core() const {return core;}
+
+    virtual Complex c1_size() const = 0;
     
     virtual Complex eps_at(const Coord& coord) const = 0;
     virtual Complex  mu_at(const Coord& coord) const = 0;

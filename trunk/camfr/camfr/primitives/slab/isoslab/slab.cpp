@@ -72,8 +72,7 @@ Slab_M::Slab_M(const Expression& expression)
       core_index = i;
 
   core = materials[core_index];
-  uniform = false;
-  
+  uniform = false;  
 }
 
 

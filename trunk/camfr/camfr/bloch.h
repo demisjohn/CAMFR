@@ -51,6 +51,9 @@ class BlochStack : public MultiWaveguide
     Complex get_total_thickness() const 
       {return stack.get_total_thickness();}
 
+    Complex c1_size() const 
+      {return stack.get_inc()->c1_size();}
+
     void find_modes();
 
     cVector get_beta_vector() const;
