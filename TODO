@@ -1,5 +1,4 @@
--onstabiliteit Pieter
--optimnise S_scheme_fields
+-optimise S_scheme_fields
 _optimise get_inc/ext field
 -quick test camfr_matlab (flipud?)
 -blochstack get_length
@@ -7,12 +6,14 @@ _optimise get_inc/ext field
 
 CAMFR 3D:
 
--band matrix routines / not full determinant
+-overflow
+-make arnoldi default
 -check if creation of extra interface in middle of core is needed
 -clean up RefSectionMode::field (not used, but still)
+-calc_band --> calc_overlap: need normalisation?
 -left/right PML not passed to stack correctly when using 2 expressions
--re-enable symmetry
--check eps when doing determinants
+-re-enable symmetry?
+-improve interface of SectionDisp, remove f member of Section
 -optimise ref section overlap
 -experiment with ref index, eigenvalues_x
 -Section1D: both TE and TM modes, normalise, fw_bw_at, compare to 2D, kz=0
@@ -23,9 +24,9 @@ CAMFR 3D:
  complex modes, determinant faster than eigenvalues?
 -dispersion relation of 2D slabs: try to eliminate need for O_II_I in 
  interface.cpp
--1 element too much in slabs (optimise fort calc_band)?
 -Remove kludge for normalising coodinates in field profiles
 -PML in z direction (check field profiles, numeric overlap integral)
+-check branch cuts
 -Complex modes in presence of PML
 -speed up nomalisation through cache?
 
@@ -95,10 +96,13 @@ MEDIUM TERM:
 -kill virtual functions in SlabWall (perhaps elsewhere too, get_kz()?)
 -PC and TBC walls for Sections
 
+-investigate pickling
+
 
 
 SOURCE MAINTENANCE
 
+-Use scons Clean function
 -Section sorter to mode.h
 -Numeric is imported automatically. Remove from docs and examples.
 -move to uBLAS? (www.genesys-e.org/ublas)
