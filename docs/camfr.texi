@@ -2269,6 +2269,12 @@ Important to note is that @code{animate_field} requires a complex number to
 work correctly, so the full complex field component needs to be used rather
 than e.g. the real part.
 
+Both @code{plot_field} and @code{animate_field} can take an additional fifth
+argument: a string with the filename to write the picture to. For pictures,
+a variety of formats are supported (gif, jpg, png, eps, ...), where the suffix
+of the filename will determine the format to be used. For animations only 
+uncompressed animated gif is supported.
+
 Note that instead of a @code{Stack}, one can also pass a 
 @code{BlochStack.mode} to @code{animate_field}.
 
@@ -3031,6 +3037,9 @@ been set:
 @item
 @code{trans_field()}: returns transmitted field to right side.
 @item
+@code{fw_bw(z)}: returns a tuple with two vectors containing the forward 
+and backward field expansions at position @code{z}.
+@item
 @code{inc_S_flux(Complex x0, Complex x1, Real eps)}: returns power flux in the
 @code{z}-direction at @code{z=0} between @code{x0} and @code{x1}, calculated 
 with relative precision @code{eps}.
@@ -3066,22 +3075,16 @@ Member functions:
 
 @itemize @bullet
 @item
-@code{find_mode(Real lambda0, Real lambda1)}: finds a laser mode in a given 
-wavelength interval. For the gain interval, a default range is assumed for the
-imaginary part of the gain index between 0 and 0.015. The parameters of
-the laser mode are printed out upon completion, and the cavity field is
-automatically set to the lasing field.
-@item
-@code{find_mode(Real lambda0, Real lambda1, Real n_imag0, Real n_imag1, int passes)}: finds a laser mode in a given wavelength and gain interval. Wavelength
-and gain are optimised around the resonance for @code{passes} times. The 
-parameters of the laser mode are printed out upon completion, and the cavity 
+@code{find_mode(Real lambda0, Real lambda1, Real n_imag0=0, Real n_imag1=0.015, int passes=1)}: finds a laser mode in a given wavelength and gain interval. 
+Wavelength and gain are optimised around the resonance for @code{passes} 
+times.  For the gain interval, a default range is assumed for the
+imaginary part of the gain index between 0 and 0.015. The parameters of the 
+laser mode are printed out upon completion, and the cavity 
 field is automatically set to the lasing field.
 @item
-@code{find_modes_in_region(lambda0, lambda1, deltalambda)}: similar to
-@code{find_mode()}, but prints out all laser modes found in this range.
-@item
-@code{find_modes_in_region(lambda0,lambda1, deltalambda, n_imag0, n_imag1, passes)}: similar to @code{find_mode()}, but prints out all laser modes found in 
-this range.
+@code{find_all_modes(lambda0, lambda1, deltalambda, n_imag0=0.0, n_imag1=0.015, passes=1)}: similar to @code{find_mode()}, but prints out all laser modes 
+found in this range. Modes that are spaced closer than @code{deltalambda} will
+not be resolved.
 @item
 @code{sigma()}: returns the singular value of the cavity at the current
 wavelength and material gain. (The singular value is minimised when looking
@@ -3408,8 +3411,8 @@ for this slab. Possible choices for SlabWall include @code{slab_E_wall} and
 
 @noindent
 @code{plot_vector(v)}: makes a 1D plot of a vector. @code{v} is a list of
-@code{(x,y)}-pairs. The actual display is dependent on which visualisation
-backend is loaded.
+@code{(x,y)}-pairs or alternatively just a list of @code{y}-values. The 
+actual display is dependent on which visualisation backend is loaded.
 
 
 
@@ -3418,9 +3421,9 @@ backend is loaded.
 @cindex @code{plot_matrix}
 
 @noindent
-@code{plot_matrix(z)}: makes a 2D colour plot of a matrix. @code{z} is a 
-Numerical Python matrix. The actual display is dependent on which visualisation
-backend is loaded.
+@code{plot_matrix(z, r_x=0, r_y=0, filename="")}: makes a 2D colour plot of 
+a matrix. @code{z} is a  Numerical Python matrix. The actual display is 
+dependent on which visualisation backend is loaded.
 
 
 
@@ -3463,7 +3466,13 @@ which field component to plot, e.g. @code{lambda f : f.E2().real}.
 @code{r_x} and @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) 
 specifying which  interval to plot and with which resolution. @code{x} is the 
 transverse  direction, @code{z} the propagation direction. The actual display
-is dependent on which visualisation backend is loaded.
+is dependent on which visualisation backend is loaded. Note that the function
+also supports an additional argument: a string with the filename to write the 
+picture to. For pictures, a variety of formats are supported (gif, jpg, png, 
+bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will 
+determine the format to be used. 
+
+
 
 
 
@@ -3472,14 +3481,16 @@ is dependent on which visualisation backend is loaded.
 @cindex @code{animate_field}
 
 @noindent
-@code{animate_field(stack, component, r_x, r_z)}: animates the 2D field 
-profile in a Cartesian stack. @code{component} is a function operating on a 
-@code{Field} object specifying which (complex) field component to plot, e.g. 
-@code{lambda f : f.E2()}. @code{r_x} and @code{r_z} are range objects 
-(e.g @code{arange(x0, x1, dx)}) specifying which  interval to plot and with 
-which resolution. @code{x} is the transverse  direction, @code{z} the
-propagation direction. The actual display is dependent on which visualisation 
-backend is loaded.
+@code{animate_field(stack, component, r_x, r_z, filename="")}: animates the 
+2D field  profile in a Cartesian stack or a BlochMode. @code{component} is a 
+function operating on a  @code{Field} object specifying which (complex) 
+field component to plot, e.g. @code{lambda f : f.E2()}. @code{r_x} and 
+@code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying 
+which  interval to plot and with which resolution. @code{x} is the 
+transverse  direction, @code{z} the propagation direction. The actual display 
+is dependent on which visualisation  backend is loaded. @code{filename} is
+an optional string argument to determine which file to write an (uncompressed)
+animated gif to.
 
 
 @node Index,  , Reference guide, top
