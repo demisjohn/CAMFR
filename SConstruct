@@ -1,5 +1,7 @@
 from machine_cfg import *
 
+SConsignFile() # Tell Scons not to write data all over the file system.
+
 Default("camfr")
 import os
 
