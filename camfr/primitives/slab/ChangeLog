@@ -1,3 +1,7 @@
+2002-12-12 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.cpp: apply signed_sqrt to kz, not to cos..
+
 2002-11-27 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.h: Add eps_avg.
