@@ -15,6 +15,7 @@
 #include "slabdisp.h"
 #include "slabmode.h"
 #include "slaboverlap.h"
+#include "../slabmatrixcache.h"
 #include "../../../math/calculus/calculus.h"
 #include "../../../util/vectorutil.h"
 
@@ -802,6 +803,18 @@ void Slab_M::set_params(const vector<Complex>& params)
     materials[i]->set_n  (params[params_index++]);
     materials[i]->set_mur(params[params_index++]);
   }
+
+  last_lambda = 0;
+  slabmatrix_cache.deregister(this);
+
+  // Determine core.
+
+  unsigned int core_index = 0;
+  for (unsigned int i=0; i<materials.size(); i++)
+    if ( real(materials[i]->n()) > real(materials[core_index]->n()) )
+      core_index = i;
+
+  core = materials[core_index];
 }
 
 
@@ -1016,4 +1029,7 @@ void UniformSlab::set_params(const vector<Complex>& params)
   discontinuities[0] = params[0];
   core->set_n(params[1]);
   core->set_mur(params[2]);
+
+  last_lambda = 0;
+  slabmatrix_cache.deregister(this);
 }
