@@ -42,13 +42,13 @@ Real patterson(RealFunction& f, Real a, Real b, Real eps,
   
   if (max_k < 2)
   {
-    cout << "Warning: increasing max_k to 2." << endl;
+    py_print("Warning: increasing max_k to 2.");
     max_k = 3;
   }
     
   if (max_k > 8)
   {
-    cout << "Warning: restricting max_k to 8." << endl;
+    py_print("Warning: restricting max_k to 8.");
     max_k = 8;
   }
   

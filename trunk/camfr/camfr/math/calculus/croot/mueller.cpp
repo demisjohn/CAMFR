@@ -30,7 +30,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
   if (1. + abs(a-b) <= 1.)
   {
     if (verbose)
-      cout << "The two initial estimates are too close together." << endl;
+      py_print("The two initial estimates are too close together.");
 
     if (errorptr)
       *errorptr = true;

@@ -10,14 +10,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 #include "root.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /*
  ************************************************************************
@@ -51,7 +49,7 @@ using std::endl;
  * Therefore, the range of uncertainty is guaranteed to tighten at 
  * least by a factor of 1.6
  *
- * $Id: root.cpp,v 1.5 2002-04-15 19:29:17 pbienst Exp $
+ * $Id: root.cpp,v 1.6 2002-04-18 21:01:07 pbienst Exp $
  *
  ************************************************************************
  */
@@ -63,14 +61,13 @@ Real brent_root(Function1D<Real>& f, Real ax, Real bx, Real eps)
 
   if (eps < 0)
   {
-    cerr << "Tolerance must be positive." << endl;
+    py_error("Tolerance must be positive.");
     exit (-1);
   }
 
   if (ax > bx)
   {
-    cerr << "Left end point of the interval should be strictly less "
-         << "than the right one." << endl;
+    py_error("Left end of interval should be less than right one.");
     exit (-1);
   }
   
@@ -83,8 +80,9 @@ Real brent_root(Function1D<Real>& f, Real ax, Real bx, Real eps)
 
   if (fa*fb > 0)
   {
-    cerr << "Error: no certain root in interval ["
-         << a << "," << b <<"]" << endl;
+    std::ostringstream s;
+    s << "Error: no certain root in interval [" << a << "," << b <<"]";
+    py_error(s.str());
     exit (-1);
   }
   
@@ -164,8 +162,10 @@ Real brent_root(Function1D<Real>& f, Real ax, Real bx, Real eps)
     
   }
 
-  cout << "Warning: Brent solver did not reach requested accuracy " << eps 
-       << " in interval [" << ax << "," << bx << "]. " << endl;
+  std::ostringstream s;
+  s << "Warning: Brent solver did not reach requested accuracy " << eps 
+    << " in interval [" << ax << "," << bx << "]. ";
+  py_print(s.str());
 
   return b;
 }
@@ -185,7 +185,7 @@ vector<Real> brent_root(Function1D<Real>& f, vector<Real>& Ax,
 {
   if (Ax.size() != Bx.size())
   {
-    cerr << "Error: Ax and Bx must be the same size." << endl;
+    py_error("Error: Ax and Bx must be the same size.");
     exit (-1);
   }
 
@@ -245,10 +245,14 @@ void bracket_all_roots(Function1D<Real>& f, Real ax, Real bx,
 
   if ( (sec_level > 0) && (int(Ax.size()) != coarse_zeros) )
   {
-    cout << "Warning: number of zeros with coarse grid different than "
-         << "with fine grid. " << endl;
-    cout << "Step   dx: " << Ax.size() << endl;
-    cout << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_zeros << endl;
+    std::ostringstream s;
+
+    s << "Warning: number of zeros with coarse grid different than "
+      << "with fine grid. " << std::endl;
+    s << "Step   dx: " << Ax.size() << std::endl;
+    s << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_zeros;
+
+    py_print(s.str());
   }
 }
 
@@ -305,14 +309,18 @@ void bracket_N_roots(Function1D<Real>& f, Real ax, int N,
   }
 
   if (iters >= MAXITER-1)
-    cout << "Warning: maximum iterations " << MAXITER << " reached." << endl;
+    py_print("Warning: maximum iterations reached.");
 
   if ( (sec_level > 0) && (int(Ax.size()) != coarse_zeros) )
   {
-    cout << "Warning: number of zeros with coarse grid different than "
-         << "with fine grid. " << endl;
-    cout << "Step   dx: " << Ax.size() << endl;
-    cout << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_zeros << endl;
+    std::ostringstream s;
+    
+    s << "Warning: number of zeros with coarse grid different than "
+      << "with fine grid. " << std::endl;
+    s << "Step   dx: " << Ax.size() << std::endl;
+    s << "Step " << pow(2.0,sec_level) << "*dx: " << coarse_zeros;
+    
+    py_print(s.str());
   }
 }
 

@@ -36,7 +36,6 @@ env.Library(target = "camfr", \
 	              cavity.cpp bloch.cpp infstack.cpp \
 		      util/cvector.cpp \
 	              util/index.cpp \
-		      util/stringutil.cpp \
 		      util/tracesorter.cpp \
 		      math/bessel/bessel.cpp \
 		      math/linalg/linalg.cpp \

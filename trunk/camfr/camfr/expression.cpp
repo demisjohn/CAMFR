@@ -17,9 +17,6 @@
 #include "primitives/slab/slabmatrixcache.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -376,7 +373,7 @@ std::string Expression::repr() const
     s << get_term(i)->repr();
     
     if (i != get_size()-1)
-      s << endl;
+      s << std::endl;
   }
   
   return s.str();
@@ -468,8 +465,8 @@ Term::Term(const Expression& e, unsigned int N_)
       for (unsigned int i=0; i<e.get_size(); i++)
         if (abs(imag(e.get_term(i)->get_d())) > 1e-6)
         {
-          cerr << "Error: complex inner thickness not supported "
-               << "by this solver." << endl;
+          py_error(
+           "Error: complex inner thickness not supported by this solver.");
           exit (-1);
         }
   }
@@ -674,7 +671,7 @@ std::string Term::repr() const
       
     case (STACK_EXPRESSION):
     case (MAT_EXPRESSION):
-      s << "EX " << N << " * " << endl << "(" << endl << *ex << ")";
+      s << "EX " << N << " * " << std::endl << "(" << std::endl << *ex << ")";
   }
 
   return s.str();
@@ -759,8 +756,8 @@ const Term operator*(unsigned int N, const Expression& e)
 {
   if (N == 0)
   {
-    cerr << "Error: zero is an invalid number of periods." << endl;
-    exit (-1);
+    py_error("Error: zero is an invalid number of periods.");
+    return Term();
   }
 
   Expression new_e;
@@ -810,7 +807,7 @@ void material_expression_to_table(const Expression& e,
 
     if (!m)
     {
-      cerr << "Error: expression contains non-material term." << endl;
+      py_error("Error: expression contains non-material term.");
       exit (-1);
     }
 

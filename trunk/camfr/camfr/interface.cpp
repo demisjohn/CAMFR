@@ -14,9 +14,6 @@
 #include "primitives/slab/generalslab.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -531,7 +528,7 @@ void DiagInterface::calcRT()
 
   if (!global.orthogonal)
   {
-    cerr << "Error: uniform waveguide with PC_Walls is not diagonal." << endl;
+    py_error("Error: uniform waveguide with PC_Walls is not diagonal.");
     exit (-1);
   }
   

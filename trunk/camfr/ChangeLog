@@ -1,12 +1,15 @@
 CAMFR 1.0:
 
- - faster binaries
+ - faster binaries, especially under Windows, where the speed can be up
+   tp three times faster than CAMFR 0.9.
  - more robust method of calculating Bloch modes (Lieven Vanholme)
-    (field profiles)
- - new way of defining complex structures using geometric shapes and
+   emd their field profiles.
+ - new way of defining complicated structures using geometric shapes and
    automatic discretisation
+ - CAMFR now runs reliably under graphical IDE environments like Idle
+   or ActiveState's PythonWin.
  - added stack.n(), stack.mu() and stack.eps()
- - Matlab link under windows
+ - Matlab link under Windows is by default enabled and installed.
  - various documentation updates and minor bugfixes
  - alpha: new root finder, waveguides with 2D cross-section
  - semi infitinie stack

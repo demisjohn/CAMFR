@@ -204,8 +204,8 @@ Real patterson_quad_non_adapt(RealFunction& f, Real a, Real b,
     return result;
   }
 
-  cout << "Warning: maximum number of subdivision reached "
-       << "in patterson_quad_non_adapt." << endl;
+  py_print(
+    "Warning: max # of subdivision reached in patterson_quad_non_adapt.");
 
   return result;
 }

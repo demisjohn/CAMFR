@@ -12,8 +12,6 @@
 
 #include "S_scheme.h"
 
-using std::cout;
-using std::endl;
 using std::vector;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -285,7 +283,7 @@ void calc_tilde(const Chunk& chunk,
   Complex M;
   if ( imag(kz) > 1000 )
   {
-    cout << "Warning: S-scheme not suited for extremely high gain." << endl;
+    py_print("Warning: S-scheme not suited for extremely high gain.");
     M = 1e6;
   }
   else

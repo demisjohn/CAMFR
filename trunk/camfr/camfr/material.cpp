@@ -21,7 +21,7 @@
 const Material_length BaseMaterial::operator()(const Complex& d) const
 {
   if (real(d) < 0)
-    std::cout << "Warning: negative real length of material." << std::endl;
+    py_error("Warning: negative real length of material.");
   
   return Material_length(const_cast<BaseMaterial*>(this),d);
 }

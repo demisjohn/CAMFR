@@ -18,9 +18,6 @@
 #include "primitives/slab/generalslab.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -41,8 +38,7 @@ StackImpl::StackImpl
     
     if ( wg1 && wg2 && (*wg1 != *wg2) )
     {
-      cerr << "Error: intermediate incidence and exit media "
-           << "don't match." << endl;
+      py_error("Error: intermediate incidence and exit media don't match.");
       exit (-1);
     }
   }
@@ -52,8 +48,7 @@ StackImpl::StackImpl
 
   if ( (no_of_periods > 1) && (*inc != *ext) )
   {
-    cerr << "Error: incidence and exit media don't match "
-         << "for periodic extension." << endl;
+    py_error("Error: inc and exit media don't match for periodic extension.");
     exit (-1);
   }
 }
@@ -79,17 +74,15 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
   for (unsigned int i=0; i<e.get_size()-1; i++)
   {    
     if (*(e.get_term(i)->get_ext()) != *(e.get_term(i+1)->get_inc()))
-    { 
-      cerr << "Error: intermediate incidence and exit media "
-           << "don't match." << endl;
+    {
+      py_error("Error: intermediate incidence and exit media don't match.");
       exit (-1);
     }
   }  
 
   if ( (no_of_periods > 1) && (*(e.get_inc()) != *(e.get_ext())) )
   {
-    cerr << "Error: incidence and exit media don't match "
-         << "for periodic extension." << endl;
+    py_error("Error: inc and exit media don't match for periodic extension.");
     exit (-1);
   }
   
@@ -131,7 +124,7 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
       if (    (i>0)
            || ( (i==0) && abs(t1->get_d()) ))
       {
-        cout << "Error: unexpected waveguide." << endl;
+        py_error("Error: unexpected waveguide.");
         exit (-1);
       }
   }
@@ -680,7 +673,7 @@ void Stack::calcRT()
   if (sc)
     sc->calcRT();
   else
-    cout << "No scatterer defined." << endl;
+    py_error("No scatterer defined.");
 }
 
 
@@ -696,7 +689,8 @@ void Stack::allocRT()
   if (sc)
     sc->allocRT();
   else
-    cout << "No scatterer defined." << endl;
+    py_error("No scatterer defined.");
+
 }
 
 
@@ -734,7 +728,7 @@ void Stack::set_inc_field(const cVector& inc_field_,
   {
     if (global.field_calc != S_S)
     {
-      cerr << "Error: backward incident field only supported with S_S" << endl;
+      py_error("Error: backward incident field only supported with S_S");
       exit (-1);
     }
 
@@ -1245,7 +1239,7 @@ void Stack::calc_interface_fields()
   {
     if (inc_field.rows() == 0)
     {
-      cerr << "Error: incident field not set." << endl;
+      py_error("Error: incident field not set.");
       exit (-1);
     }
 

@@ -13,9 +13,6 @@
 #include "scatterer.h"
 #include "primitives/slab/generalslab.h"
 
-using std::cerr;
-using std::endl;
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // MultiScatterer::recalc_needed
@@ -190,8 +187,7 @@ DiagScatterer::DiagScatterer(Waveguide& inc, Waveguide& ext)
 {  
   if ( (inc != ext) && ( !inc.is_uniform() || !ext.is_uniform() ) )
   {
-    cerr << "Error: incidence and exit media should be uniform in "
-         << "DiagScatterer." << endl;
+    py_error("Error: inc and exit media should be uniform in DiagScatterer.");
     exit (-1);
   }
 }
@@ -381,7 +377,7 @@ MonoScatterer::MonoScatterer(Waveguide& inc, Waveguide& ext)
   if (    !dynamic_cast<MonoWaveguide*>(&inc)
        || !dynamic_cast<MonoWaveguide*>(&ext) )
   {
-    cerr << "Error: only MonoWaveguides allowed in MonoScatterer." << endl;
+    py_error("Error: only MonoWaveguides allowed in MonoScatterer.");
     exit (-1);
   }        
 }

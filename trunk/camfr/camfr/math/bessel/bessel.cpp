@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <sstream>
 #include <iostream>
 #include "bessel.h"
 
@@ -109,8 +110,12 @@ Real J(Real n, Real x, bool scaled)
   F77NAME(dbesj)(x,n,orders,result,underflows);
 
   if (underflows)
-    cerr << "Warning: " << underflows << " underflow(s) in J("
-         << "("<< n << "," << x << ")" << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: " << underflows << " underflow(s) in J("
+      << "("<< n << "," << x << ")";
+    py_print(s.str());
+  }
 
   return result[0];  
 }
@@ -190,27 +195,35 @@ const Complex H2(Real n, Real x, bool scaled)
 void checkerror(int underflows, int ierr, const char* function,
                 Real n, const Complex& z)
 {
+  if ( (ierr==0) && (underflows==0))
+    return;
+
+  std::ostringstream s;
+
   if (ierr==1)
   {
-    cerr << "Error: bad input in " << function << "("
-         << n << "," << z << ")" << endl;    
+    s << "Error: bad input in " << function << "(" << n << "," << z << ")";
+    py_error(s.str());
     exit(-1);
   }
 
   if ( (ierr==2) || (ierr==4) || (ierr==5) )
   {
-    cerr << "Error " << ierr << ": overflow in " << function << "("
-         << n << "," << z << "), try exp. scaling" << endl;
+    s << "Error " << ierr << ": overflow in " << function << "("
+      << n << "," << z << "), try exp. scaling.";
+    py_error(s.str());
     exit(-1);
   }
     
   if (ierr==3)
-    cerr << "Warning: large arguments in " << function << "("
-         << n << "," << z << ")" << endl;
+    s << "Warning: large arguments in " << function << "("
+      << n << "," << z << ")";
   
   if (underflows)
-    cerr << "Warning: " << underflows << " underflow(s) in " << function
-         << "("<< n << "," << z << ")" << endl;
+    s << "Warning: " << underflows << " underflow(s) in " << function
+      << "("<< n << "," << z << ")";
+
+  py_print(s.str());
 }
 
 
@@ -403,8 +416,12 @@ Real dJ(Real n, Real x, Real* Jn, Real* Jn_1, bool scaled)
   F77NAME(dbesj)(x,startorder,orders,result,underflows);
 
   if (underflows)
-    cerr << "Warning: " << underflows << " underflow(s) in J("
-         << "("<< n << "," << x << ")" << endl;
+  {
+    std::ostringstream s;
+    s << "Warning: " << underflows << " underflow(s) in J("
+      << "("<< n << "," << x << ")";
+    py_error(s.str());
+  }
   
   Real jn_1=result[0];
   Real   jn=result[1];
@@ -526,7 +543,7 @@ const Complex dH2(Real n, Real x, Complex* Hn, Complex* Hn_1, bool scaled)
   const Complex I(0,1);
   
   Complex factor(1,0);
-  if (scaled) // make consistent with scaling in complex case
+  if (scaled) // Make consistent with scaling in complex case.
     factor = exp(+I*x);
 
   if (Hn)

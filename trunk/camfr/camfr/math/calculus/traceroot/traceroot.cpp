@@ -10,6 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <sstream>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -17,13 +18,10 @@
 #include "../croot/mueller.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
+using std::string;
 
 #include "../../../util/vectorutil.h"
 #include "../../../util/cvector.h"
-#include "../../../util/stringutil.h"
 
 #ifdef _WIN32
 #include <float.h>
@@ -48,7 +46,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 { 
   // Declare all variables before first goto-label.
 
-  ofstream* s = fname ? new ofstream(fname->c_str()) : NULL;
+  std::ofstream* s = fname ? new std::ofstream(fname->c_str()) : NULL;
 
   Real eps_coarse = global.eps_trace_coarse;
   Real eps_fine   = 10*machine_eps();
@@ -88,7 +86,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
       *s << i << " "
          << real(estimate1[i]) << " "
          << imag(estimate1[i]) << " "
-         << valid[i] << endl;
+         << valid[i] << std::endl;
 
   // Initialise zeros_jump.
 
@@ -266,7 +264,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           *s << "-1 "
              << real(zeros_try[trouble_index]) << " "
              << imag(zeros_try[trouble_index]) << " "
-             << valid[trouble_index] << endl;
+             << valid[trouble_index] << std::endl;
         
         goto undo;
       }
@@ -278,7 +276,9 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           eps_coarse /= 2.0;
         fine_iters  = 0;
         
-        cout << "Restarting: resolution now " << resolution << endl;
+        std::ostringstream st;
+        st << "Restarting: resolution now " << resolution;
+        py_print(st.str());
 
         // Clear file.
 
@@ -291,9 +291,11 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
         goto restart;
       }
       else // Give up on this zero and carry on.
-      { 
-        cout << "Error: inrecoverable problem during sweep. "
-             << "Invalidating zero " << zeros_try[trouble_index] << endl;
+      {
+        std::ostringstream st;
+        st << "Error: inrecoverable problem during sweep. "
+          << "Invalidating zero " << zeros_try[trouble_index];
+        py_error(st.str());
 
         valid[trouble_index] = false;
         step = (params2 - params) / initial_resolution;
@@ -302,7 +304,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           *s << "-2 "
              << real(zeros_try[trouble_index]) << " "
              << imag(zeros_try[trouble_index]) << " "
-             << valid[trouble_index] << endl;
+             << valid[trouble_index] << std::endl;
       }
     } // end if (trouble)
     
@@ -325,7 +327,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
         *s << i << " "
            << real(zeros_try[i]) << " "
            << imag(zeros_try[i]) << " "
-           << valid[i] << endl;
+           << valid[i] << std::endl;
     
   }
   while (abs(params-params2) >= abs(step/2));
@@ -357,14 +359,17 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
           = mueller(f,zeros[i],zeros_bis[i],eps_fine,0,100,&trouble);
 
         if (trouble)
-          cout << "Warning: Mueller did not converge on final search for "
-               << final << endl;
+        {
+          std::ostringstream st;
+          st << "Mueller didn't converge on final search for " << final;
+          py_print(st.str());
+        }
 
         if (s)
           *s << i << " "
              << real(final) << " "
              << imag(final) << " "
-             << valid[i] << endl;
+             << valid[i] << std::endl;
 
         zeros2.push_back(final);
       }
@@ -441,16 +446,24 @@ vector<Complex> traceroot_chunks(vector<Complex>&     estimate1,
     
     chunk.insert(chunk.begin(),start,stop);
 
-    string* chunkfname = fname ? new string(*fname + itos(chunknumber)) : NULL;
+    string* chunkfname;
+    if (fname)
+    {
+      std::ostringstream s;
+      s << *fname << chunknumber;
+      chunkfname = new string(s.str());
+    }
+    else
+      chunkfname = NULL;
       
     // Find zeros of chunk.
 
     vector<Complex> zeros_chunk = traceroot
       (chunk, f, params1, params2, forbiddenzeros, resolution, chunkfname);
-    
-    zeros2.insert(zeros2.end(), zeros_chunk.begin(), zeros_chunk.end());
 
     delete chunkfname;
+    
+    zeros2.insert(zeros2.end(), zeros_chunk.begin(), zeros_chunk.end());
 
     start += chunk_length+overlap;
   }

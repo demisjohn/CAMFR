@@ -15,9 +15,6 @@
 #include "icache.h"
 
 using std::vector;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -33,7 +30,7 @@ void split_chunks(const vector<Chunk>& chunks,
 
   if ( (!left_chunks) || (!right_chunks) || (i>=chunks.size()) )
   {
-    cerr << "Error: invalid arguments in split_chunks." << endl;
+    py_error("Error: invalid arguments in split_chunks.");
     exit (-1);
   }
 
