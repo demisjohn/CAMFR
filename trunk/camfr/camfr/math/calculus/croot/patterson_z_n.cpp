@@ -76,8 +76,8 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
   const Complex delta = b-a;
   fz[0] = 1.0 / f(a + 0.5*delta);
 
-  if (abs(fz[0]) > 1e3)
-    cout << "Possible zero for " << a+0.5*delta << endl;
+  //if (abs(fz[0]) > 1e3)
+  //  cout << "Possible zero for " << a+0.5*delta << endl;
   
   result[0] = acum[0] = work[1][0] = fz[0];
 
@@ -148,11 +148,11 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
       Complex f1 = 1.0 / f(a +      t *delta);
       Complex f2 = 1.0 / f(a + (1.0-t)*delta);
 
-      if (abs(f1) > 1e3)
-        cout << "Possible zero for " << a+t*delta << endl;
+      //if (abs(f1) > 1e3)
+      //  cout << "Possible zero for " << a+t*delta << endl;
       
-      if (abs(f2) > 1e3)
-        cout << "Possible zero for " << a+(1.0-t)*delta << endl;
+      //if (abs(f2) > 1e3)
+      //  cout << "Possible zero for " << a+(1.0-t)*delta << endl;
       
       fz[0] = f1+f2;
       acum[0] += p[ip]*fz[0];
