@@ -307,13 +307,28 @@ Complex cos_cos(const Complex& a,  const Complex& b,
 {
   Complex T1;
   if (abs(a+c) > 1e-6)
-    T1 = 0.5/(a+c) * (sin((a+c)*x2+(b+d)) - sin((a+c)*x1+(b+d)));
+  {
+    //T1 = 0.5/(a+c) * (sin((a+c)*x2+(b+d)) - sin((a+c)*x1+(b+d)));
+
+    Complex z1 = (a+c)*x1+(b+d); 
+    Complex z2 = (a+c)*x2+(b+d);
+
+    T1 = -I*0.25/(a+c) * (exp(I*z2) - exp(-I*z2) - exp(I*z1) + exp(-I*z1));
+  }
   else
     T1 = 0.5*(x2-x1)*cos(b+d);
 
   Complex T2;
   if (abs(a-c) > 1e-6)
-    T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));
+  {
+    //T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));  
+  
+    Complex z1 = (a-c)*x1+(b-d); 
+    Complex z2 = (a-c)*x2+(b-d);
+    
+    T2 = -I*0.25/(a-c) * (exp(I*z2) - exp(-I*z2) - exp(I*z1) + exp(-I*z1)); 
+  }
+  
   else
     T2 = 0.5*(x2-x1)*cos(b-d);
 
@@ -336,13 +351,29 @@ Complex sin_sin(const Complex& a,  const Complex& b,
 {
   Complex T1;
   if (abs(a+c) > 1e-6)
-    T1 = 0.5/(a+c) * (sin((a+c)*x2+(b+d)) - sin((a+c)*x1+(b+d)));
+  {
+    //T1 = 0.5/(a+c) * (sin((a+c)*x2+(b+d)) - sin((a+c)*x1+(b+d)));
+
+    Complex z1 = (a+c)*x1+(b+d); 
+    Complex z2 = (a+c)*x2+(b+d);
+
+    T1 = -I*0.25/(a+c) * (exp(I*z2) - exp(-I*z2) - exp(I*z1) + exp(-I*z1));
+  }
+  
   else
     T1 = 0.5*(x2-x1)*cos(b+d);
 
   Complex T2;
   if (abs(a-c) > 1e-6)
-    T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));
+  {
+    //T2 = 0.5/(a-c) * (sin((a-c)*x2+(b-d)) - sin((a-c)*x1+(b-d)));
+    
+    Complex z1 = (a-c)*x1+(b-d); 
+    Complex z2 = (a-c)*x2+(b-d);
+    
+    T2 = -I*0.25/(a-c) * (exp(I*z2) - exp(-I*z2) - exp(I*z1) + exp(-I*z1));    
+  }
+  
   else
     T2 = 0.5*(x2-x1)*cos(b-d);
 
@@ -469,7 +500,7 @@ void RefSection::calc_overlap_matrices(Section2D* profile,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// RefSection::RefSectionMode
+// RefSectionMode::RefSectionMode
 //  
 /////////////////////////////////////////////////////////////////////////////
 
@@ -509,6 +540,9 @@ RefSectionMode::RefSectionMode(Polarisation pol,   const Complex& kz,
 /////////////////////////////////////////////////////////////////////////////
 //
 // RefSection::field
+//
+//   Never used. Unstable in case of PML, because of sin/cos i.e. exp. 
+//   PML argument not passed correctly.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
