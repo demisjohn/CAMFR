@@ -18,24 +18,20 @@ class substacks(unittest.TestCase):
         print
         print "Running substacks..."
 
-        set_lambda(1.09)
+        set_lambda(1.1)
         set_N(50)
 
         a = Material(1)
         b = Material(2)
 
-        e1 = Expression(a(2)+b(1))
-        e2 = Expression(a(1)+b(2))
+        e1 = Expression(a(1.0) + b(0.5))
+        e2 = Expression(a(0.5) + b(1.0))
 
-        e1 + Term(e2)
+        s0 = Slab(a(1) + e1 + e2 + a(1))
 
-        s0 = Slab(a(2) + e1 + Term(e2) + a(1))
+        s1 = Slab(e1 + 2*e2 + a(0.5))
 
-        s1 = Slab(a(2) + Term(e1) + Term(e2))
-
-        s2 = Slab(e1+2*Term(e2))
-
-        e3 = Expression(s0(1) + s2(2))
+        e3 = Expression(s0(1) + s1(2))
 
         st = Stack(e3 + s0(1))
 
@@ -43,7 +39,7 @@ class substacks(unittest.TestCase):
 
         R = abs(st.R12(0,0))
 
-        R_OK = 0.114556425586
+        R_OK = 0.155960743972
 
         print R, "expected", R_OK
 
