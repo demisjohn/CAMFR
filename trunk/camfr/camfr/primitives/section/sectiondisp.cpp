@@ -316,7 +316,7 @@ Complex SectionDisp::calc_split()
 
   // Return product of K best eigenvalues (i.e. closest to 1).
 
-  int K = 2;
+  int K = 5;
 
   Complex product = 1.0;
   vector<unsigned int> min_indices;
