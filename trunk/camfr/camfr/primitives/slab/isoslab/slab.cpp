@@ -554,7 +554,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   {
     const Real f = abs(disp(I*kt_prop_lossless[i]));
     
-    if (branchcut && (f > 1e-2))
+    if ( (f > 1.0) || (branchcut && (f > 1e-2)) )
     {
       std::ostringstream s;
       s << "Warning: possibly insufficient precision around kt "
