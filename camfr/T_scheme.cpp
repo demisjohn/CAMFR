@@ -75,7 +75,7 @@ void T_scheme
 
     // Propagate in medium and scale.
     
-    Complex I_kz_d = I * s->get_ext()->get_mode(1)->kz * chunks[k].d;
+    Complex I_kz_d = I * s->get_ext()->get_mode(1)->get_kz() * chunks[k].d;
     
     if (real(I_kz_d) > 0)
     {

@@ -174,8 +174,8 @@ Complex overlap(const SlabMode* mode_I,
 
   // Return final result.
   
-  return (mode_I->pol == TE) ? mode_II->kz / omega * (term1 + term2)
-                             : mode_I ->kz / omega * (term1 - term2);
+  return (mode_I->pol == TE) ? mode_II->get_kz0() / omega * (term1 + term2)
+                             : mode_I ->get_kz0() / omega * (term1 - term2);
 }
 
 
@@ -352,6 +352,6 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
 
   // Return final result.
 
-  *Ex_Hz =  mode_I->kz / omega / omega * (term1_xz - term2_xz);
-  *Ez_Hx = mode_II->kz / omega / omega * (term1_zx + term2_zx);
+  *Ex_Hz =  mode_I->get_kz0() / omega / omega * (term1_xz - term2_xz);
+  *Ez_Hx = mode_II->get_kz0() / omega / omega * (term1_zx + term2_zx);
 }

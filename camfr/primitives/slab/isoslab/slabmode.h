@@ -29,8 +29,11 @@ class SlabMode : public Mode
 {
   public:
 
-    SlabMode(Polarisation pol, const Complex& kz, const SlabImpl* geom_)
-      : Mode(pol, kz, -kz), geom(geom_) {}
+    SlabMode(Polarisation pol, const Complex& kz0, const SlabImpl* geom_)
+      : Mode(pol, kz0, -kz0), geom(geom_) {}
+
+    Complex get_kz0() const {return kz;}
+    Complex get_kz () const;
 
     virtual void normalise() = 0;
 

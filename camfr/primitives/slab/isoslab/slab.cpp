@@ -179,14 +179,17 @@ void Slab_M::find_modes()
     if (2*n != global.N)
       cout << "Warning: changing N to even number." << endl;
 
+    const Complex old_beta = global_slab.beta;
+
     global.N = n;
+    global_slab.beta = 0.0;
     global.polarisation = TE;
     find_modes();
 
     vector<Mode*> TE_modeset;
     for (unsigned int i=0; i<modeset.size(); i++)
     {
-      Slab_M_Mode* mode = new Slab_M_Mode(TE, modeset[i]->kz, this);
+      Slab_M_Mode* mode = new Slab_M_Mode(TE, modeset[i]->get_kz(), this);
       TE_modeset.push_back(mode);
     }
 
@@ -198,6 +201,7 @@ void Slab_M::find_modes()
     modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
 
     global.N = 2*n;
+    global_slab.beta = old_beta;
     global.polarisation = TE_TM;
 
     return;
@@ -708,7 +712,7 @@ void Slab_M::find_modes_by_sweep()
   
   vector<Complex> kt_old;
   for (unsigned int i=0; i<modeset.size(); i++)
-    kt_old.push_back(sqrt(pow(k0_old*min_n, 2) - pow(modeset[i]->kz, 2)));
+    kt_old.push_back(sqrt(pow(k0_old*min_n, 2)-pow(modeset[i]->get_kz(), 2)));
   
   vector<Complex> forbidden;
   vector<Complex> kt =
@@ -769,14 +773,18 @@ void UniformSlab::find_modes()
     if (2*n != global.N)
       cout << "Warning: changing N to even number." << endl;
 
+    const Complex old_beta = global_slab.beta;
+
     global.N = n;
+    global_slab.beta = 0.0;
     global.polarisation = TE;
     find_modes_single_pol();
 
     vector<Mode*> TE_modeset;
     for (unsigned int i=0; i<modeset.size(); i++)
     {
-      UniformSlabMode* mode = new UniformSlabMode(TE, modeset[i]->kz, this);
+      UniformSlabMode* mode 
+        = new UniformSlabMode(TE, modeset[i]->get_kz(), this);
       TE_modeset.push_back(mode);
     }
 
@@ -787,6 +795,7 @@ void UniformSlab::find_modes()
     modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
 
     global.N = 2*n;
+    global_slab.beta = old_beta;
     global.polarisation = TE_TM;
 
     return;
@@ -856,8 +865,8 @@ void UniformSlab::find_modes_single_pol()
 
     for (unsigned int i=1; i<=tmp.N(); i++)
     {
-      UniformSlabMode *newmode
-        = new UniformSlabMode(global.polarisation, tmp.get_mode(i)->kz, this);
+      UniformSlabMode *newmode = new 
+        UniformSlabMode(global.polarisation, tmp.get_mode(i)->get_kz(), this);
 
       newmode->normalise();
 

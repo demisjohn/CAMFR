@@ -136,7 +136,7 @@ template class enum_as_int_converters<Field_calc>;
 template class enum_as_int_converters<Polarisation>;
 template class enum_as_int_converters<Fieldtype>;
 
-inline Complex mode_kz (const Mode& m) {return m.kz;}
+inline Complex mode_kz (const Mode& m) {return m.get_kz();}
 inline Complex mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}

@@ -137,7 +137,7 @@ Field FieldExpansion::field(const Coord& coord) const
   for (unsigned int i=1; i<=wg->N(); i++)
   {
     Field f_i = wg->get_mode(i)->field(coord);
-    Complex I_kz_d = I * wg->get_mode(i)->kz * coord.z;
+    Complex I_kz_d = I * wg->get_mode(i)->get_kz() * coord.z;
     
     f.E1 += fw(i) * f_i.E1 * exp(-I_kz_d)  +  bw(i) * f_i.E1 * exp(I_kz_d);
     f.E2 += fw(i) * f_i.E2 * exp(-I_kz_d)  +  bw(i) * f_i.E2 * exp(I_kz_d);

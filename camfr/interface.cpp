@@ -427,12 +427,15 @@ void calc_RT_fresnel(const Mode* m1,       const Mode* m2,
   // Normal formulas, accurate for non-grazing incidence.
   //
 
-  if ( abs(m1->kz) > abs(m2->kz) )
+  const Complex kz1 = m1->get_kz();
+  const Complex kz2 = m2->get_kz();
+
+  if ( abs(kz1) > abs(kz2) )
   {
-    if ( (abs(m1->kz) < 1e-10) && (abs(m2->kz) < 1e-10) )
+    if ( (abs(kz1) < 1e-10) && (abs(kz2) < 1e-10) )
       a = 1.0;
     else
-      a = m2->kz / m1->kz;
+      a = kz2 / kz1;
     
     if (m1->pol == TE)
     {
@@ -467,10 +470,10 @@ void calc_RT_fresnel(const Mode* m1,       const Mode* m2,
 
   else
   {
-    if ( (abs(m1->kz) < 1e-10) && (abs(m2->kz) < 1e-10) )
+    if ( (abs(kz1) < 1e-10) && (abs(kz2) < 1e-10) )
       a = 1.0;
     else
-      a = m1->kz / m2->kz;
+      a = kz1 / kz2;
     
     if (m1->pol == TE)
     {

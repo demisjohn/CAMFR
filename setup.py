@@ -18,7 +18,7 @@ class camfr_build_ext(build_ext):
         ext_filename = os.path.join(self.build_lib, \
                                     self.get_ext_filename(fullname))
 
-        os.system('strip ' + ext_filename)
+#        os.system('strip ' + ext_filename)
 
 # Define the camfr extension module.
 

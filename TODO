@@ -48,6 +48,8 @@ MEDIUM TERM:
 -better integration with SciPy?
 -add Python docbook comments
 
+-making stripping of executable dependent on debug switches
+
 -Python: make Stack + Term, ... work without explicit Term() conversion.
 
 -implement CoordStretcher for slabs
@@ -63,7 +65,7 @@ MEDIUM TERM:
 -faster location of PC_wall eigenmodes
 -convert slabwall PC to Material Stacks
 -slabwall: cache get_R12 for startfield, get_error
--kill virtual functions in SlabWall (perhaps elsewhere too)
+-kill virtual functions in SlabWall (perhaps elsewhere too, get_kz()?)
 
 
 SOURCE MAINTENANCE
