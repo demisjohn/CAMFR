@@ -451,8 +451,14 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
   const int M = global_section.M;
   const int N = global_section.N;
 
-  const Complex W = sec_I_mode->get_geom()->get_width();
-  const Complex H = sec_I_mode->get_geom()->get_height();
+  Complex W = sec_I_mode->get_geom()->get_width();
+  Complex H = sec_I_mode->get_geom()->get_height();
+
+  if (global_section.section_solver == L_anis)
+  {
+    W = real(W);
+    H = real(H);
+  }
 
   cVector* Ex = sec_I_mode ->Ex;
   cVector* Ey = sec_I_mode ->Ey;
