@@ -365,6 +365,9 @@ EX_PLUS_TERM(Scatterer)
 Complex stack_lateral_S_flux(Stack& s, const Complex& c)
   {return s.lateral_S_flux(c);}
 
+Complex stack_lateral_S_flux_2(Stack& s, const Complex& c, int k)
+  {vector<Complex> S_k; s.lateral_S_flux(c, &S_k); return S_k[k];}
+
 Real cavity_calc_sigma(Cavity& c)
   {return c.calc_sigma();}
 
@@ -409,11 +412,11 @@ void stack_set_inc_field_2(Stack& s, const cVector& f, const cVector& b)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOST_PYTHON_MODULE_INIT(camfr)
+BOOST_PYTHON_MODULE_INIT(camfr_work)
 {
   try
   {
-    module_builder camfr("camfr");
+    module_builder camfr("camfr_work");
 
     import_array();
     
@@ -702,6 +705,7 @@ BOOST_PYTHON_MODULE_INIT(camfr)
     Stack_.def(stack_ext_S_flux,            "ext_S_flux");    
     Stack_.def(&Stack::field,               "field");
     Stack_.def(stack_lateral_S_flux,        "lateral_S_flux");
+    Stack_.def(stack_lateral_S_flux_2,      "lateral_S_flux");
     Stack_.def(&Stack::eps_at,              "eps");
     Stack_.def(&Stack::mu_at,               "mu");
     Stack_.def(&Stack::n_at,                "n");
