@@ -24,25 +24,26 @@ base_flags = "-ftemplate-depth-60 \
 
 flags_noopt = base_flags
 
-flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium4 \
-                       -funroll-loops -fstrict-aliasing"
+flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium3 -g\
+                       -funroll-loops -fstrict-aliasing "
 
 fflags = flags
 
 # Include directories.
 
-include_dirs = ["/usr/include/blitz",
-	        "/home/pbienst/boost_1_30_0",
-	        "/usr/include/python2.2"]
+include_dirs = ["/usr/include/python2.3"]
 
 # Library directories.
 
-library_dirs = ["/home/pbienst/blitz-20001213/lib",
-                "/opt/intel/mkl/lib/32"]
+library_dirs = ["/opt/intel/mkl/lib/32"]
+#library_dirs = ["/opt/intel/mkl61/lib/32"]
+#library_dirs = ["/opt/intel/mkl70/lib/32"]
 
 # Library names.
 
 libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
+#libs = ["boost_python", "blitz", "mkl_lapack", "mkl_ia32", "guide", "g2c"]
+#libs = ["boost_python", "blitz", "lapack", "f77blas", "cblas", "atlas", "g2c"]
 
 # Command to strip library of excess symbols:
 

@@ -32,7 +32,7 @@ base_flags = "-ftemplate-depth-60 \
 	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
 
 flags_noopt = base_flags
-flags = base_flags + CXXFLAGS
+flags = base_flags + " " + CXXFLAGS
 fflags = flags
 
 # Include directories.
