@@ -20,8 +20,8 @@ BLITZ  = /home/pbienst/blitz-20001213
 #	 /home/pbienst/ATLAS/lib/Linux_PIIISSE1/libf77blas.a \
 #	 /home/pbienst/ATLAS/lib/Linux_PIIISSE1/libatlas.a
 
-LAPACK = /usr/local/intel/mkl/LIB/libmkl32_lapack.a \
-	 /usr/local/intel/mkl/LIB/libmkl32_p3.a \
+LAPACK = /opt/intel/mkl/lib/32/libmkl_lapack.a \
+	 /opt/intel/mkl/lib/32/libmkl_p3.a \
 
 # location of the Python header files
 
