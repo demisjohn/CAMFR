@@ -403,7 +403,7 @@ Section2D::Section2D
     : left(left_ex), right(right_ex)
 {
   // Check values.
-  std::cout << "HI" << std::flush;
+
   if (left.get_inc() != right.get_inc())
   {
     py_error("Error: left and right part have different incidence media.");
