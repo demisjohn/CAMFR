@@ -88,7 +88,6 @@ class FieldExpansion
 {
   public:
 
-    FieldExpansion(Waveguide& wg_, const cVector& fw_, const cVector& bw_);
     FieldExpansion(Waveguide* wg_, const cVector& fw_, const cVector& bw_);
     FieldExpansion(const FieldExpansion& f);
 

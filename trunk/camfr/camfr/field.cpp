@@ -115,11 +115,6 @@ Field Field::operator/ (const Complex& c) const
 //  constructor doesn't.
 //  
 /////////////////////////////////////////////////////////////////////////////
-    
-FieldExpansion::FieldExpansion(Waveguide& wg_, 
-                               const cVector& fw_, const cVector& bw_)
-  : wg(&wg_), fw(fw_.rows(),fortranArray), bw(bw_.rows(),fortranArray)
-     {fw=fw_; bw=bw_;}
 
 FieldExpansion::FieldExpansion(Waveguide* wg_, 
                                const cVector& fw_, const cVector& bw_)
