@@ -1270,7 +1270,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=0; i<kz2.size(); i++)
-    //if (real(sqrt(kz2[i])) < 1.2*max_kz)
+    if (real(sqrt(kz2[i])) < 1.2*max_kz)
       kz2_coarse.push_back(kz2[i]);
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
