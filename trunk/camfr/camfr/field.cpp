@@ -136,7 +136,7 @@ FieldExpansion::FieldExpansion(const FieldExpansion& f)
 std::string Field::repr() const
 {
   std::ostringstream s;
-  
+ 
   s << "E1="  << E1 << ", E2=" << E2 << ", Ez=" << Ez << std::endl;
   s << "H1="  << H1 << ", H2=" << H2 << ", Hz=" << Hz;
   
@@ -190,8 +190,16 @@ FieldExpansion FieldExpansion::propagate(const Complex& z) const
   {
     Complex I_kz_d = I * wg->get_mode(i)->get_kz() * z;
 
-    fw_c(i) = fw(i) * exp(-I_kz_d);
-    bw_c(i) = bw(i) * exp( I_kz_d);
+    Complex exp_min_I_kz_d = exp(-I_kz_d);
+    if (std::isnan(abs(exp_min_I_kz_d)))
+      exp_min_I_kz_d = 0.0;
+
+    Complex exp_plus_I_kz_d = exp(I_kz_d);
+    if (std::isnan(abs(exp_plus_I_kz_d)))
+      exp_plus_I_kz_d = 0.0;
+
+    fw_c(i) = fw(i) * exp_min_I_kz_d;
+    bw_c(i) = bw(i) * exp_plus_I_kz_d;
   }
   
   return FieldExpansion(wg, fw_c, bw_c);
