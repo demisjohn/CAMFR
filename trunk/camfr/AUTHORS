@@ -1,5 +1,9 @@
-Peter Bienstman - Ghent University: <Peter.Bienstman@rug.ac.be>
+Peter Bienstman - Ghent University <Peter.Bienstman@rug.ac.be>
   Main author
 
-Lieven Vanholme - Ghent University: <Lieven.Vanholme@rug.ac.be>
-  Generalised eigenvalue solver for Bloch modes
+Lieven Vanholme - Ghent University <Lieven.Vanholme@rug.ac.be>
+  Generalised eigenvalue solver for Bloch modes, general excitations,
+  visualisation
+
+Mihai Ibanescu - MIT: <michel@mit.edu>
+  Multiring circular structures
