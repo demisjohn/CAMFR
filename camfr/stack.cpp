@@ -827,6 +827,12 @@ cVector Stack::get_trans_field()
 
 FieldExpansion Stack::inc_field_expansion()
 {
+  if (inc_field.rows() == 0)
+  {
+    py_error("Error: incident field not set.");
+    exit(-1);
+  }
+
   if (interface_field.size())
     return interface_field[0];
 
@@ -854,6 +860,12 @@ FieldExpansion Stack::inc_field_expansion()
 
 FieldExpansion Stack::ext_field_expansion()
 {
+  if (inc_field.rows() == 0)
+  {
+    py_error("Error: incident field not set.");
+    exit(-1);
+  }
+
   if (interface_field.size() > 1)
     return interface_field.back();
 
