@@ -272,6 +272,10 @@ Complex SectionDisp::calc_global()
 
   // Return determinant.
 
+  // This is prone to overflow, especially for a large number of layers.
+  // TODO: try Arnoldi eigenvalue solver for this, or Rayleigh scheme from
+  // TOMS.
+
   if (band_storage)
     return determinant_band(Q, 2*K*M, kl, ku);
   else
