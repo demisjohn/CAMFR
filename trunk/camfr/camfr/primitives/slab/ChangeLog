@@ -1,3 +1,7 @@
+2002-11-27 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* generalslab.h: Add eps_avg.
+
 2002-10-30 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* generalslab.cpp: Rename left/right to lower/upper.
