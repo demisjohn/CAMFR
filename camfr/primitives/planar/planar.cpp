@@ -44,7 +44,7 @@ Planar::Planar(Material& m) : MonoWaveguide(&m)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Planar::set_theta(Real theta_radians)
+void Planar::set_theta(Complex theta_radians)
 {  
   if (global.lambda == 0.0)
     py_error("Error: wavelength not set.");
@@ -67,16 +67,7 @@ Complex Planar::calc_kz() const
   Complex k  = 2.0*pi / global.lambda * core->n() * sqrt(core->mur());
   Complex kz = sqrt(k*k - kt*kt);
 
-  if (abs(real(kz)) > 1e-12) // If propagating, always choose forward one.
-  {
-    if (real(kz) < 0)
-      kz = -kz;
-  }
-  else // On imaginary axis, choose damped one.
-  {
-    if (imag(kz) > 0)
-      kz = -kz;
-  }
+  pick_sign_k(&kz);
 
   // Update mode and set E_cst and H_cst to get correct results in the
   // generalised Fresnel formulas (interface.cpp).

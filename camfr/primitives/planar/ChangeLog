@@ -1,3 +1,8 @@
+2003-07-11 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* planar.h: Consolidate sign choice.
+	* planar.cpp: Ditto.
+
 2003-01-31 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* planar.h: Add field plot.
