@@ -468,7 +468,7 @@ def _create_phasor_movie(z, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         zcst    = 1e-8
 
         zmax    = 2*log(MLab.max(MLab.max(abs(z)))+ zcst)
-        zmin    = log(zcst)                 # Arround -23.
+        zmin    = log(zcst)                 # Around -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
 
         # Calculate each frame.
