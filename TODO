@@ -1,16 +1,11 @@
-
--get_min_n in slab trace
 -infstack recalc modes, inf*(notation), diagslab
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
- false zeros, nmax=neff_core?, TEM mode, SectionFlux, complex modes
+ nmax=neff_core?, eps_trace_coarse, TEM mode, SectionFlux, complex modes
+
 
 SHORT TERM 
 
 -default planar::set_theta (Peter)
-
--cleverer inc/ext_field_expansion that does not calculate internal fields
- 
--try out LAPACK 3.0 special svd routine (zgesdd)
 
 -tune new complex zero finder
 -related: make definition of C_upperright uniform
@@ -23,8 +18,8 @@ SHORT TERM
 
 -waiting for Boost update: operator+=, automatic conversion to Term
 
--CAMFR gives incorrect results if compiled with malign-double. Report this
- compiler bug.
+-different build system (scons?)
+-handle Fortran names through macro concatenation
 
 
 MEDIUM TERM:
@@ -46,6 +41,8 @@ MEDIUM TERM:
 -new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
  Ability to cache field profiles and speed up.
 -stack field on layer discontinuity: speed up by not propagating.
+-cleverer inc/ext_field_expansion that does not calculate internal fields
+ when not needed
 
 -implement Bloch modes for MonoScatterers
 -speed up Bloch for symmetric structures
@@ -60,15 +57,11 @@ MEDIUM TERM:
 -dispersion relation of 2D slabs:
    -do not handle left and right walls through expressions
    -check E/H wall for TM, make slab_wall polarisation safe
-   -speed up symmetric structures
-   -speed up structures varying only in 1D
-   -try to speed up S scheme if only R matrices are needed
    -try to eliminate need for O_II_I in interface.cpp
 
 -making stripping of executable dependent on debug switches
 
 -implement CoordStretcher for slabs
--implement eps_at/mu_at in Stack
 -automatic setting of global.orthogonal
 -explicitly return *all* modes found in Cavity::find_all_modes
 -make 'precision' dynamic
@@ -76,9 +69,8 @@ MEDIUM TERM:
 
 -cavity::calc_sigma: instead of using only the fw field, is it more robust
  to use fw_backward field to determine dominant mode?
--cavity: instead of using SVD, try eigenvalue decomposition or Arnoldi
-
--revisit reflection from semi-infinite media.
+-cavity: instead of using SVD, use eigenvalue decomposition or Arnoldi
+-try out LAPACK 3.0 special svd routine (zgesdd)
 
 -PC_wall: add waveguide interface if needed
 -faster location of PC_wall eigenmodes
@@ -110,7 +102,6 @@ LOW PRIORITY
 
 -influence of normalisation on observables (sign sqrt, factor, ..)
  check sqrt(power) -> -1 norm (Peter)
--related: use norm=abs(sqrt())? (Peter)
 -related: consolidate signedsqrt in material.h and circ.cpp (Peter)
 
 
