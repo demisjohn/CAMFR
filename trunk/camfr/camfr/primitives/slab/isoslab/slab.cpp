@@ -794,6 +794,7 @@ void UniformSlab::find_modes()
 
     global.polarisation = TM;
     find_modes_single_pol();
+
     modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
 
     global.N = 2*n;
