@@ -3003,6 +3003,8 @@ Member functions:
 @item
 @code{length()}: returns length of the stack along the @code{z}-axis.
 @item
+@code{width()}: returns the @code{c1}-length of the stack. 
+@item
 @code{n(Coord)}: returns refraction index at a given coordinate.
 @item
 @code{eps(Coord)}: returns permittivity at a given coordinate.
@@ -3117,7 +3119,11 @@ a laser mode has been located, or if a source has been explicitly set.
 @item
 @code{bot_stack()}: returns bottom stack. 
 @item
-@code{top_stack()}: returns top stack. 
+@code{top_stack()}: returns top stack.
+@item
+@code{length()}: returns the @code{z}-length of the cavity.
+@item
+@code{width()}: returns the @code{c1}-length of the cavity. 
 @end itemize
 
 
@@ -3150,6 +3156,8 @@ zero.
 @code{calc()}: calculates the BlochModes in this waveguide.
 @item
 @code{length()}: returns the @code{z}-length of the basic period.
+@item
+@code{width()}: returns the @code{c1}-length of the basic period.
 @item
 @code{beta_vector()}: returns a vector containing all the propagation 
 constants of the BlochModes.
