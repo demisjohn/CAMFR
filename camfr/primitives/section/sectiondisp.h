@@ -40,6 +40,7 @@ class SectionDisp : public ComplexFunction
   protected:
 
     Complex calc_lapack (const Complex& beta);
+    Complex calc_lapack2(const Complex& beta);
     Complex calc_arnoldi(const Complex& beta);
 
     Stack* left;

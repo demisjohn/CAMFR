@@ -96,6 +96,52 @@ Complex SectionDisp::operator()(const Complex& beta)
 //
 /////////////////////////////////////////////////////////////////////////////
 
+Complex SectionDisp::calc_lapack2(const Complex& beta)
+{
+  // Calculate eigenvectors.
+  
+  global.lambda = lambda;
+  global_slab.beta = beta;
+  global.orthogonal = false;
+  global.polarisation = TE_TM;
+
+  int old_N = global.N;
+  global.N = M;
+
+  left->calcRT();
+  if (! symmetric)
+    right->calcRT();
+
+  global.N = old_N;
+  
+  cMatrix Q(M,M,fortranArray);
+  if (! symmetric)
+    Q.reference(multiply( left->as_multi()->get_R12(), 
+                         right->as_multi()->get_R12()));
+  else
+    Q.reference(multiply( left->as_multi()->get_R12(), 
+                          left->as_multi()->get_R12()));
+
+  for (int i=1; i<=M; i++)
+    Q(i,i) -= 1.0;
+  
+  cVector e(M,fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));
+  
+  // Return product of eigenvalues (determinant).
+
+  Complex product = 1.0;
+
+  for (int i=1; i<=M; i++)
+    product *= e(i);
+  
+  return product;
+}
+
+
 Complex SectionDisp::calc_lapack(const Complex& beta)
 {
   // Calculate eigenvectors.
@@ -128,15 +174,15 @@ Complex SectionDisp::calc_lapack(const Complex& beta)
   else
     e.reference(eigenvalues_x(Q));
   
-  // Return minimun distance of eigenvalues to 1.
+  // Return minimum distance of eigenvalues to 1.
 
-  Real min_distance = abs(e(1) - 1.0);
+  int min_index = 1;
 
   for (int i=2; i<=M; i++)
-    if (abs(e(i) - 1.0) < min_distance)
-      min_distance = abs(e(i) - 1.0);
+    if (abs(e(i) - 1.0) < abs(e(min_index) - 1.0))
+      min_index = i;
 
-  return min_distance;
+  return e(min_index) - 1.0;
 }
 
 
@@ -226,7 +272,7 @@ Complex SectionDisp::calc_arnoldi(const Complex& beta)
     return calc_lapack(beta);
   }
 
-  return abs(prob.Eigenvalue(0));
+  return prob.Eigenvalue(0);
 }
 
 

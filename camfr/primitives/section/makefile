@@ -1,6 +1,6 @@
 include ../../../make.inc
 
-OBJS = sectiondisp.o section.o #sectionmode.o sectionoverlap.o
+OBJS = sectiondisp.o section.o sectionmode.o #sectionoverlap.o
 
 all: $(OBJS)
 	$(MAKE) $(OBJS)
@@ -13,7 +13,7 @@ sectiondisp.o: sectiondisp.cpp sectiondisp.h  ../../defs.h
 	$(CC) $(FLAGS) -c sectiondisp.cpp
 
 sectionmode.o: sectionmode.cpp sectionmode.h section.h ../../mode.h \
-	../../../defs.h
+	../../defs.h
 	$(CC) $(FLAGS) -c sectionmode.cpp
 
 sectionoverlap.o: sectionoverlap.cpp sectionoverlap.h section.h ../../mode.h \
