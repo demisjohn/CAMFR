@@ -48,6 +48,9 @@ class field(unittest.TestCase):
         f2_pass = abs(f2 - f_OK) < eps.testing_eps       
 
         free_tmps()
+
+        set_upper_PML(0)
+        set_lower_PML(0)
         
         self.failUnless(f1_pass and f2_pass)
 

@@ -72,15 +72,19 @@ class taper(unittest.TestCase):
         rz = arange(0.0, s.length(),      a/10.)
 
         taper = Stack(e + s_inf)
-
+      
         # Calculate reflection.
             
         set_lambda(a/.2335)
 
         taper.calc()
 
+        inc=zeros(N())
+        inc[0]=1
+        taper.set_inc_field(inc)
+
         R = taper.R12(0,0)
-        R_OK = 0.0273696979612+0.337022950102j
+        R_OK = 0.164397951326+0.335970606541j
     
         print R, "expected", R_OK
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps

@@ -32,8 +32,14 @@ class metal_splitter(unittest.TestCase):
         r = .150/2.0 # rod radius
 
         set_lower_wall(slab_H_wall)
+        set_upper_PML(-0.1)
 
-        cl = 0 # air cladding
+        #set_solver(series)
+        #set_mode_surplus(4)
+
+        #set_orthogonal(0)
+
+        cl = 1 # air cladding
 
         periods = 3  # periods above outer waveguide
         sections = 1 # intermediate 90 deg sections
@@ -72,6 +78,16 @@ class metal_splitter(unittest.TestCase):
 
 
         splitter.calc()
+        
+        plot(cen)
+        plot(arm)
+        plot(ver)
+        
+        inc = zeros(N())
+        inc[0] = 1
+        splitter.set_inc_field(inc)
+
+        plot(splitter)
 
         R = splitter.R12(0,0)
         R_OK = 0.844654989543+0.499289083195j
@@ -83,6 +99,7 @@ class metal_splitter(unittest.TestCase):
         free_tmps()
 
         set_lower_wall(slab_E_wall)
+        set_upper_PML(0)
 
         self.failUnless(R_pass)
 
