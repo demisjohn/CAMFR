@@ -1,3 +1,8 @@
+2002-12-20 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* slabmode.h: Add get_cos, get_sin.
+	* slabmode.cpp: Ditto.
+
 2002-12-12 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* slabmode.cpp: Consolidate signed_sqrt.

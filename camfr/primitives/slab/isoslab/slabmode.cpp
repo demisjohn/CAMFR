@@ -29,7 +29,90 @@ Complex SlabMode::get_kz() const
   if (abs(global.slab_ky) < 1e-10)
     return kz;
   else // Rotate kz for off-axis incidence.
-    return slab_signedsqrt(kz*kz - pow(global.slab_ky, 2));
+    return kz*get_cos();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabMode::get_cos()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SlabMode::get_cos() const
+{
+  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2));
+/*
+  if (geom->is_dummy())
+  {
+    const Complex C = (pol == TE) ? geom->get_core()->mu() 
+                                  : geom->get_core()->eps();
+
+    const Complex S = (conj(kz/C)*cs);
+
+    // classic
+
+    if (real(cs*kz) < 0) 
+      cs = -cs;
+
+    if (abs(real(cs*kz)) < 1e-12)
+      if (imag(cs*kz) > 0)
+        cs = -cs;
+
+    // Forward flux.
+  
+    if (real(S) < 0)
+      cs = -cs;
+    if (abs(real(S)) < 1e-12)
+      if (imag(S) < 0) // TODO: check
+      {
+        std::cout << "S purely imag" << std::endl;
+        cs = -cs;
+      }
+  
+    return cs;
+  }
+*/
+  // Lossy only.
+
+  if (imag(cs*kz) > 0)
+    cs = -cs;
+
+  if (abs(imag(cs*kz)) < 1e-12)
+    if (real(cs*kz) < 0)
+      cs = -cs;
+
+  if (geom->is_dummy())
+    cs = -cs;
+
+  return cs;
+
+
+  // 45 deg cut.
+
+  if (imag(cs*kz) > 0)
+    cs = -cs;
+
+  if (abs(imag(cs*kz)) < abs(real(cs*kz)))
+    if (real(cs*kz) < 0)
+      cs = -cs;
+
+/*
+  if (abs(geom->get_core()->n() - 3.5) < 1e-6)
+  {
+    //std::cout << kz*cs << std::endl;
+    if (abs(imag(cs*kz)) < .21)
+    {    
+      std::cout << "Swap " << kz*cs << std::endl;
+      cs = -cs;
+    }
+  }
+  
+  return cs;
+*/
+
+
 }
 
 
@@ -75,10 +158,9 @@ Field SlabMode::field(const Coord& coord_) const
   forw_backw_at(coord, &fw_x, &bw_x);
 
   // Calculate total field.
-  // Note that cs needs to be in sync with generalslab.cpp.
   
-  const Complex sn = global.slab_ky / kz;
-  const Complex cs = slab_signedsqrt(1.0 - sn*sn);
+  const Complex sn = get_sin();
+  const Complex cs = get_cos();
   
   Field field;
 
