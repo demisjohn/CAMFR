@@ -281,12 +281,32 @@ inline boost::python::object stack_fw_bw(Stack& s, Real z)
   return boost::python::make_tuple(fw, bw);
 }
 
+inline boost::python::object stack_fw_bw_2(Stack& s, Real z, Limit l)
+{
+  cVector fw(global.N,fortranArray);
+  cVector bw(global.N,fortranArray);
+
+  s.fw_bw_field(Coord(0,0,z,Plus,Plus,l), &fw, &bw);
+
+  return boost::python::make_tuple(fw, bw);
+}
+
 inline boost::python::object blochmode_fw_bw(BlochMode& b, Real z)
 {
   cVector fw(global.N,fortranArray);
   cVector bw(global.N,fortranArray);
 
   b.fw_bw_field(Coord(0,0,z), &fw, &bw);
+
+  return boost::python::make_tuple(fw, bw);
+}
+
+inline boost::python::object blochmode_fw_bw_2(BlochMode& b, Real z, Limit l)
+{
+  cVector fw(global.N,fortranArray);
+  cVector bw(global.N,fortranArray);
+
+  b.fw_bw_field(Coord(0,0,z,Plus,Plus,l), &fw, &bw);
 
   return boost::python::make_tuple(fw, bw);
 }
@@ -1011,6 +1031,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("ext_S_flux",               stack_ext_S_flux)
     .def("field",                    &Stack::field)
     .def("fw_bw",                    stack_fw_bw)
+    .def("fw_bw",                    stack_fw_bw_2)
     .def("lateral_S_flux",           stack_lateral_S_flux)
     .def("lateral_S_flux",           stack_lateral_S_flux_2)
     .def("eps",                      &Stack::eps_at)
@@ -1064,6 +1085,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("fw_field", &BlochMode::fw_field)
     .def("bw_field", &BlochMode::bw_field)
     .def("fw_bw",    blochmode_fw_bw)
+    .def("fw_bw",    blochmode_fw_bw_2)
     .def("S_flux",   &BlochMode::S_flux)
     .def("n",        blochmode_n)
     ;

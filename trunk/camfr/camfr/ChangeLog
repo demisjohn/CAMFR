@@ -1,3 +1,7 @@
+2003-12-04  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* camfr_wrap.cpp: Add limit in fw_bw.
+
 2003-11-17  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* defs.h: Rework configuration globals.
