@@ -419,27 +419,14 @@ BlochMode::BlochMode(const Polarisation pol, const Complex& kz, Stack* s,
     direction = undefined;
   else
   {
-    bool fw = false;
-    
-    if (imag(get_kz()) < -1e-3)
-      fw = true;
-    else if (imag(get_kz()) > 1e-3)
-      fw = false;
-    else
-      fw = real(get_kz()) > 0.0;
-
-    Real S = S_flux(0,real(geom->get_inc()->c1_size()),0.1);
-
-    if (fw && (S < 0) && (abs(S) > 1e-3) )
-      fw = false;
-    else if (!fw && (S>0) && (abs(S) > 1e-3) )
-      fw = true;
-
-    if (fw)
-      direction = forward;
-    else
-      direction = backward;
-   }
+    if (abs(imag(get_kz())) < 1e-3) // Propagating mode.
+    {
+      Real d = S_flux(0.0,real(geom->get_inc()->c1_size()),0.1);
+      direction = (d > 0) ? forward : backward;
+    }
+    else // Evanescent mode.
+      direction = (imag(get_kz()) < 0) ? forward : backward;
+  }
 }
 
 
