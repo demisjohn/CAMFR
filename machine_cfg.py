@@ -19,12 +19,12 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 -O3 -march=pentiumpro \
+base_flags = "-ftemplate-depth-60 \
 	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
 
-flags = base_flags + " --param max-inline-insns=600  \
+flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentiumpro \
                        -ffast-math -funroll-loops -fstrict-aliasing -g"
 
 fflags = flags
