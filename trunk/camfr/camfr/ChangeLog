@@ -1,3 +1,7 @@
+2002-07-19  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Upgrade to new Boost version.
+
 2002-07-18  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* expression.h: Make Scatterer and Stack implicitly convertible 
