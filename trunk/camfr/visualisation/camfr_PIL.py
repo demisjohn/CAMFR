@@ -456,6 +456,8 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
     movie    = []
     frames   = 16
 
+    z = z_.copy()
+
     if ln:
         colormap = create_unipolar_colormap()
         
@@ -472,8 +474,6 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         zmax    = 2*log(MLab.max(MLab.max(abs(z)))+ zcst)
         zmin    = log(zcst)                 # Around -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
-
-        z = z_.copy()
         
         # Calculate each frame.
         
@@ -486,6 +486,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
             
     else:
         colormap = create_bipolar_colormap()
+        
         # Scale factors for z.
 
         zmax    = MLab.max(MLab.max(abs(z)))
