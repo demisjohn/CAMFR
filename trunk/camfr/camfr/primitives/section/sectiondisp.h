@@ -31,7 +31,6 @@ class SectionDisp : public ComplexFunction
 
     SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M, 
                 bool symmetric = false);
-    ~SectionDisp() {delete stack;} // TMP
 
     Complex operator()(const Complex& kt);
 
@@ -41,12 +40,7 @@ class SectionDisp : public ComplexFunction
   protected:
 
     Complex calc_lapack();
-    Complex calc_lapack2();
-    Complex calc_lapack3();
-    Complex calc_lapack4();
     Complex calc_band();
-    Complex calc_field();
-    Complex calc_arnoldi();
 
     Stack* left;
     Stack* right;
