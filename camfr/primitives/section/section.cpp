@@ -1058,7 +1058,7 @@ void Section2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
         (*F)(i1,   i2+MN) += k0*k0;
         (*F)(i1+MN,i2)    -= k0*k0;
       }
-    }
+    }  
 
   // Construct G matrix.
 
@@ -1408,11 +1408,11 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   Complex R_left  = global_section. leftwall == E_wall ? -1.0 : 1.0;
   Complex R_right = global_section.rightwall == E_wall ? -1.0 : 1.0;
 
-  if ( (abs(R_left+1.0) < 1e-6) && (abs(R_right+1.0) < 1e-6) ) // EE
-      M--; // Note: don't do this for HH since it has a dummy solution.
+  //if ( (abs(R_left+1.0) < 1e-6) && (abs(R_right+1.0) < 1e-6) ) // EE
+  //    M--; // Note: don't do this for HH since it has a dummy solution.
 
-  if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
-      N--; // Note: don't do this for HH since it has a dummy solution.
+  //if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
+  //    N--; // Note: don't do this for HH since it has a dummy solution.
   
   global_section.M = M;
   global_section.N = N; 
@@ -1451,11 +1451,11 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   else if (global_section.section_solver == L)
     create_FG_li(&F, & G, M, N, alpha0, beta0);
 
-
   cMatrix FG(2*MN,2*MN,fortranArray);  
   FG.reference(multiply(F,G));
 
 /*
+
   cVector E(2*MN,fortranArray); 
   cMatrix eig(2*MN,2*MN,fortranArray); 
 
@@ -1485,9 +1485,8 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   for (int i=neff.size()-1; i>=0; i--)
     std::cout << "full " << neff.size()-i-1  << " " << neff[i] << std::endl;
-
-  exit (-1);
 */
+  
   
   //
   // Reduced eigenvalue problem.
