@@ -641,3 +641,92 @@ void overlap_reference_modes(cMatrix* O_tt, cMatrix* O_zz,
 */
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Int(exp(k.x), x=0..d)
+//
+/////////////////////////////////////////////////////////////////////////////
+
+inline Complex int_exp(const Complex& k, const Complex& d)
+{
+  if (abs(k) < 1e-10)
+    return d;
+  else
+    return (exp(k*d)-1.0)/k;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_pw
+//
+//   Calculates overlap integral of a SlabMode with a plane wave exp(j.k.x).
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
+                Complex* Oz, Complex* O1)
+{
+  *Oz = 0.0;
+  *O1 = 0.0;
+
+  vector<Complex> disc = mode->get_geom()->get_discontinuities();
+  disc.insert(disc.begin(), 0.0);
+
+  const Complex k0 = 2*pi/global.lambda;
+
+  for (int k=0; k<disc.size()-1; k++)
+  {
+    const Complex x0 = disc[k];
+    const Complex x1 = disc[k+1];
+
+    const Complex d = x1 - x0;
+    
+    const Coord lower(x0,0,0, Plus);
+
+    const Complex kx = mode->kx_at(lower);
+    const Complex kz = mode->get_kz0();
+
+    Complex fw, bw;
+    mode->forw_backw_at(lower, &fw, &bw);
+
+    const Complex fw_int = fw * int_exp(-I*kx + I*k, d);
+    const Complex bw_int = bw * int_exp( I*kx + I*k, d);
+
+    Complex sn = mode->get_sin();
+    Complex cs = mode->get_cos();
+
+    if (E == true) // Calculate overlap with Ez and E1.
+    {
+      if (mode->pol == TE)
+      {
+        *Oz += -(fw_int + bw_int) * sn / sqrt(cs);
+      }
+      else 
+      {
+        const Complex C = 1.0 / (k0*c) / mode->get_geom()->eps_at(lower);
+
+        *Oz += C * (-fw_int - bw_int) * kx * cs / sqrt(cs);
+        *O1 += C * ( fw_int - bw_int) * kz      / sqrt(cs);
+      }
+    }
+    else // Calculate overlap with Hz and H1.
+    {
+      if (mode->pol == TE)
+      {
+        const Complex C = 1.0 / (k0*c) / mode->get_geom()->mu_at(lower);
+
+        *Oz += C * ( fw_int - bw_int) * kx * cs / sqrt(cs);
+        *O1 += C * (-fw_int - bw_int) * kz      / sqrt(cs);
+      }
+      else 
+      {
+        *Oz += -(fw_int - bw_int) * sn / sqrt(cs);
+      }
+    }
+  }
+}
+
+
