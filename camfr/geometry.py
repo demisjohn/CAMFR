@@ -443,7 +443,7 @@ class Geometry:
 
             #print e_slab
             #s.calc()
-            #print s
+            #pretty_print(s)
             #plot_neff(s)
             #print "------------"
    
@@ -457,3 +457,16 @@ class Geometry:
                 e.add((slab_cache[-i-1])(d[-i-1]))
 
         return e
+
+def pretty_print(s):
+    for i in range(s.N()):
+        nr = s.mode(i).n_eff().real
+        ni = s.mode(i).n_eff().imag
+
+        if abs(nr) < 1e-6:
+            nr = 0
+            
+        if abs(ni) < 1e-6:
+            ni = 0
+
+        print i, nr, ni
