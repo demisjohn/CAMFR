@@ -85,9 +85,9 @@ Cavity::Cavity(Stack& bot_, Stack& top_)
 /////////////////////////////////////////////////////////////////////////////
 
 void Cavity::find_modes_in_region
-  (Real lambda_start, Real lambda_stop, Real delta_lambda,
-   unsigned int number, Real n_imag_start, Real n_imag_stop,
-   unsigned int passes)
+  (Real lambda_start, Real lambda_stop, Real delta_lambda, 
+   Real n_imag_start, Real n_imag_stop,
+   unsigned int passes, unsigned int number)
 { 
   if (passes < 1)
   {

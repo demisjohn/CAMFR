@@ -86,9 +86,9 @@ class Cavity
     // else only the highest 'number' modes are located.
 
     void find_modes_in_region(Real lambda_start, Real lambda_stop,
-                              Real delta_lambda, unsigned int number=0,
+                              Real delta_lambda,
                               Real n_imag_start=0.0, Real n_imag_stop=0.015,
-                              unsigned int passes=1);
+                              unsigned int passes=1, unsigned int number=0);
 
     // Locate the single sourceless mode confined in a given wavelength (um)
     // and gain region, using 'passes' number of passes.     
