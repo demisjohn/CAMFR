@@ -61,6 +61,10 @@ extra_files = [ \
    "C:\\progra~1/Intel/MKL/ia32/bin/mkl_p3.dll",
    "C:\\progra~1/Intel/MKL/ia32/bin/mkl_lapack32.dll",
    "C:\\windows/system32/msvcr70.dll",
-   "C:\\windows/system32/msvcp70.dll"
+   "C:\\windows/system32/msvcp70.dll",
+   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libmmd.dll",
+   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libIEPCF90MD.dll",
+   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libF90MD.dll",
+   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libintrinsMD.dll"
    ]
 
