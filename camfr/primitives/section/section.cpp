@@ -727,19 +727,18 @@ void Section2D::find_modes_from_series()
   else
   {
     Complex max_eps_eff;
-    if (    (global.polarisation == TM) // Surface plasmon.
-         && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
-      max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+    if (real(max_eps_mu)*real(min_eps_mu) < 0.0) // Surface plasmon.
+      max_eps_eff = 1.0/(1.0/max_eps_mu + 1.0/min_eps_mu);
     else
       max_eps_eff = max_eps_mu;
 
-    Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
+    Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
 
     cVector kz2(M1,fortranArray);
     kz2 = estimate_kz2();
 
     for (unsigned int i=1; i<=M1; i++)
-      if (real(sqrt(kz2(i))) < 1.2*max_kz)
+      if (real(sqrt(kz2(i))) < 1.01*max_kz)
         kz2_coarse.push_back(kz2(i));
   }
   user_estimates.clear();
@@ -829,6 +828,7 @@ void Section2D::find_modes_from_series()
   cMatrix O11(modeset.size(), modeset.size(), fortranArray);
   cMatrix O22(modeset.size(), modeset.size(), fortranArray);
   calc_overlap_matrices(this, &O12, &O21, &O11, &O22);
+  std::cout << O11 << std::endl;
   std::cout << O12 << std::endl;
 
   //return;
