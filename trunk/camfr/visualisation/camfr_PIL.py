@@ -243,6 +243,10 @@ def _scale_function(z, r_x, r_y, min_area, scale):
         scale_y = round(scale*d_y)
         scale_x = scale_y*round(d_x/d_y)
 
+    if scale_x < 1 or scale_y < 1:
+        scale_x=1
+        scale_y=1
+
     return [height, width, scale_x, scale_y]
 
 
@@ -737,7 +741,7 @@ def plot_arrow_stack(stack, r_x, r_z, filename=0):
 def plot_n_section(stack, r_x, r_y, filename, colormap):
     
     n = zeros([len(r_y),len(r_x)], Float)
-    _calc_n_stack(n, stack, array(r_x)[::-1], r_z)
+    _calc_n_stack(n, stack, array(r_x)[::-1], r_y)
 
     plot_matrix(n, r_x, r_y, filename, colormap)    
 
@@ -835,7 +839,7 @@ def _calc_field_stack(f, stack, r_x, r_z ,component):
 
 ##############################################################################
 #
-# Asks the refractive index for all the points of teh matrix.
+# Asks the refractive index for all the points of the matrix.
 #
 ##############################################################################
 
