@@ -22,7 +22,10 @@ using std::real;
 using std::imag;
 using std::abs; 
 using std::sqrt;
+
+#ifndef _WIN32
 using std::isnan;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
