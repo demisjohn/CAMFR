@@ -51,7 +51,13 @@ class RefSection : public SectionImpl
     Complex eps_at(const Coord& c) const
       {return m->eps();}
 
+    Complex get_eps() const
+      {return m->eps();}
+
     Complex  mu_at(const Coord& c) const
+      {return m->mu();}
+
+    Complex get_mu() const
       {return m->mu();}
 
     Complex get_width() const
@@ -81,23 +87,22 @@ class RefSection : public SectionImpl
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class RefSectionMode : public SectionMode
+class RefSectionMode : public Mode
 {
   public:
 
     RefSectionMode(Polarisation pol,  const Complex& kz,
                    const Complex& kx, const Complex& kx0,
-                   const Complex& ky, const Complex& ky0);
+                   const Complex& ky, const Complex& ky0, 
+                   RefSection* geom);
 
     Field field(const Coord& coord) const;
 
-    void normalise();
-
   protected:
 
-    Complex A;
     Complex kx, kx0;
     Complex ky, ky0;
+    RefSection* geom;
 };
 
 

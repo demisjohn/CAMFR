@@ -1021,13 +1021,12 @@ void Section1D::find_modes()
   // Add modes.
   
   const Complex start  = (abs(R_left*R_right-1.0) < 1e-10) ? 0 : pi;
-  unsigned int j_start = (abs(R_left*R_right-1.0) < 1e-10) ? 1 : 0;
 
   for (unsigned int i=1; i<=global.N; i++)
   {
     SlabMode* mode = dynamic_cast<SlabMode*>(slab->get_mode(i));
 
-    for (unsigned int j=j_start; j<=global.N+j_start; j++)
+    for (unsigned int j=0; j<=global.N; j++)
     {
       Complex kz = sqrt(pow(mode->get_kz0(),2) - pow((start+2*j*pi)/2./d,2));
 
@@ -1038,12 +1037,15 @@ void Section1D::find_modes()
         if (imag(kz) > 0)
           kz = -kz;
     
-      Section1D_Mode *newmode
-        = new Section1D_Mode(slab->get_mode(i)->pol, kz, mode, this);
+      if (abs(kz-2*pi/global.lambda*core->n()) > 1e-6)
+      {
+        Section1D_Mode *newmode
+          = new Section1D_Mode(slab->get_mode(i)->pol, kz, mode, this);
 
-      newmode->normalise();
+        newmode->normalise();
     
-      modeset.push_back(newmode);
+        modeset.push_back(newmode);
+      }
     }
   }
 
