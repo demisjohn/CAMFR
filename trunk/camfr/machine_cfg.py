@@ -20,7 +20,7 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
 base_flags = "-ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
+	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
 
 flags_noopt = base_flags
 
@@ -31,8 +31,8 @@ fflags = flags
 
 # Include directories.
 
-include_dirs = ["/home/pbienst/blitz-20001213",
-	        "/home/pbienst/boost_1_29_0",
+include_dirs = ["/usr/include/blitz",
+	        "/home/pbienst/boost_1_30_0",
 	        "/usr/include/python2.2"]
 
 # Library directories.
