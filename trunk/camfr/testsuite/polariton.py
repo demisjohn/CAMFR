@@ -6,7 +6,7 @@
 #
 #############################################################################
 
-from camfr import *
+from camfr_work import *
 from cmath import *
 import unittest, eps
 
