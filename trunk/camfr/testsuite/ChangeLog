@@ -1,3 +1,7 @@
+2005-01-26  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* shift.py: New test.
+
 2004-06-03  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* planar_VCSEL.py: New test.
