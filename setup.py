@@ -27,11 +27,12 @@ camfr_extension = Extension(
     library_dirs=["/home/pbienst/camfr_work/camfr",                   \
                   "/home/pbienst/boost_1_25_0/libs/python/src",       \
                   "/home/pbienst/blitz-20001213/lib",                 \
-                  "/opt/intel/mkl/lib/32"],                           \
+                  "/opt/intel/mkl/lib/32",                            \
+		  "/home/pbienst/ARPACK"],
     include_dirs=["camfr", "/home/pbienst/boost_1_25_0",              \
                   "/home/pbienst/blitz-20001213"],                    \
-    libraries=["camfr", "boost_python", "blitz", "mkl_lapack",        \
-               "mkl_p3", "m", "g2c", "stdc++"] )
+    libraries=["camfr", "boost_python", "blitz", "arpack",            \
+	       "mkl_lapack", "mkl_p3", "m", "g2c", "stdc++"] )
 
 # Set up the extension.
 
