@@ -74,11 +74,16 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
 
   vector<Complex> params_orig = f.get_params();
 
+  step = (params2 - params1) / resolution;
+
   // Check if sweep needed.
   
-  step = (params2 - params1) / resolution;
+  Complex delta = 0.0;
+
+  for (unsigned int i=0; i<params1.size(); i++)
+    delta += (params1[i] - params2[i]) / params1[i];
   
-  if (abs(step) < 1e-13)
+  if (abs(delta) < 1e-10)
     return estimate1;
   
   // Write initial zero locations to file.
