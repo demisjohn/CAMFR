@@ -147,7 +147,7 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
         py_error("Error: unexpected waveguide.");
         return;
       }
-  }
+  }  
 }
 
 
@@ -702,7 +702,7 @@ void Stack::calcRT()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Stack::calcRT
+// Stack::allocRT
 //  
 /////////////////////////////////////////////////////////////////////////////
 
@@ -827,10 +827,21 @@ cVector Stack::get_trans_field()
 
 FieldExpansion Stack::inc_field_expansion()
 {
-  if (interface_field.size() == 0)
-    calc_interface_fields();
-  
-  return interface_field[0];
+  if (interface_field.size())
+    return interface_field[0];
+
+  calcRT();
+
+  cVector refl_field(global.N, fortranArray);
+  refl_field.reference(multiply(as_multi()->get_R12(), inc_field));
+
+  if (bw_inc)
+    refl_field += multiply(as_multi()->get_T21(), inc_field_bw);
+
+  FieldExpansion inc_field(*get_inc(), inc_field, refl_field);
+  interface_field.push_back(inc_field);
+
+  return inc_field;
 }
 
 
@@ -843,10 +854,31 @@ FieldExpansion Stack::inc_field_expansion()
 
 FieldExpansion Stack::ext_field_expansion()
 {
+  if (interface_field.size() > 1)
+    return interface_field.back();
+
+  calcRT();
+
+  cVector trans_field(global.N, fortranArray);
+  trans_field.reference(multiply(as_multi()->get_T12(), inc_field));
+
+  if (bw_inc)
+    trans_field += multiply(as_multi()->get_R21(), inc_field_bw);
+
+  FieldExpansion ext_field(*get_ext(), trans_field, inc_field_bw);
+
+/*
+  //std::cout << ext_field << std::endl;
+
   if (interface_field.size() <= 1)
     calc_interface_fields();
   
+  //std::cout << interface_field.back() << std::endl;
+
   return interface_field.back();
+*/
+  
+  return ext_field;
 }
 
 
@@ -951,7 +983,7 @@ void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
 
   if (    (real(coord.z) < 0)
        || ((abs(coord.z) < 1e-10) && (coord.z_limit == Min)) )
-  {
+  {    
     FieldExpansion f(interface_field[0].propagate(coord.z));
     *fw = f.fw; *bw = f.bw;
     return;
@@ -961,7 +993,7 @@ void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
 
   if (    (real(coord.z) > real(last_z))
        || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus)) )
-  { 
+  {    
     FieldExpansion f(interface_field.back().
                      propagate(coord.z-get_total_thickness()));
     *fw = f.fw; *bw = f.bw;
@@ -1319,10 +1351,21 @@ void Stack::calc_interface_fields()
     calcRT();
 
     cVector left_bw(global.N, fortranArray);
-    left_bw.reference(multiply(as_multi()->get_R12(), inc_field));
 
-    if (bw_inc)
-      left_bw +=  multiply(as_multi()->get_T21(), inc_field_bw);
+    if (as_multi())
+    {
+      left_bw.reference(multiply(as_multi()->get_R12(), inc_field));
+
+      if (bw_inc)
+        left_bw += multiply(as_multi()->get_T21(), inc_field_bw);
+    }
+    else
+    {
+      left_bw(1) = R12(1,1) * inc_field(1);
+
+      if (bw_inc)
+        left_bw(1) += T21(1,1) * inc_field_bw(1);
+    }
 
     FieldExpansion inc(*get_inc(), inc_field, left_bw);
     interface_field.push_back(inc);
@@ -1336,13 +1379,5 @@ void Stack::calc_interface_fields()
   const vector<Chunk>* chunks
     = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
 
-  switch (global.field_calc)
-  {
-    case T_T:
-      return T_scheme_fields  (*chunks, &interface_field);
-    case S_T:
-      return S_scheme_fields_T(*chunks, &interface_field);
-    case S_S:
-      return S_scheme_fields_S(*chunks, &interface_field, &inc_field_bw);
-  }
+  return S_scheme_fields_S(*chunks, &interface_field, &inc_field_bw);
 }
