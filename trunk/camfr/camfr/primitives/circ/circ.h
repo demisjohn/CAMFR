@@ -87,13 +87,8 @@ class Circ_M : public MultiWaveguide
     std::vector<Material*> get_materials() const
       {return material;}
 
-    Complex eps_at(const Coord& coord) const
-      {return material
-         [index_lookup(coord.c1, coord.c1_limit, radius)]->eps();}
-    
-    Complex mu_at(const Coord& coord) const
-      {return material
-         [index_lookup(coord.c1, coord.c1_limit, radius)]->mu();}
+    Complex eps_at(const Coord& coord) const;
+    Complex  mu_at(const Coord& coord) const;
     
     void find_modes();
     
