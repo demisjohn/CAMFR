@@ -49,14 +49,11 @@ class RefSection : public SectionImpl
     bool no_gain_present() const
       {return m->no_gain_present();}
 
-    Complex eps_at(const Coord& c) const
-      {return m->eps();}
+    Material* material_at(const Coord& c) const
+      {return m;}
 
     Complex get_eps() const
       {return m->eps();}
-
-    Complex  mu_at(const Coord& c) const
-      {return m->mu();}
 
     Complex get_mu() const
       {return m->mu();}
