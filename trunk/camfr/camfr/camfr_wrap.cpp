@@ -704,6 +704,16 @@ BOOST_PYTHON_MODULE(_camfr)
   scope().attr("E_wall") = E_wall;
   scope().attr("H_wall") = H_wall;
 
+  // Wrap Sort_type.
+
+  enum_<Sort_type>("Sort_type")
+    .value("highest_index", highest_index)
+    .value("lowest_loss",   lowest_loss)
+    ;
+  
+  scope().attr("highest_index") = highest_index;
+  scope().attr("lowest_loss")   = lowest_loss;
+
   // Wrap getters and setters for global parameters.
 
   def("set_lambda",                 set_lambda);
@@ -1091,14 +1101,16 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<Section, bases<MultiWaveguide> >
   ("Section", init<Expression&, optional<int, int> >())
     .def(init<const Term&>())
-    .def("mode",   section_get_mode,
+    .def("mode",         section_get_mode,
          return_value_policy<reference_existing_object>())
-    .def("disp",   &Section::get_disp)
-    .def("width",  section_width)
-    .def("height", section_height)
-    .def("eps",    &Section::eps_at)
-    .def("mu",     &Section::mu_at)
-    .def("n",      &Section::n_at)
+    .def("disp",         &Section::get_disp)
+    .def("width",        section_width)
+    .def("height",       section_height)
+    .def("eps",          &Section::eps_at)
+    .def("mu",           &Section::mu_at)
+    .def("n",            &Section::n_at)
+    .def("set_sorting",  &Section::set_sorting)
+    .def("set_estimate", &Section::set_estimate)
     ;
 
   // Wrap RefSection.

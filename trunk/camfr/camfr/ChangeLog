@@ -1,3 +1,7 @@
+2003-03-31  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* camfr_wrap.cpp: Add Section:set_estimate() and Section.set_sorting().
+
 2003-03-13  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* cavity.h: Reorder arguments.
