@@ -1079,13 +1079,14 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   exit(-1);
 #endif
 
-  // Calculate M and N.
+  // Calculate M and N.: to do: better approximations
+
   // TODO: speed up by using more .reference.
 
   const Complex k0 = 2*pi/global.lambda;
 
-  const Real W = real(get_width());
-  const Real H = real(get_height());
+  const Real W = floor(real(get_width())  * 1e10) / 1e10;
+  const Real H = floor(real(get_height()) * 1e10) / 1e10;
 
   int M = int(sqrt(Real(M1*W/H)));
   int N = int(sqrt(Real(M1*H/W)));
@@ -1722,6 +1723,10 @@ void Section2D::find_modes_from_estimates()
       if (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz)
         estimates.push_back(estimates_0[i]);
   }
+
+  // TMP
+
+  //global.N = estimates.size();
 
   while (estimates.size() > global.N)
   {

@@ -284,7 +284,7 @@ class Geometry3D:
               i = i_end
             
             # Go to next x position.
-            
+  
             slabs.append(new_slab)
             x += dx
           
@@ -319,41 +319,53 @@ class Geometry3D:
           # Create slabs & section.
           
           e_sec = Expression()
-          
           for i in range(len(slabs)):
             e_slab = Expression()
+            d_y = []
             for j in range(len(slabs[i])):
                 
                 chunk_d = slabs[i][j][1] - slabs[i][j][0]                
                 chunk_m = slabs[i][j][2]
-                
+
+                d_y.append(chunk_d)
+
+                if j == len(slabs[i])-1:
+                  chunk_d += (y1-y0) - sum(d_y)
+                  
                 e_slab.add(chunk_m(chunk_d))
-                
+
             s = Slab(e_slab)
 
             slab_cache.append(s)
             e_sec.add(s(d[i]))
           
-          sec = Section(e_sec,self.M1,self.M2)  
+          sec = Section(e_sec,self.M1,self.M2)
           sections.append(sec)
           section_cache.append((sec,xyobjs))
           
           # Go to next z position.
+          
           z += dz
           
         # Make an expression of all sections.
         
         e = Expression()
+        d_z = []
         oldsection = sections[0]
         zsecs = 0
+ 
         for i in range(len(sections)):
           if sections[i]==oldsection:
             zsecs += dz
           else:
             e.add(oldsection(zsecs))
+            d_z.append(zsecs)
             oldsection = sections[i]
             zsecs = dz
+
+        zsecs = (z1-z0) - sum(d_z)
         e.add(oldsection(zsecs))
+
         return e
 
         
