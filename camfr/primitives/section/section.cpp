@@ -340,6 +340,8 @@ Section2D::Section2D
   M1 = M1_;
   M2 = M2_;
 
+  sort = highest_index;
+
   uniform = false;
 
   symmetric =     (&left_ex == &right_ex) 
@@ -407,6 +409,7 @@ Section2D::Section2D(const Section2D& section)
   left      = section.left;
   right     = section.right;
   core      = section.core;
+  sort      = section.sort;
   uniform   = section.uniform;
   symmetric = section.symmetric;
 }
@@ -428,6 +431,7 @@ Section2D& Section2D::operator=(const Section2D& section)
   left      = section.left;
   right     = section.right;
   core      = section.core;
+  sort      = section.sort;
   uniform   = section.uniform;
   symmetric = section.symmetric;
   
@@ -550,16 +554,23 @@ void Section2D::find_modes()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Section2D::find_modes_from_series
+// Small function objects
 //
 /////////////////////////////////////////////////////////////////////////////
   
-struct sorter
+struct index_sorter
 {
     bool operator()(const Complex& beta_a, const Complex& beta_b)
     {
-      return ( real(beta_a) > real(beta_b) ); // highest index
-      //return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
+      return ( real(beta_a) > real(beta_b) );
+    }
+};
+
+struct loss_sorter
+{
+    bool operator()(const Complex& beta_a, const Complex& beta_b)
+    {
+      return ( abs(imag(sqrt(beta_a))) < abs(imag(sqrt(beta_b))) );
     }
 };
 
@@ -573,43 +584,17 @@ struct kt_to_neff : ComplexFunction
     {return sqrt(C - kt*kt)/2./pi*global.lambda;}
 };
 
-void Section2D::find_modes_from_series()
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section2D::estimate_kz2
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector Section2D::estimate_kz2()
 {
-  // Check M1.
-
   int n = M1/2;
-  
-  if (2*n != M1)
-    py_print("Warning: changing M1 to even number.");
-
-  M1 = 2*n;
-
-  // Find min and max eps mu.
-
-  Complex min_eps_mu = materials[0]->eps_mu();
-  Complex max_eps_mu = materials[0]->eps_mu();
-  
-  for (unsigned int i=1; i<materials.size(); i++)
-  {
-    Complex eps_mu = materials[i]->eps_mu();
-    
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
-
-    if (real(eps_mu) > real(max_eps_mu))
-      max_eps_mu = eps_mu;
-  }
-
-  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
-
-  Complex max_eps_eff;
-  if (    (global.polarisation == TM) // Surface plasmon.
-       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
-    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
-  else
-    max_eps_eff = max_eps_mu;
-
-  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
 
   // Calc overlap matrices.
 
@@ -690,17 +675,86 @@ void Section2D::find_modes_from_series()
   else
     kz2 = eigenvalues_x(E);
 
+  return kz2;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section2D::find_modes_from_series()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Section2D::find_modes_from_series()
+{
+  // Check M1.
+
+  int n = M1/2;
+  
+  if (2*n != M1)
+    py_print("Warning: changing M1 to even number.");
+
+  M1 = 2*n;
+
+  // Find min and max eps mu.
+
+  Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
+  
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
+  }
+
+  const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  // Get estimates.
+
+  vector<Complex> kz2_coarse;
+
+  if (user_estimates.size() != 0) // User provided estimates
+  {
+    for (unsigned int i=0; i<user_estimates.size(); i++)
+      kz2_coarse.push_back(pow(2*pi/global.lambda*user_estimates[i], 2));
+  }
+  else
+  {
+    Complex max_eps_eff;
+    if (    (global.polarisation == TM) // Surface plasmon.
+         && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
+      max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+    else
+      max_eps_eff = max_eps_mu;
+
+    Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
+
+    cVector kz2(M1,fortranArray);
+    kz2 = estimate_kz2();
+
+    for (unsigned int i=1; i<=M1; i++)
+      if (real(sqrt(kz2(i))) < 1.2*max_kz)
+        kz2_coarse.push_back(kz2(i));
+  }
+  user_estimates.clear();
+  
   // Refine estimates.
 
   py_print("Refining estimates...");
 
-  vector<Complex> kz2_coarse;
-  for (unsigned int i=1; i<=M1; i++)
-    if (real(sqrt(kz2(i))) < 1.2*max_kz)
-      kz2_coarse.push_back(kz2(i));
+  if (sort == highest_index)
+    std::sort(kz2_coarse.begin(), kz2_coarse.end(), index_sorter());
+  else
+    std::sort(kz2_coarse.begin(), kz2_coarse.end(), loss_sorter());
 
-  std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
-  kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+  if (kz2_coarse.size() > global.N)
+    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
