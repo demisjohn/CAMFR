@@ -40,7 +40,8 @@ typedef complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
 typedef enum {ADR, track} Solver;
 typedef enum {normal, extra, SVD} Stability;
-typedef enum {T_T, S_T, S_S} Field_calc;
+typedef enum {T_T, S_T, S_S} Field_calc;  
+typedef enum {GEV, T} Bloch_calc;
 
 
 
@@ -156,6 +157,9 @@ struct Global
     // Determines if the field profiles in stacks are calculated with S or
     // T type excitations.
     Field_calc field_calc;
+
+    // Determines which algorithm is used to calculate Bloch modes.
+    Bloch_calc bloch_calc;
 
     // TMP switch that tells CAMFR is the local modes are orthogonal.
     // CAMFR should later figure this out by itself.

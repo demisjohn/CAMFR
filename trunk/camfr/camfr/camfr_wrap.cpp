@@ -113,6 +113,9 @@ inline void set_unstable_exp_threshold(Real d)
 inline void set_field_calc(long f)
   {global.field_calc = Field_calc(f);} 
 
+inline void set_bloch_calc(long s)
+  {global.bloch_calc = Bloch_calc(s);}
+
 inline void set_orthogonal(bool b)
   {global.orthogonal = b;}
 
@@ -135,6 +138,7 @@ template class enum_as_int_converters<Limit>;
 template class enum_as_int_converters<Solver>;
 template class enum_as_int_converters<Stability>;
 template class enum_as_int_converters<Field_calc>;
+template class enum_as_int_converters<Bloch_calc>;
 template class enum_as_int_converters<Polarisation>;
 template class enum_as_int_converters<Fieldtype>;
 
@@ -451,6 +455,11 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     camfr.add(make_ref(S_T), "S_T");
     camfr.add(make_ref(S_S), "S_S");
 
+    // Wrap Bloch_calc enum.
+
+    camfr.add(make_ref(GEV), "GEV");
+    camfr.add(make_ref(T),   "T");
+
     // Wrap Polarisation enum.
     
     camfr.add(make_ref(unknown), "unknown");
@@ -487,6 +496,7 @@ BOOST_PYTHON_MODULE_INIT(camfr_work)
     camfr.def(set_chunk_tracing,          "set_chunk_tracing");
     camfr.def(set_unstable_exp_threshold, "set_unstable_exp_threshold");
     camfr.def(set_field_calc,             "set_field_calc");
+    camfr.def(set_bloch_calc,             "set_bloch_calc");
     camfr.def(set_orthogonal,             "set_orthogonal");
     camfr.def(set_circ_order,             "set_circ_order");
     camfr.def(set_circ_fieldtype,         "set_circ_field_type");
