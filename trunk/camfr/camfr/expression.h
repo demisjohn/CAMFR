@@ -68,11 +68,11 @@ class Expression
 
     // Two low level routines, don't check if interfaces need to be added.
     
-    void add_term(const Term& t) const;
+    void add_term(const Term& t);
     
-    void insert_term_front(const Term& t) const;
+    void insert_term_front(const Term& t);
 
-    void remove_term_front() const;
+    void remove_term_front();
 
     // Same as add term, but adds an interface if needed.
     
@@ -105,14 +105,7 @@ class Expression
       
   protected:
     
-    mutable std::vector<Term*> terms;
-        
-    // 'mutable' allows 'add_term' to be declared 'const', which
-    // in turn allows operator+ to take Expressions passed as
-    // 'const Expression&' instead of 'Expression'.
-    // Note: 'Expression&' is not an option since temporaries only
-    // bind to const references.
-
+    std::vector<Term*> terms;
     Scatterer* transparent_dummy;
 };
 

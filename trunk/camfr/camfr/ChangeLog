@@ -1,3 +1,9 @@
+2003-01-08  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* expression.h: Copy expressions to avoid side-effects.
+	* expressions.cpp: Ditto.
+	* stack.cpp: Ditto.
+
 2002-12-05  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* defs.h: Add backward modes option.
