@@ -89,6 +89,18 @@ void Cavity::find_modes_in_region
    unsigned int number, Real n_imag_start, Real n_imag_stop,
    unsigned int passes)
 { 
+  if (passes < 1)
+  {
+    py_print("Invalid number of passes. Setting it to 1.");
+    passes = 1;
+  }
+
+  if (!global.gain_mat)
+  {
+    py_error("Error: no gain material defined for cavity.");
+    return;
+  }
+
   // Sweep wavelength and look for possible minima.
 
   vector<Real> Ax, Bx;
@@ -147,6 +159,12 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     passes = 1;
   }
 
+  if (!global.gain_mat)
+  {
+    py_error("Error: no gain material defined for cavity.");
+    return;
+  }
+
   Real lambda_prec = 1e-5; // Gives 0.01 nm precision. 
   Real n_imag_prec = 5e-5; // Gives 1 cm-1 precision.
   
@@ -159,16 +177,14 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     global.lambda = lambda;
 
     // Sweep gain.
-
-    if (!global.gain_mat)
-    {
-      py_error("Error: no gain material defined for cavity.");
-      return;
-    }
     
     Real n_imag = brent_minimum
       (sigma_n_imag, n_imag_start, n_imag_stop, n_imag_prec);
     global.gain_mat->set_n_imag(n_imag);
+
+    // Calculate cavity field at resonance.
+
+    calc_sigma();
 
     // Print diagnostics.
 
@@ -274,11 +290,11 @@ Real Cavity::calc_sigma(int* dominant_mode)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Cavity::set_source
+// Cavity::set_source_expansion
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-void Cavity::set_source(const FieldExpansion& f)
+void Cavity::set_source_expansion(const FieldExpansion& f)
 {
   int N = global.N;
   

@@ -1,5 +1,10 @@
 2002-11-26  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
+	* cavity.h: Make more robust for user errors.
+        * cavity.cpp: Ditto.
+
+2002-11-26  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
 	* defs.h: Add global.mode_surplus.
         * defs.cpp: Ditto.
 
