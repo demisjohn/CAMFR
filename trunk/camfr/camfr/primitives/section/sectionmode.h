@@ -70,6 +70,9 @@ class Section2D_Mode : public SectionMode
     
     void normalise();
 
+    friend Complex overlap_pw(const Section2D_Mode* sec_I_mode, 
+                              const Section2D_Mode* sec_II_mode);
+
   protected:
 
     mutable std::vector<FieldExpansion>  left_interface_field;
