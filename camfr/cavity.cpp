@@ -159,6 +159,12 @@ void Cavity::find_mode(Real lambda_start, Real lambda_stop,
     global.lambda = lambda;
 
     // Sweep gain.
+
+    if (!global.gain_mat)
+    {
+      py_error("Error: no gain material defined for cavity.");
+      exit (-1);
+    }
     
     Real n_imag = brent_minimum
       (sigma_n_imag, n_imag_start, n_imag_stop, n_imag_prec);
