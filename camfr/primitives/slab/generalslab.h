@@ -27,8 +27,9 @@
 class SlabWall; // forward declaration - see slabwall.h
 struct SlabGlobal
 {
-    SlabWall*  leftwall; // NULL: electric wall
+    SlabWall*  leftwall; // NULL: electric wall.
     SlabWall* rightwall;
+    Complex beta; // The out-of plane component k_y.
 };
 
 extern SlabGlobal global_slab;
