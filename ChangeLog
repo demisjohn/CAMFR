@@ -3,13 +3,16 @@ CAMFR 1.2:
  - circular structures can now have multiple radial discontinuities (Mihai
    Ibanescu)
  - interactive plotting utilities (Lieven Vanholme) to look at fields,
-   animations, Poynting vectors, saving to file, ... . Try plot(Stack),
-   plot(Slab), plot(BlochStack)
+   animations, Poynting vectors, save to file, zoom in, ... . Try 
+   plot(Stack), plot(Slab), plot(BlochStack)
  - improved stability for Slabs, especially for wide photonic crystal
    structures
+ - a new solver suitable for high loss materials. See set_solver(series)
  - added various small utility functions: Stack.width(), BlochStack.width(),
    Cavity.width(), Cavity.length(), Cavity.bot_stack(), Cavity.top_stack()
-
+ - the MATLAB bindings are updated to the latest versions of MATLAB and
+   pymat (the latter needs to be installed separately from 
+   http://pymat.sf.net) (Ross Stanley)
 
 
 CAMFR 1.1 (2003-03-05):
