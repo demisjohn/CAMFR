@@ -87,6 +87,25 @@ OverlapMatrices::OverlapMatrices
         Ex_Hz_self(2,i,j)=Ex_Hz_II_II_ij; Ez_Hx_self(2,i,j)=Ez_Hx_II_II_ij;
       }
     }
+
+  if (global.davy == true)
+  {
+    std::cout << "Medium I core n "  << medium_I ->get_core()->n() 
+              << std::endl;
+    std::cout << "Medium II core n " << medium_II->get_core()->n() 
+              << std::endl;
+
+    blitz::Range r(1,n);
+
+    std::cout << "TE_TE_1 " << TE_TE(1,r,r) << std::endl;    
+    std::cout << "TE_TE_2 " << TE_TE(2,r,r) << std::endl;    
+    std::cout << "TM_TM_1 " << TM_TM(1,r,r) << std::endl;    
+    std::cout << "TM_TM_2 " << TM_TM(2,r,r) << std::endl;
+    std::cout << "Ex_Hz_cross_1 " << Ex_Hz_cross(1,r,r) << std::endl;    
+    std::cout << "Ex_Hz_cross_2 " << Ex_Hz_cross(2,r,r) << std::endl;    
+    std::cout << "Ez_Hx_cross_1 " << Ez_Hx_cross(1,r,r) << std::endl;    
+    std::cout << "Ez_Hx_cross_2 " << Ez_Hx_cross(2,r,r) << std::endl;
+  }
 }
 
 
