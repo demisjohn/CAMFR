@@ -375,7 +375,9 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
         if (trouble)
         {
           std::ostringstream st;
-          st << "Mueller didn't converge on final search for " << final;
+          //st << "Mueller didn't converge on final search for " 
+          //   << (*newest)[i];
+          final = (*newest)[i];
           py_print(st.str());
         }
 
