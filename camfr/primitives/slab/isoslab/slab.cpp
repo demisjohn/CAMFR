@@ -1252,6 +1252,9 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   else
     max_eps_eff = max_eps_mu;
 
+  if (abs(real(max_eps_eff)) < abs(real(max_eps_mu)))
+    max_eps_eff = max_eps_mu;
+
   Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
 
   // Refine estimates.
