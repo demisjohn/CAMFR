@@ -24,7 +24,7 @@ END-INFO-DIR-ENTRY
 @sp 10
 @title {CAMFR manual}
 @subtitle {version 1.0}
-@subtitle {May, 2002}
+@subtitle {June, 2002}
 @author Peter Bienstman
 
 @page
@@ -995,7 +995,11 @@ cylindrical), although the examples given are only for a single geometry.
 * Photonic crystal devices::    
 * Locating laser modes::        
 * Current source in a cavity::  
-* Tips for troubleshooting convergence problems::  
+* 1D planar structures::        
+* Semi-infinite stacks::        
+* Defining complicated structures::  
+* General excitations for slabs::  
+* Tips for troubleshooting problems::  
 @end menu
 
 @node Photonic crystal devices, Locating laser modes, Modelling optical devices, Modelling optical devices
@@ -1308,7 +1312,7 @@ as such, rather than treating the whole stack as completely non-diagonal.
 
 @page
 
-@node Current source in a cavity, Tips for troubleshooting convergence problems, Locating laser modes, Modelling optical devices
+@node Current source in a cavity, 1D planar structures, Locating laser modes, Modelling optical devices
 @section Putting a current source inside a cavity
 
 @cindex Green's function
@@ -1580,7 +1584,7 @@ for spacer in arange(0.130, 0.160, 0.002):
 
 @page
 
-@node 1D planar structures, , ,
+@node 1D planar structures, Semi-infinite stacks, Current source in a cavity, Modelling optical devices
 @section 1D planar structures
 
 @cindex planar structures
@@ -1647,7 +1651,7 @@ a calculation, the reflection and transmission matrices have only one element.
 
 @page
 
-@node Semi-infinite stacks, , ,
+@node Semi-infinite stacks, Defining complicated structures, 1D planar structures, Modelling optical devices
 @section Semi-infinite stacks
 
 @cindex semi-infinite stacks, @code{InfStack}
@@ -1729,7 +1733,7 @@ print abs(s.R12(0,0))**2
 
 @page
 
-@node Defining complicated structures, , , 
+@node Defining complicated structures, General excitations for slabs, Semi-infinite stacks, Modelling optical devices
 @section Defining complicated structures
 
 @cindex complicated structures, @code{geometry}
@@ -1738,7 +1742,7 @@ CAMFR has a facility which makes it easier to define complicated non-trivial
 structures. Rather than manually specifying the geometry slice by slice, we
 can define a 2D structure in terms of higher level geometric shapes, like
 circles, triangles or rectangles. This definition can then be automatically
-discretised and converted to a series of slabs which can be used to initialise
+discretised and converted to an expression which can be used to initialise
 a stack.
 
 To illustrate this, we model the structure from Fig. 2.5.
@@ -1788,9 +1792,41 @@ print s.R12(0,0)
 
 @image{figs/discretise}
 
+The command @code{g = Geometry(air)} creates a @code{Geometry} object with 
+air as background material. We can subsequently add shapes to this object,
+e.g. @code{g += Rectangle(Point(0.0,-0.5), Point(2.0, 0.5), mat)} adds a
+rectangle consisting of material @code{mat} with given lower left and 
+top right vertices. Note that the first coordinate refers the propagation
+direction (horizontal in the case of Fig. 2.5).
+
+Other shapes we can add are @code{Circle}, @code{Triangle} or @code{Square}.
+If two shapes overlap, the shape that was added last takes precedence.
+
+Finally, we can convert the geometry object to an expression which can be
+used to create a stack. The arguments to this @code{to_expression} function
+are the range and precision in both the propagation and transverse direction
+and the values of the PML (i.e. of the imaginary part of thickness) at both
+boundaries (see Fig 2.5).
+
+The increments @code{d_prop} and @code{d_trans} deserve some additional
+explanation, because they don't correspond to a uniform rectangular grid. The
+way the discretisation in performed is as follows. First, the structure is
+split up into a number of slices in the propagation direction, each 
+@code{d_prop} long. Then, subsequent slices are combined if the material
+discontinuities in the transverse direction are no more than @code{d_trans}
+apart.. This creates some kind of dynamic resolution, because in regions 
+where the shapes vary slower, we will have fewer (but thicker) slices. 
+Also, it makes sure that subsequent identical slices are always combined 
+into one slab. All of this makes for a more efficient discretisation than
+a traditional uniform grid.
+
+Finally, we want to point out that it's quite easy for the user to add 
+custom shapes by defining a Python object which overloads 
+@code{intersection_at_x}. See @code{camfr/geometry.py} for more details.
+
 @page
 
-@node General excitations for slabs, , , 
+@node General excitations for slabs, Tips for troubleshooting problems, Defining complicated structures, Modelling optical devices
 @section General excitations for slabs
 
 @cindex general excitations, gaussian incidence, plane wave incidence
@@ -1887,19 +1923,30 @@ when modelling discontinuous functions, just like e.g. in Fourier analysis.
 
 @page
 
-@node Tips for troubleshooting problems,  , Current source in a cavity, Modelling optical devices
+@node Tips for troubleshooting problems,  , General excitations for slabs, Modelling optical devices
 @section Tips for troubleshooting problems
 
-@cindex convergence problems, troubleshooting
+@cindex convergence problems, troubleshooting, core dump, crash
 
 When CAMFR produces results that are clearly nonphysical, here are number
 of things you can do to improve convergence:
 
 @itemize @bullet
 @item
-If CAMFR is missing modes, increase the precision with @code{set_precision}
-and, if your waveguides have clustered modes, 
-@code{set_precision_enhancement}. 
+If CAMFR is missing modes, increase the precision with @code{set_precision(p)},
+where p is an integer number that defaults to 100. If you expect missing 
+radiation modes, increase @code{set_precision_rad()} beyond the default of 100.
+@item
+Increase or decrease the absorption in the PML, the real distance between 
+the metal walls and the number of modes. Using too few modes will cause 
+convergence problems. A PML absorption that is too low will not damp out all
+parasitic reflections. On the other hand, if the absorption is excessively
+high, some modes can be missed. Increasing the real distance between the walls
+and lowering the PML absorption is a viable option in this case, but also
+requires that you use more modes. 
+@item
+If the PML absorption is high, try @code{set_chunk_tracing(0)} at the expense
+of longer run times.
 @item
 If there are problems due to inverting numerically unstable matrices, you
 can change the way these situations are handled. Use 
@@ -1907,15 +1954,19 @@ can change the way these situations are handled. Use
 With @code{set_stability(SVD)} a pseudo inverse in calculated using singular
 value decomposition.
 @item
-Increase or decrease the absorption in the PML, the real distance between 
-the metal wall and the number of modes. Using too few modes will cause 
-convergence problems. A PML absorption that is too low will not damp out all
-parasitic reflections. On the other hand, if the absorption is excessively
-high, some modes can be missed. Increasing the real distance between the walls
-and lowering the PML absorption is a viable option in this case, but also
-requires that you use more modes. 
+If your waveguide don't have multiple cores, try using 
+@code{set_degenerate(0)}.
 @end itemize
 
+If CAMFR crashes, make sure you haven't called @code{free_tmps()} too
+soon, i.e. before you're done with the objects. Another common cause of
+crashes to look out for is defining a @code{wall} or an @code{InfStack} inside
+an expression.
+
+Finally, we want to remind the user that in Python @code{1/3 = 0} rather than
+@code{.3333}. This will change in Python 3.0, but if you already want such 
+behaviour now, include @code{from __future__ import division} at the top
+of your scripts.
 @page
 
 @node Using visualisation toolkits with CAMFR, Reference guide, Modelling optical devices, top
@@ -1934,7 +1985,8 @@ There are a number of such toolkits:
 The standard Tk widget set, which is included with almost all Python 
 distributions
 @item
-PyMat, Matlab Python bindings from 
+PyMat, the Matlab Python bindings. These come bundled with the Windows version
+of CAMFR, but can also be downloaded from 
 @uref{http://claymore.engineer.gvsu.edu/~steriana/Python/pymat.html}
 @item
 ScyGraphica from @uref{http://scigraphica.sourcefourge.net}
@@ -1980,16 +2032,23 @@ in order to inspect modes and field profiles of eigenmodes:
 @code{plot_neff(waveguide)} will plot the distribution of eigenmodes in the 
 complex effective index plane. 
 
-@code{plot_E2(waveguide, mode index, PML)} will plot the absolute value of
-@code{E2} of the field a mode with a given index. @code{waveguide} is the
-name of the waveguide and @code{PML} relates to the coordinate at @code{x=0},
-taken to be @code{-PML*1j}.
+To plot the field profile of a mode, use code like this:
 
-There exist similar functions with the same signature, like @code{plot_E1}, 
-@code{plot_Ez}, @code{plot_H1}, @code{plot_H2} and @code{plot_Hz}.
+@example
+plot_field(waveguide, modeindex, lambda f : f.E2().real)
+@end example
 
-Also, @code{def plot_n(waveguide)} will plot the refractive index profile of
-the waveguide. 
+This will plot the real component of @code{E2} of a mode with a given index. 
+Note the use of Python's lambda functions: little anonymous functions which
+in this case will be called on a @code{Field} object. This greatly increases
+the flexibility of the @code{plot_field} function: e.g. to plot the absolute
+value one would write @code{lambda f : abs(f.E2()**2)}.
+
+Optionally, @code{plot_field} can have a fourth argument, which
+is the number of steps used. This parameter defaults to 100.
+
+Finally, @code{def plot_n(waveguide, steps=100)} will plot the refractive 
+index profile of the waveguide. 
 
 In all these plots, you can zoom by dragging a rectangle in the window. 
 Also, left clicking and dragging under the horizontal axis will print the
@@ -2029,9 +2088,9 @@ air  = Material(1.0)
 @group
 # Define slabs.
 
-PML = 0.1
+PML = -0.1
 
-space = Slab(air(4 - 2*PML*1j))
+space = Slab(air(4 + 2*PML*1j))
 
 @end group
 @group
@@ -2040,8 +2099,8 @@ space = Slab(air(4 - 2*PML*1j))
 v = [] # To keep track of the data points.
 
 for W in arange(0.100, 0.200, 0.005):
-    slab = Slab(air(2 - PML*1j - W/2.0) + GaAs(W)  \
-              + air(2 - PML*1j - W/2.0))
+    slab = Slab(air(2 + PML*1j - W/2.0) + GaAs(W)  \
+              + air(2 + PML*1j - W/2.0))
     stack = Stack(space(0) + slab(0.5) + space(0))
     stack.calc()
 
@@ -2067,11 +2126,7 @@ plotting it @code{plot_vector(v)}.
 @cindex Matlab interface
 
 Similar to @code{camfr_tk.py}, there is a wrapper @code{camfr_matlab.py} which
-uses Matlab for visualisation. It can be found in the @code{visualisation}
-subdirectory, but is not installed by default, because it requires PyMat
-(the Python-Matlab bindings from 
-@uref{http://claymore.engineer.gvsu.edu/~steriana/Python/pymat.html}) and of
-course Matlab itself.
+uses Matlab for visualisation. 
 
 @code{camfr_matlab} supports all the same functions as @code{camfr_tk}, like
 @code{plot_neff}, @code{plot_E1} and friends, @code{plot_n} and 
@@ -2115,10 +2170,10 @@ air  = Material(1.0)
 @group
 # Define stack.
 
-PML = 0.1
+PML = -0.1
 
-space = Slab(air(4 - 2*PML*1j))
-slab = Slab(air(1.5 - PML*1j) + GaAs(1) + air(1.5 - PML*1j))
+space = Slab(air(4 + 2*PML*1j))
+slab = Slab(air(1.5 + PML*1j) + GaAs(1) + air(1.5 + PML*1j))
 
 stack = Stack(space(0) + slab(0.5) + space(0))
 
@@ -2165,10 +2220,10 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * set_gain_material::           
 * set_stability::               
 * set_precision::               
-* set_precision_enhancement::   
-* set_dx_enhanced::             
 * set_precision_rad::           
 * set_sweep_from_previous::     
+* set_chunk_tracing::           
+* set_degenerate::              
 * set_circ_order::              
 * set_circ_field_type::         
 * set_left_wall::               
@@ -2187,6 +2242,12 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * Cavity::                      
 * BlochStack::                  
 * BlochMode::                   
+* InfStack::                    
+* Geometry::                    
+* Circle::                      
+* Square::                      
+* Rectangle::                   
+* Triangle::                    
 * Planar::                      
 * Circ::                        
 * Slab::                        
@@ -2288,7 +2349,7 @@ close to singular (rare case). @code{Stability} can be either
 
 
 
-@node set_precision, set_precision_enhancement, set_stability, Reference guide
+@node set_precision, set_precision_rad, set_stability, Reference guide
 @unnumberedsec @code{set_precision}
 @cindex @code{set_precision}
 
@@ -2298,34 +2359,11 @@ modes (defaults to 100, higher values have less chances of missing modes, but
 are slower).
 
 @noindent
-@xref{set_precision_rad}, @ref{set_precision_enhancement}.
+@xref{set_precision_rad}
 
 
 
-@node set_precision_enhancement, set_dx_enhanced, set_precision, Reference guide
-@unnumberedsec @code{set_precision_enhancement}
-@cindex @code{set_precision_enhancement}
-
-@noindent
-@code{set_precision_enhancement(int)}: defaults to 1. If larger than one,
-a second finer scan for guided modes will be done in the neighbourhood of the
-guided modes found during a first, coarse scan. The precision for the first
-scan is set by @code{set_precision()}, the one for the fine scan is 
-@code{set_precision} times @code{set_precision_enhancement}. The percentual
-width of this fine scan is set by @code{set_dx_enhanced}.
-
-
-
-@node set_dx_enhanced, set_precision_rad, set_precision_enhancement, Reference guide
-@unnumberedsec @code{set_dx_enhanced}
-@cindex @code{set_dx_enhanced}
-@noindent
-@code{set_dx_enhanced(Real)}: sets the percentual width of the second, finer 
-scan for guided modes. Defaults to 0.01. @xref{set_precision_enhancement}.
-
-
-
-@node set_precision_rad, set_sweep_from_previous, set_dx_enhanced, Reference guide
+@node set_precision_rad, set_sweep_from_previous, set_precision, Reference guide
 @unnumberedsec @code{set_precision_rad}
 @cindex @code{set_precision_rad}
 
@@ -2339,7 +2377,7 @@ modes, but are slower).
 
 
 
-@node set_sweep_from_previous, set_circ_order, set_precision_rad, Reference guide
+@node set_sweep_from_previous, set_chunk_tracing, set_precision_rad, Reference guide
 @unnumberedsec @code{set_sweep_from_previous}
 @cindex @code{set_sweep_from_previous}
 
@@ -2352,7 +2390,31 @@ false.
 
 
 
-@node set_circ_order, set_circ_field_type, set_sweep_from_previous, Reference guide
+@node set_chunk_tracing, set_degenerate, set_sweep_from_previous, Reference guide
+@unnumberedsec @code{set_chunk_tracing}
+@cindex @code{set_chunk_tracing}
+
+@noindent
+@code{set_chunk_tracing(bool)}: determines whether or not all modes are 
+located at the same time or in chunks. Defaults to true, which is faster but
+can sometimes lose modes, especially for high PML absorption. Note: a Python 
+bool is 1 for true, and 0 for false.
+
+
+
+@node set_degenerate, set_circ_order, set_chunk_tracing, Reference guide
+@unnumberedsec @code{set_degenerate}
+@cindex @code{set_degenerate}
+
+@noindent
+@code{set_degenerate(bool)}: determines whether or not special precautions
+are taken to locate degenerate modes. This is generally a good idea and
+therefore this option defaults to true, but it can sometimes cause trouble.
+Note: a Python bool is 1 for true, and 0 for false.
+
+
+
+@node set_circ_order, set_circ_field_type, set_degenerate, Reference guide
 @unnumberedsec @code{set_circ_order}
 @cindex @code{set_circ_order}
 
@@ -2459,7 +2521,7 @@ calculated.
 @cindex @code{Field}
 
 @noindent
-A datastructure containing an electromagnetic field at a given location.
+A data structure containing an electromagnetic field at a given location.
 
 @noindent
 Member functions:
@@ -2696,18 +2758,39 @@ Member functions:
 @item
 @code{length()}: returns length of the stack along the @code{z}-axis.
 @item
+@code{n(Coord)}: returns refraction index at a given coordinate.
+@item
+@code{eps(Coord)}: returns permittivity at a given coordinate.
+@item
+@code{mu(Coord)}: returns permeability at a given coordinate.
+@item
 @code{R12()}: returns reflection matrix for fields incident from the left
 (@code{z=0}).
 @item
-@code{R12(i,j)}: return element of the reflection matrix R12, index starting
-at zero. Similar functions exist for the transmission matrix @code{T12}, and 
-for @code{R21} and @code{T21} describing incidence from the right side
-(@code{z=stack.length()})
+@code{R12(i,j)}: returns element of the reflection matrix R12, index starting
+at zero. Because of the definition of this matrix, this is the reflection from
+mode @code{j} to mode @code{i}. Similar functions exist for the transmission 
+matrix @code{T12}, and  for @code{R21} and @code{T21} describing incidence 
+from the right side. (@code{z=stack.length()})
 @item
 @code{set_inc_field(vector)}: sets incident field from left side (@code{z=0}).
 @item
 @code{set_inc_field(vector, vector)}: sets incident field from left and
 right side.
+@item
+@code{set_inc_field_gaussian(A, sigma, x0, eps)}: set a gaussian incident field
+@code{A*exp(-0.5*((x-x0)/sigma)**2} and use precision @code{eps} to calculate
+the overlap integrals.
+@item
+@code{set_inc_field_plane_wave(A, slope, eps)}: set a plane wave incident field
+@code{A + slope*x} and use precision @code{eps} to calculate the overlap 
+integrals.
+@item
+@code{set_inc_field_function(f, eps)}: set an incident field described by
+a function @code{f} and use precision @code{eps} to calculate the overlap 
+integrals. @code{f} describes the @code{E2} for TE polarisation and the 
+@code{H2} field for TM polarisation. No PML needs to be specified in @code{f},
+this is handled behind the scenes.
 @end itemize
 
 @noindent
@@ -2828,7 +2911,7 @@ constants of the BlochModes.
 
 
 
-@node BlochMode, Planar, BlochStack, Reference guide
+@node BlochMode, InfStack, BlochStack, Reference guide
 @unnumberedsec @code{BlochMode}
 @cindex @code{BlochMode}
 
@@ -2860,7 +2943,143 @@ component of this mode.
 
 
 
-@node Planar, Circ, BlochMode, Reference guide
+@node InfStack, Geometry, BlochMode, Reference guide
+@unnumberedsec @code{InfStack}
+@cindex @code{InfStack}
+
+@noindent
+An infinite periodic repetition of a given period, which can be used to
+terminate another stack.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{InfStack(Expression)} 
+@end itemize
+
+
+
+@node Geometry, Circle, InfStack, Reference guide
+@unnumberedsec @code{Geometry}
+@cindex @code{Geometry}
+
+@noindent
+Creates an expression from a collection of geometric shapes.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Geometry(Mat)}: creates a geometry with a given background material. 
+@end itemize
+
+@noindent
+Member functions:
+
+@itemize @bullet
+@item
+@code{+= Shape}: add a shape, which can be a @code{Circle}, @code{Square}.
+@code{Rectangle} or a @code{Triangle}. In case of overlap, shapes that are
+added later take precedence.
+@item
+@code{to_expression(prop0,prop1,d_prop,trans0,trans1,d_trans,PML1,PML2)}: see
+the explanation in @xref{Defining complicated structures} of a description of 
+these arguments.
+@end itemize
+
+@noindent
+@xref{Circle}, @xref{Square}, @xref{Rectangle}, @xref{Triangle}.
+
+
+
+@node Circle, Square, Geometry, Reference guide
+@unnumberedsec @code{Circle}
+@cindex @code{Circle}
+
+@noindent
+A circle shape for use in a @code{Geometry}.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Circle(Point(x,y), rad, Material)}: creates a circle with a given center,
+radius and material.
+@end itemize
+
+@noindent
+@xref{Geometry}
+
+
+
+@node Square, Rectangle, Circle, Reference guide
+@unnumberedsec @code{Square}
+@cindex @code{Square}
+
+@noindent
+A square shape for use in a @code{Geometry}.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Square(Point(x,y), a, Material)}: creates a square with a given 
+center, side and material.
+@end itemize
+
+@noindent
+@xref{Geometry}
+
+
+
+@node Rectangle, Triangle, Square, Reference guide
+@unnumberedsec @code{Rectangle}
+@cindex @code{Rectangle}
+
+@noindent
+A rectangular shape for use in a @code{Geometry}.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Rectangle(Point(x,y), Point(x,y), Material)}: creates a rectangle with a 
+given bottom left and top right point and material.
+@end itemize
+
+@noindent
+@xref{Geometry}
+
+
+
+@node Triangle, Planar, Rectangle, Reference guide
+@unnumberedsec @code{Triangle}
+@cindex @code{Triangle}
+
+@noindent
+A Triangular shape for use in a @code{Geometry}.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Triangle(Point(x,y), Point(x,y), Point(x,y), Material)}: creates a 
+triangle out of three vertices and a material.
+@end itemize
+
+@noindent
+@xref{Geometry}
+
+
+
+@node Planar, Circ, Triangle, Reference guide
 @unnumberedsec @code{Planar}
 @cindex @code{Planar}
 
