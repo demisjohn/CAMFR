@@ -5,12 +5,14 @@ CAMFR 1.0:
 -set_lower/upper_wall
 -define PML globally
 -update manual
+-test field in incidence or exit medium.
 -thin structures
 -memory management
 -KC complex modes stability
 
 CAMFR 3D:
 
+-consolidate cs sn
 -PC walls, non-ortho
 -Section: UniformSection, auto-partitioned section, walls(E, H, TBC, PC), 
  nmax=neff_core?, eps_trace_coarse, precision, TEM mode, SectionFlux,
@@ -18,6 +20,7 @@ CAMFR 3D:
 -dispersion relation of 2D slabs:
    -do not handle left and right walls through expressions
    -try to eliminate need for O_II_I in interface.cpp
+-Don't set walls through scatterer, remove kludge.
 
 
 MEDIUM TERM:
@@ -90,6 +93,7 @@ SOURCE MAINTENANCE
  (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)
 -use BaseMaterial where appropriate
 -completely redesign / rework Expression and its link to stack
+-make state of inc_field_bw consistent when calling set_interface_field
 
 
 LOW PRIORITY

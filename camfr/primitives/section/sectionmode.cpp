@@ -66,8 +66,6 @@ Section2D_Mode::Section2D_Mode
   for (int i=1; i<=M; i++)
     f(i) = E(i, index);
 
-  std::cout << f << std::endl;
-
   // Set fields.
 
   geom->right.set_inc_field(f);
@@ -101,7 +99,7 @@ Field Section2D_Mode::field(const Coord& coord) const
   global_slab.beta = kz;
 
   section->left .set_interface_field( left_interface_field);
-  section->right.set_interface_field(right_interface_field); 
+  section->right.set_interface_field(right_interface_field);
 
   // Convert from Section to Stack coordinates.
 
@@ -118,9 +116,12 @@ Field Section2D_Mode::field(const Coord& coord) const
   Field stack_f;
   Complex s;
   if (real(coord.c1) < real(section->left.get_total_thickness()))
-  {    
+  {
     stack_coord.z = section->left.get_total_thickness() - coord.c1;
     stack_coord.z_limit = (coord.c1_limit == Plus) ? Min : Plus;
+
+    if (abs(coord.c1) < 1e-8) // TMP: kludge
+      stack_coord.z -= 1e-8;
 
     stack_f = section->left.field(stack_coord);
     s = -1.0;
@@ -129,6 +130,9 @@ Field Section2D_Mode::field(const Coord& coord) const
   {  
     stack_coord.z = coord.c1 - section->left.get_total_thickness();
     stack_coord.z_limit = coord.c1_limit;
+
+    if (abs(coord.c1 - section->right.get_total_thickness()) < 1e-8)
+      stack_coord.z -= 1e-8; // TMP: kludge
 
     stack_f = section->right.field(stack_coord);
     s = 1.0;
@@ -180,12 +184,18 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
     stack_coord.z = section->left.get_total_thickness() - c;
     stack_coord.z_limit = (c_limit == Plus) ? Min : Plus;
 
+    if (abs(c) < 1e-8) // TMP: kludge
+      stack_coord.z -= 1e-8;
+
     section->left.fw_bw_field(stack_coord,bw,fw);
   }
   else
   {  
     stack_coord.z = c - section->left.get_total_thickness();
     stack_coord.z_limit = c_limit;
+
+    if (abs(c - section->right.get_total_thickness()) < 1e-8)
+      stack_coord.z -= 1e-8; // TMP: kludge
 
     section->right.fw_bw_field(stack_coord,fw,bw);
   }
