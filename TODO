@@ -1,9 +1,19 @@
+-stability: zipper.py, KC
+-series_solver: double_prism, zipper
+
+-move newfield.py to testsuite
+
+-series solver for degenerate waveguides (relax mueller)
+-infstack: fix ext_field_expansion, calc_interface field
+-reformulate TE as fourier series
 -Trent's algorithm to invert Toeplitz
--check .png extension
 -always take minimum number of modes in series solver
+-stability tips for infstacks
+-band calculation with fixed k_t
 
 CAMFR 3D:
 
+-same mode sorter as 1d?
 -windows memory leak
 -revisit calc_global in combination with arnoldi eigensolver.
 -calc_band --> calc_overlap: need normalisation for calc_global?
@@ -17,6 +27,7 @@ CAMFR 3D:
 -free slabmatrixcache?
 -generalise cache to work with different M in each section.
 -implement SectionFlux
+-pml=0 in simple_stack.py worng sign of kz
 -dispersion relation of 2D slabs: try to eliminate need for O_II_I in 
  interface.cpp
 -Remove kludge for normalising coodinates in field profiles
