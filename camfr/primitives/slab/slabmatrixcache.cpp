@@ -41,22 +41,22 @@ OverlapMatrices::OverlapMatrices
       TE_TE(1,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_I ->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_II->get_mode(j)),
-         cache, disc, i, j, 1, 2);
+         cache, disc, i, j, 1, 2, false);
 
       TE_TE(2,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_II->get_mode(i)),
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(j)),
-         cache, disc, i, j, 2, 1);
+         cache, disc, i, j, 2, 1, false);
 
       TM_TM(1,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
          dynamic_cast<const SlabMode*>(medium_II->get_mode(n+j)),
-         cache, disc, n+i, n+j, 1, 2);
+         cache, disc, n+i, n+j, 1, 2, false);
 
       TM_TM(2,i,j) = overlap
         (dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+j)),
-         cache, disc, n+i, n+j, 2, 1);
+         cache, disc, n+i, n+j, 2, 1, false);
 
       overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
                     dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
