@@ -1170,7 +1170,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
       e = eigenvalues_x(E_);
 
     vector<Complex> kz2;
-    for (int i=1; i<=n; i++)
+    for (int i=1; i<=e.rows(); i++)
       if (abs(e(i)) > 1e-6) // Zero is dummy solution for HH case.
         kz2.push_back(-k0*k0*e(i));
 
@@ -1222,7 +1222,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
     kz2 = estimate_kz2_from_uniform_modes();
   else
     kz2 = estimate_kz2_from_RCWA();
-  
+
   // Find min and max eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
@@ -1260,7 +1260,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
 
   if (kz2_coarse.size() > global.N)
-    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
+    kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());  
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
