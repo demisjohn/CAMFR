@@ -34,6 +34,17 @@ void SectionImpl::calc_overlap_matrices
 {
   SectionImpl* medium_I  = this;
   SectionImpl* medium_II = dynamic_cast<SectionImpl*>(w);
+
+  overlap_matrices(O_I_II, medium_I,  medium_II);
+  overlap_matrices(O_II_I, medium_II, medium_I); 
+
+  if(O_I_I)
+    overlap_matrices(O_I_I, medium_I, medium_I);
+
+  if(O_II_II)
+    overlap_matrices(O_II_II, medium_II, medium_II);
+  
+  return;
   
   for (int i=1; i<=int(global.N); i++)
     for (int j=1; j<=int(global.N); j++)
@@ -144,6 +155,38 @@ Section2D::Section2D(const Expression& left_ex, const Expression& right_ex,
       core_index = i;
 
   core = materials[core_index];
+
+  // Determine slabs.
+
+  Complex z = 0.0;
+
+  Expression left_flat = left_ex.flatten();
+  for (int i=left_flat.get_size()-1; i>=0; i--)
+  {
+    const Term* t = left_flat.get_term(i);
+    if (t->get_type() != WAVEGUIDE)
+      continue;
+    
+    z += t->get_d();
+    discontinuities.push_back(z);
+    slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
+    
+    std::cout << z << " " << *slabs.back()->get_core();
+  }
+
+  Expression right_flat = right_ex.flatten();
+  for (unsigned int i=0; i<right_flat.get_size(); i++)
+  {
+    const Term* t = right_flat.get_term(i);
+    if (t->get_type() != WAVEGUIDE)
+      continue;    
+
+    z += t->get_d();
+    discontinuities.push_back(z);
+    slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
+
+    std::cout << z << " " << *slabs.back()->get_core();
+  }
 }
 
 
@@ -809,15 +852,20 @@ void Section2D::find_modes_from_scratch_by_track()
 
   // Test orthogonality.
 
-  return;
+  cMatrix O(modeset.size(), modeset.size(), fortranArray);
+  overlap_matrices(&O, this, this);
+  std::cout << O << std::endl;
+
+  //return;
 
   for (unsigned int i=0; i<modeset.size(); i++)
     for (unsigned int j=0; j<modeset.size(); j++)
-      if (i !=j)
         std::cout << i << " " << j << " " 
               << overlap(dynamic_cast<Section2D_Mode*>(modeset[i]),
                          dynamic_cast<Section2D_Mode*>(modeset[j]))
                   << std::endl << std::flush;
+
+  exit(-1);
 }
 
 

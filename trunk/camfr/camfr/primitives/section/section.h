@@ -14,6 +14,7 @@
 #define SECTION_H
 
 #include <string>
+#include <vector>
 #include "../../stack.h"
 #include "../slab/generalslab.h"
 
@@ -25,6 +26,9 @@
 //  sections.
 //  
 /////////////////////////////////////////////////////////////////////////////
+
+class SectionMode;
+class SectionCache;
 
 class SectionImpl : public MultiWaveguide
 { 
@@ -44,6 +48,21 @@ class SectionImpl : public MultiWaveguide
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
+
+  protected:
+
+    // z-values of the interfaces, not including left wall, including
+    // right wall.
+    
+    std::vector<Complex> discontinuities;
+    std::vector<Slab*> slabs;
+
+    friend Complex overlap(const SectionMode*, const SectionMode*,
+                           const SectionCache*,const std::vector<Complex>*,
+                           int,int,int,int);
+
+    friend void overlap_matrices
+      (cMatrix* O, SectionImpl* medium_I, SectionImpl* medium_II);
 };
 
 

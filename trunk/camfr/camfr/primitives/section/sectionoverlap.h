@@ -54,6 +54,11 @@ Complex overlap(const SectionMode* mode_I,
                 const std::vector<Complex>* disc=NULL,
                 int i=0, int j=0, int I_index=0, int II_index=0);
 
+class SectionImpl; // forward declaration - see section.h
+
+void overlap_matrices
+  (cMatrix* O, SectionImpl* medium_I, SectionImpl* medium_II);
+
 
 
 #endif
