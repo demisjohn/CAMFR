@@ -100,6 +100,24 @@ def phasormovie(z, x=arange(0,1,0.1), y=arange(0,1,0.1),
 
 ##############################################################################
 #
+# Plot a complex function.
+#
+##############################################################################
+
+def plot_f(f, r_x, r_y, axis="none", filename=""):
+    
+    fz = zeros([len(r_x),len(r_y)], Float)
+
+    for i_y in range(len(r_y)):
+      for i_x in range(len(r_x)):
+        fz[i_x,i_y] = abs(f(r_x[i_x] + r_y[i_y]*1j))
+
+    plot2D(fz, r_x, r_y, axis, filename)
+
+
+
+##############################################################################
+#
 # Plot the refractive index profile in a stack.
 #
 ##############################################################################
