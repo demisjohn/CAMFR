@@ -25,8 +25,8 @@ class degenerate(unittest.TestCase):
         m = Material(3.5)
         a = Material(1.0)
 
-        s = Slab(a(2) + m(0.5) + a(100) + m(0.5) + a(2))
-        s.calc() 
+        s = Slab(a(2) + m(0.5) + a(30) + m(0.5) + a(2))
+        s.calc()
 
         E0 = abs(s.mode(0).field(Coord(2.25,0,0)).E2())
         E0_OK = 19.2559587762

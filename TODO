@@ -1,7 +1,7 @@
--tutorial7.py: expr += material_term
--push limit for # lateral periods, more tests, traceroot tuning.
--docs: Planar, InfStack, geometry, correct windows path, change sign PML,
- division
+-drop precion in slab to 1e-11, fix NaN in calc_fw == true
+-push limit for # lateral periods, more tests (inc. 3D), traceroot tuning
+-docs: Planar, geometry, InfStack, change sign PML, division, gc, 
+ stack.n(), set_precision, set_degenerate
 
 
 CAMFR 3D
