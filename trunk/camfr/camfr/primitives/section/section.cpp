@@ -199,7 +199,9 @@ Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
 Section::Section(Expression& expression, int M)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
-  // 1D section?
+  //
+  // 1D section
+  //
 
   if (expression.get_size() == 1)
   {
@@ -220,10 +222,97 @@ Section::Section(Expression& expression, int M)
 
     return;
   }
-  
-  // Transparently factor expression into right and left expression.
 
-  py_error("Automatic splitting of expressions not yet implemented.");
+  //
+  // 2D section.
+  //
+  
+  // Find core.
+
+  Expression ex = expression.flatten();
+
+  Complex max_eps = 0.0;
+  unsigned int max_eps_i = 0;
+  for (unsigned int i=1; i<ex.get_size(); i++)
+  {
+    Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
+    if (s)
+    {
+      Complex eps_i = s->eps_avg();
+
+      if (real(eps_i) > real(max_eps))
+      {
+        max_eps = eps_i;
+        max_eps_i = i;
+      }
+    }
+  }
+
+  if (max_eps_i == 1)
+    max_eps_i += 2;
+
+  // Create right hand side expression.
+
+  Expression right_ex;
+  for (int i=max_eps_i; i<ex.get_size(); i++)
+  {
+    Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
+
+    if (s)
+    {
+      Complex d = ex.get_term(i)->get_d();
+
+      if (i == ex.get_size()-1)
+        d += I*global_section.right_PML;
+
+      right_ex += Term((*s)(d));
+    }
+  }
+
+  if (global_section.rightwall == E_wall)
+    rightwall_sc = new E_Wall(*right_ex.get_ext());
+  if (global_section.rightwall == H_wall)
+    rightwall_sc = new H_Wall(*right_ex.get_ext());
+  right_ex.add_term(Term(*rightwall_sc));
+
+  // Create left hand side expression.
+
+  Expression left_ex;
+
+  Slab* slab = dynamic_cast<Slab*>(ex.get_term(max_eps_i)->get_wg());
+  Scatterer* sc 
+    = interface_cache.get_interface(slab,slab);
+  left_ex.add_term(Term(*sc));
+
+  left_ex += Term((*slab)(0.0));
+
+  for (int i=max_eps_i-1; i>=0; i--)
+  { 
+    Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
+
+    if (s)
+    {
+      Complex d = ex.get_term(i)->get_d();
+
+      if (i == 1)
+        d += I*global_section.left_PML;
+
+      left_ex += Term((*s)(d));
+    }
+  }
+
+  if (global_section.leftwall == E_wall)
+    leftwall_sc = new E_Wall(*left_ex.get_ext());
+  if (global_section.leftwall == H_wall)
+    leftwall_sc = new H_Wall(*left_ex.get_ext());
+  left_ex.add_term(Term(*leftwall_sc));  
+
+  // Create Section.
+
+  s = new Section2D(left_ex, right_ex, M);
+
+  uniform = s->is_uniform();
+  core = s->get_core();
 }
 
 
@@ -259,6 +348,12 @@ Section::Section(Expression& left_ex, Expression& right_ex, int M)
 
   // Create Section2D
 
+  if (    (abs(global_section. left_PML) > 1e-6) 
+       || (abs(global_section.right_PML) > 1e-6) ) 
+    std::cout 
+      << "Warning: left or right PML not supported from this constructor." 
+      << std::endl;
+
   s = symmetric ? new Section2D(left_ex, left_ex,  M) 
                 : new Section2D(left_ex, right_ex, M);
 
@@ -275,7 +370,7 @@ Section::Section(Expression& left_ex, Expression& right_ex, int M)
 /////////////////////////////////////////////////////////////////////////////
 
 Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
-  : left(left_ex), right(right_ex) // wrong, doesn't take PML into account.
+  : left(left_ex), right(right_ex)
 {
   // Check values.
 
@@ -307,7 +402,7 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
 
   // Determine slabs.
 
-  Complex z = I*global_section.left_PML;
+  Complex z = 0; //I*global_section.left_PML;
 
   Expression left_flat = left_ex.flatten();
   for (int i=left_flat.get_size()-1; i>=0; i--)
@@ -335,7 +430,7 @@ Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
     slabs.push_back(dynamic_cast<Slab*>(t->get_wg()));
   }
 
-  Complex z_back = discontinuities.back() + I*global_section.right_PML;
+  Complex z_back = discontinuities.back(); // + I*global_section.right_PML;
   discontinuities.pop_back();
   discontinuities.push_back(z_back);
 }
@@ -512,8 +607,6 @@ void Section2D::find_modes_from_series()
 
   Material ref_mat(1.0);
   RefSection ref(ref_mat, get_width(), get_height());
-
-  std::cout << "W H " << get_width() << " " << get_height() << std::endl;
   
   const int N = global.N;
   const int n = N/2;
