@@ -120,21 +120,8 @@ void BlochStack::find_modes_T()
     BlochMode* blochmode = new BlochMode(pol,beta,&stack,F,B);
 
     modeset.push_back(blochmode);
-
-    // On the edges of the Brillouin zone, the solutions are +/- a +/- b*I.
-    // Only two of those are found, but it is not predictable which two.
-    // Add therefore the corresponding solution at the other edge, and
-    // later only maintain the set a-b*I and -a+b*I.
-
-    if (abs(abs(real(beta)) - pi/stack.get_total_thickness()) < 1e-8)
-    {
-      Complex beta2 = -conj(beta);
-      BlochMode* blochmode2 = new BlochMode(pol,beta2,&stack,F,B);
-      modeset.push_back(blochmode2);
-    }
   }
 
-  brillouin_eliminate_modes();
   sort_modes_bloch();
 }
 
@@ -220,53 +207,10 @@ void BlochStack::find_modes_GEV()
 
     BlochMode* blochmode = new BlochMode(pol,beta,&stack,F,B); 
 
-    modeset.push_back(blochmode); 
-
-    // On the edges of the Brillouin zone, the solutions are +/- a +/- b*I. 
-    // Only two of those are found, but it is not predictable which two. 
-    // Add therefore the corresponding solution at the other edge, and 
-    // later only maintain the set a-b*I and -a+b*I.
-
-    if (abs(abs(real(beta)) - pi/stack.get_total_thickness()) < 1e-8) 
-    { 
-      const Complex beta2 = -conj(beta); 
-      BlochMode* blochmode2 = new BlochMode(pol,beta2,&stack,F,B); 
-      modeset.push_back(blochmode2); 
-    } 
+    modeset.push_back(blochmode);
   } 
 
-  brillouin_eliminate_modes(); 
   sort_modes_bloch(); 
-} 
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BlochStack::brillouin_eliminate_modes
-//
-/////////////////////////////////////////////////////////////////////////////
-
-void BlochStack::brillouin_eliminate_modes()
-{
-  vector<Mode*> old_set(modeset);
-  modeset.clear();
-  
-  for (unsigned int i=0; i<old_set.size(); i++)
-  { 
-    Real a(real(old_set[i]->get_kz()));
-    Real b(imag(old_set[i]->get_kz()));
-    
-    if (abs(abs(a) - pi/stack.get_total_thickness()) < 1e-8)
-    {
-      if (a*b > 0) // a and b have same sign.
-        delete old_set[i];
-      else
-        modeset.push_back(old_set[i]);
-    }
-    else
-      modeset.push_back(old_set[i]);
-  }
 }
 
 
@@ -338,22 +282,9 @@ void BlochStack::find_modes_diag()
       BlochMode* blochmode = new BlochMode(pol,beta,&stack,F,B);
 
       modeset.push_back(blochmode);
-      
-      // On the edges of the Brillouin zone, the solutions are +/- a +/- b*I.
-      // Only two of those are found, but it is not predictable which two.
-      // Add therefore the corresponding solution at the other edge, and
-      // later only maintain the set a-b*I and -a+b*I.
-
-      if (abs(abs(real(beta)) - pi/stack.get_total_thickness()) < 1e-8)
-      {
-        Complex beta2 = -conj(beta);
-        BlochMode* blochmode2 = new BlochMode(pol,beta2,&stack,F,B);
-        modeset.push_back(blochmode2); 
-      }
     }
   }
 
-  brillouin_eliminate_modes();
   sort_modes_bloch();
 }
 

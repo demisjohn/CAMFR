@@ -68,8 +68,6 @@ class BlochStack : public MultiWaveguide
     void find_modes_T();
 
     void find_modes_diag();
-
-    void brillouin_eliminate_modes();
 };
 
 

@@ -1,3 +1,8 @@
+2002-05-10  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+	* bloch.h: Remove brillouin_eliminate_modes.
+	* bloch.cpp: Ditto.
+
 2002-05-09  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* camfr_wrap.cpp: Improve InfStack wrapping.
