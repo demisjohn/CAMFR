@@ -30,7 +30,7 @@ Section2D_Mode::Section2D_Mode
    cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_, bool corrected_)
     : SectionMode(pol, kz, geom), Ex(Ex_), Ey(Ey_), Hx(Hx_), Hy(Hy_), 
       corrected(corrected_)
-{
+{  
   if (corrected == false)
     return;
   
@@ -308,7 +308,7 @@ void Section2D_Mode::normalise()
   //
 
   if (corrected == false)
-  {
+  { 
     Complex norm = sqrt(overlap_pw(this, this));
 
     *Ex /= norm;
