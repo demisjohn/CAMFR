@@ -186,13 +186,12 @@ def plot_f(f, r_x, r_y):
 #
 ##############################################################################
 
-def plot_n(waveguide, steps=100):
+def plot_n_waveguide(waveguide, r_x):
     
     v = []
     
-    for i in range(steps):
-	x = i * waveguide.width() / (1.0*steps)
-	v.append((x, abs(waveguide.n(Coord(x, 0, 0)))))
+    for i_x in range(len(r_x)):
+      v.append((r_x[i_x], abs(waveguide.n(Coord(r_x[i_x],0,0)))))
         
     plot_vector(v)
 
@@ -204,7 +203,7 @@ def plot_n(waveguide, steps=100):
 #
 ##############################################################################
 
-def plot_n(stack, r_x, r_z):
+def plot_n_stack(stack, r_x, r_z):
     
     n = zeros([len(r_z),len(r_x)], Float)
 
@@ -218,17 +217,30 @@ def plot_n(stack, r_x, r_z):
 
 ##############################################################################
 #
+# Wrapper for plot_n.
+#
+##############################################################################
+
+def plot_n(o, r_x, r_z=0):
+    if not r_z:
+        plot_n_waveguide(o, r_x)
+    if type(o) == Stack:
+        plot_n_stack(o, r_x, r_z)
+
+
+
+##############################################################################
+#
 # Plot the field profile of a waveguide mode.
 #
 ##############################################################################
 
-def plot_field(waveguide, mode, function, steps=100):
+def plot_field_waveguide(mode, r_x, component):
     
     v = []
     
-    for i in range(steps):
-	x = i * waveguide.width() / (1.0 * steps)
-	v.append((x,function(waveguide.mode(mode).field(Coord(x,0,0)))))
+    for i_x in range(len(r_x)):
+      v.append((r_x[i_x],component(mode.field(Coord(r_x[i_x],0,0)))))
         
     plot_vector(v)
 
@@ -240,7 +252,7 @@ def plot_field(waveguide, mode, function, steps=100):
 #
 ##############################################################################
 
-def plot_field(stack, r_x, r_z, component):
+def plot_field_stack(stack, r_x, r_z, component):
     
     f = zeros([len(r_z),len(r_x)], Float)
 
@@ -249,3 +261,17 @@ def plot_field(stack, r_x, r_z, component):
         f[i_z,i_x] = component(stack.field(Coord(r_x[i_x], 0, r_z[i_z])))
 
     plot2D(f)
+
+
+
+##############################################################################
+#
+# Wrapper for plot_field.
+#
+##############################################################################
+
+def plot_field(o, component, r_x, r_z=0):
+    if not r_z:
+        plot_field_waveguide(o, component, r_x)
+    if type(o) == Stack:
+        plot_field_stack(o, component, r_x, r_z)
