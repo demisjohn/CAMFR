@@ -171,15 +171,16 @@ void SlabImpl::calc_overlap_matrices
   // Part I: beta-independent part.
 
   // TODO: cache this part across invocations and for different media.
-  // TODO: add normalisation matrices.
 
   const int n = int(N/2);
 
   cMatrix TE_TE_I_II(n,n,fortranArray), TM_TM_I_II(n,n,fortranArray);
   cMatrix TE_TE_II_I(n,n,fortranArray), TM_TM_II_I(n,n,fortranArray);
 
-  cMatrix Ex_Hz_I_II(n,n,fortranArray), Ez_Hx_I_II(n,n,fortranArray);
-  cMatrix Ex_Hz_II_I(n,n,fortranArray), Ez_Hx_II_I(n,n,fortranArray);
+  cMatrix Ex_Hz_I_II (n,n,fortranArray), Ez_Hx_I_II (n,n,fortranArray);
+  cMatrix Ex_Hz_II_I (n,n,fortranArray), Ez_Hx_II_I (n,n,fortranArray);
+  cMatrix Ex_Hz_I_I  (n,n,fortranArray), Ez_Hx_I_I  (n,n,fortranArray);
+  cMatrix Ex_Hz_II_II(n,n,fortranArray), Ez_Hx_II_II(n,n,fortranArray);
   
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
@@ -204,8 +205,10 @@ void SlabImpl::calc_overlap_matrices
          dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+j)),
          &cache, &disc, n+i, n+j, 2, 1);
 
-      Complex Ex_Hz_I_II_ij, Ez_Hx_I_II_ij;
-      Complex Ex_Hz_II_I_ij, Ez_Hx_II_I_ij;
+      Complex Ex_Hz_I_II_ij,  Ez_Hx_I_II_ij;
+      Complex Ex_Hz_II_I_ij,  Ez_Hx_II_I_ij;
+      Complex Ex_Hz_I_I_ij,   Ez_Hx_I_I_ij;
+      Complex Ex_Hz_II_II_ij, Ez_Hx_II_II_ij;
 
       overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
                     dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
@@ -217,14 +220,33 @@ void SlabImpl::calc_overlap_matrices
                     &Ex_Hz_II_I_ij, &Ez_Hx_II_I_ij,
                     &cache, &disc, n+i, j, 2, 1);
 
-      Ex_Hz_I_II(i,j) = Ex_Hz_I_II_ij;   Ez_Hx_I_II(i,j) = Ez_Hx_I_II_ij;
-      Ex_Hz_II_I(i,j) = Ex_Hz_II_I_ij;   Ez_Hx_II_I(i,j) = Ez_Hx_II_I_ij;
+      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_I ->get_mode(n+i)),
+                    dynamic_cast<const SlabMode*>(medium_I ->get_mode(  j)),
+                    &Ex_Hz_I_I_ij, &Ez_Hx_I_I_ij,
+                    &cache, &disc, n+i, j, 1, 1);
+
+      overlap_TM_TE(dynamic_cast<const SlabMode*>(medium_II->get_mode(n+i)),
+                    dynamic_cast<const SlabMode*>(medium_II->get_mode(  j)),
+                    &Ex_Hz_II_II_ij, &Ez_Hx_II_II_ij,
+                    &cache, &disc, n+i, j, 2, 2);
+
+      Ex_Hz_I_II (i,j) = Ex_Hz_I_II_ij;  Ez_Hx_I_II (i,j) = Ez_Hx_I_II_ij;
+      Ex_Hz_II_I (i,j) = Ex_Hz_II_I_ij;  Ez_Hx_II_I (i,j) = Ez_Hx_II_I_ij;
+      Ex_Hz_I_I  (i,j) = Ex_Hz_I_I_ij;   Ez_Hx_I_I  (i,j) = Ez_Hx_I_I_ij;
+      Ex_Hz_II_II(i,j) = Ex_Hz_II_II_ij; Ez_Hx_II_II(i,j) = Ez_Hx_II_II_ij;
     }
   
   // Part II: beta-dependent part.
 
-  cVector sin_I (N, fortranArray), cos_I (N, fortranArray);
-  cVector sin_II(N, fortranArray), cos_II(N, fortranArray);
+  if (!O_I_I)
+  {
+    cerr << "Internal error: non-orthogonality of modes not taken "
+         << "into account" << endl;
+    exit (-1);
+  }
+
+  cVector sin_I (N,fortranArray), cos_I (N,fortranArray);
+  cVector sin_II(N,fortranArray), cos_II(N,fortranArray);
 
   for (int i=1; i<=int(N); i++)
   {
@@ -240,30 +262,48 @@ void SlabImpl::calc_overlap_matrices
     cos_II(i) = sqrt(1.0 - sin_II(i) * sin_II(i));    
   }
 
+  // Calculate O_I_II and O_II_I.
+
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
     {
       (*O_I_II)(i,    j) =   TE_TE_I_II(i,j) * cos_I (  i);
       (*O_I_II)(i,  n+j) =   0.0;
       (*O_I_II)(n+i,  j) = - Ex_Hz_I_II(i,j) * sin_II(  j)
-                           + Ez_Hx_I_II(i,j) * sin_I (n+i);
-      
+                           + Ez_Hx_I_II(i,j) * sin_I (n+i);      
       (*O_I_II)(n+i,n+j) =   TM_TM_I_II(i,j) * cos_II(n+j);
 
       (*O_II_I)(i,    j) =   TE_TE_II_I(i,j) * cos_II(  i);
       (*O_II_I)(i,  n+j) =   0.0;
       (*O_II_I)(n+i,  j) = - Ex_Hz_II_I(i,j) * sin_I (  j)
                            + Ez_Hx_II_I(i,j) * sin_II(n+i);
-      (*O_II_I)(n+i,n+j) =   TM_TM_II_I(i,j) * cos_I (n+j);        
+      (*O_II_I)(n+i,n+j) =   TM_TM_II_I(i,j) * cos_I (n+j);    
     }
-
-  // Normalise.
 
   for (int i=1; i<=N; i++)
     for (int j=1; j<=N; j++)
     {
       (*O_I_II)(i,j) /= sqrt(cos_I (i) * cos_II(j));
       (*O_II_I)(i,j) /= sqrt(cos_II(i) * cos_I (j));
+    }
+
+  // Calculate O_I_I and O_II_II.
+
+  *O_I_I = 0.0; *O_II_II = 0.0;
+  
+  for (int i=1; i<=N; i++)
+    (*O_I_I)(i,i) = (*O_II_II)(i,i) = 1.0;
+
+  for (int i=1; i<=n; i++)
+    for (int j=1; j<=n; j++)
+    {
+      (*O_I_I)(n+i,j) =   (- Ex_Hz_I_I(i,j) * sin_I(  j)
+                           + Ez_Hx_I_I(i,j) * sin_I(n+i)) 
+                              / sqrt(cos_I(n+i) * cos_I(j));
+
+      (*O_II_II)(n+i,j) = (- Ex_Hz_II_II(i,j) * sin_II(  j)
+                           + Ez_Hx_II_II(i,j) * sin_II(n+i))
+                              / sqrt(cos_II(n+i) * cos_II(j));
     }
 }
 
