@@ -1,3 +1,7 @@
+2003-07-14  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* cavity.cpp: Improve checking for gain_material.
+
 2003-07-11  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* stack.h: Improve memory management.

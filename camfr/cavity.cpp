@@ -74,6 +74,12 @@ Cavity::Cavity(Stack& bot_, Stack& top_)
      "Error: top and bottom half of cavity have different incidence media.");
     return;
   }
+
+  if (!global.gain_mat)
+  {
+    py_error("Error: no gain material defined for cavity.");
+    exit (-1);
+  }
 }
 
 
@@ -93,12 +99,6 @@ void Cavity::find_modes_in_region
   {
     py_print("Invalid number of passes. Setting it to 1.");
     passes = 1;
-  }
-
-  if (!global.gain_mat)
-  {
-    py_error("Error: no gain material defined for cavity.");
-    return;
   }
 
   // Sweep wavelength and look for possible minima.
