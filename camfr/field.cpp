@@ -16,6 +16,13 @@
 #include "field.h"
 #include "bloch.h"
 
+#ifdef _WIN32
+#include <float.h>
+#define ISNAN _isnan
+#else
+#define ISNAN std::isnan
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Field::operator+
@@ -197,11 +204,11 @@ FieldExpansion FieldExpansion::propagate(const Complex& z) const
     Complex I_kz_d = I * wg->get_mode(i)->get_kz() * z;
 
     Complex exp_min_I_kz_d = exp(-I_kz_d);
-    if (std::isnan(abs(exp_min_I_kz_d)))
+    if (ISNAN(abs(exp_min_I_kz_d)))
       exp_min_I_kz_d = 0.0;
 
     Complex exp_plus_I_kz_d = exp(I_kz_d);
-    if (std::isnan(abs(exp_plus_I_kz_d)))
+    if (ISNAN(abs(exp_plus_I_kz_d)))
       exp_plus_I_kz_d = 0.0;
 
     fw_c(i) = fw(i) * exp_min_I_kz_d;
