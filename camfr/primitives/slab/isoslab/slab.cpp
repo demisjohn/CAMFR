@@ -518,7 +518,7 @@ void Slab_M::find_modes_from_scratch_by_track()
     
     Real kt_begin = .0001;
     int extra = 1;
-    int modes_left = modes_left = (kt_lossless.size() >= global.N + 2) ? 0
+    int modes_left = (kt_lossless.size() >= global.N + 2) ? 0
       : global.N - kt_lossless.size() + 2;
     
     while (modes_left)
