@@ -14,6 +14,7 @@
 #include "waveguide.h"
 #include "scatterer.h"
 #include "interface.h"
+#include "bloch.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -69,7 +70,14 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
         sc_flip = new DiagInterface(*wg2, *wg1);
     }
     else
-      sc_flip = new FlippedScatterer(*dynamic_cast<MultiScatterer*>(sc));
+    {
+      // Don't make a flipped scatterer for interfaces with a BlochStack
+      
+      if ( dynamic_cast<BlochStack*>(wg1) || dynamic_cast<BlochStack*>(wg2) )
+	sc_flip = new DenseInterface(*wg2,*wg1);
+      else      
+        sc_flip = new FlippedScatterer(*dynamic_cast<MultiScatterer*>(sc));
+    }
 
     cache.store(std::pair<Waveguide*, Waveguide*>(wg2, wg1), sc_flip);
   }

@@ -14,6 +14,7 @@
 #include <iostream>
 #include "waveguide.h"
 #include "field.h"
+#include "bloch.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -183,6 +184,11 @@ Field FieldExpansion::field(const Coord& coord) const
 
 FieldExpansion FieldExpansion::propagate(const Complex& z) const
 {
+  // Don't propagate inside a BlochStack.
+
+  if (dynamic_cast<BlochStack*>(wg))
+    return FieldExpansion(wg,fw,bw);
+
   cVector fw_c(fw.rows(), fortranArray);
   cVector bw_c(bw.rows(), fortranArray);
   

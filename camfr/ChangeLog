@@ -1,5 +1,10 @@
 2004-06-03  Pieter Dumon  <Pieter.Dumon@UGent.be>
 
+	* field.cpp: Don't propagate inside a BlochStack.
+	* icache.cpp: Don't make flipped scatterers for BlochStacks.
+
+2004-06-03  Pieter Dumon  <Pieter.Dumon@UGent.be>
+
 	* geometry3d.py: New file.
 	* geometry.py: Add compare functions.
 
