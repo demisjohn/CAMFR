@@ -76,7 +76,7 @@ class SlabPlot:
         
         fileMenu = Menu(self.menuBar,tearoff=0)
         fileMenu.add_command( label="Quit",
-                              command = self.window.quit)
+                              command = self.window.master.destroy)
 
         configMenu = Menu(self.menuBar,tearoff=0)
         configMenu.add_checkbutton( label='show effective index distribution',
