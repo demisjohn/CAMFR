@@ -40,7 +40,7 @@ class Overlap_x : public ComplexFunction
       Field f1 = m1->field(Coord(x,y,0));
       Field f2 = m2->field(Coord(x,y,0));
 
-      return f1.E1 * f2.H2 - f1.E2 * f2.E1;
+      return f1.E1 * f2.H2 - f1.E2 * f2.H1;
     }
 
   protected:
@@ -275,10 +275,8 @@ void overlap_slice(const Section2D& sec_I, const Section2D& sec_II,
                                           kz_I,kz_II,d,true);
 
             term1 += x_factor*z_factor;
-            std::cout << "ii jj " << ii << " " << jj << " " << x_factor << z_factor << std::endl;
           }
       }
-      std::cout << i << " " << j << "Term1" << term1 << std::endl;
       (*O)(i,j) += term1;
 
 
@@ -324,15 +322,11 @@ void overlap_slice(const Section2D& sec_I, const Section2D& sec_II,
                                           kz_I,kz_II,d,false);
 
             term2 += x_factor*z_factor;
-
-            std::cout << "II jj " << ii << " " << jj << " " << x_factor << z_factor << std::endl;
           }
       }
 
-      std::cout << i << " " << j << "Term2" << term2 << std::endl;
-
-      (*O)(i,j) += term2;    
-    }
+      (*O)(i,j) -= term2; 
+    } 
   }
 }
 

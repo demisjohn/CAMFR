@@ -852,11 +852,13 @@ void Section2D::find_modes_from_scratch_by_track()
 
   // Test orthogonality.
 
+  return;
+
   cMatrix O(modeset.size(), modeset.size(), fortranArray);
   overlap_matrices(&O, this, this);
   std::cout << O << std::endl;
 
-  //return;
+  return;
 
   for (unsigned int i=0; i<modeset.size(); i++)
     for (unsigned int j=0; j<modeset.size(); j++)

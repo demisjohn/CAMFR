@@ -17,7 +17,7 @@ f77 = "/home/pbienst/local/bin/g77"
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
 base_flags = "-fPIC -ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
+	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags = base_flags + "-O3 --param max-inline-insns=600 -march=pentiumpro \
                        -ffast-math -funroll-loops -fstrict-aliasing -g"
