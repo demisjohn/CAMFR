@@ -275,7 +275,7 @@ Section::Section(Expression& left_ex, Expression& right_ex, int M)
 /////////////////////////////////////////////////////////////////////////////
 
 Section2D::Section2D(Expression& left_ex, Expression& right_ex, int M_)
-  : left(left_ex), right(right_ex)
+  : left(left_ex), right(right_ex) // wrong, doesn't take PML into account.
 {
   // Check values.
 
@@ -500,7 +500,6 @@ void Section2D::find_modes()
 
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Section2D::find_modes_from_series
@@ -509,17 +508,108 @@ void Section2D::find_modes()
 
 void Section2D::find_modes_from_series()
 {
-  Material air(1.0);
-  RefSection ref(air, get_width(), get_height());
+  // Calc overlap matrices.
+
+  Material ref_mat(1.0);
+  RefSection ref(ref_mat, get_width(), get_height());
+
+  std::cout << "W H " << get_width() << " " << get_height() << std::endl;
   
-  int n = global.N/2;
+  const int N = global.N;
+  const int n = N/2;
 
   cMatrix O_EE(n,n,fortranArray); cMatrix O_MM(n,n,fortranArray);
   cMatrix O_EM(n,n,fortranArray); cMatrix O_zz(n,n,fortranArray);
 
   ref.calc_overlap_matrices(this, &O_EE, &O_MM, &O_EM, &O_zz);
-}
 
+  // Form auxiliary matrix.
+
+  const Real omega = 2*pi/global.lambda * c;
+
+  cMatrix inv_O_zz(n,n,fortranArray);
+  if(global.stability != SVD)
+    inv_O_zz.reference(invert    (O_zz));
+  else
+    inv_O_zz.reference(invert_svd(O_zz));
+
+  cMatrix M(n,n,fortranArray);
+  for (int i=1; i<=n; i++)
+  {
+    RefSectionMode* TM_i = dynamic_cast<RefSectionMode*>(ref.get_mode(n+i));
+
+    for (int j=1; j<=n; j++)
+    {
+      RefSectionMode* TM_j = dynamic_cast<RefSectionMode*>(ref.get_mode(n+j))
+;
+      M(i,j) =   TM_i->kt2()/TM_i->get_kz() * inv_O_zz(i,j) 
+               * TM_j->kt2()/TM_j->get_kz();
+    }
+
+    M(i,i) += pow(omega,3) * ref_mat.eps() * ref_mat.mu() / TM_i->get_kz();
+  }
+
+  // Create submatrices for eigenvalue problem.
+
+  cMatrix A(n,n,fortranArray); cMatrix B(n,n,fortranArray);
+  cMatrix C(n,n,fortranArray); cMatrix D(n,n,fortranArray);
+
+  A.reference(multiply(M, O_MM));
+  
+  cMatrix trans_O_EM(n,n,fortranArray);
+  trans_O_EM.reference(transpose(O_EM));
+  B.reference(multiply(M, trans_O_EM));
+
+  C = O_EM;
+  for (int i=1; i<=n; i++)
+    for (int j=1; j<=n; j++)
+      C(i,j) *= omega * ref.get_mode(i)->get_kz();
+  
+  D = O_EE;
+  for (int i=1; i<=n; i++)
+  {
+    RefSectionMode* TE_i = dynamic_cast<RefSectionMode*>(ref.get_mode(i));
+   
+    for (int j=1; j<=n; j++)
+      D(i,j) *= omega * TE_i->get_kz();
+
+    D(i,i) -= TE_i->kt2();
+  }
+
+  // Solve eigenvalue problem.
+
+  cMatrix E(N,N,fortranArray);
+  
+  blitz::Range r1(1,n); blitz::Range r2(n+1,2*n);
+
+  E(r1,r1) = A; E(r1,r2) = B;
+  E(r2,r1) = C; E(r2,r2) = D;
+
+  cVector kz2(N,fortranArray);
+  kz2 = eigenvalues(E);
+
+  // Create modeset.
+
+  for (unsigned int i=1; i<=N; i++)
+  { 
+    Complex kz = sqrt(kz2(i));
+    
+    if (real(kz) < 0) 
+      kz = -kz;
+
+    if (abs(real(kz)) < 1e-12)
+      if (imag(kz) > 0)
+        kz = -kz;
+    
+    Mode *newmode = new Mode(global.polarisation,kz,-kz);
+    
+    //newmode->normalise();   // TMP 
+    modeset.push_back(newmode);
+  }
+
+  sort_modes();
+  truncate_N_modes();  
+}
 
 
 
