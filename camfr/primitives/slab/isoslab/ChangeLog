@@ -1,3 +1,7 @@
+2003-10-29 Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* slaboverlap.cpp: Improve detection of normalisation integrals.
+
 2003-08-07 Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* slab.cpp: Throw away bogus estimates.
