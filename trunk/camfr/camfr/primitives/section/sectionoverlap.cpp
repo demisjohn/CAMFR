@@ -375,3 +375,21 @@ Complex overlap_slice(SectionMode* sec_I_mode, SectionMode* sec_II_mode,
 
   return term1 - term2;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_pw
+//
+//   Overlap between plane wave based modes.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex overlap_pw(const Section2D_Mode* sec_I_mode, 
+                   const Section2D_Mode* sec_II_mode)
+{
+  return 1.0;
+}
+
+

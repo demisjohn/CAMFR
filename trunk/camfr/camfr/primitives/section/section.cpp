@@ -35,7 +35,7 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0, 0.0, E_wall, E_wall, false, OS, true};
+SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,false,OS,true,0,0};
 
 
 
@@ -49,6 +49,46 @@ void SectionImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
 {
+  // TMP
+
+  if (global_section.mode_correction == false)  
+  {
+    Section2D* medium_I  = dynamic_cast<Section2D*>(this);
+    Section2D* medium_II = dynamic_cast<Section2D*>(w);
+
+    *O_I_II = 0.0;  
+    *O_II_I = 0.0;
+
+    if (O_I_I) 
+      *O_I_I = 0.0;
+    if (O_II_II) 
+      *O_II_II = 0.0;
+
+    for (int i=1; i<=int(medium_I->N()); i++)   
+      for (int j=1; j<=int(medium_I->N()); j++)
+      {
+        (*O_I_II)(i,j) += overlap_pw
+          (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
+           dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
+
+        (*O_II_I)(i,j) += overlap_pw
+          (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
+           dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
+        
+        if (O_I_I) (*O_I_I)(i,j) += overlap_pw
+          (dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(i)),
+           dynamic_cast<Section2D_Mode*>(medium_I ->get_mode(j)));
+      
+        if (O_II_II) (*O_II_II)(i,j) += overlap_pw
+         (dynamic_cast<Section2D_Mode*>(medium_II->get_mode(i)),
+          dynamic_cast<Section2D_Mode*>(medium_II->get_mode(j)));
+      }
+
+    return;
+  }
+
+
+  
   Section2D* medium_I  = dynamic_cast<Section2D*>(this);
   Section2D* medium_II = dynamic_cast<Section2D*>(w);
   
@@ -1008,6 +1048,7 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 #endif
 
   // Calculate M and N. 
+
   // TODO: take aspect ratio into account.
   // TODO: speed up by using more .reference.
 
@@ -1217,8 +1258,7 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
   cMatrix FG(2*MN,2*MN,fortranArray); 
   FG.reference(multiply(F,G));
-
-/*   
+ 
   cVector E(2*MN,fortranArray); 
   cMatrix eig(2*MN,2*MN,fortranArray); 
 
@@ -1226,7 +1266,6 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
     E = eigenvalues(FG, &eig);
   else
     E = eigenvalues_x(FG, &eig);
-*/
 
 /*
   for (int i=1; i<=eig.columns(); i++)
@@ -1238,12 +1277,12 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
       {
         int i1 = (m+M+1) + (n+N)*(2*M+1);
         std::cout << i << " " <<m << " " << n << " " 
-                  << eig(i1,i) <<eig(MN+i1,i)<< std::endl;
+                  << eig(i1,i)/eig(1,i) <<eig(MN+i1,i)/eig(1,i)<< std::endl;
       }
     std::cout << std::endl;
   }
 */
-
+  
   //
   // Reduce eigenvalue problem.
   //
@@ -1402,8 +1441,8 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
     neff_.push_back(sqrt(E_(i)/k0/k0)/k0);
   std::sort(neff_.begin(), neff_.end(),RealSorter());
 
-  for (int i=0; i<neff_.size(); i++)
-    std::cout << "reduced " << i << " " << neff_[i] << std::endl;
+  //for (int i=0; i<neff_.size(); i++)
+  //  std::cout << "reduced " << i << " " << neff_[i] << std::endl;
 
 /*
   vector<Complex> neff;
@@ -1417,15 +1456,116 @@ vector<ModeEstimate> Section2D::estimate_kz2_fourier()
 
   std::cout << "Eigenproblem size " << 2*MN_ << std::endl;
 
+  // Calculate field expansion.
+
+  // TODO: try to do this using reduced matrices, or at least return
+  // a reduced vector.
+ 
+  cMatrix eig_big(2*MN,2*MN_,fortranArray); 
+
+  for (int i1=1; i1<=2*MN_; i1++)
+  {
+    // j == 0, l == 0
+
+    eig_big(   f(0, 0), i1) = c[0]*eig_(    1, i1);
+    eig_big(MN+f(0, 0), i1) = c[1]*eig_(MN_+1, i1);
+
+    // j == 0, l != 0
+
+    for (int l=1; l<=N; l++)
+    {
+      int i2 = (0+1) + l*(M+1);
+
+      eig_big(   f(0, l),i1) = c[2]*eig_(    i2,i1);
+      eig_big(   f(0,-l),i1) = c[3]*eig_(    i2,i1);
+
+      eig_big(MN+f(0, l),i1) = c[4]*eig_(MN_+i2,i1);
+      eig_big(MN+f(0,-l),i1) = c[5]*eig_(MN_+i2,i1);
+    }
+
+    for (int j=1; j<=M; j++)
+    {
+     // j != 0, l == 0      
+
+      eig_big(   f( j,0),i1) = c[6]*eig_(    j+1,i1);
+      eig_big(   f(-j,0),i1) = c[7]*eig_(    j+1,i1);
+
+      eig_big(MN+f( j,0),i1) = c[8]*eig_(MN_+j+1,i1);
+      eig_big(MN+f(-j,0),i1) = c[9]*eig_(MN_+j+1,i1);
+
+      // j != 0, l != 0
+
+      for (int l=1; l<=N; l++)
+      {
+        int i2 = (j+1) + l*(M+1);
+
+        eig_big(   f( j, l),i1) =       eig_(    i2,i1);
+        eig_big(   f( j,-l),i1) = c[10]*eig_(    i2,i1);
+        eig_big(   f(-j, l),i1) = c[11]*eig_(    i2,i1);
+        eig_big(   f(-j,-l),i1) = c[12]*eig_(    i2,i1);
+
+        eig_big(MN+f( j, l),i1) =       eig_(MN_+i2,i1);
+        eig_big(MN+f( j,-l),i1) = c[13]*eig_(MN_+i2,i1);
+        eig_big(MN+f(-j, l),i1) = c[14]*eig_(MN_+i2,i1);
+        eig_big(MN+f(-j,-l),i1) = c[15]*eig_(MN_+i2,i1);
+      }
+    }
+  }
+
+/*
+  for (int i=1; i<=eig_big.columns(); i++)
+  {
+    std::cout << "eig_big " << i << " " << sqrt(E_(i)/k0/k0)/k0 << std::endl;
+    
+    for (int m=-M; m<=M; m++)
+      for (int n=-N; n<=N; n++)
+      {
+        int i1 = (m+M+1) + (n+N)*(2*M+1);
+        std::cout << i << " " <<m << " " << n << " " 
+                  << eig_big(i1,i)/eig_big(1,i) 
+                  <<eig_big(MN+i1,i)/eig_big(1,i)<< std::endl;
+      }
+    std::cout << std::endl;
+  }
+
+*/
+
+  // Calculate H fields from E fields.
+
+  cMatrix eig_big_H(2*MN,2*MN_,fortranArray);
+  eig_big_H.reference(multiply(G,eig_big));
+  
   // Return estimates.
 
   vector<ModeEstimate> estimates;
+
+  blitz::Range r1(1,MN); blitz::Range r2(MN+1,2*MN);
   
   for (int i=1; i<=E_.rows(); i++)
   {
     if (abs(E_(i)) > 1e-6)
     {
-      ModeEstimate est = ModeEstimate(E_(i)/k0/k0);
+      Complex kz2 = E_(i)/k0/k0;
+      Complex kz = sqrt(kz2);
+    
+      if (real(kz) < 0) 
+        kz = -kz;
+
+      if (abs(real(kz)) < 1e-12)
+        if (imag(kz) > 0)
+          kz = -kz;
+      
+      cVector* Ex = new cVector(MN,fortranArray);
+      cVector* Ey = new cVector(MN,fortranArray);
+      cVector* Hx = new cVector(MN,fortranArray);
+      cVector* Hy = new cVector(MN,fortranArray); 
+
+      *Ex = eig_big  (r1,i); 
+      *Ey = eig_big  (r2,i);
+      *Hx = eig_big_H(r1,i)/kz/k0; 
+      *Hy = eig_big_H(r2,i)/kz/k0; 
+
+      ModeEstimate est = ModeEstimate(kz2, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
     }  
   }
@@ -1528,6 +1668,42 @@ void Section2D::find_modes_from_estimates()
 
   if (estimates.size() > global.N+5)
     estimates.erase(estimates.begin()+global.N+5, estimates.end());
+
+  // Pass on zeros unrefined.
+
+  py_print("Creating plane wave based mode profiles...");
+
+  for (unsigned int i=0; i<estimates.size(); i++)
+  { 
+    Complex kz = sqrt(estimates[i].kz2);
+    
+    if (real(kz) < 0) 
+      kz = -kz;
+
+    if (abs(real(kz)) < 1e-12)
+      if (imag(kz) > 0)
+        kz = -kz;
+
+    Section2D_Mode* newmode
+     = new Section2D_Mode(global.polarisation, kz, this,
+                          estimates[i].Ex, estimates[i].Ey,
+                          estimates[i].Hx, estimates[i].Hy);
+
+    newmode->normalise();
+
+    modeset.push_back(newmode);
+  }
+
+  sort_modes();
+  truncate_N_modes(); 
+
+  py_print("Done.");
+
+  return;
+  
+
+
+  // Refine zeros using transcendental function.
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<estimates.size(); i++)
