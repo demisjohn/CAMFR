@@ -1,3 +1,8 @@
+2002-05-31 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * slab.cpp: Fix TE_TM polarisation.
+	* slab.cpp: Lower precision.
+
 2002-05-28 Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * slabmode.cpp: Improve stability for TEM mode.

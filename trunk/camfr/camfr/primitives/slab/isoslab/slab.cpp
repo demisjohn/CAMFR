@@ -257,6 +257,7 @@ void Slab_M::find_modes()
         old_kt_TE.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt()); 
 
     vector<Complex> kt(find_kt(old_kt_TE));
+    kt.erase(kt.begin()+n, kt.end());
 
     // Find TM modes
 
@@ -539,8 +540,9 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       bool error = false;
 
       Real kt_new = imag(mueller(disp, I*kt_prop_lossless[i],
-                                 I*kt_prop_lossless[i]+0.002,1e-14,
-                                 0,100,&error));      
+                                 I*kt_prop_lossless[i]+0.002,1e-11,
+                                 0,100,&error));
+
       if (!error)
         kt_lossless.push_back(I*kt_new);
     }
@@ -579,7 +581,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
         Real kt_new = branchcut
           ? kt_evan_lossless[i]
           : real(mueller(disp,kt_evan_lossless[i],
-                         kt_evan_lossless[i]+0.002*I,1e-14,0,100,&error));
+                         kt_evan_lossless[i]+0.002*I,1e-11,0,100,&error));
 
         if (!error)
           kt_lossless.push_back(kt_new);
@@ -614,7 +616,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   vector<Complex> kt_lossless_single = kt_lossless;
   if (global.degenerate)
-    kt_lossless = mueller_multiple(disp, kt_lossless_single, 1e-12, 0, 100);
+    kt_lossless = mueller_multiple(disp, kt_lossless_single, 1e-11, 0, 100);
   for (unsigned int i=0; i<kt_lossless.size(); i++)
   {
     if (abs(real(kt_lossless[i])) < abs(imag(kt_lossless[i])))
@@ -779,13 +781,13 @@ void Slab_M::build_modeset(const vector<Complex>& kt)
 
     Polarisation pol = global.polarisation;
     if (global.polarisation == TE_TM)
-      pol = ( i < int(kt.size()/2) ) ? TE : TM;
+      pol = ( i < int(global.N/2) ) ? TE : TM;
     
     calc_fw = !calc_fw;
     Slab_M_Mode *newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
 
-    //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda 
-    //          << std::endl;
+    //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda
+    //          << " " << pol << std::endl;
     
     newmode->normalise();
     
