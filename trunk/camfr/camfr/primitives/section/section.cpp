@@ -249,9 +249,6 @@ Section::Section(Expression& expression, int M1, int M2)
     }
   }
 
-  if (max_eps_i == 1)
-    max_eps_i += 2;
-
   // Create right hand side expression.
 
   Expression right_ex;
@@ -262,6 +259,9 @@ Section::Section(Expression& expression, int M1, int M2)
     if (s)
     {
       Complex d = ex.get_term(i)->get_d();
+
+      if (i==max_eps_i)
+        d /= 2.;
 
       if (i == ex.get_size()-1)
         d += I*global_section.right_PML;
@@ -280,12 +280,9 @@ Section::Section(Expression& expression, int M1, int M2)
 
   Expression left_ex;
 
-  Slab* slab = dynamic_cast<Slab*>(ex.get_term(max_eps_i)->get_wg());
-  Scatterer* sc 
-    = interface_cache.get_interface(slab,slab);
-  left_ex.add_term(Term(*sc));
-
-  left_ex += Term((*slab)(0.0));
+  Slab* slab0 = dynamic_cast<Slab*>(ex.get_term(max_eps_i)->get_wg());
+  Complex d0 = ex.get_term(max_eps_i)->get_d()/2.;
+  left_ex += Term((*slab0)(d0));
 
   for (int i=max_eps_i-1; i>=0; i--)
   { 
@@ -301,9 +298,6 @@ Section::Section(Expression& expression, int M1, int M2)
       left_ex += Term((*s)(d));
     }
   }
-
-  left_ex.remove_term_front();
-  left_ex.remove_term_front();
 
   if (global_section.leftwall == E_wall)
     leftwall_sc = new E_Wall(*left_ex.get_ext());

@@ -95,6 +95,14 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, Real _lambda, int _M,
     }
   }
 
+  // Create whole stack.
+
+  Expression e;
+  for (unsigned int i=0; i<slabs.size(); i++)
+    e += Term((*slabs[i])(d[i]));
+  
+  stack = new Stack(e);
+
   // Determine minimum refractive index.
 
   vector<Material*> materials = left->get_materials();
@@ -243,12 +251,44 @@ Complex SectionDisp::calc_lapack()
   else
     Q.reference(multiply( left->as_multi()->get_R12(), 
                           left->as_multi()->get_R12()));
+
+  // SVD
+
+/*
+  cMatrix I(M,M,fortranArray);
+  I = 0.0;
+  for (int i=1; i<=M; i++)
+    I(i,i) = 1.0;
+
+  cMatrix Q2(M,M,fortranArray);  
+  Q2 = Q-I;
+  
+  rVector s(M,fortranArray);
+  s = svd(Q2);
+
+  std::cout << s << std::endl;
+  
+  return s(1);
+*/ 
   
   cVector e(M,fortranArray);
   if (global.stability == normal)
     e.reference(eigenvalues(Q));
   else
     e.reference(eigenvalues_x(Q));
+
+  // Return product.
+/*  
+  Complex product = 1.0;
+  
+  for (int i=1; i<=M; i++)
+    product *= e(i)-1.;
+
+  //std::cout << e << std::endl;
+  
+  return product;
+*/
+  
   
   // Return minimum distance of eigenvalues to 1.
 
@@ -263,7 +303,7 @@ Complex SectionDisp::calc_lapack()
 
 
 
-Complex SectionDisp::calc_lapack2()
+Complex SectionDisp::calc_lapack4()
 {
   blitz::Range r1(1,M); blitz::Range r2(M+1,2*M);
   
@@ -364,14 +404,14 @@ Complex SectionDisp::calc_lapack2()
   else
     e.reference(eigenvalues_x(Q));
 
-  // return product of eigenvalues.
-/*  
+  // Return product of eigenvalues.
+  
   Complex product = 1.0;
   for (int i=1; i<=M; i++)
     product *= e(i);
   
   return product;
-*/
+
   // Return smallest eigenvalue.
 
   int min_index = 1;
@@ -381,6 +421,56 @@ Complex SectionDisp::calc_lapack2()
       min_index = i;
 
   return e(min_index);
+}
+
+
+// Version based on S matrix
+Complex SectionDisp::calc_lapack2()
+{
+  // Calculate matrix.
+
+  stack->calcRT();
+ 
+  cMatrix Q(2*M,2*M,fortranArray);
+
+  MultiScatterer* s = stack->as_multi();
+
+  blitz::Range r1(1,M); blitz::Range r2(M+1,2*M);
+  
+  Q(r1,r1) = (global_section.rightwall==E_wall) ? -s->get_R21() : s->get_R21();
+  Q(r1,r2) = (global_section.leftwall ==E_wall) ? -s->get_T12() : s->get_T12();
+
+  Q(r2,r1) = (global_section.rightwall==E_wall) ? -s->get_T21() : s->get_T21();
+  Q(r2,r2) = (global_section.leftwall ==E_wall) ? -s->get_R12() : s->get_R12();
+  
+  // Calculate eigenvectors.
+
+  cVector e(2*M,fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));
+
+  // Return product of eigenvalues.
+
+  Complex product = 1.0;
+  for (int i=1; i<=2*M; i++)
+    product *= e(i)-1.0;
+
+  //std::cout << e << std::endl;
+  //std::cout << "R" << s->get_R21() << std::endl;
+  
+  return product;
+
+  // Return eigenvalue closest to 1.
+
+  int min_index = 1;
+
+  for (int i=2; i<=2*M; i++)
+    if (abs(e(i)-1.0) < abs(e(min_index)-1.0))
+      min_index = i;
+
+  return e(min_index)-1.0;
 }
 
 
