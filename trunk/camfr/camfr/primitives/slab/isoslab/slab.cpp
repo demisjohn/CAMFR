@@ -1,5 +1,4 @@
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     slab.cpp
@@ -176,11 +175,11 @@ bool Slab_M::no_gain_present() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::eps_at
+// Slab_M::material_at
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex Slab_M::eps_at(const Coord& coord) const
+Material* Slab_M::material_at(const Coord& coord) const
 {
   unsigned int i = index_lookup(coord.c1, coord.c1_limit, discontinuities);
   
@@ -190,28 +189,7 @@ Complex Slab_M::eps_at(const Coord& coord) const
     i = materials.size()-1;
   }
 
-  return materials[i]->eps();
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Slab_M::mu_at
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Complex Slab_M::mu_at(const Coord& coord) const
-{
-  unsigned int i = index_lookup(coord.c1, coord.c1_limit, discontinuities);
-  
-  if (i == materials.size())
-  {
-    py_error("Warning: coordinate out of range in mu_at. Restricting it.");
-    i = materials.size()-1;
-  }
-
-  return materials[i]->mu();
+  return materials[i];
 }
 
 
@@ -1226,7 +1204,10 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   // Get coarse estimates.
 
   vector<Complex> kz2;
-  if (global.eigen_calc != arnoldi) // Hijacked switch.
+
+  if (user_kz2_estimates.size() != 0)
+    kz2 = user_kz2_estimates;
+  else if (global.eigen_calc != arnoldi) // Hijacked switch.
     kz2 = estimate_kz2_from_uniform_modes();
   else
     kz2 = estimate_kz2_from_RCWA();

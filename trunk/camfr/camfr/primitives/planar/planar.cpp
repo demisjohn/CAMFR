@@ -29,7 +29,7 @@ Complex Planar::kt = 0.0;
 /////////////////////////////////////////////////////////////////////////////
 
 Planar::Planar(Material& m) : MonoWaveguide(&m)
-{
+{  
   if (global.N == 0)
     global.N = 1;
 

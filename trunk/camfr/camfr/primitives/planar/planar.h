@@ -33,11 +33,8 @@ class Planar : public MonoWaveguide
 
     Planar(Material& m);
   
-    Complex eps_at(const Coord& coord) const
-      {return core->eps();}
-    
-    Complex mu_at (const Coord& coord) const
-      {return core->mu();}
+    Material* material_at(const Coord& coord) const
+      {return core;}
 
     bool operator==(const Waveguide& w) const
       {return *core == *(dynamic_cast<const Planar*>(&w)->core);}

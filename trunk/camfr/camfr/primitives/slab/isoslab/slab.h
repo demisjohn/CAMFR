@@ -53,8 +53,7 @@ class Slab_M : public SlabImpl
 
     bool no_gain_present() const;
 
-    Complex eps_at(const Coord& coord) const;    
-    Complex  mu_at(const Coord& coord) const;
+    Material* material_at(const Coord& coord) const;
 
     Complex eps_avg() const;
 
@@ -131,11 +130,8 @@ class UniformSlab : public SlabImpl
     bool no_gain_present() const
       {return core->no_gain_present();}
 
-    Complex eps_at(const Coord& coord) const
-      {return core->eps();}
-        
-    Complex mu_at(const Coord& coord) const
-      {return core->mu();}
+    Material* material_at(const Coord& coord) const
+      {return core;}
 
     Complex get_width() const
       {return discontinuities[0];}
