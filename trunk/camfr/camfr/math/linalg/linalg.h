@@ -109,7 +109,7 @@ inline cMatrix multiply(const cMatrix& A, const cMatrix& B,
     {return multiply(A,multiply(B,C,D));}
 
 inline cVector multiply(const cMatrix& A, const cMatrix& B, const cVector& x)
-    {return multiply(multiply(A,B),x);}
+    {return multiply(A,multiply(B,x));}
 
 
 
