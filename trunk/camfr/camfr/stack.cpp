@@ -85,6 +85,15 @@ StackImpl::StackImpl(const Expression& e, unsigned int no_of_periods_)
     py_error("Error: inc and exit media don't match for periodic extension.");
     exit (-1);
   }
+
+  // Corner case of expression consisting of single waveguide.
+
+  if ((e.get_size() == 1) && (e.get_term(0)->get_type() == WAVEGUIDE))
+  {
+    Waveguide* wg = e.get_term(0)->get_wg();
+    Scatterer* sc = interface_cache.get_interface(wg, wg);
+    e.insert_term_front(Term(*sc));
+  }
   
   // Create chunks.
   
