@@ -325,7 +325,8 @@ class Geometry:
         self.shapes.append(s)
         return self
    
-    def to_expression(self, x0, x1, dx, y0, y1, dy, PML_bot, PML_top):
+    def to_expression(self, x0, x1, dx, y0, y1, dy, PML_bot, PML_top,
+                      add_flipped=0):
 
         slabs = []
         
@@ -437,5 +438,11 @@ class Geometry:
             s = Slab(e_slab)
             slab_cache.append(s)
             e.add(s(d[i]))
+
+        # Add flipped scatterer.
+
+        if add_flipped:
+            for i in range(len(slabs)-1, -1, -1):
+                e.add((slab_cache[i])(d[i]))
 
         return e
