@@ -1,0 +1,102 @@
+SHORT TERM 
+
+-check E/H wall for TM
+
+-default planar::set_theta (Peter)
+ 
+-try out LAPACK 3.0 special svd routine (zgesdd)
+-binary packages for Windows
+
+-tune new complex zero finder
+-related: make definition of C_upperright uniform
+-related: test it for leaky modes
+-related: set max mueller iteration to 50?
+-related: reenable complex modes in circ
+-related: test sign of beta in backward modes in circ (using power flux)
+
+-waiting for Boost update: operator+=, automatic conversion to Term
+
+-CAMFR gives incorrect results if compiled with malign-double. Report this
+ compiler bug.
+
+
+MEDIUM TERM:
+
+-better handling of decoupled waveguides (Peter)
+-related: check instabilities in bend2, first formulation of rods (Peter)
+-related: PhC waveguide, no symmetry trick: large no of cl periods (Peter)
+-possible to remove hack for removing unstable exp, extra signed sqrt (Peter)
+-idem: hack for tails in slabmodes (Peter)
+
+-new function: stack::field(r0, r1, delta_r) to calc field on a grid. 
+ Ability to cache field profiles and speed up.
+-stack field on layer discontinuity: speed up by not propagating.
+
+-calculate Bloch vectors by using a quadratic eigenvalue problem.
+-related: use S_S scheme for Bloch fields
+-related: implement Bloch modes for MonoScatterers
+-related: speed this up for symmetric structures
+
+-use asymptotic expansions for circular structures
+-more general interactive visualisation of mode profiles (phase, components)
+-write a GUI for defining complicated structures
+-integrated plotting: Kmatplot, dislin, plplot, SciGrafica, SciPy?
+-better integration with SciPy?
+-add Python docbook comments
+
+-Python: make Stack + Term, ... work without explicit Term() conversion.
+
+-implement CoordStretcher for slabs
+-implement eps_at/mu_at in Stack
+-automatic setting of global.orthogonal
+-explicitly return *all* modes found in Cavity::find_all_modes
+
+-cavity::calc_sigma: instead of using only the fw field, is it more robust
+ to use fw_backward field to determine dominant mode?
+-cavity: instead of using SVD, try eigenvalue decomposition
+
+-PC_wall: add waveguide interface if needed
+-faster location of PC_wall eigenmodes
+-convert slabwall PC to Material Stacks
+-slabwall: cache get_R12 for startfield, get_error
+-kill virtual functions in SlabWall (perhaps elsewhere too)
+
+
+SOURCE MAINTENANCE
+
+-get rid of S_T, T_T in field_calc
+-make the C++ naming convention more uniform and in sync with Python names
+ (e.g. circ_disp -> CircDisp, Material_length -> MaterialLength, ...)
+-use BaseMaterial where appropriate
+-completely redesign / rework Expression and its link to stack
+
+
+LOW PRIORITY
+
+-is reciprocity exploitable?
+-auto-partitioning of stacks in optimal diagonal substacks
+-investigate Airy media
+-test corner effects
+
+-check need of find_modes in Transparent Scatterers (Peter)
+-narrower minima in cavity::find_all_modes? (Peter)
+-tilde in S_scheme: return more refs? (Peter)
+-split scaling (Peter)
+-scaling for complex modes, scaling when tracing (Peter)
+
+-influence of normalisation on observables (sign sqrt, factor, ..)
+ check sqrt(power) -> -1 norm (Peter)
+-related: use norm=abs(sqrt())? (Peter)
+-related: consolidate signedsqrt in material.h and circ.cpp (Peter)
+
+
+THEORY:
+
+-check formulas for power circ_1
+-check sign_TM in slabdisp
+-quadrant leaky modes (upperright neg imag?)
+-loss in cladding (no PML): check quadrant
+-analytic solution uniform TBC
+-degeneracy for increasing PML in Slab AlOx(1) + AlGas(1) + AlOx(1)
+-check Lahart P-parameter with EH/HE distinction
+-model coupled cavity VCSEL, DFB laser
