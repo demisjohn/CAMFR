@@ -322,16 +322,35 @@ def plot_n_stack(stack, r_x, r_z):
 
 ##############################################################################
 #
+# Plot the refractive index profile in a Section.
+#
+##############################################################################
+
+def plot_n_section(stack, r_x, r_y):
+    
+    n = zeros([len(r_y),len(r_x)], Float)
+
+    for i_x in range(len(r_x)):
+      for i_y in range(len(r_y)):
+        n[i_y,i_x] = stack.n(Coord(r_x[i_x], r_y[i_y], 0)).real
+
+    plot_matrix(n, r_y, r_x)    
+
+
+
+##############################################################################
+#
 # Wrapper for plot_n.
 #
 ##############################################################################
 
-def plot_n(o, r_x, r_z=0):
-    if not r_z:
-        plot_n_waveguide(o, r_x)
+def plot_n(o, r1, r2=0):
+    if not r2:
+        plot_n_waveguide(o, r1)
     if type(o) == Stack:
-        plot_n_stack(o, r_x, r_z)
-
+        plot_n_stack(o, r1, r2)
+    if type(o) == Section:
+        plot_n_section(o, r1, r2)
 
 
 ##############################################################################
@@ -371,16 +390,36 @@ def plot_field_stack(stack, component, r_x, r_z):
 
 ##############################################################################
 #
+# Plot the field profile of a section mode.
+#
+##############################################################################
+
+def plot_field_section_mode(mode, component, r_x, r_y):
+    
+    f = zeros([len(r_y),len(r_x)], Float)
+
+    for i_x in range(len(r_x)):
+      for i_y in range(len(r_y)):
+        f[i_y,i_x] = component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
+
+    plot_matrix(f, r_y, r_x)    
+
+
+
+##############################################################################
+#
 # Wrapper for plot_field.
 #
 ##############################################################################
 
-def plot_field(o, component, r_x, r_z=0):
-    if not r_z:
-        plot_field_waveguide(o, component, r_x)
-    if type(o) == Stack:
-        plot_field_stack(o, component, r_x, r_z)
-
+def plot_field(o, component, r1, r2=0):
+    if not r2:
+        plot_field_waveguide(o, component, r1)
+    elif type(o) == Stack:
+        plot_field_stack(o, component, r1, r2)
+    elif type(o) == Mode:
+        plot_field_section_mode(o, component, r1, r2)
+        
 
 
 ##############################################################################
