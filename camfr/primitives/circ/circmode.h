@@ -18,20 +18,19 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: Circ_M_Mode
+// CLASS: CircMode
 //
-//   Mode in a circular symmetric medium with M rings, surrounded by
-//   metal cylinder.
+//   Mode in a circular symmetric medium surrounded by metal cylinder.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-class Circ_M_Mode : public Mode
+class CircMode : public Mode
 {
   public:
 
-    Circ_M_Mode(Polarisation pol, const Complex& kz, const Circ_M* geom);
+    CircMode(Polarisation pol, const Complex& kz, const Circ_M* geom);
 
-    void normalise();
+    virtual void normalise();
 
     Field field(const Coord& coord) const {return field_at(coord);}
     
@@ -58,11 +57,41 @@ class Circ_M_Mode : public Mode
                              const Coord& coord,
                              Complex* dEzdr=0,
                              Complex* dHzdr=0,
-                             bool ang_dep=true) const;
+                             bool ang_dep=true) const = 0;
 
     const Circ_M* geom;
         
     std::vector<Complex> kr; // Radial component of wavevector in each ring.
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: Circ_M_Mode
+//
+//   Mode in a circular symmetric medium with M rings surrounded by 
+//   metal cylinder.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+class Circ_M_Mode : public CircMode
+{
+
+  public:
+
+    Circ_M_Mode(Polarisation pol, const Complex& kz, const Circ_M* geom);
+
+    void normalise();
+
+  protected:
+
+    Field field_ring(int i, const Coord& coord,
+                     Complex* dEzdr=0, Complex* dHzdr=0,
+                     bool ang_dep=true) const;
+
+    std::vector<cMatrix> T;
+    std::vector<cVector> amplitudes;
 };
 
 
@@ -76,7 +105,7 @@ class Circ_M_Mode : public Mode
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-class Circ_2_Mode : public Circ_M_Mode
+class Circ_2_Mode : public CircMode
 {
   public:
 
@@ -114,7 +143,7 @@ class Circ_2_Mode : public Circ_M_Mode
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-class Circ_1_Mode : public Circ_M_Mode
+class Circ_1_Mode : public CircMode
 {
   public:
 

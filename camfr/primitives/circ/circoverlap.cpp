@@ -27,9 +27,9 @@ using std::vector;
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-Complex overlap(const Circ_M_Mode* mode_I,
-                const Circ_M_Mode* mode_II,
-                const CircCache*   cache,
+Complex overlap(const CircMode*  mode_I,
+                const CircMode*  mode_II,
+                const CircCache* cache,
                 const vector<Complex>* disc,
                 int i, int j, int I_index, int II_index)
 { 
