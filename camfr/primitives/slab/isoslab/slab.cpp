@@ -172,6 +172,29 @@ void Slab_M::find_modes()
   if (!recalc_needed())
     return;
 
+  if (global.polarisation == TE_TM)
+  {
+    global.polarisation = TE;
+    find_modes();
+
+    vector<Mode*> TE_modeset;
+    for (unsigned int i=0; i<modeset.size(); i++)
+    {
+      Slab_M_Mode* mode = new Slab_M_Mode(TE, modeset[i]->kz, this);
+      TE_modeset.push_back(mode);
+    }
+
+    last_lambda = 0.0; // Force a recalc.
+
+    global.polarisation = TM;
+    find_modes();
+    modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
+
+    global.polarisation = TE_TM;
+
+    return;
+  }
+
   // If we already calculated modes for a different wavelength/gain
   // combination, use these as an initial estimate, else find them
   // from scratch.
@@ -730,6 +753,41 @@ void Slab_M::find_modes_by_sweep()
 /////////////////////////////////////////////////////////////////////////////
 
 void UniformSlab::find_modes()
+{
+  if (global.polarisation == TE_TM)
+  {
+    global.polarisation = TE;
+    find_modes_single_pol();
+
+    vector<Mode*> TE_modeset;
+    for (unsigned int i=0; i<modeset.size(); i++)
+    {
+      UniformSlabMode* mode = new UniformSlabMode(TE, modeset[i]->kz, this);
+      TE_modeset.push_back(mode);
+    }
+
+    last_lambda = 0.0; // Force a recalc.
+
+    global.polarisation = TM;
+    find_modes_single_pol();
+    modeset.insert(modeset.begin(), TE_modeset.begin(), TE_modeset.end());
+
+    global.polarisation = TE_TM;
+
+    return;
+  }
+
+  find_modes_single_pol();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformSlab::find_modes_single_pol
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void UniformSlab::find_modes_single_pol()
 {
   // Determine reflection coefficients of walls.
 
