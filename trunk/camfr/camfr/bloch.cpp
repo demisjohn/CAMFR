@@ -133,7 +133,7 @@ void BlochStack::find_modes_T()
 // 
 //  Finds Blochmodes by solving generalised eigenproblem:
 //
-//  | T21  R21 | |  F | = e |  O   I  | |  F | 
+//  | T21  R21 | |  F | = e |  I   O  | |  F | 
 //  |  O    I  | |e B |     | R12 T21 | |e B | 
 // 
 ///////////////////////////////////////////////////////////////////////////// 
