@@ -11,5 +11,5 @@ from camfrversion import *
 
 print
 print "CAMFR", camfr_version,
-print "- Copyright (C) 1998-2002 Peter Bienstman - Ghent University."
+print "- Copyright (C) 1998-2003 Peter Bienstman - Ghent University."
 print
