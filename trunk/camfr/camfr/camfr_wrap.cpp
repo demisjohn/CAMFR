@@ -274,6 +274,8 @@ inline Real section_width(Section& s)
   {return real(s.get_width());}
 inline Real section_height(Section& s)
   {return real(s.get_height());}
+inline Complex blochmode_n(BlochMode& m, Coord &c)
+  {return m.get_geom()->n_at(c);}
 inline Complex sectionmode_n(SectionMode& m, Coord &c)
   {return m.get_geom()->n_at(c);}
 
@@ -975,6 +977,7 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("fw_field", &BlochMode::fw_field)
     .def("bw_field", &BlochMode::bw_field)
     .def("S_flux",   &BlochMode::S_flux)
+    .def("n",        blochmode_n)
     ;
 
   // Wrap InfStack.
