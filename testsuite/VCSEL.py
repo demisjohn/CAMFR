@@ -79,8 +79,9 @@ class VCSEL(unittest.TestCase):
         print wavelength, "expected", wavelength_OK
         print gain, "expected", gain_OK
 
-        wavelength_pass = abs(wavelength - wavelength_OK) < eps.testing_eps
-        gain_pass       = abs(      gain - gain_OK)       < eps.testing_eps
+        wavelength_pass \
+          = abs((wavelength - wavelength_OK)/wavelength_OK) < eps.testing_eps
+        gain_pass = abs((gain - gain_OK)/gain_OK) < 10*eps.testing_eps
 
         self.failUnless(wavelength_pass and gain_pass)
 

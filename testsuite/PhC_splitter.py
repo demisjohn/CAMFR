@@ -82,7 +82,8 @@ class PhC_splitter(unittest.TestCase):
 
         print guided_kz, "expected", guided_kz_OK
 
-        guided_kz_pass = abs(guided_kz - guided_kz_OK) < eps.testing_eps
+        guided_kz_pass \
+          = abs((guided_kz - guided_kz_OK) / guided_kz_OK) < eps.testing_eps
 
         # Calculate splitter.
 
@@ -98,7 +99,7 @@ class PhC_splitter(unittest.TestCase):
 
         print R, "expected", R_OK
 
-        R_pass = abs(R - R_OK) < eps.testing_eps
+        R_pass = abs((R - R_OK)/R_OK) < eps.testing_eps
 
         # Calculate field.
 
@@ -107,7 +108,7 @@ class PhC_splitter(unittest.TestCase):
 
         print E_field, "expected", E_field_OK
 
-        E_field_pass = abs(E_field - E_field_OK) < eps.testing_eps
+        E_field_pass = abs((E_field - E_field_OK)/E_field_OK) < eps.testing_eps
        
         self.failUnless(guided_kz_pass and R_pass and E_field_pass)
 

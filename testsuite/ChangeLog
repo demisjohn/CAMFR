@@ -1,3 +1,13 @@
+2001-10-30  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
+
+        * blazed_grating.py: Use relative instead of absolute precision.
+	* substacks.py: Ditto.
+	* planarTE.py: Ditto.
+	* planarTM.py: Ditto.
+	* VCSEL.py: Ditto.
+	* SpE.py: Ditto.
+	* PhC_splitter.py: Ditto.
+
 2001-10-02  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
         * eps.py: Relax precision.
