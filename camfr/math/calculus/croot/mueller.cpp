@@ -10,8 +10,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+using namespace std;
+
 #include <sstream>
 #include "mueller.h"
+#include "../../../util/vectorutil.h"
 
 #ifdef _WIN32
 #include <float.h>
@@ -20,8 +24,6 @@
 #define ISNAN isnan
 #endif
 
-#include <iostream>
-using namespace std;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -479,7 +481,9 @@ std::vector<Complex> mueller
                                  &deflate, maxiter_i, &error, verbose);
 
       if (error)
-        py_error("Mueller solver failed to converge.");
+        py_print("Mueller solver failed to converge.");
+      else if (is_present(z1, new_root, 1e-10))
+        py_print("Discarding possibly bad estimate.");
       else
         z_final.push_back(new_root);
 
