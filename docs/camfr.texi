@@ -984,8 +984,9 @@ tutorial chapter to model more complicated optical devices. More specifically,
 we will see how to calculate band diagrams for infinite periodic stacks, how
 to locate laser modes in arbitrary cavities and how to calculate the response
 to a current source inside a cavity. We will also explain how to model purely
-1D planar structures, how to model semi-infinite stacks and how to input
-more complicated structures using geometric primitives.
+1D planar structures, how to model semi-infinite stacks, how to input
+more complicated structures using geometric primitives, and how to use more
+complex excitations for slabs.
 
 All of this functionality is available for both geometries (2D Cartesian,
 cylindrical), although the examples given are only for a single geometry.
@@ -1366,7 +1367,7 @@ for d in arange(0.01, 3.0, 0.05):
     # Define cavities.
 
     half      = Stack(air(d/2.) + wall)
-    half_open = Stack(air(d))
+    half_open = Stack(air(d/2.))
 
     source_pos  = Coord(0,0,0)
     orientation = Coord(1,0,0)
@@ -1477,17 +1478,15 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 @group
   # Reference bulk emitter
 
-  top_open = Stack(GaAs(1) + GaAs(1))
-  bot_open = Stack(GaAs(1) + GaAs(1))
+  half_open = Stack(GaAs(1))
 
   r0 = Coord(0,0,0)
   orientation = Coord(1,0,0)
 
-  open = Cavity(top_open,bot_open)
+  open = Cavity(half_open,half_open)
   open.set_source(r0, orientation)
 
-  c = Coord(0,0,0)
-  ref_rate = (top_open.field(c).E1()).real
+  ref_rate = (half_open.field(r0).E1()).real
 
 @end group
 @group  
@@ -1507,7 +1506,7 @@ def calc(r, PML, M, max_rho, spacer, resolution):
 @group
   # Calculate spontaneous emission rate.
 
-  rate = rcled.field(c).E1().real / ref_rate
+  rate = rcled.field(r0).E1().real / ref_rate
 
 @end group
 @group
@@ -1571,7 +1570,7 @@ eps = 1e-10
 
 for spacer in arange(0.130, 0.160, 0.002):
   for r in arange(10.0, 10.0+eps, 2.0):
-    for PML in arange(0.05, 0.05+eps, 0.01):
+    for PML in arange(-0.05, -0.05+eps, 0.01):
       for M in arange(300, 300+eps, 20):
         max_rho = r
         resolution = 1e-10
@@ -1588,6 +1587,53 @@ for spacer in arange(0.130, 0.160, 0.002):
 
 The following Python code shows how to model a purely 1D Bragg stack, where
 all the layers extend infinitely in the transverse direction.
+
+@example
+@group
+#!/usr/bin/env python
+
+####################################################################
+#
+# planar 1D DBR
+#
+####################################################################
+
+from camfr import *
+from Numeric import *
+
+# Define structure.
+
+set_lambda(1)
+
+GaAs_m = Material(3.5)
+AlAs_m = Material(2.9)
+
+GaAs = Planar(GaAs_m)
+AlAs = Planar(AlAs_m)
+
+d_GaAs = get_lambda()/4./GaAs_m.n().real
+d_AlAs = get_lambda()/4./AlAs_m.n().real
+
+s = Stack(GaAs(0) + 10*(GaAs(d_GaAs) + AlAs(d_AlAs)) + GaAs(0))
+@end group
+@group
+
+# Loop over incidence angles.
+
+for theta in arange(0, 90, 0.5):
+
+  GaAs.set_theta(theta * pi / 180.)
+  print theta,
+  
+  set_polarisation(TE)
+  s.calc()
+  print abs(s.R12(0,0))**2 ,
+
+  set_polarisation(TM)
+  s.calc()
+  print abs(s.R12(0,0))**2
+@end group
+@end example
 
 @code{Planar} takes a material as argument to create an infinitely extended
 planar layer, which can be used in @code{Stack} to create a layered 1D 
@@ -1623,11 +1669,226 @@ towards infinity in the propagation direction. In this way, we can study the
 incoupling problem in isolation of edge effects from the other side of the
 crystal.
 
+The following code illustrates how to achieve this:
+
+@example
+@group
+#! /usr/bin/env python
+
+###################################################################
+#
+# A semi-infinite photonic crystal.
+#
+###################################################################
+
+from camfr import *
+from Numeric import *
+
+set_lambda(1.5)
+set_N(50)
+
+# Set geometry parameters
+
+GaAs = Material(3.4)
+wg_m = Material(1.8)
+air  = Material(1.0)
+  
+a = .600     # period
+r = .150/2.0 # rod radius
+
+set_left_wall(slab_H_wall)
+
+PML = 0
+
+cl = 0       # air cladding
+periods = 4  # lateral periods
+@end group
+@group
+
+# Define slabs.
+
+inc_wg = Slab(GaAs(1.5*r) + air(a-2.5*r+periods*a+cl+PML*1j))
+
+no_rods = Slab(air(a-r+periods*a+cl+PML*1j))
+ 
+cen = Slab(  air(a-r)                                               \
+           + periods*(GaAs(2*r) + air(a-2*r))                       \
+           + air(cl+PML*1j) )
+
+# Calculate semi-infinite stack.
+
+s_inf = InfStack(cen(2*r) + no_rods(a-2*r))
+s = Stack(inc_wg(a) + s_inf)
+
+s.calc()
+
+print abs(s.R12(0,0))**2
+@end group
+@end example
+
+
 @page
 
+@node Defining complicated structures, , , 
+@section Defining complicated structures
 
-@node Tips for troubleshooting convergence problems,  , Current source in a cavity, Modelling optical devices
-@section Tips for troubleshooting convergence problems
+@cindex complicated structures, @code{geometry}
+
+CAMFR has a facility which makes it easier to define complicated non-trivial
+structures. Rather than manually specifying the geometry slice by slice, we
+can define a 2D structure in terms of higher level geometric shapes, like
+circles, triangles or rectangles. This definition can then be automatically
+discretised and converted to a series of slabs which can be used to initialise
+a stack.
+
+To illustrate this, we model the structure from Fig. 2.5.
+
+@example
+@group
+#!/usr/bin/env python
+
+####################################################################
+#
+# Illustrates how to define complicated structures using Geometry.
+#
+####################################################################
+
+from camfr import *
+
+set_lambda(1)
+set_N(40)
+
+air = Material(1)
+mat = Material(3)
+
+g = Geometry(air)
+
+g += Rectangle(Point(0.0,-0.5), Point(2.0, 0.5), mat)
+g += Triangle (Point(2.0, 0.5), Point(2.0,-0.5), Point(3.0, 0.0), mat)
+g += Circle   (Point(4.5, 0.0), 0.5, mat)
+@end group
+@group
+
+prop0,  prop1,  d_prop  =  0.0, 5.0, 0.50
+trans0, trans1, d_trans = -2.5, 2.5, 0.01
+
+PML1, PML2 = -0.1, -0.1
+
+exp = g.to_expression(prop0,  prop1,  d_prop,
+                      trans0, trans1, d_trans,
+                      PML1, PML2)
+
+s = Stack(exp)
+
+s.calc()
+
+print s.R12(0,0)
+@end group
+@end example
+
+@image{figs/discretise}
+
+@page
+
+@node General excitations for slabs, , , 
+@section General excitations for slabs
+
+@cindex general excitations, gaussian incidence, plane wave incidence
+
+So far, we've mostly excited the structure with a single mode, often the
+fundamental one. However, by taking the right linear combination of modes,
+we can approximate any arbitrary incident field shape, like a gaussian or a
+plane wave.
+
+To make this easier for the case of cartesian waveguides, CAMFR provides 
+a number of variants to @code{Stack.set_incident_field}, which are 
+illustrated in the following piece of code:
+
+@example
+@group
+#! /usr/bin/env python
+
+###################################################################
+#
+# Illustrates different excitations for cartesian stacks.
+#
+###################################################################
+
+from camfr import *
+
+set_N(50)
+set_lambda(1.55)
+
+GaAs = Material(3.5)
+air  = Material(1.0)
+
+slab = Slab(air(2-.1j)+ GaAs(1)+ air(2-.1j))
+s = Stack(slab(1))
+
+eps = 1e-3 # Precision for calculating overlap integrals.
+
+# General excitation using a Python function.
+
+A     = 1.0
+x0    = slab.width().real/2.
+sigma = 0.5
+
+def f(x):
+  return A*exp(-0.5*((x-x0)/sigma)**2)
+
+s.set_inc_field_function(f, eps)
+
+# Faster variant using a built-in Gaussian excitation.
+
+s.set_inc_field_gaussian(A, sigma, x0, eps)
+
+# Plane wave: f = A + slope*x
+
+slope = 0.0
+s.set_inc_field_plane_wave(A, slope, eps)
+@end group
+@end example
+
+First, we define a Python function @code{f}, which describes a Gaussian. This
+field profile is then used as an excitation by calling 
+@code{s.set_inc_field_function(f, eps)}, where @code{eps} is the precision with
+which the overlap integrals are calculated. @code{f} describes the @code{Ey} 
+field in the case of TE polarisation and the @code{Hy} field for TM. Also
+worth noting is that in defining the function, PML doesn't have to be taken
+into account explicitly, this is taken care of behind the scenes.
+
+By using Python's @code{lambda} expressions, this code could also have been
+written as
+
+@example
+s.set_inc_field_function(lambda x : exp(-0.5*((x-2.5)/0.5)**2), eps)
+@end example
+
+This is slightly faster, because Python doesn't have to reference the global
+variables @code{A}, @code{x0} and @code{sigma}.
+
+For even greater speed, there exists a predefined Gaussian excitation:
+
+@example
+s.set_inc_field_gaussian(A, sigma, x0, eps)
+@end example
+
+Finally, there is also a predefined excitation for a plane wave 
+@code{A + slope*x}:
+
+@example
+s.set_inc_field_plane_wave(A, slope, eps)
+@end example
+
+The accuracy which can be achieved to represent an arbitrary field is of course
+dependent on the number of modes used. Similarly, Gibbs phenomena can occur 
+when modelling discontinuous functions, just like e.g. in Fourier analysis.
+
+
+@page
+
+@node Tips for troubleshooting problems,  , Current source in a cavity, Modelling optical devices
+@section Tips for troubleshooting problems
 
 @cindex convergence problems, troubleshooting
 

@@ -31,7 +31,7 @@ for d in arange(0.01, 3.0, 0.05):
     # Define cavities.
 
     half      = Stack(air(d/2.) + wall)
-    half_open = Stack(air(d))
+    half_open = Stack(air(d/2.))
 
     source_pos  = Coord(0,0,0)
     orientation = Coord(1,0,0)

@@ -1,22 +1,24 @@
 CAMFR 1.0:
 
- - faster binaries, especially under Windows, where the speed can be up
-   to three times faster than CAMFR 0.9
- - more robust method of calculating Bloch modes (Lieven Vanholme)
-   and their field profiles
- - better handling loosely coupled or degenerate waveguides
- - better handling of metals, also metals with purely imaginary refractive
-   index
+ - faster binaries, especially under Windows, which can be up to three
+   times faster than CAMFR 0.9
  - new way of defining complicated structures using geometric shapes and
    automatic discretisation
- - CAMFR now runs reliably under graphical IDE environments like Idle
-   or ActiveState's PythonWin
+ - more excitations for cartesian structures: gaussians, plane waves 
+   and arbitrary shaped functions (Lieven Vanholme)
+ - support for stacks terminated by an infinite repetition of a basic 
+   period
+ - more robust method of calculating Bloch modes (Lieven Vanholme)
+   and their field profiles
  - added stack.n(), stack.mu() and stack.eps()
  - Matlab link under Windows is by default enabled and installed
+ - better handling of loosely coupled or degenerate waveguides
+ - better handling of metals, also metals with purely imaginary refractive
+   index
+ - CAMFR now runs reliably under graphical IDE environments like Idle
+   or ActiveState's PythonWin
  - various documentation updates and minor bugfixes
  - more graceful handling of user errors
- - alpha: new root finder, waveguides with 2D cross-section
- - semi-infinite stack
 
 CAMFR 0.9:
 
