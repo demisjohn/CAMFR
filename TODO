@@ -30,6 +30,8 @@ MEDIUM TERM:
 -speed up S_scheme_fields by avoiding explicit matrix multiplication.
 -short cut check_error in Bessel functions
 
+-try to prevent user from plotting in an infstack.
+
 -inx/ext_S_flux: split over materials
 -possibility to set PML layer by layer
 

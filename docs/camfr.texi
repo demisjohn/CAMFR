@@ -3174,6 +3174,9 @@ component of this mode.
 @item
 @code{bw_field()}: returns expansion coefficients of backward field
 component of this mode.
+@item
+@code{fw_bw(z)}: returns a tuple with two vectors containing the forward 
+and backward field expansions at position @code{z}.
 @end itemize
 
 @noindent
