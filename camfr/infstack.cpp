@@ -98,9 +98,13 @@ void InfStack::calcRT()
 
   allocRT();
 
-  R12.reference(multiply(B, invert_svd(F))); 
+  R12.reference(multiply(B, invert_svd(F)));
   // TODO: switch to LQ factorisation.
 
+  T12 = 0.0;
   for (int i=1; i<=N; i++)
     T12(i,i) = 1.0;
+
+  R21 = 0.0;
+  T21 = 0.0;
 }
