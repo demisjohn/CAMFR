@@ -84,6 +84,12 @@ class SlabImpl : public MultiWaveguide
                            const SlabCache* c=NULL,
                            const vector<Complex>* v=NULL,
                            int=0, int=0, int=0, int=0);
+
+    friend void overlap_TM_TE(const SlabMode*, const SlabMode*,
+			      Complex* Ex_Hz, Complex* Ez_Hx,
+			      const SlabCache* cache=NULL,
+			      const vector<Complex>* disc=NULL,
+			      int=0, int=0, int=0, int=0);
 };
 
 
