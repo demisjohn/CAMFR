@@ -1,8 +1,12 @@
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
+	* S_scheme.cpp: use unstable_exp_threshold.
+
+2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
 	* cavity.cpp: Improve checking for gain_material (again).
 
-2003-07-14  Peter Bienstman  <Peter.Bienstman@ugent.be>
+2003-07-14 Peter Bienstman <Peter.Bienstman@ugent.be>
 
 	* cavity.cpp: Improve checking for gain_material.
 
