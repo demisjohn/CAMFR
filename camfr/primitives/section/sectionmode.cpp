@@ -66,11 +66,13 @@ Section2D_Mode::Section2D_Mode
   for (int i=1; i<=M; i++)
     f(i) = E(i, index);
 
+  std::cout << f << std::endl;
+
   // Set fields.
 
   geom->right.set_inc_field(f);
   geom->left .set_inc_field(geom->right.get_refl_field());
-  
+
   geom->left .get_interface_field( &left_interface_field);
   geom->right.get_interface_field(&right_interface_field);
 
@@ -154,8 +156,42 @@ Field Section2D_Mode::field(const Coord& coord) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Section2D_Mode::get_fw_bw(const Complex& z, cVector* fw, cVector* bw)
+void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
+                               cVector* fw, cVector* bw)
 {
+  // Initialise.
+
+  Section2D* section = dynamic_cast<Section2D*>(geom);
+
+  int old_N = global.N;
+  global.N = section->M;
+
+  Complex old_beta = global_slab.beta;
+  global_slab.beta = kz;
+
+  section->left .set_interface_field( left_interface_field);
+  section->right.set_interface_field(right_interface_field);
+  
+  // Determine correct substack.
+
+  Coord stack_coord;
+  if (real(c) < real(section->left.get_total_thickness()))
+  {    
+    stack_coord.z = section->left.get_total_thickness() - c;
+    stack_coord.z_limit = (c_limit == Plus) ? Min : Plus;
+
+    section->left.fw_bw_field(stack_coord,bw,fw);
+  }
+  else
+  {  
+    stack_coord.z = c - section->left.get_total_thickness();
+    stack_coord.z_limit = c_limit;
+
+    section->right.fw_bw_field(stack_coord,fw,bw);
+  }
+
+  global.N = old_N;
+  global_slab.beta = old_beta;
 }
 
 
@@ -168,7 +204,12 @@ void Section2D_Mode::get_fw_bw(const Complex& z, cVector* fw, cVector* bw)
 
 void Section2D_Mode::normalise() 
 {
-  Complex norm = sqrt(overlap(this, this));
+  //Complex norm = sqrt(overlap(this, this));
+
+  // TMP:
+
+  Complex norm = 1.0;
+  
   if (abs(norm) < 1e-10)
   {
     py_print("Warning: section mode close to cutoff.");
@@ -222,7 +263,8 @@ Field Section1D_Mode::field(const Coord& coord) const
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Section1D_Mode::get_fw_bw(const Complex& z, cVector* fw, cVector* bw)
+void Section1D_Mode::get_fw_bw(const Complex& c, Limit c_limit, 
+                               cVector* fw, cVector* bw)
 {
 }
 

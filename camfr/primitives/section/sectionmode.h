@@ -36,7 +36,8 @@ class SectionMode : public Mode
 
     SectionImpl* get_geom() const {return geom;}
 
-    virtual void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
+    virtual void get_fw_bw(const Complex& c, Limit c_limit,
+                           cVector* fw, cVector* bw) = 0;
 
     virtual void normalise() = 0;
 
@@ -61,7 +62,7 @@ class Section2D_Mode : public SectionMode
 
     Field field(const Coord& coord) const;
 
-    void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
+    void get_fw_bw(const Complex& c, Limit c_limit, cVector* fw, cVector* bw);
     
     void normalise();
 
@@ -87,7 +88,7 @@ class Section1D_Mode : public SectionMode
 
     Field field(const Coord& coord) const;
 
-    void get_fw_bw(const Complex& z, cVector* fw, cVector* bw);
+    void get_fw_bw(const Complex& c, Limit c_limit, cVector* fw, cVector* bw);
 
     void normalise();
 };
