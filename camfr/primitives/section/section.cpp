@@ -1731,6 +1731,15 @@ void Section2D::find_modes_from_estimates()
       if (real(kz) < 0)
         kz = -kz;
 
+    // Compensate for numerical instability in the presence of PML.
+
+    if ((real(kz) > imag(kz)) && (imag(kz)>0))
+    {
+      std::cout << "Snapping " << kz/2./pi*global.lambda
+                << " to the real axis" << std::endl;
+      kz = real(kz);
+    }
+
     Section2D_Mode* newmode
      = new Section2D_Mode(global.polarisation, kz, this,
                           estimates[i].Ex, estimates[i].Ey,
