@@ -14,6 +14,8 @@ SHORT TERM
 -related: reenable complex modes in circ
 -related: test sign of beta in backward modes in circ (using power flux)
 
+-improve documentation for Planar
+
 -waiting for Boost update: operator+=, automatic conversion to Term
 
 -CAMFR gives incorrect results if compiled with malign-double. Report this
