@@ -37,6 +37,8 @@ MEDIUM TERM:
 -related: implement Bloch modes for MonoScatterers
 -related: speed this up for symmetric structures
 
+-speed up S scheme if only R matrices are needed
+
 -use asymptotic expansions for circular structures
 -more general interactive visualisation of mode profiles (phase, components)
 -write a GUI for defining complicated structures
