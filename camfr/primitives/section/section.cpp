@@ -583,6 +583,7 @@ void Section2D::find_modes_from_series()
   // Find min eps mu.
 
   Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
   
   for (unsigned int i=1; i<materials.size(); i++)
   {
@@ -590,9 +591,21 @@ void Section2D::find_modes_from_series()
     
     if (real(eps_mu) < real(min_eps_mu))
       min_eps_mu = eps_mu;
+
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
   }
 
   const Real C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
+
+  Complex max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
+    max_eps_eff = 1.5/(1.0/max_eps_mu + 1.0/min_eps_mu);
+  else
+    max_eps_eff = max_eps_mu;
+
+  Real max_kz = abs(2*pi/global.lambda*max_eps_mu/eps0/mu0);
 
   // Calc overlap matrices.
 
@@ -668,7 +681,11 @@ void Section2D::find_modes_from_series()
   E(r2,r1) = C; E(r2,r2) = D;
 
   cVector kz2(M1,fortranArray);
-  kz2 = eigenvalues(E);
+
+  if (global.stability == normal)
+    kz2 = eigenvalues(E);
+  else
+    kz2 = eigenvalues_x(E);
 
   // Refine estimates.
 
@@ -676,7 +693,8 @@ void Section2D::find_modes_from_series()
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=1; i<=M1; i++)
-    kz2_coarse.push_back(kz2(i));
+    if (real(sqrt(kz2(i))) < 1.2*max_kz)
+      kz2_coarse.push_back(kz2(i));
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), sorter());
   kz2_coarse.erase(kz2_coarse.begin()+global.N, kz2_coarse.end());
