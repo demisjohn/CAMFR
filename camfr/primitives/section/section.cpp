@@ -1713,8 +1713,7 @@ void Section2D::find_modes_from_estimates()
       if (real(sqrt(estimates_0[i]->kz2)) < 1.01*max_kz)
         estimates.push_back(estimates_0[i]);
   }
-  
-  user_estimates.clear();
+
   while (estimates.size() > global.N)
   {
     delete estimates.back();
@@ -1731,7 +1730,8 @@ void Section2D::find_modes_from_estimates()
 
     // Mode to be corrected.
 
-    if (   ( global_section.mode_correction == full)
+    if (   (user_estimates.size() != 0) 
+        || ( global_section.mode_correction == full)
         || ((global_section.mode_correction == guided_only)
             && (real(kz/2./pi*global.lambda)>real(sqrt(min_eps_mu/eps0/mu0)))))
     {    
@@ -1769,6 +1769,8 @@ void Section2D::find_modes_from_estimates()
       modeset.push_back(newmode);
     }
   }
+
+  user_estimates.clear();
 
   // Refine modes using transcendental function.
 
