@@ -46,7 +46,7 @@
  * Therefore, the range of uncertainty is guaranteed to tighten at 
  * least by a factor of 1.6
  *
- * $Id: root.cpp,v 1.2 2002-02-22 20:45:58 pbienst Exp $
+ * $Id: root.cpp,v 1.3 2002-03-18 15:40:31 pbienst Exp $
  *
  ************************************************************************
  */
@@ -336,7 +336,7 @@ vector<Real> brent_all_roots(Function1D<Real>& f, Real ax, Real bx, Real dx,
 /////////////////////////////////////////////////////////////////////////////
 
 vector<Real> brent_N_roots(Function1D<Real>& f, Real ax, int N, Real dx,
-                           Real eps=1e-13, int sec_level=0)
+                           Real eps, int sec_level)
 {
   vector<Real> Ax, Bx;
   bracket_N_roots(f, ax, N, Ax, Bx, dx, sec_level);

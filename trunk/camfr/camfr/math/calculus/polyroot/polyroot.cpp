@@ -54,8 +54,9 @@ extern "C" void cpoly_F(Real*,Real*,int&,Real*,Real*,int*);
 vector<Complex> polyroot(const vector<Complex>& coef)
 {
   // Set up variables.
-  
-  Real coef_r[coef.size()], coef_i[coef.size()];
+
+  Real* coef_r = new Real[coef.size()];
+  Real* coef_i = new Real[coef.size()];
 
   for (unsigned int i=0; i<coef.size(); i++)
   {
@@ -65,7 +66,8 @@ vector<Complex> polyroot(const vector<Complex>& coef)
   
   int N = coef.size()-1;
 
-  Real root_r[N], root_i[N];
+  Real* root_r = new Real[N];
+  Real* root_i = new Real[N];
 
   int error;
 
@@ -75,6 +77,9 @@ vector<Complex> polyroot(const vector<Complex>& coef)
 
   if (error)
     cout << "Warning: polyroot solver did not converge." << endl;
+
+  delete coef_r; delete coef_i;
+  delete root_r, delete root_i;
 
   // Return results.
 
