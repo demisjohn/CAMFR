@@ -3,9 +3,9 @@
 
 # Compilers to be used.
 
-cc  = "/home/pbienst/local/bin/gcc"
-cxx = "/home/pbienst/local/bin/g++"
-f77 = "/home/pbienst/local/bin/g77"
+cc  = "gcc"
+cxx = "g++"
+f77 = "g77"
 
 link = cxx
 link_flags = ""
@@ -25,7 +25,7 @@ base_flags = "-ftemplate-depth-60 \
 flags_noopt = base_flags
 
 flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentiumpro \
-                       -ffast-math -funroll-loops -fstrict-aliasing -g"
+                       -funroll-loops -fstrict-aliasing -g"
 
 fflags = flags
 
@@ -33,7 +33,7 @@ fflags = flags
 
 include_dirs = ["/home/pbienst/blitz-20001213",
 	        "/home/pbienst/boost_cvs/boost",
-	        "/home/pbienst/local/include/python2.2"]
+	        "/usr/include/python2.2"]
 
 # Library directories.
 

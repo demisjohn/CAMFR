@@ -3,9 +3,10 @@
 
 # Compilers to be used.
 
-cc  = "icl"
-cxx = "icl"
-f77 = "ifl"
+cc   = "icl"
+cxx  = "icl"
+f77  = "ifl"
+link = 'xilink' 
 
 # Compiler flags.
 #
@@ -19,52 +20,40 @@ f77 = "ifl"
 # compiler flags to test: /Oa /Gr /Oy /Qip(o)(-wg)
 # profiling: /Qprof_gen , run , /Qprof_use
 
-flags_base = "/nologo  /GR /GX /MD -Qoption,cpp,--new_for_init \
+flags_base = "/nologo /GR /GX /MD -Qoption,cpp,--new_for_init \
 	-Qprof_dir D:\camfr\camfr -DNDEBUG \
 	-DFORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES"
 
 flags_noopt = flags_base + " /Od /Ob0"
 flags       = flags_base + " /QxK /O3"
 fflags      = flags_base + " /Qlowercase /4L132"
+link_flags = "/NODEFAULTLIB:libc.lib" 
 
 # Include directories.
 
-include_dirs ="D:/blitz-20001213 \
-	       D:/boost_cvs/boost \
-	       C:/progra~1/python22/include \
-	       D:/arpack++/include"
+include_dirs = ["D:/blitz/blitz-20001213", 
+                "D:/boost_cvs",
+                "C:/Python22/include"]
 
-# Temporary workaround waiting for shared lib support in scons.
+# Library directories.
 
-camfrlib = "camfr.lib"
-dllsuffix = ".pyd"
-dllcommand = "xilink /DLL /nologo /INCREMENTAL:NO /LIBPATH:./camfr \
-	/LIBPATH:D:/blitz-20001213/lib \
-	/LIBPATH:C:/progra~1/intel/mkl/ia32/lib \
-	/LIBPATH:C:/progra~1/compiler60/ia32/lib \
-	/LIBPATH:C:/progra~1/python22/libs \
-        /LIBPATH:D:/boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic \
-	camfr/camfr_wrap.obj camfr.lib bpl.lib \
-	python22.lib blitz.lib mkl_c.lib mkl_lapack.lib mkl_p3.lib libf90.lib \
-	/OUT:camfr/_camfr.pyd /IMPLIB:_camfr.lib /EXPORT:init_camfr /NODEFAULTLIB:libc.lib "
+library_dirs = ["D:/blitz/blitz-20001213/lib", 
+                "D:/progra~1/compiler60/ia32/lib", 
+                "C:/python22/libs", 
+                "D:/boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic"] 
 
-# Command to strip library of excess symbols.
+# Library names.
+ 
+libs = ["bpl", "python22", "blitz", "libf90MD"] 
 
-strip_command = ""
+# Command to strip library of excess symbols. 
+
+dllsuffix = ".dll" 
+strip_command = "" 
 
 # Extra files to copy to installation directory.
-
 extra_files = [ \
-   "D:\\boost_cvs/boost/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll",
-   "D:\\pymat/pymat.pyd",
-   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_support.dll",
-   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_p3.dll",
-   "C:\\progra~1/Intel/MKL/ia32/bin/mkl_lapack32.dll",
-   "C:\\windows/system32/msvcr70.dll",
-   "C:\\windows/system32/msvcp70.dll",
-   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libmmd.dll",
-   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libIEPCF90MD.dll",
-   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libF90MD.dll",
-   "C:\\progra~1/Intel/Compiler60/IA32/Lib/libintrinsMD.dll"
+   "D:\\camfrcode/doc/camfr.pdf", 
+   "D:\\camfrcode/pymat/build/lib.win32-2.2/pymat.pyd", 
+   "D:\\boost_cvs/libs/python/bin/bpl.dll/intel-win32/release/runtime-link-dynamic/bpl.dll" 
    ]
-

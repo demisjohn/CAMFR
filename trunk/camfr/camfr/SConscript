@@ -5,6 +5,7 @@ Import('env', 'env_noopt')
 noopt = []
 noopt.append(env_noopt.SharedObject(source = 'defs.cpp'))
 noopt.append(env_noopt.SharedObject(source = 'math/bessel/slatec/limits.c'))
+noopt.append(env_noopt.SharedObject(source = 'camfr_wrap.cpp'))
 
 # Contruct names of all Fortran files.
 
@@ -33,7 +34,6 @@ env.SharedLibrary(target = '_camfr',
 		      'S_scheme_fields.cpp', 'T_scheme_fields.cpp',
 	              'cavity.cpp', 'bloch.cpp', 'infstack.cpp',
 		      'util/cvector.cpp', 'util/index.cpp',
-		      'camfr_wrap.cpp',
 		      'util/tracesorter.cpp',
 		      'math/bessel/bessel.cpp',
 		      'math/linalg/linalg.cpp',

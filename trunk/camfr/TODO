@@ -1,9 +1,7 @@
 CAMFR 1.0:
 
--Windows machine_cfg.py
--Lieven's plot routines + manual (plot_field_waveguide typo, plot_matrix)
--go through bug reports
-
+-cvs add SConstruct Windows.
+-website
 
 CAMFR 3D:
 
