@@ -284,7 +284,7 @@ Expression Expression::flatten() const
   // at the front of the expression, without a scatterer.
 
   Term* t0 = flat_optim.get_term(0);
-  if ((t0->get_type() == WAVEGUIDE) && (abs(t0->get_d()) > 0))
+  if ((t0->get_type() == WAVEGUIDE))
   { 
     Scatterer* sc = interface_cache.get_interface(t0->get_wg(), t0->get_wg());
     flat_optim.insert_term_front(Term(*sc));

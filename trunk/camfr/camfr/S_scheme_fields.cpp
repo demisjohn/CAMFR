@@ -350,7 +350,12 @@ void calc_S_S_diag(const vector<Chunk>& chunks,
   
   cVector fw0(N,fortranArray); fw0 = (*field)[0].fw;
   cVector bw0(N,fortranArray); bw0 = (*field)[0].bw;
-  
+
+  // A transparent diagonal scatters is not automatically calculated.
+
+  if (chunks[0].sc->get_inc() == chunks[0].sc->get_ext())
+    chunks[0].sc->calcRT();
+
   // Loop over chunks.
 
   for (unsigned int k=0; k<chunks.size(); k++)
