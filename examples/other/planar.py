@@ -9,26 +9,33 @@
 from camfr import *
 from Numeric import *
 
-# Define materials.
+# Define structure.
 
-set_lambda(1.)
-GaAs = Material(3.53)
-AlAs = Material(2.95)
+set_lambda(1)
 
-d_GaAs = .25*GaAs.n().real
-d_AlAs = .25*AlAs.n().real
+GaAs_m = Material(3.5)
+AlAs_m = Material(2.9)
 
-# TE incidence.
+GaAs = Planar(GaAs_m)
+AlAs = Planar(AlAs_m)
 
-set_polarisation(TE)
+d_GaAs = get_lambda()/4./GaAs_m.n().real
+d_AlAs = get_lambda()/4./AlAs_m.n().real
 
-GaAs_TE = Planar(GaAs)
-AlAs_TE = Planar(AlAs)
+s = Stack(GaAs(0) + 10*(GaAs(d_GaAs) + AlAs(d_AlAs)) + GaAs(0))
 
-s_TE = Stack(GaAs_TE(0) + 10*(GaAs_TE(d_GaAs) + AlAs_TE(d_AlAs)) + GaAs_TE(0))
-GaAs_TE.set_theta(0)
+# Loop over incidence angles.
 
-for l in arange(0.8, 1.2, 0.05):
-  set_lambda(l)
-  s_TE.calc()
-  print l, abs(s_TE.R12(0,0))**2
+for theta in arange(0, 90, 0.5):
+
+  GaAs.set_theta(theta * pi / 180.)
+  print theta,
+  
+  set_polarisation(TE)
+  s.calc()
+  print abs(s.R12(0,0))**2 ,
+
+  set_polarisation(TM)
+  s.calc()
+  print abs(s.R12(0,0))**2
+  
