@@ -1063,10 +1063,7 @@ Complex Stack::lateral_S_flux(const Complex& c1, vector<Complex>* S_k=NULL)
 /////////////////////////////////////////////////////////////////////////////
 
 Complex Stack::eps_at(const Coord& coord) const
-{
-  cout << "Stack::eps_at not yet implemented." << endl;
-  exit (-1);
-  
+{  
   if ( (abs(coord.z) < 1e-10) && (coord.z_limit == Min))
     return get_inc()->eps_at(coord);
 
@@ -1076,11 +1073,10 @@ Complex Stack::eps_at(const Coord& coord) const
   if (index == interface_positions.size())
     return get_ext()->eps_at(coord);
 
-  return 0;
+  const vector<Chunk>* chunks
+    = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
   
-  //Chunk* chunks = static_cast<const StackImpl*>(flat_sc)->get_chunks();
-
-  //return chunks[index].sc->get_ext()->eps_at(coord);
+  return (*chunks)[index].sc->get_ext()->eps_at(coord);
 }
 
 
@@ -1092,10 +1088,7 @@ Complex Stack::eps_at(const Coord& coord) const
 /////////////////////////////////////////////////////////////////////////////
 
 Complex Stack::mu_at(const Coord& coord) const
-{
-  cout << "Stack::mu_at not yet implemented." << endl;
-  exit (-1);
-  
+{  
   if ( (abs(coord.z) < 1e-10) && (coord.z_limit == Min))
     return get_inc()->mu_at(coord);
 
@@ -1105,11 +1098,10 @@ Complex Stack::mu_at(const Coord& coord) const
   if (index == interface_positions.size())
     return get_ext()->mu_at(coord);
 
-  return 0;
-  
-  //Chunk* chunks = static_cast<const StackImpl*>(flat_sc)->get_chunks();
+  const vector<Chunk>* chunks
+    = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
 
-  //return chunks[index].sc->get_ext()->mu_at(coord);
+  return (*chunks)[index].sc->get_ext()->mu_at(coord);
 }
 
 
