@@ -972,7 +972,7 @@ cVector Slab_M::fourier_eps_extended(int M, cVector* inv_result) const
     Complex f = 1./eps_at(Coord(abs(x), 0, 0, Plus))*eps0;
     
     if (global.solver == ASR)
-      f *= (1.0 - eta * cos(2.*pi*(x-x0)/dk));
+      f *= (1.0 - eta * cos(2.*pi*(x-x0)/dk))    ;
 
     if (inv_result)
     {
@@ -1469,10 +1469,10 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
 
-  //for (unsigned int i=0; i<kz2.size(); i++)
-  //  std::cout << "raw sorted" << i << " " 
-  //            << sqrt(kz2_coarse[i])/2./pi*global.lambda 
-  //            << kz2_coarse[i] << std::endl;
+  for (unsigned int i=0; i<kz2.size(); i++)
+    std::cout << "raw sorted" << i << " " 
+              << sqrt(kz2_coarse[i])/2./pi*global.lambda 
+              << kz2_coarse[i] << std::endl;
   
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());

@@ -441,6 +441,8 @@ Complex overlap_slice(const SectionMode* sec_I_mode,
 //
 //   Overlap between plane wave based modes.
 //
+//   ONLY WORKS for alpha0=beta0=0.
+//
 /////////////////////////////////////////////////////////////////////////////
 
 Complex overlap_pw(const Section2D_Mode* sec_I_mode, 

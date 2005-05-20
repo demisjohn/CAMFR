@@ -136,15 +136,25 @@ Field Section2D_Mode::field(const Coord& coord) const
   {
     Field f;
 
-    Coord c = coord;
-    c.c1 += I*global_section.left_PML;
-    c.c2 += I*global_slab.lower_PML;
+    Coord c = coord;    
+
+    if (global_section.section_solver != L_anis)
+    {
+      c.c1 += I*global_section.left_PML;
+      c.c2 += I*global_slab.lower_PML;
+    }
 
     const int M = global_section.M;
     const int N = global_section.N;
 
-    const Complex W = get_geom()->get_width();
-    const Complex H = get_geom()->get_height();
+    Complex W = get_geom()->get_width();
+    Complex H = get_geom()->get_height();
+
+    if (global_section.section_solver == L_anis)
+    {
+      W = real(W);
+      H = real(H);
+    }
     
     for (Real m=-M; m<=M; m+=1.0)
       for (Real n=-N; n<=N; n+=1.0)

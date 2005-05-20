@@ -1102,7 +1102,7 @@ void Section2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
   bool extend = true;
 
   const Real p = global_section.PML_fraction;
-  Complex p_d = 0.5; // TMP
+  Complex p_d = 0.3; // TMP
 
   // Construct data structures for fourier analysis.
 
@@ -1413,9 +1413,12 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   //if ( (abs(R_lower+1.0) < 1e-6) && (abs(R_upper+1.0) < 1e-6) ) // EE
   //    N--; // Note: don't do this for HH since it has a dummy solution.
+
+  M = M1;
+  N = M1;
   
   global_section.M = M;
-  global_section.N = N; 
+  global_section.N = N;
 
   int m_ = 2*M+1;  
   int n_ = 2*N+1;
