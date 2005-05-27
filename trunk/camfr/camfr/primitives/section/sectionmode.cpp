@@ -328,6 +328,12 @@ void Section2D_Mode::normalise()
   { 
     Complex norm = sqrt(overlap_pw(this, this));
 
+    if (abs(norm) < 1e-5)
+    {
+      py_print("Warning: plane wave section mode close to cutoff.");
+      norm = 1.0;
+    }
+
     *Ex /= norm;
     *Ey /= norm;
     *Hx /= norm;
@@ -352,7 +358,7 @@ void Section2D_Mode::normalise()
   
   norm = sqrt(norm);
   
-  if (abs(norm) < 1e-10)
+  if (abs(norm) < 1e-5)
   {
     py_print("Warning: section mode close to cutoff.");
     norm = 1.0;
