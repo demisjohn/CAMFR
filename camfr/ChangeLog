@@ -1,3 +1,9 @@
+2005-05-27  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* interface.h: Add interface routines with complex conjugate.
+	* interface.cpp: Ditto.
+	* camfr_wrap.cpp: Add BlochSection.
+
 2005-04-06  Peter Vandersteegen  <Peter.Vandersteegen@UGent.be>
 
 	* camfr_wrap.cpp: Fix get_kt() and set_kt().
