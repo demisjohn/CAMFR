@@ -21,84 +21,63 @@
 //
 // CLASS: BlochSectionMode
 //
-//   Interface class for BlochSection2D_Mode and BlochSection1D_Mode.
-//
 /////////////////////////////////////////////////////////////////////////////
 
 class BlochSectionMode : public Mode
 {
   public:
 
-    BlochSectionMode(Polarisation pol, const Complex& kz0, 
-                     BlochSectionImpl* geom_)
-      : Mode(pol, kz0, -kz0), geom(geom_) {}
+    BlochSectionMode(Polarisation pol, const Complex& kz, 
+                     BlochSectionImpl* geom_,
+                     const cVector& Ex, const cVector& Ey,
+                     const cVector& Hx, const cVector& Hy);
 
     BlochSectionImpl* get_geom() const {return geom;}
 
-    virtual void normalise() = 0;
-
-  protected:
-
-    BlochSectionImpl* geom;
-};
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: BlochSection2D_Mode
-//
-/////////////////////////////////////////////////////////////////////////////
-
-class BlochSection2D_Mode : public BlochSectionMode
-{
-  public:
-
-    BlochSection2D_Mode(Polarisation pol, const Complex& kz, 
-                        BlochSectionImpl* geom,
-                        const cVector& Ex, const cVector& Ey,
-                        const cVector& Hx, const cVector& Hy);
-
     Field field(const Coord& coord) const;
-    
+
     void normalise();
 
-    friend Complex overlap(const BlochSection2D_Mode* sec_I_mode,
-                           const BlochSection2D_Mode* sec_II_mode);
+    virtual int get_Mx() const {return -999;}
+    virtual int get_My() const {return -999;}
+
+    friend Complex overlap(const BlochSectionMode* sec_I_mode,
+                           const BlochSectionMode* sec_II_mode);
 
   protected:
+
+    BlochSectionImpl* geom;    
+
+    // Note: for uniform structures this could be simplified to a scalar,
+    // but the gains are probably not very large.
 
     cVector Ex, Ey, Hx, Hy;
 };
 
 
-// TODO: Implement.
-
-#if 0
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: BlochSection1D_Mode
+// CLASS: UniformBlochSectionMode
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class BlochSection1D_Mode : public BlochSectionMode
+class UniformBlochSectionMode : public BlochSectionMode
 {
   public:
 
-    BlochSection1D_Mode(Polarisation pol, const Complex& kz, 
-                   SlabMode* m, BlochSection1D* geom);
+    UniformBlochSectionMode(Polarisation pol, const Complex& kz,
+                            BlochSectionImpl* geom, int M_, int N_,
+                            const cVector& Ex, const cVector& Ey,
+                            const cVector& Hx, const cVector& Hy)
+      : BlochSectionMode(pol, kz, geom, Ex, Ey, Hx, Hy), M(M_), N(N_) {}
 
-    Field field(const Coord& coord) const;
-
-    void normalise();
+    int get_Mx() const {return M;}
+    int get_My() const {return N;}
 
   protected:
-
-    SlabMode* m;
-    Complex fw0, bw0;
+    int M, N;
 };
-#endif
 
 
 

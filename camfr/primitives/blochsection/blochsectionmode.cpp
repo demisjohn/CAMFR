@@ -21,17 +21,17 @@ using std::endl;
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// BlochSection2D_Mode::BlochSection2D_Mode
+// BlochSectionMode::BlochSectionMode
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BlochSection2D_Mode::BlochSection2D_Mode
-  (Polarisation pol, const Complex& kz, BlochSectionImpl* geom,
-   const cVector& Ex_, const cVector& Ey_, 
-   const cVector& Hx_, const cVector& Hy_)
-    : BlochSectionMode(pol, kz, geom), 
-      Ex(fortranArray), Ey(fortranArray), 
-      Hx(fortranArray), Hy(fortranArray)
+BlochSectionMode::BlochSectionMode(Polarisation pol, const Complex& kz, 
+                                   BlochSectionImpl* geom_,
+                                   const cVector& Ex_, const cVector& Ey_,
+                                   const cVector& Hx_, const cVector& Hy_)
+: Mode(pol, kz, -kz), geom(geom_),
+  Ex(fortranArray), Ey(fortranArray),
+  Hx(fortranArray), Hy(fortranArray)
 {
   Ex.resize(Ex_.shape()); Ex = Ex_;
   Ey.resize(Ey_.shape()); Ey = Ey_;
@@ -43,11 +43,11 @@ BlochSection2D_Mode::BlochSection2D_Mode
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// BlochSection2D_Mode::field
+// BlochSectionMode::field
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Field BlochSection2D_Mode::field(const Coord& coord) const 
+Field BlochSectionMode::field(const Coord& coord) const 
 {
   Field f;
 
@@ -69,8 +69,8 @@ Field BlochSection2D_Mode::field(const Coord& coord) const
     {
       int i1 = int((m+M+1) + (n+N)*(2*M+1));
 
-      Complex alpha  = alpha0 + m*2.*pi/W;
-      Complex  beta  =  beta0 + n*2.*pi/H;
+      Complex alpha = alpha0 + m*2.*pi/W;
+      Complex  beta =  beta0 + n*2.*pi/H;
       Complex expon = exp(I*(alpha*c.c1 + beta*c.c2));
 
       f.E1 += Ex(i1)*expon;
@@ -88,64 +88,31 @@ Field BlochSection2D_Mode::field(const Coord& coord) const
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// BlochSection2D_Mode::normalise
+// BlochSectionMode::normalise
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void BlochSection2D_Mode::normalise() 
+void BlochSectionMode::normalise() 
 {
-  Complex norm = sqrt(overlap(this, this));
+  Complex norm = sqrt(overlap(this,this));
+  
+  if (abs(norm) < 1e-5)
+  {
+    //py_print("Warning: mode close to cutoff.");
+    norm = 1.0;
+  }
 
   Ex /= norm;
   Ey /= norm;
   Hx /= norm;
   Hy /= norm;
 
-  std::cout << kz << std::endl;
-  std::cout << Ex << std::endl;;
-  std::cout << Ey << std::endl;;
-  std::cout << Hx << std::endl;;
-  std::cout << Hy << std::endl;;
-  std::cout << std::endl;
+  return;
+
+  std::cout << n_eff() << std::endl;
+  std::cout << Ex << std::endl;
+  std::cout << Ey << std::endl;
+  std::cout << Hx << std::endl;
+  std::cout << Hy << std::endl;  
 }
 
-
-#if 0
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BlochSection1D_Mode::BlochSection1D_Mode
-//
-/////////////////////////////////////////////////////////////////////////////
-
-BlochSection1D_Mode::BlochSection1D_Mode
-  (Polarisation pol, const Complex& kz, SlabMode* m_, BlochSection1D* geom) 
-    : BlochSectionMode(pol, kz, geom), m(m_)
-{
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BlochSection1D_Mode::field
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Field BlochSection1D_Mode::field(const Coord& coord) const 
-{
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BlochSection1D_Mode::normalise
-//
-/////////////////////////////////////////////////////////////////////////////
-
-void BlochSection1D_Mode::normalise() 
-{
-}
-
-#endif

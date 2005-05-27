@@ -47,8 +47,8 @@ void BlochSectionImpl::calc_overlap_matrices
   (MultiWaveguide* w, cMatrix* O_I_II, cMatrix* O_II_I,
    cMatrix* O_I_I, cMatrix* O_II_II)
 {
-  BlochSection2D* medium_I  = dynamic_cast<BlochSection2D*>(this);
-  BlochSection2D* medium_II = dynamic_cast<BlochSection2D*>(w);
+  BlochSectionImpl* medium_I  = dynamic_cast<BlochSectionImpl*>(this);
+  BlochSectionImpl* medium_II = dynamic_cast<BlochSectionImpl*>(w);
 
   // Dimensions equal?
 
@@ -93,25 +93,23 @@ void BlochSectionImpl::calc_overlap_matrices
 
   for (int i=1; i<=int(medium_I->N()); i++)
     for (int j=1; j<=int(medium_I->N()); j++)
-    {
+    { 
       (*O_I_II)(i,j) = overlap
-        (dynamic_cast<BlochSection2D_Mode*>(medium_I ->get_mode(i)),
-         dynamic_cast<BlochSection2D_Mode*>(medium_II->get_mode(j)));
+        (dynamic_cast<BlochSectionMode*>(medium_I ->get_mode(i)),
+         dynamic_cast<BlochSectionMode*>(medium_II->get_mode(j)));
 
       (*O_II_I)(i,j) = overlap
-        (dynamic_cast<BlochSection2D_Mode*>(medium_II->get_mode(i)),
-         dynamic_cast<BlochSection2D_Mode*>(medium_I ->get_mode(j)));
+        (dynamic_cast<BlochSectionMode*>(medium_II->get_mode(i)),
+         dynamic_cast<BlochSectionMode*>(medium_I ->get_mode(j)));
 
       if (O_I_I) (*O_I_I)(i,j) = overlap
-        (dynamic_cast<BlochSection2D_Mode*>(medium_I ->get_mode(i)),
-         dynamic_cast<BlochSection2D_Mode*>(medium_I ->get_mode(j)));
+        (dynamic_cast<BlochSectionMode*>(medium_I ->get_mode(i)),
+         dynamic_cast<BlochSectionMode*>(medium_I ->get_mode(j)));
 
       if (O_II_II) (*O_II_II)(i,j) = overlap
-        (dynamic_cast<BlochSection2D_Mode*>(medium_II->get_mode(i)),
-         dynamic_cast<BlochSection2D_Mode*>(medium_II->get_mode(j)));
+        (dynamic_cast<BlochSectionMode*>(medium_II->get_mode(i)),
+         dynamic_cast<BlochSectionMode*>(medium_II->get_mode(j)));
     }
-
-  py_print("Done overlap.");
 }
 
 
@@ -384,6 +382,128 @@ void rotate_slabs_(const vector<Slab*>& slabs, const vector<Complex>& disc,
 }
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// BlochSection2D::create_FG_NT
+//
+//   Noponen/Turunen formulation
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void BlochSection2D::create_FG_NT(cMatrix* F, cMatrix* G, int M, int N,
+                                  const Complex& alpha0, const Complex& beta0)
+{
+  const Complex k0 = 2*pi/global.lambda;
+
+  // Construct data structures for fourier analysis.
+
+  vector<Complex> disc_x(discontinuities);
+  disc_x.insert(disc_x.begin(), 0.0);
+
+  vector<vector<Complex> > disc_y, f_eps, f_inv_eps;
+  for (int i=0; i<disc_x.size()-1; i++)
+  {
+    vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
+    disc_y_i.insert(disc_y_i.begin(), 0.0);
+
+    vector<Complex> f_eps_i, f_inv_eps_i;
+    for (int j=0; j<disc_y_i.size()-1; j++)
+    {
+      Coord coord(disc_y_i[j],0,0,Plus);
+      
+      f_eps_i.    push_back(slabs[i]->eps_at(coord)/eps0); 
+      f_inv_eps_i.push_back(eps0/slabs[i]->eps_at(coord));
+    }
+
+    disc_y.push_back(disc_y_i);
+    f_eps.push_back(f_eps_i);
+    f_inv_eps.push_back(f_inv_eps_i);
+  }
+
+  // Construct fourier matrices.
+
+  cMatrix eps_(4*M+1,4*N+1,fortranArray);
+  eps_ = fourier_2D(disc_x, disc_y, f_eps, 2*M, 2*N);
+
+  cMatrix inv_eps_(4*M+1,4*N+1,fortranArray);
+  inv_eps_ = fourier_2D(disc_x, disc_y, f_inv_eps, 2*M, 2*N);
+  
+  int m_ = 2*M+1;  
+  int n_ = 2*N+1;
+
+  const int MN = m_*n_;
+  
+  cMatrix eps(MN,MN,fortranArray);
+  cMatrix inv_eps(MN,MN,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {
+      int i1 = (m+M+1) + (n+N)*(2*M+1);
+     
+      for (int j=-M; j<=M; j++)
+        for (int l=-N; l<=N; l++)
+        {
+          int i2 = (j+M+1) + (l+N)*(2*M+1);
+
+              eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1);
+          inv_eps(i1,i2) = inv_eps_(m-j + 2*M+1, n-l + 2*N+1);
+        }
+    }
+
+  // Calculate alpha and beta vector.
+
+  cVector alpha(MN,fortranArray);
+  cVector  beta(MN,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {      
+      int i = (m+M+1) + (n+N)*(2*M+1);
+
+      alpha(i) = alpha0 + m*2.*pi/get_width();
+       beta(i) =  beta0 + n*2.*pi/get_height();
+    }
+
+  // Constuct F matrix.
+
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      (*F)(i1,   i2)    =  alpha(i1) * inv_eps(i1,i2) *  beta(i2);
+      (*F)(i1,   i2+MN) = -alpha(i1) * inv_eps(i1,i2) * alpha(i2);
+      (*F)(i1+MN,i2)    =   beta(i1) * inv_eps(i1,i2) *  beta(i2);
+      (*F)(i1+MN,i2+MN) =  -beta(i1) * inv_eps(i1,i2) * alpha(i2);
+
+      if (i1==i2)
+      {
+        (*F)(i1,   i2+MN) += k0*k0;
+        (*F)(i1+MN,i2)    -= k0*k0;
+      }
+    }
+
+  // Construct G matrix.
+
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+
+      (*G)(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+      (*G)(i1,   i2+MN) = -k0*k0 * eps(i1,i2);
+      (*G)(i1+MN,i2)    =  k0*k0 * eps(i1,i2);
+      (*G)(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+
+      if (i1==i2)
+      {
+        (*G)(i1,   i2+MN) += alpha(i1)*alpha(i1);
+        (*G)(i1+MN,i2)    -=  beta(i2)*beta(i2);
+      }
+    }
+  
+  std::cout << "Created Noponen/Turunen eigenproblem" << std::endl;
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -404,6 +524,9 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
   disc_x.insert(disc_x.begin(), 0.0);
 
   vector<vector<Complex> > disc_y, f_eps;
+  // TMP
+  vector<vector<Complex> > f_inv_eps;
+
   for (int i=0; i<disc_x.size()-1; i++)
   {
     vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
@@ -415,10 +538,14 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
       Coord coord(disc_y_i[j],0,0,Plus);
       
       f_eps_i.push_back(slabs[i]->eps_at(coord)/eps0);
+
+      f_inv_eps_i.push_back(eps0/slabs[i]->eps_at(coord));
     }
 
     disc_y.push_back(disc_y_i);
-    f_eps.push_back(f_eps_i);
+    f_eps.push_back(f_eps_i);    
+
+    f_inv_eps.push_back(f_inv_eps_i);
   }
 
   vector<Slab*> slabs_rot;
@@ -491,7 +618,7 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
     eps_y_x.reference(invert_svd(t));
 
   eps_x_y.reference(fourier_2D_split(disc_x_rot,disc_y_rot,f_inv_eps_rot,N,M));
-
+  
   // Calculate alpha and beta vector.
 
   cVector alpha(MN,fortranArray);
@@ -502,10 +629,10 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
     {      
       int i = (m+M+1) + (n+N)*(2*M+1);
 
-      alpha(i) = alpha0 + m*2.*pi/get_width()/2.;
-       beta(i) =  beta0 + n*2.*pi/get_height()/2.;
+      alpha(i) = alpha0 + m*2.*pi/get_width();
+       beta(i) =  beta0 + n*2.*pi/get_height();
     }
-
+  
   // Constuct F matrix.
 
   for (int i1=1; i1<=MN; i1++)
@@ -541,8 +668,6 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
       }
     }
 
-  std::cout << "Created Li eigenproblem" << std::endl;
-
   // Free rotated slabs.
 
   for (int i=0; i<slabs_rot.size(); i++)
@@ -564,7 +689,7 @@ void BlochSection2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G,
                                           const Complex& alpha0, 
                                           const Complex& beta0)
 {
-  const Complex k0 = 2*pi/global.lambda;
+  const Complex k0 = 2.*pi/global.lambda;
 
   const Real p = global_section.PML_fraction;
   Complex p_d = 0.3; // TMP
@@ -791,8 +916,8 @@ void BlochSection2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G,
     {      
       int i = (m+M+1) + (n+N)*(2*M+1);
 
-      alpha(i) = alpha0 + m*2.*pi/real(get_width())/2.;
-       beta(i) =  beta0 + n*2.*pi/real(get_height())/2.;
+      alpha(i) = alpha0 + m*2.*pi/real(get_width());
+       beta(i) =  beta0 + n*2.*pi/real(get_height());
     }
 
   // Constuct F matrix.  
@@ -822,8 +947,6 @@ void BlochSection2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G,
       (*G)(i1,   i2+MN) -= k0*k0 * eps_2(i1,i2);
       (*G)(i1+MN,i2)    += k0*k0 * eps_1(i1,i2);
     }
-
-  std::cout << "Created Li biaxial eigenproblem" << std::endl;
 }
 
 
@@ -891,8 +1014,10 @@ void BlochSection2D::find_modes()
 
   if ( (global_section.section_solver == L_anis) || (PML_present) )
     create_FG_li_biaxial(&F, & G, M, N, real(alpha0), real(beta0));
-  else 
+  else
     create_FG_li(&F, & G, M, N, alpha0, beta0);
+
+  //create_FG_NT(&F, & G, M, N, alpha0, beta0);
 
   cMatrix FG(2*MN,2*MN,fortranArray);  
   FG.reference(multiply(F,G));
@@ -948,11 +1073,10 @@ void BlochSection2D::find_modes()
     Hx = eig_H(r1,i)/kz/k0*Y0;
     Hy = eig_H(r2,i)/kz/k0*Y0;
 
-    BlochSection2D_Mode* newmode 
-      = new BlochSection2D_Mode(TE_TM, kz, this, Ex, Ey, Hx, Hy);    
+    BlochSectionMode* newmode 
+      = new BlochSectionMode(TE_TM, kz, this, Ex, Ey, Hx, Hy);
 
     newmode->normalise();
-
     modeset.push_back(newmode);
   }
 
@@ -969,14 +1093,38 @@ void BlochSection2D::find_modes()
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// BlochSection2D::order
+//
+/////////////////////////////////////////////////////////////////////////////
+
+int BlochSection2D::order(Polarisation pol, int Mx, int My) const
+{
+  py_error("'order' not defined for non-uniform BlochSections.");
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BlochSection2D::set_theta_phi
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void BlochSection2D::set_theta_phi(Real theta, Real phi) const
+{  
+  py_error("'set_theta_phi' not defined for non-uniform BlochSections.");
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // UniformBlochSection::find_modes
 //
 /////////////////////////////////////////////////////////////////////////////
 
 void UniformBlochSection::find_modes()
-{
-  std::cout << "uniform";
-  
+{  
   // Set constants.
 
   const Complex k = 2*pi/global.lambda*core->n();
@@ -997,7 +1145,7 @@ void UniformBlochSection::find_modes()
 
   if (real(global.lambda) == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
 
@@ -1043,8 +1191,9 @@ void UniformBlochSection::find_modes()
       Hx(i1) = - Y * cos(phi) * kz / k;
       Hy(i1) = - Y * sin(phi) * kz / k;
 
-      BlochSection2D_Mode *newmode
-        = new BlochSection2D_Mode(TE, kz, this, Ex, Ey, Hx, Hy);
+      UniformBlochSectionMode *newmode
+        = new UniformBlochSectionMode(TE, kz, this, int(m), int(n), 
+                                      Ex, Ey, Hx, Hy);
 
       newmode->normalise();
       modeset.push_back(newmode);
@@ -1057,7 +1206,8 @@ void UniformBlochSection::find_modes()
       Hy(i1) =   Y * cos(phi);
  
       newmode
-        = new BlochSection2D_Mode(TM, kz, this, Ex, Ey, Hx, Hy);
+        = new UniformBlochSectionMode(TM, kz, this, int(m), int(n), 
+                                      Ex, Ey, Hx, Hy);
 
       newmode->normalise();
       modeset.push_back(newmode);
@@ -1071,4 +1221,44 @@ void UniformBlochSection::find_modes()
   if (global.gain_mat)
     last_gain_mat = *global.gain_mat;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformBlochSection::order
+//
+//  Convert polarisation and orders into the correct modal index
+//
+/////////////////////////////////////////////////////////////////////////////
+
+int UniformBlochSection::order(Polarisation pol, int Mx, int My) const
+{
+  for (int i=0; i<modeset.size(); i++)
+  {
+    UniformBlochSectionMode* m 
+      = dynamic_cast<UniformBlochSectionMode*>(modeset[i]);
+    
+    if ( (m->pol == pol) && (m->get_Mx() == Mx) && (m->get_My() == My) )
+      return i;
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformBlochSection::set_theta_phi
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void UniformBlochSection::set_theta_phi(Real theta, Real phi) const
+{
+  Complex k = 2.*pi / global.lambda * core->n();
+
+  global_blochsection.alpha0 = k * sin(theta) * cos(phi);
+  global_blochsection.beta0  = k * sin(theta) * sin(phi);;  
+}
+
+
 
