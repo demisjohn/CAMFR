@@ -13,6 +13,7 @@
 #include <sstream>
 #include "interface.h"
 #include "bloch.h"
+#include "primitives/blochsection/blochsection.h"
 
 using std::vector;
 
@@ -56,6 +57,9 @@ void DenseInterface::calcRT()
   BlochStack* bs1 = dynamic_cast<BlochStack*>(inc);
   BlochStack* bs2 = dynamic_cast<BlochStack*>(ext);
 
+  BlochSection* bsec1 = dynamic_cast<BlochSection*>(inc);
+  BlochSection* bsec2 = dynamic_cast<BlochSection*>(ext);
+
   if (bs1 || bs2)
   {
     if (bs1 && bs2)
@@ -65,7 +69,12 @@ void DenseInterface::calcRT()
     else
       calcRT_wg_bloch();
   } 
-  else 
+  else if (bsec1 && bsec2)
+  {
+    //calcRT_blochsection_safe();
+    calcRT_blochsection_non_orth_safe();
+  }
+  else
   {
     if (global.orthogonal == false)
       (global.stability == normal) ? calcRT_non_orth_fast()
@@ -394,6 +403,178 @@ void DenseInterface::calcRT_non_orth_fast()
   R12 = X(r2,r1); T21 = X(r2,r2);
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DenseInterface::calcRT_blochsection_safe
+//
+//  Same as calcRT_safe, but uses E x H* as scalar product.
+//  TODO: make fast version.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void DenseInterface::calcRT_blochsection_safe()
+{
+  // Set constants and calculate overlap matrices.
+
+  blitz::firstIndex  i;
+  blitz::secondIndex j;
+
+  const int N = global.N;
+
+  cMatrix O_I_II(N,N,fortranArray);
+  cMatrix O_II_I(N,N,fortranArray);
+
+  cMatrix A(N,N,fortranArray);
+  cMatrix B(N,N,fortranArray);
+  cMatrix C(N,N,fortranArray);
+
+  MultiWaveguide* w1 = dynamic_cast<MultiWaveguide*>(inc);
+  MultiWaveguide* w2 = dynamic_cast<MultiWaveguide*>(ext);  
+
+  w1->calc_overlap_matrices(w2, &O_I_II, &O_II_I);
+  
+  //
+  // Calculate R12 and T12.
+  //
+
+  // Calculate system matrix A from overlap matrices.
+  
+  A = conj(O_I_II(i,j)) + O_II_I(j,i);
+  
+  // Calculate diagonal rhs matrix B.
+  
+  for (int i=1; i<=N; i++)
+    for (int p=1; p<=N; p++)
+      B(i,p) = (i!=p) ? 0.0 : 2.0; // 2.0 * O_I_I(p);
+  
+  // Solve system for T12.
+
+  if (global.stability == extra)
+    T12.reference(solve_x(A,B));
+  else
+    T12.reference(solve(A,B));    
+  
+  // Calculate R12 from T12.
+
+  C = O_II_I(j,i) - conj(O_I_II(i,j));
+  
+  R12.reference(multiply(C,T12));
+
+  R12 /= Complex(2.0); // 2.0 * O_I_I(i);
+  
+  //
+  // Calculate R21 and T21.
+  //
+
+  // Calculate system matrix A from overlap matrices.
+  
+  A = conj(O_II_I(i,j)) + O_I_II(j,i);
+  
+  // Calculate diagonal rhs matrix B.
+  
+  for (int i=1; i<=N; i++)
+    for (int p=1; p<=N; p++)
+      B(i,p) = (i!=p) ? 0.0 : 2.0; // 2.0 * O_II_II(p);
+  
+  // Solve system for T21.
+
+  if (global.stability == extra)
+    T21.reference(solve_x(A,B));
+  else
+    T21.reference(solve(A,B));
+
+  // Calculate R21 from T21.
+
+  C = O_I_II(j,i) - conj(O_II_I(i,j));
+  
+  R21.reference(multiply(C,T21));
+
+  R21 /= Complex(2.0); // 2.0 * O_II_II(i); 
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DenseInterface::calcRT_blochsection_non_orth_safe
+//
+//  Calculates RT when the modes are not orthogonal.
+//  Uses row/column equilibration when solving the system. Rarely needed.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void DenseInterface::calcRT_blochsection_non_orth_safe()
+{ 
+  // Set constants and calculate overlap matrices.
+
+  const int N = global.N;
+
+  blitz::Range r1(1,N); blitz::Range r2(N+1,2*N);
+
+  cMatrix O_I_II (N,N,fortranArray);
+  cMatrix O_II_I (N,N,fortranArray);
+  cMatrix O_I_I  (N,N,fortranArray);
+  cMatrix O_II_II(N,N,fortranArray);
+
+  cMatrix A(2*N,2*N,fortranArray);
+  cMatrix B(2*N,  N,fortranArray);
+  cMatrix X(2*N,  N,fortranArray);
+
+  MultiWaveguide* w1 = dynamic_cast<MultiWaveguide*>(inc);
+  MultiWaveguide* w2 = dynamic_cast<MultiWaveguide*>(ext);  
+
+  w1->calc_overlap_matrices(w2, &O_I_II, &O_II_I, &O_I_I, &O_II_II);
+  
+  //
+  // Calculate R12 and T12.
+  //
+
+  // Calculate system matrix A from overlap matrices.
+
+  A(r1,r1) = transpose(O_II_I); A(r1,r2) = -transpose(O_I_I);
+  A(r2,r1) = conjugate(O_I_II); A(r2,r2) =            O_I_I;
+  
+  // Calculate rhs matrix B.
+
+  B(r1,r1) = transpose(O_I_I);
+  B(r2,r1) =           O_I_I;
+  
+  // Solve system for R12 and T12.
+
+  if (global.stability == extra)
+    X.reference(solve_x(A,B));
+  else
+    X.reference(solve(A,B));
+
+  T12 = X(r1,r1);
+  R12 = X(r2,r1);
+  
+  //
+  // Calculate R21 and T21.
+  //
+
+  // Calculate system matrix A from overlap matrices.
+
+  A(r1,r1) = transpose(O_I_II); A(r1,r2) = -transpose(O_II_II);
+  A(r2,r1) = conjugate(O_II_I); A(r2,r2) =            O_II_II;
+  
+  // Calculate rhs matrix B.
+
+  B(r1,r1) = transpose(O_II_II);
+  B(r2,r1) =           O_II_II;
+  
+  // Solve system for R12 and T12
+  
+  if (global.stability == extra)
+    X.reference(solve_x(A,B));
+  else
+    X.reference(solve(A,B));
+
+  T21 = X(r1,r1);
+  R21 = X(r2,r1);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////

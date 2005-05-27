@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:          camfr_wrap.cpp
-// Author:        Peter.Bienstman@rug.ac.be
+// Author:        Peter.Bienstman@UGent.be
 // Date:          20021119
 // Version:       2.1
 //
@@ -36,6 +36,8 @@
 #include "primitives/section/section.h"
 #include "primitives/section/sectiondisp.h"
 #include "primitives/section/refsection.h"
+#include "primitives/blochsection/blochsection.h"
+#include "primitives/blochsection/blochsectionmode.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -209,6 +211,13 @@ inline void set_eta_ASR(Real eta)
 inline void set_davy(bool b)
   {global.davy = b;}
 
+inline void set_fourier_orders(int Mx, int My=0)
+{
+  global_blochsection.Mx = Mx;
+  global_blochsection.My = My;
+  global.N = 2*(2*Mx+1)*(2*My+1);
+}
+
 inline int mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -247,10 +256,22 @@ inline Mode* waveguide_get_bw_mode(const Waveguide& w, int i)
   {check_wg_index(w,i); return w.get_bw_mode(i+1);}
 
 inline SectionMode* section_get_mode(const Section& s, int i)
-  {check_wg_index(s,i); return dynamic_cast<SectionMode*>(s.get_mode(i+1));}
+{
+  check_wg_index(s,i); 
+  return dynamic_cast<SectionMode*>(s.get_mode(i+1));
+}
+
+inline BlochSectionMode* blochsection_get_mode(const BlochSection& s, int i)
+{
+  check_wg_index(s,i);
+  return dynamic_cast<BlochSectionMode*>(s.get_mode(i+1));
+}
 
 inline BlochMode* blochstack_get_mode(BlochStack& b, int i)
-  {check_wg_index(b,i); return dynamic_cast<BlochMode*>(b.get_mode(i+1));}
+{
+  check_wg_index(b,i); 
+  return dynamic_cast<BlochMode*>(b.get_mode(i+1));
+}
 
 inline Complex stack_R12(const Stack& s, int i, int j)
   {check_index(i); check_index(j); return s.R12(i+1,j+1);}
@@ -334,6 +355,10 @@ inline Real slab_width(Slab& s)
 inline Real section_width(Section& s)
   {return real(s.get_width());}
 inline Real section_height(Section& s)
+  {return real(s.get_height());}
+inline Real blochsection_width(BlochSection& s)
+  {return real(s.get_width());}
+inline Real blochsection_height(BlochSection& s)
   {return real(s.get_height());}
 inline Complex blochmode_n(BlochMode& m, Coord &c)
   {return m.get_geom()->n_at(c);}
@@ -849,7 +874,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_keep_all_estimates",     set_keep_all_estimates);  
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
-  def("set_backward_modes",         set_backward_modes); 
+  def("set_backward_modes",         set_backward_modes);   
+  def("set_fourier_orders",         set_fourier_orders); 
   def("set_davy",                   set_davy);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
@@ -1254,5 +1280,30 @@ BOOST_PYTHON_MODULE(_camfr)
     ("SectionMode", no_init)
     .def("n", sectionmode_n)
     ;
+
+  // Wrap BlochSection.
+
+  class_<BlochSection, bases<MultiWaveguide> >
+  ("BlochSection", init<Expression& >())    
+    .def(init<const Term&>())
+    .def("mode",          blochsection_get_mode,
+         return_value_policy<reference_existing_object>())
+    .def("width",         blochsection_width)
+    .def("height",        blochsection_height)
+    .def("eps",           &BlochSection::eps_at)
+    .def("mu",            &BlochSection::mu_at)
+    .def("n",             &BlochSection::n_at)
+    .def("order",         &BlochSection::order)
+    .def("set_theta_phi", &BlochSection::set_theta_phi)
+    ;
+
+  // Wrap BlochSectionMode.
+
+  class_<BlochSectionMode, boost::noncopyable, bases<Mode> >
+    ("BlochSectionMode", no_init)
+    .def("get_Mx",   &BlochSectionMode::get_Mx)    
+    .def("get_My",   &BlochSectionMode::get_My)
+    ;
+
 }
 
