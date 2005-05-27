@@ -61,9 +61,12 @@ env.SharedLibrary(target = '_camfr',
 		      'primitives/slab/isoslab/slabdisp.cpp',
 		      'primitives/slab/isoslab/slabwall.cpp',
                       'primitives/slab/isoslab/slabmode.cpp',
-		      'primitives/section/section.cpp',
+		      'primitives/section/section.cpp',		      
 		      'primitives/section/sectionmode.cpp',
 		      'primitives/section/sectiondisp.cpp',
 		      'primitives/section/sectionoverlap.cpp',
-		      'primitives/section/refsection.cpp']
+		      'primitives/section/refsection.cpp',
+		      'primitives/blochsection/blochsection.cpp',
+		      'primitives/blochsection/blochsectionmode.cpp',
+		      'primitives/blochsection/blochsectionoverlap.cpp']
 		      + noopt + fortran_files)

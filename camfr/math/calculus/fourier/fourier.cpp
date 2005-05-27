@@ -34,7 +34,7 @@ cVector fourier(const vector<Complex>& f, const vector<Complex>& disc,
     Complex result_m = 0.0;
 
     for (unsigned int k=0; k<int(disc.size()-1); k++)
-    {
+    { 
       Complex factor;
       if (m==0)
       { 
