@@ -70,7 +70,10 @@ class BlochSectionImpl : public MultiWaveguide
     Real S_flux(const FieldExpansion& f,
                 Real c1_start, Real c1_stop,
                 Real precision = 1e-10) const
-      {std::cout << "Not yet implemented." << std::endl; return -99999;}
+      {std::cout << "Not yet implemented." << std::endl; return -999;}
+
+    virtual int order(Polarisation pol, int Mx, int My) const = 0;
+    virtual void set_theta_phi(Real theta, Real phi) const = 0;
 
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
@@ -137,6 +140,12 @@ class BlochSection : public MultiWaveguide
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL)
       {return s->calc_overlap_matrices(dynamic_cast<BlochSection*>(w2)->s,
                                        O_I_II,O_II_I,O_I_I,O_II_II);}
+
+    int order(Polarisation pol, int Mx, int My) const 
+      {return s->order(pol, Mx, My);}
+
+    void set_theta_phi(Real theta, Real phi) const 
+      {s->set_theta_phi(theta,phi);}
     
     std::string repr() const {return s->repr();}
     
@@ -192,11 +201,18 @@ class BlochSection2D : public BlochSectionImpl
 
     void find_modes();
 
+    int order(Polarisation pol, int Mx, int My) const;
+
+    void set_theta_phi(Real theta, Real phi) const;
+
   protected:
 
     // TODO: see if we can remove st.
 
-    Stack st;
+    Stack st;    
+
+    void create_FG_NT(cMatrix* F, cMatrix* G, int M, int N,
+                      const Complex& alpha0, const Complex& beta0);  
 
     void create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
                       const Complex& alpha0, const Complex& beta0);    
@@ -206,7 +222,7 @@ class BlochSection2D : public BlochSectionImpl
 
     std::vector<Material*> materials;
 
-    friend class BlochSection2D_Mode;
+    friend class BlochSectionMode;
 };
 
 
@@ -244,6 +260,10 @@ class UniformBlochSection : public BlochSectionImpl
 
     Complex get_height() const
       {return H;}
+
+    int order(Polarisation pol, int Mx, int My) const;
+
+    void set_theta_phi(Real theta, Real phi) const;
 
     void find_modes();
 
