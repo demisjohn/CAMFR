@@ -62,6 +62,7 @@ typedef enum{nrml, transp, herm} Op;
 /////////////////////////////////////////////////////////////////////////////
 
 cMatrix transpose(const cMatrix& A);
+cMatrix conjugate(const cMatrix& A);
 cMatrix herm_conj(const cMatrix& A);
 
 

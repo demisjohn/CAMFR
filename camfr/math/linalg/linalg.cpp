@@ -31,6 +31,17 @@ cMatrix transpose(const cMatrix& A)
   return A_trans;
 }
 
+cMatrix conjugate(const cMatrix& A)
+{
+  cMatrix A_trans(A.columns(), A.rows(), fortranArray);
+
+  for (int i=1; i<=A.rows(); i++)
+    for (int j=1; j<=A.columns(); j++)
+      A_trans(i,j) = conj(A(i,j));
+
+  return A_trans;
+}
+
 cMatrix herm_conj(const cMatrix& A)
 {
   cMatrix A_herm_conj(A.columns(), A.rows(), fortranArray);
@@ -67,6 +78,13 @@ void transpose_self(cMatrix* A)
       (*A)(i,j) = (*A)(j,i);
       (*A)(j,i) = tmp;
     }
+}
+
+void conjugate_self(cMatrix* A)
+{
+  for (int i=1; i<=A->rows(); i++)
+    for (int j=1; j<=A->cols(); j++)
+      (*A)(i,j) = conj((*A)(i,j));
 }
 
 void herm_conj_self(cMatrix* A)
