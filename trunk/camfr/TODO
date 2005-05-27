@@ -1,3 +1,5 @@
+-BlchSection with single non-uniform slab
+
 -document keep_all_estimates?
 
 -fix pw_vcsel.py
@@ -33,6 +35,8 @@
 -document field_calc_heuristic
 
 -mode_calc from core only for guided modes
+
+-try RCWA like overlap scheme. Could be more stable.
 
 CAMFR 3D:
 

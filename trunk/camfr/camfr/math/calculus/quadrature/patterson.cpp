@@ -65,7 +65,7 @@ Real patterson(RealFunction& f, Real a, Real b, Real eps,
   // Apply 1-point Gauss formula (midpoint rule).
   
   Real fx = f(a+diff); // Don't write 0.5*(b+a) if radix of arithmetic != 2.
-  
+
   work[1] = fx;
   Real acum = fx*(b-a);
   Real result = acum;
