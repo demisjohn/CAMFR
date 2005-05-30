@@ -118,24 +118,24 @@ Field PlanarMode::field(const Coord& coord) const
     const Complex C = 1.0 / (k0*c) * B;
         
     field.E1 = 0.0;
-    field.E2 = 1.0;
+    field.E2 = 1.0 * exp(-I*kt*coord.c1);
     field.Ez = 0.0;
     
     field.H1 = -C * kt * exp(-I*kt*coord.c1);
     field.H2 = 0.0;
-    field.Hz =  C * kz;
+    field.Hz =  C * kz * exp(-I*kt*coord.c1);
   }
   else
   {
     const Complex C = 1.0 / (k0*c) * A;
  
     field.H1 = 0.0;
-    field.H2 = 1.0;
+    field.H2 = 1.0 * exp(-I*kt*coord.c1);
     field.Hz = 0.0;
 
     field.E1 =  C * kt * exp(-I*kt*coord.c1);
     field.E2 = 0.0;
-    field.Ez = -C * kz;
+    field.Ez = -C * kz * exp(-I*kt*coord.c1);
   }
   
   return field;
