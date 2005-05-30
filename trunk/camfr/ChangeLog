@@ -14,6 +14,7 @@ CAMFR 1.3:
  - Stack.fw_bw() and BlochMode.fw_bw() can now take an optional extra argument
    to specify the limit value of z, i.e. Plus or Min.
  - get_kt() and set_kt() for Planars now works again (Peter Vandersteegen).
+ - Fix field plot bug for Planars.
  - The wavelength can now be complex (Thanks to KC Huang for requesting this)
  - If you're working with circular structures in the regime of backward and
    complex modes (e.g. when the metal wall is close to the last interface),
