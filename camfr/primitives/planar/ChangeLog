@@ -1,3 +1,7 @@
+2005-05-30 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* planar.cpp: Improve field plot.
+
 2003-11-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* planar.h: Rework eps_at, mu_at.
