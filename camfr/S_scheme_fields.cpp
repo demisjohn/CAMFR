@@ -439,6 +439,11 @@ void calc_S_S_mono(const vector<Chunk>& chunks,
   cVector fw0(1,fortranArray); fw0 = (*field)[0].fw;
   cVector bw0(1,fortranArray); bw0 = (*field)[0].bw;
 
+  // A transparent diagonal scatterer is not automatically calculated.
+
+  if (chunks[0].sc->get_inc() == chunks[0].sc->get_ext())
+    chunks[0].sc->calcRT();
+
   // Loop over chunks.
 
   for (unsigned int k=0; k<chunks.size(); k++)
