@@ -524,28 +524,22 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
   disc_x.insert(disc_x.begin(), 0.0);
 
   vector<vector<Complex> > disc_y, f_eps;
-  // TMP
-  vector<vector<Complex> > f_inv_eps;
 
   for (int i=0; i<disc_x.size()-1; i++)
   {
     vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
     disc_y_i.insert(disc_y_i.begin(), 0.0);
 
-    vector<Complex> f_eps_i, f_inv_eps_i;
+    vector<Complex> f_eps_i;
     for (int j=0; j<disc_y_i.size()-1; j++)
     {
       Coord coord(disc_y_i[j],0,0,Plus);
       
       f_eps_i.push_back(slabs[i]->eps_at(coord)/eps0);
-
-      f_inv_eps_i.push_back(eps0/slabs[i]->eps_at(coord));
     }
 
     disc_y.push_back(disc_y_i);
-    f_eps.push_back(f_eps_i);    
-
-    f_inv_eps.push_back(f_inv_eps_i);
+    f_eps.push_back(f_eps_i);
   }
 
   vector<Slab*> slabs_rot;
