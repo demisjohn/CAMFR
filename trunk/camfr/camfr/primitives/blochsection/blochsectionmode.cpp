@@ -90,6 +90,10 @@ Field BlochSectionMode::field(const Coord& coord) const
 //
 // BlochSectionMode::normalise
 //
+//  Note: because of complex conjugate, these modes cannot be normalised
+//  e.g. when overlap(this,this) is complex. Also, complex modes have a zero
+//  norm.
+//
 /////////////////////////////////////////////////////////////////////////////
 
 void BlochSectionMode::normalise() 
@@ -101,7 +105,7 @@ void BlochSectionMode::normalise()
     //py_print("Warning: mode close to cutoff.");
     norm = 1.0;
   }
-
+  
   Ex /= norm;
   Ey /= norm;
   Hx /= norm;
