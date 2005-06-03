@@ -1,3 +1,8 @@
+2005-06-03  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* interface.h: Fix interface routines with complex conjugate.
+	* interface.cpp: Ditto.
+
 2005-05-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* S_scheme_fields.h: Fix Planar plotting.
