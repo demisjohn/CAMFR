@@ -23,6 +23,7 @@ class polariton2(unittest.TestCase):
         set_polarisation(TM)
         set_solver(series)
         set_mode_surplus(4)
+        set_keep_all_1D_estimates(0)
 
         # Define structure
 
@@ -60,6 +61,7 @@ class polariton2(unittest.TestCase):
         set_polarisation(TE)
         set_solver(track)
         set_mode_surplus(1.5)
+        set_keep_all_1D_estimates(0)
         
         self.failUnless(R_pass)
 
