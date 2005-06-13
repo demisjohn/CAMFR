@@ -11,6 +11,8 @@ CAMFR 1.3:
    BlochStack, which is much more useful. (Pieter Dumon)
  - Better stability when joining together two slabs which are each other's
    mirror image. (This can occur when modelling triangular lattices.)
+ - New solver for 1D slabs based on adaptive spatial resolution. Very useful
+   for metallic structures. (Peter Debackere)
  - Stack.fw_bw() and BlochMode.fw_bw() can now take an optional extra argument
    to specify the limit value of z, i.e. Plus or Min.
  - get_kt() and set_kt() for Planars now works again (Peter Vandersteegen).
