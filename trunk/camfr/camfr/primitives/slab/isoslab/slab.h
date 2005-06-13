@@ -90,9 +90,6 @@ class Slab_M : public SlabImpl
 
     int M_series;
 
-    cVector fourier_eps         (int M, cVector* inv_eps=NULL) const;
-    cVector fourier_eps_extended(int M, cVector* inv_eps=NULL) const;
-
     void fill_E_matrix        (cMatrix*, int, int,
                                const Complex&, const Complex&) const;
     void fill_E_matrix_biaxial(cMatrix*, int, int,

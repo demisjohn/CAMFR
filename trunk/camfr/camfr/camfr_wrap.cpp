@@ -191,6 +191,9 @@ inline void set_mode_surplus(Real l)
 inline void set_backward_modes(bool b)
   {global.backward_modes = b;}
 
+inline void set_keep_all_1D_estimates(bool b)
+  {global.keep_all_1D_estimates=b;}
+
 inline void set_section_solver(Section_solver s)
   {global_section.section_solver = s;}
 
@@ -700,16 +703,18 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Solver enum.
 
   enum_<Solver>("Solver")
-    .value("ADR",    ADR)
-    .value("track",  track)
-    .value("series", series)    
-    .value("ASR",    ASR)
+    .value("ADR",           ADR)
+    .value("track",         track)
+    .value("series",        series)    
+    .value("ASR",           ASR)
+    .value("stretched_ASR", stretched_ASR)
     ;
 
-  scope().attr("ADR")    = ADR;
-  scope().attr("track")  = track;
-  scope().attr("series") = series;
-  scope().attr("ASR")    = ASR;
+  scope().attr("ADR")           = ADR;
+  scope().attr("track")         = track;
+  scope().attr("series")        = series;
+  scope().attr("ASR")           = ASR;
+  scope().attr("stretched_ASR") = stretched_ASR;
 
   // Wrap Stability enum.
 
@@ -874,7 +879,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_keep_all_estimates",     set_keep_all_estimates);  
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);
-  def("set_backward_modes",         set_backward_modes);   
+  def("set_backward_modes",         set_backward_modes);
+  def("set_keep_all_1D_estimates",  set_keep_all_1D_estimates);
   def("set_fourier_orders",         set_fourier_orders); 
   def("set_davy",                   set_davy);
   def("free_tmps",                  free_tmps);

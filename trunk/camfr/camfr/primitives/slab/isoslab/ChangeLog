@@ -1,3 +1,8 @@
+2005-06-13 Peter Debackere  <Peter.Debackere@UGent.be>
+
+        * slab.cpp: Add ASR solver.
+	* slab.h: Ditto.
+
 2005-02-09 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
         * slab.cpp: Add support for biaxial plane wave estimates.
