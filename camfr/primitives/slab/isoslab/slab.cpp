@@ -808,283 +808,6 @@ vector<Complex> Slab_M::find_kt_by_sweep(vector<Complex>& old_kt)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::fourier_eps
-//
-//  Returns fourier expansion of eps with order m = -M,...,M
-//  Basis functions are exp(j.m.2.pi/d.x).
-//  Can optionally also calculate the expansion of 1/eps.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-cVector Slab_M::fourier_eps(int M, cVector* inv_result) const
-{
-  const Complex K = 2.*pi/get_width();
-
-  cVector result(2*M+1,fortranArray);
-
-  vector<Complex> disc = discontinuities;
-  disc.insert(disc.begin(), 0.0);
-
-  const Real eta = global_slab.eta_ASR;
-
-  for (int m=-M; m<=M; m++)
-  {
-    Complex E_m     = 0.0;
-    Complex inv_E_m = 0.0;
-
-    for (unsigned int k=0; k<int(disc.size()-1); k++)
-    {
-      const Complex eps = eps_at(Coord(disc[k], 0, 0, Plus))/eps0;
-      const Complex d_k = disc[k+1]-disc[k];
-
-      Complex factor;
-      if (m==0)
-        factor = d_k;
-      else
-      {
-        const Complex t = -I*Real(m)*K;
-        factor = (exp(t*disc[k+1])-exp(t*disc[k])) / t;
-
-        if (global.solver == ASR)
-        {
-          const Complex D = get_width()/Real(m)/d_k;
-
-          if (abs(D) > 1e-12)
-            factor *= 1.0 - eta/(1.0 - D*D);
-          else
-            factor = -eta * exp(t*disc[k]) * d_k/2.;
-        }
-      }
-      
-      E_m += factor * eps;
-
-      if (inv_result)
-        inv_E_m += factor / eps;
-    }
-    
-    result(m+M+1) = E_m / get_width();
-    if (inv_result)
-      (*inv_result)(m+M+1) = inv_E_m / get_width();
-  }
-  
-  return result;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Slab_M::fourier_eps_extended
-//
-//  Returns fourier expansion of eps mirrored on x=0 with order 
-//  m = -M,...,M
-//  Basis functions are exp(j.m.2.pi/2.d.x).
-//  Can optionally also calculate the expansion of 1/eps.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-cVector Slab_M::fourier_eps_extended(int M, cVector* inv_result) const
-{
-  const Complex K = 2.*pi/2./get_width();
-
-  cVector result(2*M+1,fortranArray);
-
-  vector<Complex> disc = discontinuities;
-  disc.insert(disc.begin(), 0.0);
-
-  const Real eta = global_slab.eta_ASR;
-
-  for (int m=0; m<=M; m++)
-  {
-    Complex E_m     = 0.0;
-    Complex inv_E_m = 0.0;
-
-    for (unsigned int k=0; k<int(disc.size()-1); k++)
-    {
-      const Complex eps = eps_at(Coord(disc[k], 0, 0, Plus))/eps0;
-      const Complex d_k = disc[k+1]-disc[k];
-
-      Complex factor;
-      if (m==0)
-        factor = 2.*d_k;
-      else
-      {
-        const Complex t = -I*Real(m)*K;
-        factor = (exp( t*disc[k+1])-exp( t*disc[k]  )) / t
-               + (exp(-t*disc[k])  -exp(-t*disc[k+1])) / t;
-
-        if (global.solver == ASR)
-        {
-          const Complex D = 2.*get_width()/Real(m)/d_k;
-
-          if (abs(1.0 - D) > 1e-12)
-            factor *= 1.0 - eta/(1.0 - D*D);
-          else
-            factor = -eta * (exp(t*disc[k])+exp(-t*disc[k+1])) * d_k/2.;
-        }
-      }
-    
-      E_m += factor * eps;
-
-      if (inv_result)
-        inv_E_m += factor / eps;
-    }
-
-    result(-m+M+1) = result(m+M+1) = E_m/get_width()/2.;
-    if (inv_result)
-      (*inv_result)(-m+M+1) = (*inv_result)(m+M+1) = inv_E_m/get_width()/2.;
-  }
-
-#if 0
-  // Check result
-
-  std::ostringstream s;
-  s << "fourier_" << real(eps_at(Coord(0, 0, 0, Plus))/eps0) << ".txt";;
-  std::ofstream file(s.str().c_str());
-
-  for (Real x=-real(disc.back()); x<=real(disc.back()); x+=0.01)
-  {
-    unsigned int k = index_lookup(abs(x), Plus, disc)-1;
-    Complex dk = disc[k+1]-disc[k];
-    Complex x0 = (x > 0) ? disc[k]: -disc[k+1];
-
-    Complex f = eps_at(Coord(abs(x), 0, 0, Plus))/eps0;
-    
-    if (global.solver == ASR)
-      f *= (1.0 - eta * cos(2.*pi*(x-x0)/dk));
-
-    Complex t=0.0;
-    for (int m=-M; m<=M; m+=1)
-      t += result(m+M+1)*exp(I*Real(m)*2.*pi*x/get_width()/2. );
-    file << x << " " << real(t) << " " << real(f) << std::endl;    
-  }
-  
-  std::ostringstream s2;
-  s2 << "fourier_" << real(eps_at(Coord(0, 0, 0, Plus))/eps0) << "_inv.txt";;
-  std::ofstream file2(s2.str().c_str());
-
-  for (Real x=-real(disc.back()); x<=real(disc.back()); x+=0.01)
-  {
-    unsigned int k = index_lookup(abs(x), Plus, disc)-1;
-    Complex dk = disc[k+1]-disc[k];
-    Complex x0 = (x > 0) ? disc[k]: -disc[k+1];
-
-    Complex f = 1./eps_at(Coord(abs(x), 0, 0, Plus))*eps0;
-    
-    if (global.solver == ASR)
-      f *= (1.0 - eta * cos(2.*pi*(x-x0)/dk))    ;
-
-    if (inv_result)
-    {
-      Complex t=0.0;
-      for (int m=-M; m<=M; m+=1)
-        t += (*inv_result)(m+M+1)*exp(I*Real(m)*2.*pi*x/get_width()/2.);
-      file2 << x << " " << real(t) << " " << real(f) << std::endl;
-    }
-  }
-
-  file.close();
-  file2.close();
-#endif
-  
-  return result;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Slab_M::estimate_kz2_from_RCWA
-//
-// Note: does not work as it uses periodic boundary conditions rather
-// than walls.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-std::vector<Complex> Slab_M::estimate_kz2_from_RCWA()
-{
-  // Calculate eps matrices.
-
-  const int M = M_series ? M_series : int(global.N * global.mode_surplus);
-
-  cVector f_eps    (4*M+1,fortranArray);
-  cVector f_inv_eps(4*M+1,fortranArray);  
-
-  if (global.polarisation == TE)
-    f_eps = fourier_eps(2*M);
-  else
-    f_eps = fourier_eps(2*M, &f_inv_eps);
-
-  int n = 2*M + 1;
- 
-  cMatrix Eps(n,n,fortranArray);
-  for (int i=1; i<=n; i++)
-    for (int j=1; j<=n; j++)
-      Eps(i,j) = f_eps(i-j + 2*M+1);
-  
-  cMatrix A(fortranArray);
-  if (global.polarisation == TM)
-  {
-    A.resize(n,n);
-    for (int i=1; i<=n; i++)
-      for (int j=1; j<=n; j++)
-        A(i,j) = f_inv_eps(i-j + 2*M+1);
-  }
-
-  // Create matrix for eigenvalue problem.
-
-  cMatrix E(n,n,fortranArray);
-
-  const Complex lambda_over_d = global.lambda / get_width();
-  
-  if (global.polarisation == TE)
-  { 
-    E = -Eps;
-    
-    for (int i=1; i<=n; i++)      
-      E(i,i) += pow( Real(i-1-M)*lambda_over_d, 2);
-  }
-  else
-  {
-    // Note: the following inversions can be sped up because these 
-    // are Toeplitz matrices.
-
-    cMatrix inv_Eps(n,n,fortranArray); inv_Eps.reference(invert(Eps));
-    cMatrix inv_A  (n,n,fortranArray); inv_A  .reference(invert(A));
-
-    for (int i=1; i<=n; i++)
-    {
-      for (int j=1; j<=n; j++)
-        E(i,j) = (Real(i-1-M)*lambda_over_d) * inv_Eps(i,j) *
-                 (Real(j-1-M)*lambda_over_d);      
-
-      E(i,i) -= 1.0;
-    }
-    
-    E = multiply(inv_A, E);
-  }
-
-  // Solve eigenvalue problem.
-
-  cVector e(n,fortranArray);
-  if (global.stability == normal)
-    e = eigenvalues(E);
-  else
-    e = eigenvalues_x(E);
-
-  const Complex k0 = 2*pi/global.lambda;
-
-  vector<Complex> kz2;
-  for (int i=1; i<=n; i++)
-    kz2.push_back(-k0*k0*e(i));
-
-  return kz2;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // fill_E_matrix
 //
 //  Create matrix for a TM RCWA eigenvalue problem.
@@ -1098,10 +821,40 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
   cVector f_eps    (4*M+1,fortranArray);
   cVector f_inv_eps(4*M+1,fortranArray);
 
-  if (global.polarisation == TE)
-    f_eps = fourier_eps_extended(2*M);
+  // Construct data structures for fourier analysis.
+
+  vector<Complex> disc(discontinuities);
+  disc.insert(disc.begin(), 0.0);
+
+  vector<Complex> eps;
+  vector<Complex> h_eps;
+  vector<Complex> inv_eps;
+
+  for (int i=0; i<disc.size()-1; i++)
+  {
+    Complex eps_i = eps_at(Coord(disc[i], 0, 0, Plus))/eps0;
+ 
+    eps.push_back(eps_i);
+    inv_eps.push_back(1.0/eps_i);
+    h_eps.push_back(1.0);
+  }
+
+  // Construct fourier matrices.
+
+  bool extend = true;
+  bool stretch = (global.solver == stretched_ASR);
+  Real eta = global_slab.eta_ASR;
+
+  if ( (global.solver == ASR) || (global.solver == stretched_ASR) )
+  {   
+   f_eps     = fourier_ASR(    eps, disc, 2*M, 0, stretch, extend, eta);
+   f_inv_eps = fourier_ASR(inv_eps, disc, 2*M, 0, stretch, extend, eta);
+  }
   else
-    f_eps = fourier_eps_extended(2*M, &f_inv_eps);
+  {
+    f_eps     = fourier(    eps, disc, 2*M, 0, extend);
+    f_inv_eps = fourier(inv_eps, disc, 2*M, 0, extend);
+  }
 
   cMatrix Eps(n,n,fortranArray);
   for (int i=1; i<=n; i++)
@@ -1128,23 +881,19 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
 
   // Subtract the unity matrix or the ASR version of the unity matrix.
 
-  if (global.solver != ASR)
+  if ((global.solver != ASR) && (global.solver != stretched_ASR))
   {
     for (int i=1; i<=n; i++)
       (*E)(i,i) -= 1.0;
   }
   else
   {
-    // TODO: do this analytically.
-
-    Material air(1.0);
-    Slab_M s(air(real(get_width()/2.)) + air(real(get_width()/2.)));\
-    cVector h(4*M+1,fortranArray);
-    h = s.fourier_eps_extended(2*M);
+    cVector f_h_eps(4*M+1,fortranArray);
+    f_h_eps = fourier_ASR(h_eps, disc, 2*M, 0, extend, stretch, eta);
 
     for (int i=1; i<=n; i++)
       for (int j=1; j<=n; j++)
-        (*E)(i,j) -= h(i-j + 2*M+1);
+        (*E)(i,j) -= f_h_eps(i-j + 2*M+1);
   }
   
   *E = multiply(inv_A, *E);
@@ -1289,7 +1038,24 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
     Complex R_lower = l_wall ? l_wall->get_R12() : -1.0;
     Complex R_upper = u_wall ? u_wall->get_R12() : -1.0;
 
-    const Complex lambda_over_d = global.lambda / get_width() / 2.;
+    Complex D = get_width();
+
+    // Recalculate for a stretched structure.
+    // TODO_PDB: this is probably where the udisc calculation should go?
+
+    if (global.solver == stretched_ASR)
+    {
+      vector<Complex> disc = discontinuities;
+      disc.insert(disc.begin(), 0.0);
+
+      int S = disc.size();
+      Complex begin = (S-1)*real(disc[1]  -disc[0])   + imag(disc[S-1])*I;
+      Complex end   = (S-1)*real(disc[S-1]-disc[S-2]) + imag(disc[S-1])*I;
+
+      D = (real(begin) >= real(end)) ? begin : end;
+    }
+
+    const Complex lambda_over_d = global.lambda / D / 2.;
 
     Complex offset = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : lambda_over_d/2.;
 
@@ -1459,20 +1225,20 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
     max_eps_eff = max_eps_mu;
 
   Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
-
+  
   // Refine estimates.
 
   vector<Complex> kz2_coarse;
   for (unsigned int i=0; i<kz2.size(); i++)
-    if (real(sqrt(kz2[i])) < 1.2*max_kz)
+    if (global.keep_all_1D_estimates || (real(sqrt(kz2[i])) < 1.2*max_kz))
       kz2_coarse.push_back(kz2[i]);
 
   std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
 
-  for (unsigned int i=0; i<kz2.size(); i++)
-    std::cout << "raw sorted" << i << " " 
-              << sqrt(kz2_coarse[i])/2./pi*global.lambda 
-              << kz2_coarse[i] << std::endl;
+  //for (unsigned int i=0; i<kz2.size(); i++)
+  //  std::cout << "raw sorted" << i << " " 
+  //            << sqrt(kz2_coarse[i])/2./pi*global.lambda 
+  //            << kz2_coarse[i] << std::endl;
   
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());

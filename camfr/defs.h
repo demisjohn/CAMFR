@@ -76,7 +76,7 @@ using std::isnan;
 typedef double Real;
 typedef std::complex<Real> Complex;
 typedef enum {Plus, Min} Limit;
-typedef enum {ADR, track, series, ASR} Solver;
+typedef enum {ADR, track, series, ASR, stretched_ASR} Solver;
 typedef enum {normal, extra, SVD} Stability;
 typedef enum {identical, symmetric} Field_calc_heuristic;  
 typedef enum {GEV, T} Bloch_calc;
@@ -238,6 +238,9 @@ struct Global
 
     // Determines whether special case should be given to degenerate modes.
     bool degenerate;
+
+    // Don't throw away 1D estimates..
+    bool keep_all_1D_estimates;
 
     // The out-of-plane beta component for slabs.
     Complex slab_ky;
