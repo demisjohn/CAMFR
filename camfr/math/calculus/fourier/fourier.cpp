@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     fourier.cpp
-// Author:   Peter.Bienstman@UGent.be
+// Author:   Peter.Bienstman@UGent.be, Peter.Debackere@intec.UGent.be
 // Date:     20050208
 // Version:  1.0
 //
@@ -62,6 +62,146 @@ cVector fourier(const vector<Complex>& f, const vector<Complex>& disc,
   return result;
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// fourier_ASR
+//
+//  TODO_PDB: see if it's better to create udisc outside of this function.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector fourier_ASR(const vector<Complex>& f,
+                    const vector<Complex>& disc, int M, const Complex* d,
+                    bool extend, bool stretching, const Real eta)
+{  
+  // Creation of the stretched refractive index profile vector udisc.
+
+  vector<Complex> udisc;
+  if (stretching == true)
+  {  
+    Complex u_begin = real(disc[1]-disc[0]);
+    Complex u_end   = real(disc[disc.size()-1]-disc[disc.size()-2]);
+    udisc.push_back(0.0);
+
+    Complex u_step = (real(u_begin) >= real(u_end)) ? u_begin : u_end;
+    for (unsigned int i=1; i<disc.size(); i++)
+      udisc.push_back(Real(i)*u_step);
+
+    // Adding the imaginary (PML) part of the disc vector to udisc.
+
+    for (unsigned int i=1; i<disc.size(); i++)
+      udisc[i] += imag(disc[i])*I;
+  }
+  else
+  {
+    udisc = disc;
+  }
+
+  // Setting the value of D.
+
+  Complex D = udisc.back() - udisc.front();
+  if (extend)
+    D *= 2.0;
+
+  //std::cout << "Original discontinuity profile" << std::endl;
+  //for (unsigned int k=0; k<disc.size(); k++)
+  //  std::cout << "discontinuity "  << k+1 << " " << disc[k] << std::endl;
+
+  //std::cout << "New discontinuity profile" << std::endl;
+  //for (unsigned int k=0; k<udisc.size(); k++)
+  //  std::cout << "discontinuity " <<< k+1 << " " << udisc[k] <<std::endl;
+  
+  //std::cout << "Dielectric profile" << std::endl;
+  //for (unsigned int k=0; k<udisc.size()-1; k++)
+  //  std::cout << "dielectric constant " << k+1 << " " << f[k] <<std::endl;
+
+  // Calculation of the fourier components.
+  
+  Complex K = 2.*pi/D; 
+  cVector result(2*M+1,fortranArray);
+
+  for (int m=0; m<=M; m++)
+  {
+    Complex E_m = 0.0;
+      
+    for (unsigned int k=0; k<int(disc.size()-1); k++)
+    {
+      const Complex d_k = udisc[k+1]-udisc[k];
+      const Complex a   = (disc[k+1]-disc[k])/d_k;
+   
+      Complex factor;
+      if (m==0)
+      {    
+        factor = d_k*a;
+        if(extend)
+          factor *= 2.0;
+      }
+      else
+      {
+        const Complex t = -I*Real(m)*K;
+        factor = (exp(t*udisc[k+1]) - exp(t*udisc[k])) / t;
+
+        if (! extend)
+        {
+          Complex E = 2.*D/Real(m)/d_k;
+
+          if (abs(1.0 - E) > 1e-12)
+            factor *= a*(1.0 - eta/(1.0 - E*E));
+          else
+          {
+            Complex A = (exp(2.* t*udisc[k+1])-exp(2.* t*udisc[k]))/(2.*t);
+            factor = a*(factor- eta/2.*((udisc[k+1]-udisc[k])*exp(t*udisc[k])
+               + A*exp(-t*udisc[k])));
+          }
+        }
+        else
+        {         
+          factor += (exp(-t*udisc[k]) - exp(-t*udisc[k+1])) / t;
+
+          Complex E, A;
+
+          // TODO_PDB: add comment.
+
+          if ((k == 0) || (k == disc.size()-2))
+            E = D/2.0/Real(m)/d_k;
+          else
+            E = D/Real(m)/d_k;
+
+          if (abs(1.0 - E) > 1e-12)
+            factor *= a*(1.0 - eta/(1.0 - E*E));
+          else
+          {
+            if (k == 0)
+            {
+              A = (exp( 2.*t*udisc[k+1]) - exp( 2.*t*udisc[k]  )) / (2.*t) +
+                  (exp(-2.*t*udisc[k])   - exp(-2.*t*udisc[k+1])) / (2.*t);
+
+              factor = a*(factor-eta*((udisc[k+1]-udisc[k])*exp(-t*udisc[k+1])
+                                       + A*exp(t*udisc[k+1])/2.));
+            }
+            else
+            {
+              A = (exp( 2.*t*udisc[k+1]) - exp( 2.*t*udisc[k]  )) / (2.*t) + 
+                  (exp(-2.*t*udisc[k])   - exp(-2.*t*udisc[k+1])) / (2.*t);
+              factor = a*(factor-eta*((udisc[k+1]-udisc[k])*exp(t*udisc[k])
+                   + A*exp(-t*udisc[k])/2.));
+            }
+          }
+        }
+      }
+
+      E_m += factor * f[k];
+    }
+
+    result(-m+M+1) = result(m+M+1) = E_m/D; 
+
+    // TODO_PDB: isn't this symmetry lost if extend == false?
+  }
+
+  return result;
+}
 
 
 

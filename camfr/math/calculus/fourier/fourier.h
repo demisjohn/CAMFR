@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // File:     fourier.h
-// Author:   Peter.Bienstman@UGent.be
+// Author:   Peter.Bienstman@UGent.be, Peter.Debackere@intec.UGent.be
 // Date:     20050208
 // Version:  1.0
 //
@@ -36,6 +36,21 @@
 cVector fourier(const std::vector<Complex>& f, 
                 const std::vector<Complex>& disc, int M,
                 const Complex* d=0, bool extend=false);
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// fourier_ASR
+//
+//  TODO_PDB: add description of which profile is fourier decomposed.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+cVector fourier_ASR(const std::vector<Complex>& f,
+                    const std::vector<Complex>& disc, int M, 
+                    const Complex* d, bool stretching=true, 
+                    bool extend=false, const Real eta=1.0);
 
 
 
