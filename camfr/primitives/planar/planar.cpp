@@ -73,7 +73,8 @@ Complex Planar::calc_kz() const
   pick_sign_k(&kz);
 
   // Update mode and set E_cst and H_cst to get correct results in the
-  // generalised Fresnel formulas (interface.cpp).
+  // generalised Fresnel formulas. This choice basically sets the T-factors
+  // in interface.cpp to unity.
 
   mode->pol   = global.polarisation;
   mode->kz    =  kz; 
@@ -82,11 +83,11 @@ Complex Planar::calc_kz() const
   if (global.polarisation == TE)
   {
     mode->A = 0.0;
-    mode->B = 1.0/core->mur();
+    mode->B = 1.0/core->mu();
   }
   else
   {
-    mode->A = 1.0/core->epsr();
+    mode->A = 1.0/core->eps();
     mode->B = 0.0;
   }
 
@@ -115,28 +116,29 @@ Field PlanarMode::field(const Coord& coord) const
 
   if (pol == TE)
   {
-    const Complex C = 1.0 / (k0*c) * B;
+    const Complex C = B / (k0*c);
         
     field.E1 = 0.0;
-    field.E2 = 1.0 * exp(-I*kt*coord.c1);
+    field.E2 = exp(-I*kt*coord.c1);
     field.Ez = 0.0;
     
-    field.H1 = -C * kt * exp(-I*kt*coord.c1);
+    field.H1 = -C * kz * exp(-I*kt*coord.c1);
     field.H2 = 0.0;
-    field.Hz =  C * kz * exp(-I*kt*coord.c1);
+    field.Hz =  C * kt * exp(-I*kt*coord.c1);
   }
   else
   {
-    const Complex C = 1.0 / (k0*c) * A;
+    const Complex C = A / (k0*c);
  
     field.H1 = 0.0;
-    field.H2 = 1.0 * exp(-I*kt*coord.c1);
+    field.H2 = exp(-I*kt*coord.c1);
     field.Hz = 0.0;
 
-    field.E1 =  C * kt * exp(-I*kt*coord.c1);
+    field.E1 =  C * kz * exp(-I*kt*coord.c1);
     field.E2 = 0.0;
-    field.Ez = -C * kz * exp(-I*kt*coord.c1);
+    field.Ez = -C * kt * exp(-I*kt*coord.c1);
   }
   
   return field;
 }
+ 

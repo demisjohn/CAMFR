@@ -1,3 +1,7 @@
+2005-06-16 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* planar.cpp: Fix field plot.
+
 2005-05-30 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* planar.cpp: Improve field plot.
