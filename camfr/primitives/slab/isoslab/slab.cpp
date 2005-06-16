@@ -348,7 +348,9 @@ vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
   // combination, use these as an initial estimate, else find them
   // from scratch.
 
-  if ((global.solver == series) || (global.solver == ASR))
+  if (     (global.solver == series) 
+        || (global.solver == ASR) 
+        || (global.solver == stretched_ASR) )
     return find_kt_from_estimates();
 
   if (global.sweep_from_previous && (modeset.size() >= global.N))
