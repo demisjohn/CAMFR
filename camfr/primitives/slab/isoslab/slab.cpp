@@ -843,17 +843,20 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
 
   // Construct fourier matrices.
 
+ 
+ 
   bool extend = true;
   bool stretch = (global.solver == stretched_ASR);
   Real eta = global_slab.eta_ASR;
 
   if ( (global.solver == ASR) || (global.solver == stretched_ASR) )
-  {   
+  { 	  
    f_eps     = fourier_ASR(    eps, disc, 2*M, 0, stretch, extend, eta);
    f_inv_eps = fourier_ASR(inv_eps, disc, 2*M, 0, stretch, extend, eta);
   }
   else
   {
+	
     f_eps     = fourier(    eps, disc, 2*M, 0, extend);
     f_inv_eps = fourier(inv_eps, disc, 2*M, 0, extend);
   }
@@ -1059,6 +1062,7 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 
     const Complex lambda_over_d = global.lambda / D / 2.;
 
+
     Complex offset = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : lambda_over_d/2.;
 
     // Calculate eps matrices.
@@ -1075,11 +1079,16 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
  
     cMatrix E(n,n,fortranArray);
     
-    if (global.eigen_calc != arnoldi) // Hijacked switch.
-      fill_E_matrix_biaxial(&E, M, n, lambda_over_d, offset);
-    else
-      fill_E_matrix(&E, M, n, lambda_over_d, offset);      
-
+    //if (global.eigen_calc != arnoldi) // Hijacked switch.
+	//{	std::cout<<"Fill_E_matrix_biaxial"<<std::endl;
+    //  fill_E_matrix_biaxial(&E, M, n, lambda_over_d, offset);
+    //}
+	// else
+	// {std::cout<<"Fill_E_matrix"<<std::endl;
+    
+	fill_E_matrix(&E, M, n, lambda_over_d, offset);      
+	
+	//  }
     // Reduce eigenvalue problem to retain only solutions with desired
     // symmetry.
     //
@@ -1244,6 +1253,26 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
+
+  //Generating output to compare solvers
+  //   vector<Complex> kz_coarse;
+  //  	  for(unsigned int i=0; i< kz2_coarse.size();i++)
+  //  	  {
+  //        Complex kz = sqrt(kz2_coarse[i]);
+  //	      kz_coarse.push_back(kz);
+  //       }
+  //
+  //   vector<Complex> n_eff_coarse;
+  //      for(unsigned int i=0; i<kz_coarse.size();i++)
+  //      {
+  //        Complex n_eff = kz_coarse[i]/2./pi*global.lambda;
+  //        n_eff_coarse.push_back(n_eff);
+  //      }
+  //   std::sort(n_eff_coarse.begin(), n_eff_coarse.end(), kz_sorter());
+
+  //   std::cout<<"Effective index values"<<std::endl;
+  //   for(unsigned int i=0; i<n_eff_coarse.size();i++)
+  //      std::cout<< i <<" "<<real(n_eff_coarse[i])<<" "<<imag(n_eff_coarse[i])<<std::endl;
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)

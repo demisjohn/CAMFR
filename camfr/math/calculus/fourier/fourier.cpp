@@ -78,6 +78,8 @@ cVector fourier_ASR(const vector<Complex>& f,
 {  
   // Creation of the stretched refractive index profile vector udisc.
 
+  
+
   vector<Complex> udisc;
   if (stretching == true)
   {  
@@ -147,7 +149,7 @@ cVector fourier_ASR(const vector<Complex>& f,
         {
           Complex E = 2.*D/Real(m)/d_k;
 
-          if (abs(1.0 - E) > 1e-12)
+          if (abs(1.0 - abs(E)) > 1e-12)
             factor *= a*(1.0 - eta/(1.0 - E*E));
           else
           {
@@ -169,7 +171,7 @@ cVector fourier_ASR(const vector<Complex>& f,
           else
             E = D/Real(m)/d_k;
 
-          if (abs(1.0 - E) > 1e-12)
+          if (abs(1.0 - abs(E)) > 1e-12)
             factor *= a*(1.0 - eta/(1.0 - E*E));
           else
           {
@@ -195,10 +197,12 @@ cVector fourier_ASR(const vector<Complex>& f,
       E_m += factor * f[k];
     }
 
-    result(-m+M+1) = result(m+M+1) = E_m/D; 
+    result(-m+M+1)=result(m+M+1) = E_m/D;
+
 
     // TODO_PDB: isn't this symmetry lost if extend == false?
   }
+
 
   return result;
 }
