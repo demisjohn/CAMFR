@@ -1080,15 +1080,16 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
     cMatrix E(n,n,fortranArray);
     
     //if (global.eigen_calc != arnoldi) // Hijacked switch.
-	//{	std::cout<<"Fill_E_matrix_biaxial"<<std::endl;
+    //{	std::cout<<"Fill_E_matrix_biaxial"<<std::endl;
     //  fill_E_matrix_biaxial(&E, M, n, lambda_over_d, offset);
     //}
-	// else
-	// {std::cout<<"Fill_E_matrix"<<std::endl;
-    
-	fill_E_matrix(&E, M, n, lambda_over_d, offset);      
-	
-	//  }
+    // else
+    // {std::cout<<"Fill_E_matrix"<<std::endl;
+
+    fill_E_matrix(&E, M, n, lambda_over_d, offset);
+
+    //  }
+
     // Reduce eigenvalue problem to retain only solutions with desired
     // symmetry.
     //
