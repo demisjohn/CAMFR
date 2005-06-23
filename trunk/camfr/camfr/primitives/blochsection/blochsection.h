@@ -74,6 +74,9 @@ class BlochSectionImpl : public MultiWaveguide
 
     virtual int order(Polarisation pol, int Mx, int My) const = 0;
     virtual void set_theta_phi(Real theta, Real phi) const = 0;
+    
+    void set_kx0_ky0(Real kx0, Real ky0) 
+      {global_blochsection.alpha0 = kx0; global_blochsection.beta0 = ky0;}
 
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
@@ -145,7 +148,10 @@ class BlochSection : public MultiWaveguide
       {return s->order(pol, Mx, My);}
 
     void set_theta_phi(Real theta, Real phi) const 
-      {s->set_theta_phi(theta,phi);}
+      {s->set_theta_phi(theta, phi);}
+
+    void set_kx0_ky0(Real kx0, Real ky0) const 
+      {s->set_kx0_ky0(kx0, ky0);}
     
     std::string repr() const {return s->repr();}
     

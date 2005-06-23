@@ -120,3 +120,33 @@ void BlochSectionMode::normalise()
   std::cout << Hy << std::endl;  
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformBlochSectionMode::get_kx
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex UniformBlochSectionMode::get_kx() const
+{
+  const Complex W = get_geom()->get_width();
+  const Complex alpha0 = global_blochsection.alpha0;
+  return alpha0 + M*2.*pi/W;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformBlochSectionMode::get_ky
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex UniformBlochSectionMode::get_ky() const
+{
+  const Complex  beta0 = global_blochsection.beta0;
+  const Complex H = get_geom()->get_height();
+  return beta0 + N*2.*pi/H;
+}
+
