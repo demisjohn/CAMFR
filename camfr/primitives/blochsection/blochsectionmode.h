@@ -41,6 +41,9 @@ class BlochSectionMode : public Mode
     virtual int get_Mx() const {return -999;}
     virtual int get_My() const {return -999;}
 
+    virtual Complex get_kx() const {return -999;}
+    virtual Complex get_ky() const {return -999;}    
+
     friend Complex overlap(const BlochSectionMode* sec_I_mode,
                            const BlochSectionMode* sec_II_mode);
 
@@ -73,7 +76,11 @@ class UniformBlochSectionMode : public BlochSectionMode
       : BlochSectionMode(pol, kz, geom, Ex, Ey, Hx, Hy), M(M_), N(N_) {}
 
     int get_Mx() const {return M;}
-    int get_My() const {return N;}
+    int get_My() const {return N;}    
+
+    Complex get_kx() const;
+    Complex get_ky() const;
+
 
   protected:
     int M, N;
