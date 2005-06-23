@@ -221,7 +221,7 @@ inline void set_fourier_orders(int Mx, int My=0)
   global.N = 2*(2*Mx+1)*(2*My+1);
 }
 
-inline int mode_pol(const Mode& m) {return m.pol;}
+inline Polarisation mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
 inline Complex field_E2(const Field& f) {return f.E2;}
@@ -1300,7 +1300,8 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("mu",            &BlochSection::mu_at)
     .def("n",             &BlochSection::n_at)
     .def("order",         &BlochSection::order)
-    .def("set_theta_phi", &BlochSection::set_theta_phi)
+    .def("set_theta_phi", &BlochSection::set_theta_phi)    
+    .def("set_kx0_ky0",   &BlochSection::set_kx0_ky0)
     ;
 
   // Wrap BlochSectionMode.
@@ -1308,7 +1309,9 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<BlochSectionMode, boost::noncopyable, bases<Mode> >
     ("BlochSectionMode", no_init)
     .def("get_Mx",   &BlochSectionMode::get_Mx)    
-    .def("get_My",   &BlochSectionMode::get_My)
+    .def("get_My",   &BlochSectionMode::get_My)    
+    .def("get_kx",   &BlochSectionMode::get_kx)    
+    .def("get_ky",   &BlochSectionMode::get_ky)
     ;
 
 }
