@@ -214,6 +214,9 @@ inline void set_eta_ASR(Real eta)
 inline void set_davy(bool b)
   {global.davy = b;}
 
+inline void set_cavity_coherence(bool b)
+  {global.cavity_coherence = b;}
+
 inline void set_fourier_orders(int Mx, int My=0)
 {
   global_blochsection.Mx = Mx;
@@ -882,7 +885,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_backward_modes",         set_backward_modes);
   def("set_keep_all_1D_estimates",  set_keep_all_1D_estimates);
   def("set_fourier_orders",         set_fourier_orders); 
-  def("set_davy",                   set_davy);
+  def("set_davy",                   set_davy);  
+  def("set_cavity_coherence",       set_cavity_coherence);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
 
