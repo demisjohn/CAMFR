@@ -98,19 +98,6 @@ Field BlochSectionMode::field(const Coord& coord) const
 
 void BlochSectionMode::normalise() 
 {
-  Complex norm = sqrt(overlap(this,this));
-  
-  if (abs(norm) < 1e-5)
-  {
-    //py_print("Warning: mode close to cutoff.");
-    norm = 1.0;
-  }
-  
-  Ex /= norm;
-  Ey /= norm;
-  Hx /= norm;
-  Hy /= norm;
-
   return;
 
   std::cout << n_eff() << std::endl;
@@ -118,6 +105,36 @@ void BlochSectionMode::normalise()
   std::cout << Ey << std::endl;
   std::cout << Hx << std::endl;
   std::cout << Hy << std::endl;  
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// UniformBlochSectionMode::UniformBlochSectionMode
+//
+/////////////////////////////////////////////////////////////////////////////
+
+UniformBlochSectionMode::UniformBlochSectionMode
+  (Polarisation pol, const Complex& kz, BlochSectionImpl* geom, 
+   int M_, int N_, const cVector& Ex, const cVector& Ey,
+   const cVector& Hx, const cVector& Hy)
+    : BlochSectionMode(pol, kz, geom, Ex, Ey, Hx, Hy), M(M_), N(N_)
+{
+  // Set E_cst and H_cst to get correct results in the generalised Fresnel 
+  // formulas. This choice basically sets the T-factors in interface.cpp 
+  // to unity.
+  
+  if (pol == TE)
+  {
+    A = 0.0;
+    B = 1.0/geom->get_core()->mu();
+  }
+  else
+  {
+    A = 1.0/geom->get_core()->eps();
+    B = 0.0;
+  }
 }
 
 

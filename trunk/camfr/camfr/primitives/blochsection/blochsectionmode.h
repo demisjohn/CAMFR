@@ -72,8 +72,7 @@ class UniformBlochSectionMode : public BlochSectionMode
     UniformBlochSectionMode(Polarisation pol, const Complex& kz,
                             BlochSectionImpl* geom, int M_, int N_,
                             const cVector& Ex, const cVector& Ey,
-                            const cVector& Hx, const cVector& Hy)
-      : BlochSectionMode(pol, kz, geom, Ex, Ey, Hx, Hy), M(M_), N(N_) {}
+                            const cVector& Hx, const cVector& Hy);
 
     int get_Mx() const {return M;}
     int get_My() const {return N;}    

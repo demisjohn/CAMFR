@@ -121,7 +121,7 @@ void BlochSectionImpl::calc_overlap_matrices
 /////////////////////////////////////////////////////////////////////////////
 
 BlochSection::BlochSection(const Term& t)
-{
+{ 
   Slab* slab = dynamic_cast<Slab*>(t.get_wg());
 
   if ( !slab || !slab->is_uniform() )
@@ -152,7 +152,7 @@ BlochSection::BlochSection(const Term& t)
 BlochSection::BlochSection(Expression& expression) 
 {
   // Uniform Section
-
+  
   if (expression.get_size() == 1)
   { 
     Slab* slab = dynamic_cast<Slab*>(expression.get_term(0)->get_wg());
