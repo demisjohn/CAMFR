@@ -1,6 +1,11 @@
+2005-06-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* defs.h: Make more standards compliant.
+	* cavity.cpp: Ditto.
+
 2005-06-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
-	* def.h: Allow to turn off cavity coherence.
+	* defs.h: Allow to turn off cavity coherence.
 	* defs.cpp: Ditto.
 	* cavity.cpp: Ditto.
 	* camfr_wrap.cpp: Ditto.

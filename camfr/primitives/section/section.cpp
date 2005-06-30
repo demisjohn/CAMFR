@@ -131,7 +131,7 @@ void SectionImpl::calc_overlap_matrices
 
   remove_copies(&disc, 1e-6);
 
-  sort(disc.begin(), disc.end(), RealSorter());
+  std::sort(disc.begin(), disc.end(), RealSorter());
 
   // Calculate overlap matrices.
 
@@ -775,7 +775,7 @@ void rotate_slabs(const vector<Slab*>& slabs, const vector<Complex>& disc,
 
   remove_copies(disc_rot, 1e-9);
 
-  sort(disc_rot->begin(), disc_rot->end(), RealSorter());
+  std::sort(disc_rot->begin(), disc_rot->end(), RealSorter());
 
   // Make the rotated slabs.
 

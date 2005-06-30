@@ -342,7 +342,7 @@ void Circ_M::find_modes_from_scratch_by_track()
                                         guided_dkt/global.precision, eps,
                                         sec);
 
-  reverse(kt_guided_lossless.begin(), kt_guided_lossless.end());
+  std::reverse(kt_guided_lossless.begin(), kt_guided_lossless.end());
     
   vector<Complex> kt_lossless, kt_complex;
 
@@ -637,7 +637,7 @@ void Circ_M::calc_overlap_matrices
 
   remove_copies(&disc, 1e-9);
     
-  sort(disc.begin(), disc.end(), RealSorter());
+  std::sort(disc.begin(), disc.end(), RealSorter());
 
   // Fill field cache.
 
@@ -1337,7 +1337,7 @@ void Circ_2::find_modes_by_sweep()
       if (imag(kz) > 0)
         kz = -kz;
     
-    if (find(kr2_backward.begin(), kr2_backward.end(), kr2[i])
+    if (std::find(kr2_backward.begin(), kr2_backward.end(), kr2[i])
         != kr2_backward.end())
       kz = -kz;
 
@@ -1430,8 +1430,8 @@ void Circ_1::find_modes()
 
   // Sort and trim.
 
-  sort(kr.begin(), kr.end(), betasorter());
-  reverse(kr.begin(), kr.end());
+  std::sort(kr.begin(), kr.end(), betasorter());
+  std::reverse(kr.begin(), kr.end());
   
   if (kr.size() < N) // Shouldn't happen.
   {

@@ -1,3 +1,7 @@
+2005-06-30 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slaboverlap.cpp: Make more standards compliant.
+
 2005-06-13 Peter Debackere  <Peter.Debackere@UGent.be>
 
         * slab.cpp: Add ASR solver.

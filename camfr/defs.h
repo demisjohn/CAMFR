@@ -22,6 +22,13 @@ using std::real;
 using std::imag;
 using std::abs; 
 using std::sqrt;
+using std::conj;
+using std::exp;
+using std::pow;
+using std::cos;
+using std::sin;
+using std::log;
+using std::arg;
 
 #ifndef _WIN32
 using std::isnan;

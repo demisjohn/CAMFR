@@ -194,8 +194,8 @@ vector<Complex> allroots_contour(const Contour& c)
   {
     Sorter sorter;
 
-    sort(   roots.begin(),    roots.end(), sorter);
-    sort(subroots.begin(), subroots.end(), sorter);
+    std::sort(   roots.begin(),    roots.end(), sorter);
+    std::sort(subroots.begin(), subroots.end(), sorter);
 
     bool equal = true;
     for (unsigned int i=0; i<roots.size(); i++)   

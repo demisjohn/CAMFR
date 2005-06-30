@@ -93,7 +93,7 @@ class Overlap : public ComplexFunction
 
       remove_copies(&disc, 1e-9);
 
-      sort(disc.begin(), disc.end(), RealSorter());
+      std::sort(disc.begin(), disc.end(), RealSorter());
 
       // Do numeric integration.
 
@@ -151,7 +151,7 @@ Complex overlap_numeric(const SectionMode* mode_I,
 
   remove_copies(&disc, 1e-6);
   
-  sort(disc.begin(), disc.end(), RealSorter());
+  std::sort(disc.begin(), disc.end(), RealSorter());
 
   // Loop over slices.
 
@@ -529,7 +529,7 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
 
     remove_copies(&disc, 1e-6);
 
-    sort(disc.begin(), disc.end(), RealSorter());
+    std::sort(disc.begin(), disc.end(), RealSorter());
 
     // Loop over slices.
 

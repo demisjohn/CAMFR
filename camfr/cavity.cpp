@@ -307,8 +307,8 @@ void Cavity::set_source_expansion(const FieldExpansion& f)
   else
   {
     Ru.resize(N,N); Rd.resize(N,N);
-    Ru = abs(top->as_multi()->get_R12());    
-    Rd = abs(bot->as_multi()->get_R12());
+    Ru = blitz::abs(top->as_multi()->get_R12());    
+    Rd = blitz::abs(bot->as_multi()->get_R12());
   }
 
   cMatrix U1(N,N,fortranArray), tmp(N,N,fortranArray);

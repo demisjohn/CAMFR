@@ -132,7 +132,7 @@ vector<Complex> SlabImpl::disc_intersect(const SlabImpl* medium_II) const
 
   remove_copies(&disc, 1e-9);
 
-  sort(disc.begin(), disc.end(), RealSorter());
+  std::sort(disc.begin(), disc.end(), RealSorter());
 
   return disc;
 }

@@ -118,7 +118,7 @@ Complex overlap(const SlabMode* mode_I,
 
     remove_copies(&local_disc, 1e-9);
 
-    sort(local_disc.begin(), local_disc.end(), RealSorter());
+    std::sort(local_disc.begin(), local_disc.end(), RealSorter());
 
     disc=&local_disc;
   }
@@ -290,7 +290,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
 
     remove_copies(&local_disc, 1e-6);
 
-    sort(local_disc.begin(), local_disc.end(), RealSorter());
+    std::sort(local_disc.begin(), local_disc.end(), RealSorter());
 
     disc=&local_disc;
   }

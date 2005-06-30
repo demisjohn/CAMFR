@@ -1,3 +1,7 @@
+2005-06-30  Peter Bienstman  <Peter.Bienstman@ugent.be>
+
+	* allroots.cpp: Make more standards compliant.
+
 2003-08-01  Peter Bienstman  <Peter.Bienstman@ugent.be>
 
 	* mueller.cpp: Improve debug code.
