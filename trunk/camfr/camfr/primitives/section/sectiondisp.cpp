@@ -329,7 +329,8 @@ Complex SectionDisp::calc_split()
     for (int i=1; i<=M; i++)
 
       if ( (abs(e(i) - 1.0) < min_distance) &&
-           ( find(min_indices.begin(),min_indices.end(),i)==min_indices.end()))
+           (std::find(min_indices.begin(),min_indices.end(),i) 
+                == min_indices.end()))
       {
         min_index = i;
         min_distance = abs(e(i) - 1.0);

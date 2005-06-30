@@ -363,7 +363,7 @@ void rotate_slabs_(const vector<Slab*>& slabs, const vector<Complex>& disc,
 
   remove_copies(disc_rot, 1e-9);
 
-  sort(disc_rot->begin(), disc_rot->end(), RealSorter());
+  std::sort(disc_rot->begin(), disc_rot->end(), RealSorter());
 
   // Make the rotated slabs.
 

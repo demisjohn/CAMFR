@@ -87,7 +87,7 @@ Complex overlap(const CircMode*  mode_I,
 
     remove_copies(&local_disc, 1e-9);
 
-    sort(local_disc.begin(), local_disc.end(), RealSorter());
+    std::sort(local_disc.begin(), local_disc.end(), RealSorter());
 
     disc = &local_disc;
   }
