@@ -1273,7 +1273,8 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
   //   std::cout<<"Effective index values"<<std::endl;
   //   for(unsigned int i=0; i<n_eff_coarse.size();i++)
-  //      std::cout<< i <<" "<<real(n_eff_coarse[i])<<" "<<imag(n_eff_coarse[i])<<std::endl;
+  //      std::cout<< i << " " << real(n_eff_coarse[i])
+  //                    << " " << imag(n_eff_coarse[i]) << std::endl;
 
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
