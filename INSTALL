@@ -8,7 +8,7 @@ CAMFR also requires the following external programs or libraries,
 which must be installed first and built with the same version of gcc used
 to compile CAMFR:.
 
-- Python 2.2 from http://www.python.org (2.3 will be supported soon.)
+- Python 2.3 from http://www.python.org (2.4 will be supported soon.)
 - The Scons building tool from http://www.scons.org. (version 0.9 or later)
 - Numerical Python 22 or later from http://sourceforge.net/projects/numpy
 - The Boost Python Library from http://www.boost.org. At least version 1.30.2
