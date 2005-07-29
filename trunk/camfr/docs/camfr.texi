@@ -2118,7 +2118,7 @@ When you're only interested in the modes of a @code{Section}, and not putting @c
 Some loose remarks:
 
 @itemize @bullet
-@item If you have estimates on the location of the modes, e.g. from a previous simulation for a slightly different structure, you can skip stage 1 and use user-provided estimates instead: @code{s.set_estimate{n_eff1}}, @code{s.set_estimate{n_eff2}}, ... .
+@item If you have estimates on the location of the modes, e.g. from a previous simulation for a slightly different structure, you can skip stage 1 and use user-provided estimates instead: @code{s.set_estimate(n_eff1)}, @code{s.set_estimate(n_eff2)}, ... .
 @item When you're only interested in the fundamental mode, it's tempting to use @code{set_N(1)}. However, sometimes this yields a higher-order mode, because the noise on the coarse estimate during stage 1 can be such that the order of mode 0 and mode 1 gets swapped. One option is to use more palne waves, but often it works just as well to increase the value of @code{set_N()}. Taking more estimates to stage 2 will improve the chances of finding all modes you are interested in.
 @end itemize
 
