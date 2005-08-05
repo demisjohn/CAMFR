@@ -294,22 +294,8 @@ void Cavity::set_source_expansion(const FieldExpansion& f)
   
   // Calculate matrices.
 
-  top->calcRT();
-  bot->calcRT();
-
-  cMatrix Ru(fortranArray), Rd(fortranArray);
-  
-  if (global.cavity_coherence == true)
-  {
-    Ru.reference(top->as_multi()->get_R12());
-    Rd.reference(bot->as_multi()->get_R12());
-  }
-  else
-  {
-    Ru.resize(N,N); Rd.resize(N,N);
-    Ru = blitz::abs(top->as_multi()->get_R12());    
-    Rd = blitz::abs(bot->as_multi()->get_R12());
-  }
+  top->calcRT(); const cMatrix& Ru(top->as_multi()->get_R12());
+  bot->calcRT(); const cMatrix& Rd(bot->as_multi()->get_R12());
 
   cMatrix U1(N,N,fortranArray), tmp(N,N,fortranArray);
   U1 = 0.0;
