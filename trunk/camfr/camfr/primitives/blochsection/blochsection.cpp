@@ -969,7 +969,7 @@ struct IndexConvertor
 /////////////////////////////////////////////////////////////////////////////
 
 void BlochSection2D::find_modes()
-{
+{  
   // Check values.
 
   if (real(global.lambda) == 0)
@@ -977,9 +977,11 @@ void BlochSection2D::find_modes()
     py_error("Error: wavelength not set.");
     return;
   }
-
-  if (!recalc_needed())
-    return;
+  
+  // TODO: improve check for recalc needed.
+  
+  //if (!recalc_needed())
+  //  return;
 
   // TODO: speed up by using more .reference.
 
@@ -1039,12 +1041,18 @@ void BlochSection2D::find_modes()
   cMatrix eig_H(2*MN,2*MN,fortranArray);
   eig_H.reference(multiply(G,eig));
 
+  // Clear modeset.
+
+  for (unsigned int i=0; i<modeset.size(); i++)
+    delete modeset[i];
+  modeset.clear();
+
   // Construct modes.
 
   blitz::Range r1(1,MN); blitz::Range r2(MN+1,2*MN);
 
   const Real Y0 = sqrt(eps0/mu0);
- 
+
   for (int i=1; i<=E.rows(); i++)
   {
     Complex kz2 = E(i)/k0/k0;
@@ -1118,7 +1126,7 @@ void BlochSection2D::set_theta_phi(Real theta, Real phi) const
 /////////////////////////////////////////////////////////////////////////////
 
 void UniformBlochSection::find_modes()
-{  
+{
   // Set constants.
 
   const Complex k = 2*pi/global.lambda*core->n();
