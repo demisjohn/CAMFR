@@ -78,6 +78,9 @@ class BlochSectionImpl : public MultiWaveguide
     void set_kx0_ky0(Real kx0, Real ky0) 
       {global_blochsection.alpha0 = kx0; global_blochsection.beta0 = ky0;}
 
+    Complex get_kx0() const {return global_blochsection.alpha0;}
+    Complex get_ky0() const {return global_blochsection.beta0;}    
+
     void calc_overlap_matrices
       (MultiWaveguide*, cMatrix*, cMatrix*,
        cMatrix* O_I_I=NULL, cMatrix* O_II_II=NULL);
@@ -151,8 +154,11 @@ class BlochSection : public MultiWaveguide
       {s->set_theta_phi(theta, phi);}
 
     void set_kx0_ky0(Real kx0, Real ky0) const 
-      {s->set_kx0_ky0(kx0, ky0);}
-    
+      {s->set_kx0_ky0(kx0, ky0);}    
+
+    Complex get_kx0() const {return s->get_kx0();}
+    Complex get_ky0() const {return s->get_ky0();}
+   
     std::string repr() const {return s->repr();}
     
   protected:
