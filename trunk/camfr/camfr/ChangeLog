@@ -1,5 +1,9 @@
 2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* cavity.cpp: Don't allow to turn off coherence.
+
+2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* stack.h: Add power scattering matrices.
 	* stack.cpp: Ditto.
 
