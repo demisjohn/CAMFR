@@ -214,8 +214,8 @@ inline void set_eta_ASR(Real eta)
 inline void set_davy(bool b)
   {global.davy = b;}
 
-inline void set_cavity_coherence(bool b)
-  {global.cavity_coherence = b;}
+inline void set_always_recalculate(bool b)
+  {global.always_recalculate = b;}
 
 inline void set_fourier_orders(int Mx, int My=0)
 {
@@ -886,7 +886,7 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_keep_all_1D_estimates",  set_keep_all_1D_estimates);
   def("set_fourier_orders",         set_fourier_orders); 
   def("set_davy",                   set_davy);  
-  def("set_cavity_coherence",       set_cavity_coherence);
+  def("set_always_recalculate",     set_always_recalculate);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
 
@@ -1128,7 +1128,9 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("R12",                      stack_R12)
     .def("R21",                      stack_R21)
     .def("T12",                      stack_T12)
-    .def("T21",                      stack_T21)
+    .def("T21",                      stack_T21)    
+    .def("R12_power",                &Stack::get_R12_power)    
+    .def("T12_power",                &Stack::get_T12_power)
     .def(self + Expression())
     .def(self + Term())
     ;
@@ -1305,7 +1307,9 @@ BOOST_PYTHON_MODULE(_camfr)
     .def("n",             &BlochSection::n_at)
     .def("order",         &BlochSection::order)
     .def("set_theta_phi", &BlochSection::set_theta_phi)    
-    .def("set_kx0_ky0",   &BlochSection::set_kx0_ky0)
+    .def("set_kx0_ky0",   &BlochSection::set_kx0_ky0)    
+    .def("get_kx0",       &BlochSection::get_kx0)    
+    .def("get_ky0",       &BlochSection::get_ky0)
     ;
 
   // Wrap BlochSectionMode.

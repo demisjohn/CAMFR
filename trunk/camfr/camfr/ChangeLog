@@ -1,9 +1,17 @@
-2005-06-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
+2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* defs.h: Add always_recalc.
+	* defs.cpp: Ditto.
+	* waveguide.cpp: Ditto.
+	* scatterer.cpp: Ditto.
+	* camfr_wrap.cpp: Ditto.
+	
+2005-07-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Make more standards compliant.
 	* cavity.cpp: Ditto.
 
-2005-06-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
+2005-07-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Allow to turn off cavity coherence.
 	* defs.cpp: Ditto.
