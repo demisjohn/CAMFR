@@ -19,7 +19,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 bool MultiScatterer::recalc_needed() const
-{  
+{ 
+  if (global.always_recalculate == true)
+    return true;
+  
   const Real eps = 1e-10;
 
   if (inc && (inc->N() != global.N))
@@ -343,7 +346,7 @@ void DiagScatterer::swap_RT_with(DiagScatterer& sc_d)
 /////////////////////////////////////////////////////////////////////////////
 
 void DiagScatterer::convert_to_dense() const
-{
+{ 
   if (!recalc_needed() && R12_dense)
     return;
 

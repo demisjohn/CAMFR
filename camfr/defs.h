@@ -262,8 +262,9 @@ struct Global
     // Switch to enable overlap matrices output for Davy.
     bool davy;
 
-    // Switch to set whether cavity reflection interfere coherently.
-    bool cavity_coherence;
+    // Switch to set whether stacks and waveguides are always recalculated,
+    // even if they were calculated before.
+    bool always_recalculate;
 };
 
 extern Global global;

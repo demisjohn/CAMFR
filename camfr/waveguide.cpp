@@ -76,7 +76,10 @@ MultiWaveguide::~MultiWaveguide()
 /////////////////////////////////////////////////////////////////////////////
 
 bool MultiWaveguide::recalc_needed() const
-{
+{ 
+  if (global.always_recalculate == true)
+    return true;
+  
   const Real eps = 1e-10;
 
   if (modeset.size() != global.N)
