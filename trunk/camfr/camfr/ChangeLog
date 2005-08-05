@@ -1,5 +1,10 @@
 2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* stack.h: Add power scattering matrices.
+	* stack.cpp: Ditto.
+
+2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* defs.h: Add always_recalc.
 	* defs.cpp: Ditto.
 	* waveguide.cpp: Ditto.

@@ -16,6 +16,7 @@
 #include "S_scheme_fields.h"
 #include "T_scheme_fields.h"
 #include "bloch.h"
+#include "primitives/blochsection/blochsection.h"
 
 using std::vector;
 
@@ -278,7 +279,7 @@ vector<Complex*> StackImpl::get_thicknesses() const
 
 template <class T>
 void stack_calcRT(T* stack)
-{
+{ 
   if (stack->no_of_periods == 1)
   {
     S_scheme(stack->chunks, stack);
@@ -706,7 +707,7 @@ bool Stack::single_material() const
 /////////////////////////////////////////////////////////////////////////////
 
 void Stack::calcRT()
-{  
+{
   if (sc)
     sc->calcRT();
   else
@@ -1209,12 +1210,12 @@ const Complex Stack::R12(int i, int j) const
 
   if (multi)
   {
-    Complex R12ij = (multi->get_R12())(i,j); 
+    Complex R12ij = (multi->get_R12())(i,j);
 
     BlochStack* bs_inc = dynamic_cast<BlochStack*>(multi->get_inc());
 
     if (bs_inc) // Normalise.
-    {
+    { 
       BlochMode* fm = dynamic_cast<BlochMode*>(bs_inc->get_fw_mode(j));
       BlochMode* bm = dynamic_cast<BlochMode*>(bs_inc->get_bw_mode(i));
 
@@ -1225,6 +1226,7 @@ const Complex Stack::R12(int i, int j) const
 
       R12ij *= sqrt(bflux/fflux);    
     }
+
     return R12ij;
   }
   else
@@ -1249,7 +1251,7 @@ const Complex Stack::R21(int i, int j) const
 
     BlochStack* bs_ext = dynamic_cast<BlochStack*>(multi->get_ext());
     
-    if (bs_ext) // Mormalise.
+    if (bs_ext) // Normalise.
     {
       BlochMode* fm = dynamic_cast<BlochMode*>(bs_ext->get_fw_mode(i));
       BlochMode* bm = dynamic_cast<BlochMode*>(bs_ext->get_bw_mode(j));
@@ -1449,6 +1451,84 @@ const cMatrix Stack::get_T21() const
       (T21p)(i,j) = T21(i,j);
 
   return T21p;	
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_R12_power
+//
+//  The main reasons these functions are faster than their Python 
+//  equivalents is because they avoid calls to convert_to_dense() which 
+//  are expensive when always_recalc is true.
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_R12_power() const
+{
+  MultiScatterer* multi = as_multi();
+
+  if (! dynamic_cast<BlochSection*>(multi->get_inc()))
+  {
+    py_error("Power functions only implemented for BlochSections.");
+    exit(-1);
+  }
+
+  cMatrix R(global.N,global.N,fortranArray);
+
+  R = blitz::pow2(blitz::abs(multi->get_R12()));
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+    {
+      Complex P_in  = multi->get_inc()->get_mode(j)->field(Coord(0,0,0)).Sz();
+      Complex P_out = multi->get_inc()->get_mode(i)->field(Coord(0,0,0)).Sz();
+
+      if (abs(real(P_in)) > 1e-10)
+        R(i,j) *= (P_out) / (P_in);
+      else
+        R(i,j) = 0.0;
+    }
+
+  return R;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Stack::get_T12_power
+//  
+/////////////////////////////////////////////////////////////////////////////
+
+const cMatrix Stack::get_T12_power() const
+{
+  MultiScatterer* multi = as_multi();
+
+  if (! dynamic_cast<BlochSection*>(multi->get_inc()))
+  {
+    py_error("Power functions only implemented for BlochSections.");
+    exit(-1);
+  }
+
+  cMatrix T(global.N,global.N,fortranArray);
+
+  T = blitz::pow2(blitz::abs(multi->get_T12()));
+
+  for (int i=1; i<=global.N; i++)
+    for (int j=1; j<=global.N; j++)
+    {
+      Complex P_in  = multi->get_inc()->get_mode(j)->field(Coord(0,0,0)).Sz();
+      Complex P_out = multi->get_ext()->get_mode(i)->field(Coord(0,0,0)).Sz();
+
+      if (abs(real(P_in)) > 1e-10)
+        T(i,j) *= (P_out) / (P_in);
+      else
+        T(i,j) = 0.0;
+    }
+
+  return T;
 }
 
 
