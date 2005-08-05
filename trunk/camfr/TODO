@@ -12,11 +12,14 @@
 
 -plot n section doesn't work
 
+-take kx0, .. into account for recalc_needed() for BlochSection
+
 -stabilise PML in series solver
 -series solver for degenerate waveguides: double_prism, zipper (relax mueller),
  dircoup (PML)
 
 -S_flux at arbitrary position
+-circ S flux does not respect begin and end point
 
 -infstack: fix ext_field_expansion, calc_interface_field, fw_bw(s.length())
 -reformulate TE as fourier series
