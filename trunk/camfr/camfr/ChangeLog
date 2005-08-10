@@ -1,3 +1,7 @@
+2005-08-10  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.cpp: Add no_wall for Section.
+
 2005-08-05  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* cavity.cpp: Don't allow to turn off coherence.

@@ -794,12 +794,14 @@ BOOST_PYTHON_MODULE(_camfr)
  // Wrap Section_wall_type enum.
 
   enum_<Section_wall_type>("Section_wall_type")
-    .value("E_wall", E_wall)
-    .value("H_wall", H_wall)
+    .value("E_wall",  E_wall)
+    .value("H_wall",  H_wall)    
+    .value("no_wall", no_wall)
     ;
 
-  scope().attr("E_wall") = E_wall;
-  scope().attr("H_wall") = H_wall;
+  scope().attr("E_wall")  = E_wall;
+  scope().attr("H_wall")  = H_wall;  
+  scope().attr("no_wall") = no_wall;
 
   // Wrap Sort_type.
 
@@ -1267,6 +1269,7 @@ BOOST_PYTHON_MODULE(_camfr)
 
   class_<Section, bases<MultiWaveguide> >
   ("Section", init<Expression&, optional<int, int> >())
+    .def(init<Expression&, Expression&, optional<int, int> >())    
     .def(init<const Term&>())
     .def("mode",         section_get_mode,
          return_value_policy<reference_existing_object>())
