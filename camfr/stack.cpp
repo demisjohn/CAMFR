@@ -407,7 +407,7 @@ void DenseStack::calcRT()
 
   for (unsigned int i=0; i<chunks.size(); i++)
     chunks[i].sc->calcRT();
-
+  
   stack_calcRT<DenseStack>(this);
 
   // Remember wavelength and gain these matrices were calculated for.

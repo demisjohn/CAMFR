@@ -303,7 +303,7 @@ void calc_S_S(const vector<Chunk>& chunks,
     {
       DenseScatterer right; right.allocRT();
       S_scheme(right_chunks, &right);
-      
+
       bw_prop.reference(multiply(right.get_R12(),fw_prop));
 
       if (inc_right_bw)

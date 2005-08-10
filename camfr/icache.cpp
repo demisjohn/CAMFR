@@ -75,7 +75,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
       
       if ( dynamic_cast<BlochStack*>(wg1) || dynamic_cast<BlochStack*>(wg2) )
 	sc_flip = new DenseInterface(*wg2,*wg1);
-      else      
+      else
         sc_flip = new FlippedScatterer(*dynamic_cast<MultiScatterer*>(sc));
     }
 
