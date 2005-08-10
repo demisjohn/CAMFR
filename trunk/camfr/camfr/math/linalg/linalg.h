@@ -38,7 +38,7 @@ typedef enum{nrml, transp, herm} Op;
 // Using these routines assumes that the arrays are created using Fortran
 // storage ordering. E.g. for a 10 by 10 complex matrix:
 //
-//    cMatrix(10,10,fortranArray) A;
+//    cMatrix A(10,10,fortranArray);
 //
 // Take care that the matrix used to store the results of an operation
 // has the correct dimensions.
