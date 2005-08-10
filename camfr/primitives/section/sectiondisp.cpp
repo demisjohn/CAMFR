@@ -136,6 +136,7 @@ Complex SectionDisp::operator()(const Complex& kt)
   Complex old_beta = global.slab_ky;
 
   const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
+
   Complex beta = sqrt(C*min_eps_mu - kt*kt);
 
   if (real(beta) < 0)
@@ -294,7 +295,7 @@ Complex SectionDisp::calc_global()
 
 Complex SectionDisp::calc_split()
 {
-  // Calculate eigenvectors.
+  // Calculate eigenvectors.  
 
   left->calcRT();
   if (! symmetric)
@@ -313,7 +314,7 @@ Complex SectionDisp::calc_split()
     e.reference(eigenvalues(Q));
   else
     e.reference(eigenvalues_x(Q));
-
+  
   // Return product of K best eigenvalues (i.e. closest to 1).
 
   int K = 5;
