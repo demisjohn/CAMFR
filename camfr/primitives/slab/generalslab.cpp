@@ -254,7 +254,7 @@ void SlabImpl::calc_overlap_matrices
   if (mirrored)
   {
     py_error(
-     "Internal error: mirrored overlaps not yeat implemented.");
+     "Internal error: mirrored overlaps not yet implemented.");
     exit (-1);
   }
 
@@ -303,14 +303,13 @@ void SlabImpl::calc_overlap_matrices
       (*O_I_II)(i,j) /= sqrt(cos_I (i)) * sqrt(cos_II(j));
       (*O_II_I)(i,j) /= sqrt(cos_II(i)) * sqrt(cos_I (j));
     }
-  
 
   // Calculate O_I_I and O_II_II.
 
   *O_I_I = 0.0; *O_II_II = 0.0;
   
   for (int i=1; i<=N; i++)
-    (*O_I_I)(i,i) = (*O_II_II)(i,i) = 1.0;  
+    (*O_I_I)(i,i) = (*O_II_II)(i,i) = 1.0;
 
   for (int i=1; i<=n; i++)
     for (int j=1; j<=n; j++)
