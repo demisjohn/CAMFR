@@ -33,7 +33,7 @@ typedef enum {none, snap, guided_only, full} Mode_correction;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-typedef enum {E_wall, H_wall} Section_wall_type;
+typedef enum {E_wall, H_wall, no_wall} Section_wall_type;
 
 struct SectionGlobal
 {
@@ -136,6 +136,8 @@ class Section : public MultiWaveguide
 
     Section(const Term& t);
     Section(Expression& ex, 
+            int M1=int(global.N*global.mode_surplus), int M2=global.N);
+    Section(Expression& left_ex, Expression& right_ex,
             int M1=int(global.N*global.mode_surplus), int M2=global.N);
     ~Section() {delete s; delete leftwall_sc; delete rightwall_sc;}
 

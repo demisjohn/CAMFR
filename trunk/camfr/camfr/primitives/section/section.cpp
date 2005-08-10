@@ -293,7 +293,37 @@ Section::Section(Expression& expression, int M1, int M2)
 
   Complex max_eps = -1e9;
   unsigned int max_eps_i = 0;
-  for (unsigned int i=1; i<ex.get_size(); i++)
+
+  int i_start = 1;
+  int i_stop = ex.get_size()-1;
+
+  // Make sure there are no uniform slabs at the edges that end up as
+  // core, otherwise they will have a zero relfection matrix and the
+  // mode finding will fail.
+
+  for (unsigned int i=i_start; i<=i_stop; i++)
+  {
+    Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
+    if (s && s->is_uniform() && global_section.leftwall == no_wall)
+    {
+      i_start++;
+      break;
+    }
+  }
+  
+  for (unsigned int i=i_stop; i>=i_start; i--)
+  {
+    Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
+    if (s && s->is_uniform() && global_section.rightwall == no_wall)
+    {
+      i_stop--;
+      break;
+    }
+  }
+
+  // Find actual core.
+  
+  for (unsigned int i=i_start; i<=i_stop; i++)
   {
     Slab* s = dynamic_cast<Slab*>(ex.get_term(i)->get_wg());
     if (s)
@@ -306,7 +336,7 @@ Section::Section(Expression& expression, int M1, int M2)
       }
     }
   }
-
+  
   // Create right hand side expression.
 
   Expression right_ex;
@@ -332,7 +362,8 @@ Section::Section(Expression& expression, int M1, int M2)
     rightwall_sc = new E_Wall(*right_ex.get_ext());
   if (global_section.rightwall == H_wall)
     rightwall_sc = new H_Wall(*right_ex.get_ext());
-  right_ex.add_term(Term(*rightwall_sc));
+  if (global_section.rightwall != no_wall)
+    right_ex.add_term(Term(*rightwall_sc));
 
   // Create left hand side expression.
 
@@ -365,7 +396,84 @@ Section::Section(Expression& expression, int M1, int M2)
     leftwall_sc = new E_Wall(*left_ex.get_ext());
   if (global_section.leftwall == H_wall)
     leftwall_sc = new H_Wall(*left_ex.get_ext());
-  left_ex.add_term(Term(*leftwall_sc));
+  if (global_section.leftwall != no_wall)
+    left_ex.add_term(Term(*leftwall_sc));
+
+  // Create Section.
+
+  s = new Section2D(left_ex, right_ex, M1, M2);
+  uniform = s->is_uniform();
+  core = s->get_core();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Section::Section
+//
+//  There are situations where the core finding algorithm from the
+//  previous constructor cannot find the right core, so we provide
+//  A constructur where the user can explicity give the right and
+//  left expressions
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Section::Section(Expression& left_ex_, Expression& right_ex_, int M1, int M2)
+  : leftwall_sc(NULL), rightwall_sc(NULL)
+{
+  if ( (M1 < M2) || (M2 < global.N) )
+    py_print("Warning: M1 > M2 > N not fulfilled.");
+
+  // Add PML and walls to right hand side expression.
+
+  Expression right_ex;
+  for (int i=0; i<right_ex_.get_size(); i++)
+  {
+    Slab* s = dynamic_cast<Slab*>(right_ex_.get_term(i)->get_wg());
+
+    if (s)
+    {
+      Complex d = right_ex_.get_term(i)->get_d();
+
+      if (i == right_ex_.get_size()-1)
+        d += I*global_section.right_PML;
+
+      right_ex += Term((*s)(d));
+    }
+  }
+
+  if (global_section.rightwall == E_wall)
+    rightwall_sc = new E_Wall(*right_ex.get_ext());
+  if (global_section.rightwall == H_wall)
+    rightwall_sc = new H_Wall(*right_ex.get_ext());
+  if (global_section.rightwall != no_wall)
+    right_ex.add_term(Term(*rightwall_sc));
+
+  // Add PML and walls to left hand side expression.
+
+  Expression left_ex;
+  for (int i=0; i<left_ex_.get_size(); i++)
+  {
+    Slab* s = dynamic_cast<Slab*>(left_ex_.get_term(i)->get_wg());
+
+    if (s)
+    {
+      Complex d = left_ex_.get_term(i)->get_d();
+
+      if (i == left_ex_.get_size()-1)
+        d += I*global_section.left_PML;
+
+      left_ex += Term((*s)(d));
+    }
+  }
+
+  if (global_section.leftwall == E_wall)
+    leftwall_sc = new E_Wall(*left_ex.get_ext());
+  if (global_section.leftwall == H_wall)
+    leftwall_sc = new H_Wall(*left_ex.get_ext());
+  if (global_section.leftwall != no_wall)
+    left_ex.add_term(Term(*leftwall_sc));
 
   // Create Section.
 
@@ -1388,6 +1496,16 @@ struct IndexConvertor
 
 vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 {
+  // Check values.
+
+  if (    (global_section.leftwall  == no_wall)
+       || (global_section.rightwall == no_wall) )
+  {
+    
+    py_error("Function only defined for completely enclosed structures.");
+    exit (-1);
+  }
+
   // Calculate M and N.: TODO: better approximations
 
   // TODO: speed up by using more .reference.
@@ -2000,7 +2118,7 @@ void Section2D::find_modes_from_estimates()
   py_print("Creating mode profiles...");
 
   for (unsigned int i=0; i<kt.size(); i++)
-  { 
+  {
     Complex kz = sqrt(C0*min_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
@@ -2150,13 +2268,21 @@ void Section1D::find_modes()
 
   if (real(global.lambda) == 0)
   {
-    cout << "Error: wavelength not set." << endl;
+    py_error("Error: wavelength not set.");
     return;
   }
   
   if (global.N == 0)
   {
-    cout << "Error: number of modes not set." << endl;
+    py_error("Error: number of modes not set.");
+    return;
+  }
+
+  if (    (global_section.leftwall  == no_wall)
+       || (global_section.rightwall == no_wall) )
+  {
+    
+    py_error("Function only defined for completely enclosed structures.");
     return;
   }
 
