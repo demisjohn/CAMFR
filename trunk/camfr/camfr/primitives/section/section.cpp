@@ -2097,6 +2097,15 @@ void Section2D::find_modes_from_estimates()
 
   kt_to_neff transform(C0*min_eps_mu);
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
+
+  //for (Real n_eff=1; n_eff<=3; n_eff+=0.01)
+  //{
+  //  Complex kt = sqrt(C0*min_eps_mu-pow(2.*pi/global.lambda*n_eff,2));
+  //  std::cout << n_eff << " " << real(kt) << " " << imag(kt) 
+  //            << " " << abs(disp(kt)) << std::endl;
+  //}
+  //exit(-1);
+
   //f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);

@@ -316,6 +316,8 @@ Complex SectionDisp::calc_split()
     e.reference(eigenvalues_x(Q));
   
   // Return product of K best eigenvalues (i.e. closest to 1).
+  // Don't take zero eigenvalues into account as these are not numerically
+  // relevant.
 
   int K = 5;
 
@@ -331,7 +333,8 @@ Complex SectionDisp::calc_split()
 
       if ( (abs(e(i) - 1.0) < min_distance) &&
            (std::find(min_indices.begin(),min_indices.end(),i) 
-                == min_indices.end()))
+            == min_indices.end()) &&
+            (abs(e(i)) > 1e-8) )
       {
         min_index = i;
         min_distance = abs(e(i) - 1.0);
