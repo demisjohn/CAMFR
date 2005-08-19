@@ -274,7 +274,10 @@ void Slab_M::find_modes()
   {
     vector<Complex> old_kt;
     for (unsigned int i=0; i<modeset.size(); i++)
+    {
+      std::cout << i << dynamic_cast<Slab_M_Mode*>(modeset[i]) << std::flush;
       old_kt.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
+    }
 
     vector<Complex> kt(find_kt(old_kt));
     build_modeset(kt);  
@@ -301,7 +304,9 @@ void Slab_M::find_modes()
     global.polarisation = TE;
 
     vector<Complex> old_kt_TE;
-    if (modeset.size())
+    if (    modeset.size() 
+         && (modeset.front()->pol == TE) 
+         && (modeset.back() ->pol == TM) )
       for (unsigned int i=0; i<n; i++)
         old_kt_TE.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
 
@@ -317,7 +322,9 @@ void Slab_M::find_modes()
     global.polarisation = TM;
 
     vector<Complex> old_kt_TM;
-    if (modeset.size())
+    if (    modeset.size() 
+         && (modeset.front()->pol == TE) 
+         && (modeset.back() ->pol == TM) )
       for (unsigned int i=n; i<2*n; i++)
         old_kt_TM.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
 
@@ -842,8 +849,6 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
   }
 
   // Construct fourier matrices.
-
- 
  
   bool extend = true;
   bool stretch = (global.solver == stretched_ASR);
@@ -856,7 +861,6 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
   }
   else
   {
-	
     f_eps     = fourier(    eps, disc, 2*M, 0, extend);
     f_inv_eps = fourier(inv_eps, disc, 2*M, 0, extend);
   }
@@ -1610,7 +1614,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -1865,7 +1869,7 @@ void UniformSlab::build_modeset(vector<Complex>& kt)
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat; 
+    last_gain_mat_n = global.gain_mat->n(); 
 }
 
 

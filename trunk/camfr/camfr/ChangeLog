@@ -1,3 +1,13 @@
+2005-08-19  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* waveguide.h: Don't copy gain material.
+	* waveguide.cpp: Ditto.
+	* scatterer.h: Ditto.
+	* scatterer.cpp: Ditto.
+	* stack.cpp: Ditto.
+	* interface.cpp: Ditto.
+	* infstack.cpp: Ditto.
+
 2005-08-10  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* camfr_wrap.cpp: Add no_wall for Section.

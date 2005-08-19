@@ -170,7 +170,7 @@ void SectionImpl::calc_overlap_matrices
 
     // Create overlap cache.
 
-    if (medium_I->get_M2() != medium_II->get_M2())
+   if (medium_I->get_M2() != medium_II->get_M2())
     {
       std::cerr 
         << "Error: cache not yet general enough to deal with different M."
@@ -256,8 +256,8 @@ Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
 Section::Section(Expression& expression, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
-  if ( (M1 < M2) || (M2 < global.N) )
-    py_print("Warning: M1 > M2 > N not fulfilled.");
+  //if ( (M1 < M2) || (M2 < global.N) )
+  //  py_print("Warning: M1 > M2 > N not fulfilled.");
 
   //
   // 1D section
@@ -700,7 +700,7 @@ void Section2D::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -2346,5 +2346,5 @@ void Section1D::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }

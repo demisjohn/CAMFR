@@ -1088,7 +1088,7 @@ void BlochSection2D::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -1221,7 +1221,7 @@ void UniformBlochSection::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -1259,7 +1259,7 @@ void UniformBlochSection::set_theta_phi(Real theta, Real phi) const
   Complex k = 2.*pi / global.lambda * core->n();
 
   global_blochsection.alpha0 = k * sin(theta) * cos(phi);
-  global_blochsection.beta0  = k * sin(theta) * sin(phi);;  
+  global_blochsection.beta0  = k * sin(theta) * sin(phi); 
 }
 
 

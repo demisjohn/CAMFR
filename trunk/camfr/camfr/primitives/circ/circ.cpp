@@ -281,7 +281,7 @@ void Circ_M::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -781,7 +781,7 @@ void Circ_2::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
@@ -1477,7 +1477,7 @@ void Circ_1::find_modes()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
 }
 
 
