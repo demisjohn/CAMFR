@@ -39,7 +39,7 @@ const Waveguide_length Waveguide::operator()(const Complex& d) const
 
 MultiWaveguide::MultiWaveguide(const MultiWaveguide& w)
   : Waveguide(w.uniform, w.core), 
-    last_lambda(w.last_lambda), last_gain_mat(w.last_gain_mat)
+    last_lambda(w.last_lambda), last_gain_mat_n(w.last_gain_mat_n)
 {
   for (unsigned int i=0; i<modeset.size(); i++)
     delete modeset[i];
@@ -94,10 +94,7 @@ bool MultiWaveguide::recalc_needed() const
   if (!contains(*global.gain_mat))
     return false;
 
-  if (abs(global.gain_mat-> n()  - last_gain_mat. n())  > eps)
-    return true;
-  
-  if (abs(global.gain_mat->mur() - last_gain_mat.mur()) > eps)
+  if (abs(global.gain_mat->n() - last_gain_mat_n)  > eps)
     return true;
 
   return false;

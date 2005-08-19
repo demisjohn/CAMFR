@@ -1,3 +1,7 @@
+2005-08-19  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* circ.cpp: Don't copy gain material.
+
 2005-06-30  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* circ.cpp: Make more standards compliant.

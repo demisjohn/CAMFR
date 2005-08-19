@@ -1,3 +1,11 @@
+2005-08-19 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slab.cpp: Make sure old_kt is always relevant.
+
+2005-08-19 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slab.cpp: Don't copy gain material.
+
 2005-06-30 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
         * slaboverlap.cpp: Make more standards compliant.

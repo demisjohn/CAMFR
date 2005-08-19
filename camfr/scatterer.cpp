@@ -40,10 +40,7 @@ bool MultiScatterer::recalc_needed() const
   if (!contains(*global.gain_mat))
     return false;
 
-  if (abs(global.gain_mat-> n()  - last_gain_mat. n())  > eps)
-    return true;
-  
-  if (abs(global.gain_mat->mur() - last_gain_mat.mur()) > eps)
+  if (abs(global.gain_mat->n() - last_gain_mat_n)  > eps)
     return true;
 
   return false;
@@ -94,9 +91,9 @@ void DenseScatterer::allocRT()
 
   // We haven't calculated the matrices yet for any wavelength or gain.
 
-  last_lambda   = 0.0;
-  last_gain_mat = Material(0.0);
-  last_slab_ky  = 0.0;
+  last_lambda     = 0.0;
+  last_gain_mat_n = 0.0;
+  last_slab_ky    = 0.0;
 }
 
 
@@ -114,9 +111,9 @@ void DenseScatterer::freeRT()
   T12.free();
   T21.free();
 
-  last_lambda   = 0.0;
-  last_gain_mat = Material(0.0);
-  last_slab_ky  = 0.0;
+  last_lambda     = 0.0;
+  last_gain_mat_n = 0.0;
+  last_slab_ky    = 0.0;
 }
 
 
@@ -140,7 +137,7 @@ void DenseScatterer::copy_RT_from(const DenseScatterer& sc)
 
   last_lambda = sc.last_lambda;
   if (global.gain_mat) 
-    last_gain_mat = sc.last_gain_mat;
+    last_gain_mat_n = sc.last_gain_mat_n;
   last_slab_ky = sc.last_slab_ky;
 }
 
@@ -257,9 +254,9 @@ void DiagScatterer::allocRT()
 
   // We haven't calculated the matrices yet for any wavelength or gain.
 
-  last_lambda   = 0.0;
-  last_gain_mat = Material(0.0);
-  last_slab_ky  = 0.0;
+  last_lambda     = 0.0;
+  last_gain_mat_n = 0.0;
+  last_slab_ky    = 0.0;
 }
 
 
@@ -284,9 +281,9 @@ void DiagScatterer::freeRT()
 
   // We haven't recalculated the matrices yet for any wavelength or gain.
 
-  last_lambda   = 0.0;
-  last_gain_mat = Material(0.0);
-  last_slab_ky  = 0.0;
+  last_lambda     = 0.0;
+  last_gain_mat_n = 0.0;
+  last_slab_ky    = 0.0;
 }
 
 
@@ -317,7 +314,7 @@ void DiagScatterer::copy_RT_from(const DiagScatterer& sc_d)
 
   last_lambda = sc_d.last_lambda;
   if (global.gain_mat) 
-    last_gain_mat = sc_d.last_gain_mat;
+    last_gain_mat_n = sc_d.last_gain_mat_n;
   last_slab_ky = sc_d.last_slab_ky;
 }
 

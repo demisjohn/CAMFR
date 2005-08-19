@@ -137,7 +137,7 @@ class MultiWaveguide : public Waveguide
 
     MultiWaveguide(bool uniform=false, Material* core=NULL)
       : Waveguide(uniform, core),
-        last_lambda(0.0), last_gain_mat(Material(0.0)) {}
+        last_lambda(0.0), last_gain_mat_n(0.0) {}
 
     MultiWaveguide(const MultiWaveguide&);
 
@@ -185,8 +185,8 @@ class MultiWaveguide : public Waveguide
     // The wavelength and gain the modes were last calculated for,
     // are used to determine if recalculation is needed.
 
-    Complex  last_lambda;
-    Material last_gain_mat;
+    Complex last_lambda;
+    Complex last_gain_mat_n;
 };
 
 

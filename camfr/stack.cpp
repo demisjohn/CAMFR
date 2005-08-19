@@ -414,7 +414,7 @@ void DenseStack::calcRT()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
   last_slab_ky = global.slab_ky;
 }
 
@@ -489,7 +489,7 @@ void DiagStack::calcRT()
 
   last_lambda = global.lambda;
   if (global.gain_mat)
-    last_gain_mat = *global.gain_mat;
+    last_gain_mat_n = global.gain_mat->n();
   last_slab_ky = global.slab_ky;
 }
 
