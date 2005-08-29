@@ -1416,6 +1416,8 @@ void Slab_M::build_modeset(vector<Complex>& kt)
       if (    (real(materials[i]->eps_mu()) > real(materials[i-1]->eps_mu()))
            && (real(materials[i]->eps_mu()) > real(materials[i+1]->eps_mu())) )
         is_core = true;
+      if (    (real(materials[i]->eps_mu()) < 0.0) ) // Metal core.
+         is_core = true;
     }
 
     // If so, create lower and upper stacks.
