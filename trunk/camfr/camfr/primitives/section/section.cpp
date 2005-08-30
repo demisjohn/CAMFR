@@ -574,6 +574,8 @@ Section2D::Section2D
   Complex z_back = discontinuities.back();
   discontinuities.pop_back();
   discontinuities.push_back(z_back);
+
+  f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 }
 
 
@@ -2105,8 +2107,6 @@ void Section2D::find_modes_from_estimates()
   //            << " " << abs(disp(kt)) << std::endl;
   //}
   //exit(-1);
-
-  //f = new SectionDisp(left, right, global.lambda, M2, symmetric); // TMP
 
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
 

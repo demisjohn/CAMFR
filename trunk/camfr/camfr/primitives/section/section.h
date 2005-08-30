@@ -72,6 +72,7 @@ class SectionImpl : public MultiWaveguide
   public:
 
     SectionImpl() {}
+    ~SectionImpl() {delete f;}
 
     virtual Complex get_width()  const = 0;
     virtual Complex get_height() const = 0;
