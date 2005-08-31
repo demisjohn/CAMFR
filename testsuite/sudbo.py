@@ -24,17 +24,17 @@ class sudbo(unittest.TestCase):
         core = Material(1.5)
         clad = Material(1.0)
 
-        set_section_solver(OS)
         set_mode_correction(full)
 
         set_left_wall(H_wall)
+        set_right_wall(H_wall)
 
         wg = Slab(core(0.25) + clad(0.76-.25))
         air = Slab(clad(wg.width()))
         
         all = wg(0.25) + air(3.01-.25)
 
-        s = Section(all, 100, 40)
+        s = Section(all, 6, 40)
         s.calc()
 
         n_eff = s.mode(0).n_eff()
