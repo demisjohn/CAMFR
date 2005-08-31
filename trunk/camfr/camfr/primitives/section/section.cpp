@@ -422,8 +422,8 @@ Section::Section(Expression& expression, int M1, int M2)
 Section::Section(Expression& left_ex_, Expression& right_ex_, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
-  if ( (M1 < M2) || (M2 < global.N) )
-    py_print("Warning: M1 > M2 > N not fulfilled.");
+  //if ( (M1 < M2) || (M2 < global.N) )
+  //  py_print("Warning: M1 > M2 > N not fulfilled.");
 
   // Add PML and walls to right hand side expression.
 
@@ -1854,7 +1854,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 
   cMatrix eig_big_H(2*MN,2*MN_,fortranArray);
   eig_big_H.reference(multiply(G,eig_big));
-  
+
   // Return estimates.
 
   vector<ModeEstimate*> estimates;
@@ -1909,6 +1909,9 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       *Ey = eig_big  (r2,i);
       *Hx = eig_big_H(r1,i)/kz/k0*Y0;
       *Hy = eig_big_H(r2,i)/kz/k0*Y0;
+
+      Ex->makeUnique(); Ey->makeUnique();
+      Hx->makeUnique(); Hy->makeUnique();  
 
       ModeEstimate* est = new ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
