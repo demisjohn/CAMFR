@@ -1,3 +1,7 @@
+-add rcled.py and materials.py to the distribution.
+
+-kt^2 instead of kt as independent variable in SectionDisp?
+
 -document ASR solver
 -BlochSection with single non-uniform slab
 
