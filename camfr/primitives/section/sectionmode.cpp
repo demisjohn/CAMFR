@@ -33,10 +33,10 @@ Section2D_Mode::Section2D_Mode
 {
   if (corrected == false)
   {
-    Ex = new cVector(Ex_->copy());
-    Ey = new cVector(Ey_->copy());
-    Hx = new cVector(Hx_->copy());
-    Hy = new cVector(Hy_->copy()); 
+    Ex = new cVector(*Ex_);
+    Ey = new cVector(*Ey_);
+    Hx = new cVector(*Hx_);
+    Hy = new cVector(*Hy_); 
 
     return;
   }
