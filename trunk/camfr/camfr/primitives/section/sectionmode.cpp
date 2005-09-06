@@ -28,15 +28,16 @@ using std::endl;
 Section2D_Mode::Section2D_Mode
   (Polarisation pol, const Complex& kz, Section2D* geom,
    cVector* Ex_, cVector* Ey_, cVector* Hx_, cVector* Hy_, bool corrected_)
-    : SectionMode(pol, kz, geom), Ex(0), Ey(0), Hx(0), Hy(0),
-      corrected(corrected_)
+    : SectionMode(pol, kz, geom), corrected(corrected_), 
+      Ex(fortranArray), Ey(fortranArray), 
+      Hx(fortranArray), Hy(fortranArray)
 {
   if (corrected == false)
   {
-    Ex = new cVector(*Ex_);
-    Ey = new cVector(*Ey_);
-    Hx = new cVector(*Hx_);
-    Hy = new cVector(*Hy_); 
+    Ex.resize(Ex_->shape()); Ex = *Ex_;
+    Ey.resize(Ey_->shape()); Ey = *Ey_;
+    Hx.resize(Hx_->shape()); Hx = *Hx_;
+    Hy.resize(Hy_->shape()); Hy = *Hy_; 
 
     return;
   }
@@ -105,22 +106,6 @@ Section2D_Mode::Section2D_Mode
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Section2D_Mode::~Section2D_Mode
-//
-/////////////////////////////////////////////////////////////////////////////
-
-Section2D_Mode::~Section2D_Mode()
-{
-  delete Ex;
-  delete Ey;
-  delete Hx;
-  delete Hy;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Section2D_Mode::field
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -165,10 +150,10 @@ Field Section2D_Mode::field(const Coord& coord) const
 
         Complex expon = exp(I*2.*pi*(m/W/2.*c.c1 + n/H/2.*c.c2));
 
-        f.E1 += (*Ex)(i1)*expon;
-        f.E2 += (*Ey)(i1)*expon;
-        f.H1 += (*Hx)(i1)*expon;
-        f.H2 += (*Hy)(i1)*expon;
+        f.E1 += Ex(i1)*expon;
+        f.E2 += Ey(i1)*expon;
+        f.H1 += Hx(i1)*expon;
+        f.H2 += Hy(i1)*expon;
       } 
 
     f.Ez = f.Hz = 0.0; // TMP.
@@ -334,10 +319,10 @@ void Section2D_Mode::normalise()
       norm = 1.0;
     }
 
-    *Ex /= norm;
-    *Ey /= norm;
-    *Hx /= norm;
-    *Hy /= norm;
+    Ex /= norm;
+    Ey /= norm;
+    Hx /= norm;
+    Hy /= norm;
 
     return;
   }
