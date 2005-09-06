@@ -462,10 +462,10 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
     H = real(H);
   }
 
-  cVector* Ex = sec_I_mode ->Ex;
-  cVector* Ey = sec_I_mode ->Ey;
-  cVector* Hx = sec_II_mode->Hx;
-  cVector* Hy = sec_II_mode->Hy;
+  cVector Ex(fortranArray); Ex.reference(sec_I_mode ->Ex);
+  cVector Ey(fortranArray); Ey.reference(sec_I_mode ->Ey);
+  cVector Hx(fortranArray); Hx.reference(sec_II_mode->Hx);
+  cVector Hy(fortranArray); Hy.reference(sec_II_mode->Hy);
 
   for (Real m=-M; m<=M; m+=1.0)
     for (Real n=-N; n<=N; n+=1.0)
@@ -473,7 +473,7 @@ Complex overlap_pw(const Section2D_Mode* sec_I_mode,
       int i1 = int(( m+M+1) + ( n+N)*(2*M+1));
       int i2 = int((-m+M+1) + (-n+N)*(2*M+1));
 
-      result += (*Ex)(i1)*(*Hy)(i2) - (*Ey)(i1)*(*Hx)(i2);
+      result += Ex(i1)*Hy(i2) - Ey(i1)*Hx(i2);
     }
 
   //Complex numeric = overlap_numeric(sec_I_mode, sec_II_mode);
@@ -561,10 +561,10 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
   cVector fw(sec_M, fortranArray);
   cVector bw(sec_M, fortranArray);
 
-  cVector* Ex = sec_I_mode ->Ex;
-  cVector* Ey = sec_I_mode ->Ey;
-  cVector* Hx = sec_II_mode->Hx;
-  cVector* Hy = sec_II_mode->Hy;
+  cVector Ex(fortranArray); Ex.reference(sec_I_mode ->Ex);
+  cVector Ey(fortranArray); Ey.reference(sec_I_mode ->Ey);
+  cVector Hx(fortranArray); Hx.reference(sec_II_mode->Hx);
+  cVector Hy(fortranArray); Hy.reference(sec_II_mode->Hy);
 
   const Complex W = sec_mode->get_geom()->get_width();
   const Complex H = sec_mode->get_geom()->get_height();
@@ -617,12 +617,12 @@ Complex overlap(const Section2D_Mode* sec_I_mode,
           if (sec_I_mode->corrected)
           {
             overlap_pw(slab_mode, beta, true, &Ox, &Oy);
-            result += (fw_jj-bw_jj)*Ox*(*Hy)(i1) - (fw_jj+bw_jj)*Oy*(*Hx)(i1);
+            result += (fw_jj-bw_jj)*Ox*Hy(i1) - (fw_jj+bw_jj)*Oy*Hx(i1);
           }
           else
           {            
             overlap_pw(slab_mode, beta, false, &Ox, &Oy);
-            result += (*Ex)(i1)*(fw_jj-bw_jj)*Oy - (*Ey)(i1)*(fw_jj+bw_jj)*Ox;
+            result += Ex(i1)*(fw_jj-bw_jj)*Oy - Ey(i1)*(fw_jj+bw_jj)*Ox;
           }
         }
       }
