@@ -1910,6 +1910,9 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       *Hx = eig_big_H(r1,i)/kz/k0*Y0;
       *Hy = eig_big_H(r2,i)/kz/k0*Y0;
 
+      Ex->makeUnique(); Ey->makeUnique();
+      Hx->makeUnique(); Hy->makeUnique();
+
       ModeEstimate* est = new ModeEstimate(kz*kz, Ex,Ey, Hx,Hy);
       estimates.push_back(est);
     }  
