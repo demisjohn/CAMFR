@@ -19,10 +19,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 bool MultiScatterer::recalc_needed() const
-{ 
+{
   if (global.always_recalculate == true)
     return true;
-  
+
   const Real eps = 1e-10;
 
   if (inc && (inc->N() != global.N))
@@ -40,7 +40,7 @@ bool MultiScatterer::recalc_needed() const
   if (!contains(*global.gain_mat))
     return false;
 
-  if (abs(global.gain_mat->n() - last_gain_mat_n)  > eps)
+  if (abs(global.gain_mat->n() - last_gain_mat_n) > eps)
     return true;
 
   return false;
