@@ -76,9 +76,10 @@ class MultiScatterer : public Scatterer
   public:
 
     MultiScatterer()
-      : last_lambda(0.0), last_gain_mat_n(0.0) {}
+      : last_lambda(0.0), last_gain_mat_n(0.0), last_slab_ky(0,0) {}
     MultiScatterer(Waveguide& inc, Waveguide& ext)
-      : Scatterer(inc, ext), last_lambda(0.0), last_gain_mat_n(0.0) {}
+      : Scatterer(inc, ext), last_lambda(0.0), last_gain_mat_n(0.0), 
+        last_slab_ky(0.0) {}
 
     bool recalc_needed() const;
 
@@ -86,7 +87,7 @@ class MultiScatterer : public Scatterer
     virtual const cMatrix& get_R21() const = 0;
     virtual const cMatrix& get_T12() const = 0;
     virtual const cMatrix& get_T21() const = 0;
-     
+
   protected:
 
     // The wavelength and gain the matrices were last calculated for,

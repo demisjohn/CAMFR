@@ -1,6 +1,6 @@
 2005-09-15  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
-	* scatterer.cpp: Avoid uninitialised variable.
+	* scatterer.h: Avoid uninitialised variable.
 
 2005-09-15  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
