@@ -64,7 +64,7 @@ class Waveguide
     Waveguide(bool uniform_=false, Material* core_=NULL)
       : uniform(uniform_), core(core_) {}
     
-    virtual ~Waveguide() {}
+    virtual ~Waveguide() {interface_cache.deregister(this);}
 
     bool    is_uniform() const {return uniform;}
     Material* get_core() const {return core;}
