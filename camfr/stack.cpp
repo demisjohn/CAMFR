@@ -30,8 +30,8 @@ StackImpl::StackImpl
 (const vector<Chunk>& chunks_, unsigned int no_of_periods_)
   : chunks(chunks_), no_of_periods(no_of_periods_)
 {
-  // Check validity of chunks.    
-  
+  // Check validity of chunks.
+
   for (unsigned int i=0; i<chunks.size()-1; i++)
   {
     Waveguide* wg1 = chunks[i]  .sc->get_ext();
@@ -1461,7 +1461,7 @@ const cMatrix Stack::get_T21() const
 //
 //  The main reasons these functions are faster than their Python 
 //  equivalents is because they avoid calls to convert_to_dense() which 
-//  are expensive when always_recalc is true.
+//  are expensive when always_recalculate is true.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
