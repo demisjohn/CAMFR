@@ -32,6 +32,9 @@ Section2D_Mode::Section2D_Mode
       Ex(fortranArray), Ey(fortranArray), 
       Hx(fortranArray), Hy(fortranArray)
 {
+  if (global.calc_field_profiles == false)
+    return;
+  
   if (corrected == false)
   {
     Ex.resize(Ex_->shape()); Ex = *Ex_;
@@ -112,6 +115,8 @@ Section2D_Mode::Section2D_Mode
 
 Field Section2D_Mode::field(const Coord& coord) const 
 {
+  if (global.calc_field_profiles == false)
+    return Field();
  
   //
   // Plane wave based field profiles.
@@ -250,6 +255,9 @@ Field Section2D_Mode::field(const Coord& coord) const
 void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
                                cVector* fw, cVector* bw) const
 {
+  if (global.calc_field_profiles == false)
+    return;
+  
   // Initialise.
 
   Section2D* section = dynamic_cast<Section2D*>(geom);
@@ -305,6 +313,9 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
 void Section2D_Mode::normalise() 
 {
+  if (global.calc_field_profiles == false)
+    return;
+  
   //
   // Plane wave based field profiles.
   //
