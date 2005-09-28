@@ -217,6 +217,9 @@ inline void set_davy(bool b)
 inline void set_always_recalculate(bool b)
   {global.always_recalculate = b;}
 
+inline void set_calc_field_profiles(bool b)
+  {global.calc_field_profiles = b;}
+
 inline void set_fourier_orders(int Mx, int My=0)
 {
   global_blochsection.Mx = Mx;
@@ -888,7 +891,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_keep_all_1D_estimates",  set_keep_all_1D_estimates);
   def("set_fourier_orders",         set_fourier_orders); 
   def("set_davy",                   set_davy);  
-  def("set_always_recalculate",     set_always_recalculate);
+  def("set_always_recalculate",     set_always_recalculate);  
+  def("set_calc_field_profiles",    set_calc_field_profiles);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
 
