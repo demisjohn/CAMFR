@@ -265,6 +265,9 @@ struct Global
     // Switch to set whether stacks and waveguides are always recalculated,
     // even if they were calculated before.
     bool always_recalculate;
+
+    // Switch to skip calculation of SectionModes.
+    bool calc_field_profiles;
 };
 
 extern Global global;
