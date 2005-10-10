@@ -641,10 +641,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     {
       if (extra > 1)
         py_print("Lost too many candidate modes. Expanding search region.");
-      
+
       vector<Real> kt_evan_lossless = brent_N_minima
         (evan_wrap,kt_begin,modes_left+extra,d_kt/global.precision_rad,eps,1);
-      
+
       // Check if the minima found correspond really to zeros by using 
       // a mueller solver.
 
