@@ -72,7 +72,7 @@ void calc_tilde(const Chunk& chunk,
 /////////////////////////////////////////////////////////////////////////////
 
 void S_scheme(const vector<Chunk>& chunks, DenseScatterer* result)
-{  
+{ 
   result->allocRT();
 
   // Matrices to store result from previous iteration.
@@ -138,7 +138,7 @@ void S_scheme(const vector<Chunk>& chunks, DenseScatterer* result)
 
     result->copy_R21(tmp);
     result-> set_T12(multiply(t12, M, pT12));
-  } 
+  }
 }
 
 

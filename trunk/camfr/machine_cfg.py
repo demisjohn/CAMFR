@@ -24,14 +24,14 @@ base_flags = "-ftemplate-depth-60 \
 
 flags_noopt = base_flags
 
-flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium3 -g\
+flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentium4 -g\
                        -funroll-loops -fstrict-aliasing "
 
 fflags = flags
 
 # Include directories.
 
-include_dirs = ["/usr/include/python2.3"]
+include_dirs = ["/usr/include/python2.4"]
 
 # Library directories.
 

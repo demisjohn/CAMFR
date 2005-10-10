@@ -48,7 +48,7 @@ void DenseInterface::calcRT()
     return;
 
   allocRT();
-
+  
   inc->find_modes();
   ext->find_modes();
 
