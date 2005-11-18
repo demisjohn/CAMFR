@@ -81,7 +81,7 @@ class Slab_M : public SlabImpl
     std::vector<Complex> estimate_kz2_from_RCWA();
     std::vector<Complex> estimate_kz2_from_uniform_modes();      
 
-    void build_modeset(std::vector<Complex>& kt);
+    void build_modeset(std::vector<Complex>& kt, bool metals = false);
 
     std::vector<Complex> params; // Last parameters of dispersion relation.
     
