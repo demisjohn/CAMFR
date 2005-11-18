@@ -248,7 +248,7 @@ void overlap_TM_TE(const SlabMode* mode_I, const SlabMode* mode_II,
       exit (-1);
     }
   }
-
+  
   if ( (mode_I->pol != TM) || (mode_II->pol != TE) )
   {
     py_error("Wrong polarisation of modes in overlap_TM_TE.");

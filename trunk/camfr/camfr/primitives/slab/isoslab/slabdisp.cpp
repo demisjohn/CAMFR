@@ -23,7 +23,7 @@ using std::vector;
 /////////////////////////////////////////////////////////////////////////////
 
 SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
-                   SlabWall* lowerwall_, SlabWall* upperwall_)
+                   SlabWall* lowerwall_, SlabWall* upperwall_, bool metal)
   : lambda(lambda_), lowerwall(lowerwall_), upperwall(upperwall_)
 {
   // Create a table with the eps's and the mu's. This avoids repeated
@@ -32,17 +32,32 @@ SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
 
   material_expression_to_table(expression, &eps, &mu, &thicknesses);
     
-  // Find min refractive index of structure.
+  // Find min or maximum refractive index of structure.
 
-  min_eps_mu = eps[0]*mu[0];
-  
-  for (unsigned int i=1; i<eps.size(); i++)
+  max_min_eps_mu = eps[0]*mu[0];
+  if(metal)
+  {
+      for (unsigned int i=1; i<eps.size(); i++)
   {
     Complex eps_mu = eps[i]*mu[i];
 
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
+    if (real(eps_mu) > real(max_min_eps_mu))
+      max_min_eps_mu = eps_mu; //[PDB] metallic layers, use the maximum value
+
   }
+  }
+else
+  {
+      for (unsigned int i=1; i<eps.size(); i++)
+  {
+    Complex eps_mu = eps[i]*mu[i];
+
+    if (real(eps_mu) < real(max_min_eps_mu))
+      max_min_eps_mu = eps_mu; //[PDB] In regular waveguide configuration we will continue working with the min
+
+  }
+}
+std::cout<<"Max_min_eps_mu"<<" "<< max_min_eps_mu/eps0/mu0 <<std::endl;
 }
 
 
@@ -56,7 +71,7 @@ SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
 SlabDisp::SlabDisp(const vector<Material*>& materials,
                    const vector<Complex>& thicknesses_, 
                    const Complex& lambda_,
-                   SlabWall* lowerwall_, SlabWall* upperwall_)
+                   SlabWall* lowerwall_, SlabWall* upperwall_, bool metal)
   : thicknesses(thicknesses_), lambda(lambda_),
     lowerwall(lowerwall_), upperwall(upperwall_)
 {
@@ -70,17 +85,33 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
      mu.push_back(materials[i]->mu());
   }
 
-  // Find min refractive index of structure.
+  // Find min or maximum refractive index of structure.
 
-  min_eps_mu = eps[0]*mu[0];
-  
-  for (unsigned int i=1; i<eps.size(); i++)
+  max_min_eps_mu = eps[0]*mu[0];
+  if(metal)
   {
-    Complex eps_mu = eps[i]*mu[i];
-    
-    if (real(eps_mu) < real(min_eps_mu))
-      min_eps_mu = eps_mu;
+      for (unsigned int i=1; i<eps.size(); i++)
+      {
+          Complex eps_mu = eps[i]*mu[i];
+
+          if (real(eps_mu) > real(max_min_eps_mu))
+            max_min_eps_mu = eps_mu; //[PDB] metallic layers, use the maximum value
+
+      }
   }
+else
+  {
+      for (unsigned int i=1; i<eps.size(); i++)
+      {
+        Complex eps_mu = eps[i]*mu[i];
+
+        if (real(eps_mu) < real(max_min_eps_mu))
+            max_min_eps_mu = eps_mu; //[PDB] Non metallic structures use the minimum
+
+      }
+  }
+//std::cout<<"Max_min_eps_mu"<<" "<< max_min_eps_mu/eps0/mu0 <<std::endl;
+  
 }
 
 
@@ -96,6 +127,8 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
 Complex SlabDisp::operator()(const Complex& kt)
 {
   counter++;
+ 
+ 
 
   global.lambda = lambda;
 
@@ -107,7 +140,7 @@ Complex SlabDisp::operator()(const Complex& kt)
   
   for (unsigned int i=0; i<eps.size(); i++)
   {
-    Complex kx_i = sqrt(C*(eps[i]*mu[i] - min_eps_mu) + kt*kt);
+    Complex kx_i = sqrt(C*(eps[i]*mu[i] - max_min_eps_mu) + kt*kt);
 
     if (real(kx_i) < 0)
       kx_i = -kx_i;
@@ -121,7 +154,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   // For SlabWall_PC, we still need to set Planar::kt.
 
-  Complex beta = sqrt(C*min_eps_mu - kt*kt);
+  Complex beta = sqrt(C*max_min_eps_mu - kt*kt);
 
   if (real(beta) < 0)
     beta = -beta;
@@ -193,7 +226,8 @@ Complex SlabDisp::operator()(const Complex& kt)
     if ( (k == eps.size()-1) && (abs(R_upper) < 1e-10) )
       I_kx_d = 0;
 
-    if ( (global.solver == ADR) || (global.solver == series) ) 
+    if ( (global.solver == ADR) || (global.solver == series) || (global.solver == ASR) || global.solver == stretched_ASR) 
+    //[PDB] I think that this scaling thing ruins my results
     // No scaling to keep the function analytic.
     {
       fw_chunk_end_scaled *= exp(-I_kx_d);      
@@ -213,14 +247,25 @@ Complex SlabDisp::operator()(const Complex& kt)
     bw_chunk_begin_scaled = bw_chunk_end_scaled;
   }
 
+  //[PDB] Compare output values for comparison
+  //if (!u_wall)
+  //{
+  //    Complex value = fw_chunk_end_scaled + bw_chunk_end_scaled;
+  //    std::cout<<"Dispersion relation value for"<<" "<<kt<<" "<< value<<std::endl;
+  //}
+  //else
+  //{
+  //    Complex value = u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
+  //    std::cout<<"Dispersion relation value for"<<" "<<kt<<" "<<value<<std::endl;
+  //}
   // Return error.
-
   if (!u_wall)
-    return fw_chunk_end_scaled + bw_chunk_end_scaled;
+   return fw_chunk_end_scaled + bw_chunk_end_scaled;
   else
-    return u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
+   return u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
+    
+  
 }
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -245,7 +290,7 @@ vector<Complex> SlabDisp::get_params() const
 
   params.push_back(lambda);
 
-  params.push_back(min_eps_mu);
+  params.push_back(max_min_eps_mu);
 
   return params;
 }
@@ -271,5 +316,5 @@ void SlabDisp::set_params(const vector<Complex>& params)
 
   lambda = params[params_index++];
 
-  min_eps_mu = params[params_index];
+  max_min_eps_mu = params[params_index];
 }
