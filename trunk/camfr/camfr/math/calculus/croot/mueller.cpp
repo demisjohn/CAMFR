@@ -80,7 +80,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
                 int maxiter, bool *errorptr, bool verbose)
 {  
   // Check input.
-  
+   
   if (1. + abs(a-b) <= 1.)
   {
     if (verbose)
@@ -157,6 +157,8 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
                 Real eps, const vector<Complex>* prev_zeros,
                 int maxiter, bool *errorptr, bool verbose)
 {
+
+    
   Complex z3 =   a;  Complex z2 =   b;  Complex z1 = c;
   Complex f3 = f(a); Complex f2 = f(b);
 
@@ -194,7 +196,8 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
       converged = false;
       break;
     }
-    
+
+
     // Avoid division by zero in case convergence has happened.
 
     if ( (abs(z1-z2) < 1e-15) || (abs(z1-z3) < 1e-15) )
@@ -243,6 +246,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
       cout << "The relative accuracy " << eps << " has been reached." << endl;
       cout << "Number of iteration steps : " << n << endl;
       cout << "z1 = " << z1 << endl;
+      cout << "Value of f(z1)"<<" "<<f(z1)<<endl;
     }
     else
     {
@@ -388,13 +392,15 @@ std::vector<Complex> mueller_multiple
 
 std::vector<Complex> mueller
   (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter,
-   ComplexFunction* transform, int verbosity)
+   ComplexFunction* transform, int verbosity, bool adaptive_spatial_resolution)
 {
   // Calculate roots.
 
   vector<Complex> z1;
+  
+
   for (unsigned int i=0; i<z0.size(); i++)
-  {
+  { 
     bool error = false;
     bool verbose = verbosity == 2;
     vector<Complex> deflate;
@@ -414,6 +420,7 @@ std::vector<Complex> mueller
     else
       z1.push_back(new_root);
 
+    
     if (verbosity > 0)
     {
       std::ostringstream s;
@@ -426,9 +433,9 @@ std::vector<Complex> mueller
       py_print(s.str());
     }
   }
-
-  // Dectect doubles.
-
+   
+  // Detect doubles.
+   
   vector<Complex> z_final;
   vector<vector<Complex> > duplicates;
   
@@ -461,6 +468,8 @@ std::vector<Complex> mueller
     }
   }
 
+
+    
   // Deflate doubles.
 
   for (unsigned int i=0; i<duplicates.size(); i++)

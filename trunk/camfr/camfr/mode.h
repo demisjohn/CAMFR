@@ -107,7 +107,7 @@ struct modesorter
       const Complex kz_a = a->get_kz();
       const Complex kz_b = b->get_kz();
       
-      return ( real(kz_a * kz_a) > real(kz_b * kz_b) );
+      return ( real(kz_a ) > real(kz_b ) );//[PDB] Changed this, if its doesnt work I'll have to add a new structure
     }
 };
 

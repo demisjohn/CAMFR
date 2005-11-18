@@ -72,7 +72,7 @@ std::vector<Complex> mueller_multiple
 
 std::vector<Complex> mueller
   (ComplexFunction& f, const std::vector<Complex>& z0, Real eps=1e-14, 
-   int maxiter=50,ComplexFunction* transform=NULL, int verbosity=0);
+   int maxiter=50,ComplexFunction* transform=NULL, int verbosity=0, bool adaptive_spatial_resolution = false);
 
 
 
