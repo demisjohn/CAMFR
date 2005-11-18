@@ -30,7 +30,7 @@ class SectionDisp : public ComplexFunction
   public:
 
     SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda, int _M, 
-                bool symmetric = false);
+                bool symmetric = false, bool metal = false);
 
     Complex operator()(const Complex& kt);
 
@@ -47,8 +47,9 @@ class SectionDisp : public ComplexFunction
     Stack* stack;
 
     bool symmetric;
+    bool metal;
 
-    Complex min_eps_mu;
+    Complex min_max_eps_mu;
 
     std::vector<Slab*> left_slabs;
     std::vector<Slab*> right_slabs;  

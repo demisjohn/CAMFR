@@ -45,6 +45,7 @@ struct SectionGlobal
     Mode_correction mode_correction;
     int M;
     int N;
+    Real cutoff_value;
     bool keep_all_estimates;
     Real PML_fraction;
 };
@@ -72,7 +73,6 @@ class SectionImpl : public MultiWaveguide
   public:
 
     SectionImpl() {}
-    ~SectionImpl() {delete f;}
 
     virtual Complex get_width()  const = 0;
     virtual Complex get_height() const = 0;
@@ -265,9 +265,9 @@ class Section2D : public SectionImpl
     void set_estimate(const Complex& c) {user_estimates.push_back(c);}
 
     void find_modes();
-
+     
   protected:
-
+    
     Stack left;
     Stack right;
 

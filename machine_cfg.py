@@ -35,7 +35,8 @@ include_dirs = ["/usr/include/python2.4"]
 
 # Library directories.
 
-library_dirs = ["/opt/intel/mkl/lib/32"]
+library_dirs = []
+#library_dirs = ["/opt/intel/mkl/lib/32"]
 #library_dirs = ["/opt/intel/mkl721/lib/32"]
 
 # Library names.
