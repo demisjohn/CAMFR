@@ -22,8 +22,7 @@
 //   Dispersion relation for modes of a stack of infinite planar layers
 //   sandwiched between two metal plates parallel to the z-axis.
 //
-//   kt = kx in the region with minimum refractive index, except if the structure contains metals, then kt = kx 
-//   in the region with the maximum refractive index
+//   kt = kx in the region where k is kt_eps_mu.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -31,19 +30,19 @@ class SlabDisp : public Function1D<Complex>
 {
   public:
 
-    SlabDisp(const Expression& ex,     const Complex& lambda,
-             SlabWall* lowerwall=NULL, SlabWall* upperwall=NULL, bool metal = false );
+    SlabDisp(const Expression& ex, const Complex& lambda,
+             SlabWall* lowerwall=NULL, SlabWall* upperwall=NULL);
 
     SlabDisp(const std::vector<Material*>& materials,
              const std::vector<Complex>&   thicknesses,
-             const Complex& lambda, 
-             SlabWall* lowerwall=NULL, SlabWall* upperwall=NULL, bool metal = false);
+             const Complex& lambda,
+             SlabWall* lowerwall=NULL, SlabWall* upperwall=NULL);
 
     ~SlabDisp() {}
     
     Complex operator()(const Complex& kt);
 
-    Complex get_min_eps_mu() const {return max_min_eps_mu;}
+    Complex get_kt_eps_mu() const {return kt_eps_mu;}
 
     std::vector<Complex> get_params() const;
     
@@ -57,12 +56,10 @@ class SlabDisp : public Function1D<Complex>
     
     Complex lambda;
 
-    Complex max_min_eps_mu;
+    Complex kt_eps_mu;
     
     SlabWall* lowerwall;
     SlabWall* upperwall;
-
-    bool metal;
 };
 
 
