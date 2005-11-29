@@ -30,7 +30,7 @@ using std::endl;
 /////////////////////////////////////////////////////////////////////////////
 
 SectionDisp::SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda, 
-                         int _M, bool sym, bool metal)
+                         int _M, bool sym)
   : left(&_left), right(&_right), lambda(_lambda), M(_M), symmetric(sym) 
 {
   // TODO: Rework.
@@ -96,50 +96,49 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda,
     }
   }
 
-  // Determine minimum or maximum refractive index, depending on the boolean metal
+  // Determine refractive index of material which is best used for kt:
+  // minimum for dielectics, maximum for metals.
 
   vector<Material*> materials = left->get_materials();
   vector<Material*> right_mat = right->get_materials();
   materials.insert(materials.end(), right_mat.begin(), right_mat.end());
 
-  min_max_eps_mu = materials[0]->eps_mu();
-  if (metal)
+  vector<Complex> eps_mu;
+  for (unsigned int i=0; i<materials.size(); i++)
+    eps_mu.push_back(materials[i]->eps_mu());
+
+  remove_copies(&eps_mu, 1e-23);
+  std::sort(eps_mu.begin(), eps_mu.end(), RealSorter());
+  
+  Complex min_eps_mu, max_eps_mu;
+  
+  if (eps_mu.size() >= 2)
   {
-      //std::cout<<"(sectiondisp) Initializing dispersion relation in the maximum dielectric region"<<std::endl;
-      for (unsigned int i=1; i<materials.size(); i++)
-        {
-            Complex eps_mu = materials[i]->eps_mu();
-    
-            if (real(eps_mu) > real(min_max_eps_mu))
-                min_max_eps_mu = eps_mu;
-        }
+     min_eps_mu = eps_mu[0];
+     max_eps_mu = eps_mu[eps_mu.size()-1];
   }
-else
-{ 
-    //std::cout<<" (sectiondisp) Initializing dispersion relation in the minimum dielectric region"<<std::endl;
-    for (unsigned int i=1; i<materials.size(); i++)
-        {
-            Complex eps_mu = materials[i]->eps_mu();
-    
-            if (real(eps_mu) < real(min_max_eps_mu))
-                min_max_eps_mu = eps_mu;
-        }
+  else
+    min_eps_mu = max_eps_mu = eps_mu[0];
+
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
+
+  kt_eps_mu = metallic ? max_eps_mu : min_eps_mu;
 }
 
-    //std::cout<<" (sectiondisp) Min or max dielectric constant"<<min_max_eps_mu/eps0/mu0<<std::endl;
-}
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // SectionDisp::operator()
 //
-//   kt = k in the region with minimum refractive index, or in the region with maximum 
-//   refractive index if metallice structures are involved
+//   kt = k in the region with minimum refractive index, or in the region 
+//   with maximum refractive index if metallic structures are involved
 //
 /////////////////////////////////////////////////////////////////////////////
 
 Complex SectionDisp::operator()(const Complex& kt)
 {
-  
     counter++;
 
     global.lambda = lambda;
@@ -150,12 +149,8 @@ Complex SectionDisp::operator()(const Complex& kt)
 
     Complex old_beta = global.slab_ky;
 
-
     const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
-    Complex beta = sqrt(C*min_max_eps_mu - kt*kt);
-    
-    //[PDB]
-    //std::cout<<"Effectieve index in de dispersierelatie"<<" "<<beta/(2*pi/global.lambda)<<std::endl;
+    Complex beta = sqrt(C*kt_eps_mu - kt*kt);
 
     if (real(beta) < 0)
         beta = -beta;
@@ -163,7 +158,6 @@ Complex SectionDisp::operator()(const Complex& kt)
     if (abs(imag(beta)) < 1e-12)
         if (imag(beta) > 0)
             beta = -beta;
-
 
     global.slab_ky = beta;
 
@@ -175,10 +169,8 @@ Complex SectionDisp::operator()(const Complex& kt)
     global.N = old_N;
     global.slab_ky = old_beta;
     global.orthogonal = old_orthogonal;
-
    
     return res;
-
 }
 
 
@@ -316,8 +308,7 @@ Complex SectionDisp::calc_global()
 
 Complex SectionDisp::calc_split()
 {
-  // Calculate eigenvectors.  
-
+  // Calculate eigenvectors.
  
   left->calcRT();
   if (! symmetric)
@@ -341,21 +332,17 @@ Complex SectionDisp::calc_split()
   // Don't take zero eigenvalues into account as these are not numerically
   // relevant.
 
-
-
   int K = 5;
-
 
   Complex product = 1.0;
   vector<unsigned int> min_indices;
-  //[PDB] Debugged the 3D dispersion relation to find real instead of faulty ones modes
+
   for (unsigned int k=0; k<K; k++)
   {
     int min_index = 1;
     Real min_distance = 1e200;
     for (int i=1; i<=M; i++)
     {
-      //std::cout<<"eigenwaarde"<<" "<<e(i)<<" "<<"abs(e(i)-1) "<<abs(e(i)-1.0)<<std::endl;
       if ( (abs(e(i) - 1.0) < min_distance) &&
            (std::find(min_indices.begin(),min_indices.end(),i) 
             == min_indices.end()) &&
@@ -365,18 +352,17 @@ Complex SectionDisp::calc_split()
         min_distance = abs(e(i) - 1.0);
       } 
     }
-    //[PDB] added this if statement so that modes dont get counted twice
-    if (std::find(min_indices.begin(),min_indices.end(),min_index) == min_indices.end())
+
+    // Don't count eigevalues twice.
+
+    if (std::find(min_indices.begin(),min_indices.end(),min_index) 
+         == min_indices.end())
     {
-        product *= e(min_index) - 1.0;
-        min_indices.push_back(min_index); //[PDB] Otherwise this will be a very long list
+      product *= e(min_index) - 1.0;
+      min_indices.push_back(min_index);
     }
-    //else
-        //std::cout<<"Not counting double eigenvalues...."<<std::endl;
-    //std::cout<<"Product "<<product<<std::endl;
   }
-  
-  //std::cout<<"Made it to the end of clac_split()"<<std::endl;
+
   return product;
 }
 
@@ -414,7 +400,7 @@ vector<Complex> SectionDisp::get_params() const
 
   params.push_back(lambda);
 
-  params.push_back(min_max_eps_mu);
+  params.push_back(kt_eps_mu);
   
   return params;
 }
@@ -461,7 +447,7 @@ void SectionDisp::set_params(const vector<Complex>& params)
   
   lambda = real(params[params_index++]);
 
-  min_max_eps_mu = params[params_index];
+  kt_eps_mu = params[params_index];
 
    left->freeRT();
   right->freeRT();
