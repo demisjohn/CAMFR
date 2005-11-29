@@ -211,30 +211,11 @@ inline void set_eta_ASR(Real eta)
   global_slab.eta_ASR=eta;
 }
 
-inline void set_metallic_dispersion(bool metal_disp)
-{
- 
-  global_slab.metal_disp=metal_disp;
-}
+inline void set_estimate_cutoff(Real d)
+  {global_slab.estimate_cutoff = d;}
 
-inline void set_cutoff_value(Real value)
-{
-  
-  global_slab.cutoff = value;
-}
-
-inline void set_cutoff_value_track(Real value)
-{
-  
-  global_slab.cutoff_track = value;
-}
-
-inline void set_cutoff_value_3D(Real value)
-{
-
-global_section.cutoff_value = value;
-
-}
+inline void set_low_index_core(bool b)
+  {global_slab.low_index_core = b;}
 
 inline void set_davy(bool b)
   {global.davy = b;}
@@ -907,10 +888,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_lower_PML",              set_lower_PML);
   def("set_circ_PML",               set_circ_PML);  
   def("set_eta_ASR",                set_eta_ASR);
-  def("set_metallic_dispersion",    set_metallic_dispersion);
-  def("set_cutoff_value",           set_cutoff_value);
-  def("set_cutoff_value_track",     set_cutoff_value_track);
-  def("set_cutoff_value_3D",        set_cutoff_value_3D);
+  def("set_estimate_cutoff",        set_estimate_cutoff);
+  def("set_low_index_core",         set_low_index_core);
   def("set_beta",                   set_beta);
   def("set_section_solver",         set_section_solver);    
   def("set_keep_all_estimates",     set_keep_all_estimates);  

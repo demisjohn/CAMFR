@@ -1,3 +1,9 @@
+2005-11-29  Peter Debackere  <Peter.Debackere@UGent.be>
+
+	* camfr_wrap.cpp: Add set_low_index_core, set_estimate_cutoff.
+	* defs.h: Ditto.
+	* defs.cpp: Ditto.
+
 2005-09-28  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Add set_calc_field_profiles.
