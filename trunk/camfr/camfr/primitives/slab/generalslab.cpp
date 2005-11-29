@@ -25,7 +25,7 @@ using std::vector;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SlabGlobal global_slab = {0.0, 0.0, NULL, NULL, 1.0, 1.2, 1.0, false};
+SlabGlobal global_slab = {0.0, 0.0, NULL, NULL, 1.0, 1.2, false};
 
 
 
@@ -269,7 +269,6 @@ void SlabImpl::calc_overlap_matrices
     sin_I (i) = mode_I ->get_sin(); cos_I (i) = mode_I ->get_cos();
     sin_II(i) = mode_II->get_sin(); cos_II(i) = mode_II->get_cos();
 
-    //std::cout<<"Generalslab_output"<<std::endl;
     //std::cout << i <<cos_I (i) << cos_I(i)*mode_I->get_kz0() 
     //          << cos_II (i) << cos_II(i)*mode_II->get_kz0() 
     //          << sqrt(cos_I(i)) << sqrt(cos_II(i)) << std::endl;

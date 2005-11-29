@@ -14,6 +14,7 @@
 #include "isoslab/slabmode.h"
 #include "slabmatrixcache.h"
 #include "generalslab.h"
+#include <iomanip.h>
 
 using std::vector;
 using std::pair;
@@ -90,6 +91,8 @@ OverlapMatrices::OverlapMatrices
 
   if (global.davy == true)
   {
+    std::cout << std::setprecision(12) << std::endl;
+    
     std::cout << "Medium I core n "  << medium_I ->get_core()->n() 
               << std::endl;
     std::cout << "Medium II core n " << medium_II->get_core()->n() 
