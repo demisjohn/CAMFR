@@ -21,7 +21,6 @@
 #include "../../planar/planar.h"
 #include "../../../math/calculus/calculus.h"
 #include "../../../math/calculus/fourier/fourier.h"
-//#include <iomanip>//[PDB] Added some more precision
 
 using std::vector;
 
@@ -100,13 +99,11 @@ Slab_M::Slab_M(const Expression& expression, int M_series_)
          || (abs(materials[i]->mur() - core->mur()) > 1e-12) )
       uniform = false;
 
-    //[PDB] In order to use this dispersionrelation I have to introduce the lower and upperwall here
-    SlabWall* l_wall_disp = lowerwall ? lowerwall : global_slab.lowerwall;
-    SlabWall* u_wall_disp = upperwall ? upperwall : global_slab.upperwall;
+  //SlabWall* l_wall_disp = lowerwall ? lowerwall : global_slab.lowerwall;
+  //SlabWall* u_wall_disp = upperwall ? upperwall : global_slab.upperwall;
+  //disp_f = new SlabDisp(materials,thicknesses, global.lambda, 
+  //                      l_wall_disp,u_wall_disp);
 
-    //disp_f  =   new SlabDisp(materials,thicknesses, global.lambda, l_wall_disp,u_wall_disp,global_slab.metal_disp);
-    //SlabDisp disp_f2(materials, thicknesses, global.lambda, l_wall_disp, u_wall_disp, global_slab.metal_disp);
-    //std::cout<<"Dispersion relation"<<" "<<disp_f2(-121)<<std::endl;
 }
 
 
@@ -131,7 +128,7 @@ Slab_M::Slab_M(const Slab_M& slab)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Slab_M::operator
+// Slab_M::operator=
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -289,7 +286,7 @@ void Slab_M::find_modes()
     }
 
     vector<Complex> kt(find_kt(old_kt));
-    build_modeset(kt, global_slab.metal_disp);  
+    build_modeset(kt);  
   }
 
   // Both TE and TM modes needed.
@@ -346,7 +343,7 @@ void Slab_M::find_modes()
     global.polarisation = TE_TM;
 
     kt.insert(kt.end(), kt_TM.begin(), kt_TM.end());
-    build_modeset(kt,global_slab.metal_disp);
+    build_modeset(kt);
   }
 }
 
@@ -362,29 +359,25 @@ vector<Complex> Slab_M::find_kt(vector<Complex>& old_kt)
 {
   // If we already calculated modes for a different wavelength/gain
   // combination, use these as an initial estimate, else find them
-  // from scratch.
+  // from scratch. Note that the series solvers are currently only 
+  // fully implemented for TM.
 
   if (     (global.solver == series) 
         || (global.solver == ASR            && global.polarisation == TM) 
-        || (global.solver == stretched_ASR  && global.polarisation == TM) ) 
+        || (global.solver == stretched_ASR  && global.polarisation == TM) )
       return find_kt_from_estimates();
-      
-  // [PDB] Workaround for the ASR solver as the series solver does not provide mode profiles for TE polarization
-  if(      (global.solver == ASR            && global.polarisation == TE)
-        || (global.solver == stretched_ASR  && global.polarisation == TE) )    
+
+  if (     (global.solver == ASR            && global.polarisation == TE)
+        || (global.solver == stretched_ASR  && global.polarisation == TE) )
       return find_kt_from_scratch_by_track();
      
   if (global.sweep_from_previous && (modeset.size() >= global.N))
       return find_kt_by_sweep(old_kt);
-      
   
   if (global.solver == ADR)
     return find_kt_from_scratch_by_ADR();
-    
-  
-  
-  
-    return find_kt_from_scratch_by_track();
+
+  return find_kt_from_scratch_by_track();
 }
 
 
@@ -445,7 +438,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
     dir = dr;
   }
 
-  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall);
+  SlabDisp disp(materials,thicknesses,global.lambda,l_wall,u_wall);
   unsigned int zeros = global.N + 2 + materials.size();
   vector<Complex> kt = N_roots(disp, zeros, lowerleft, upperright,
                                1e-4, 1e-4, 4, dir);
@@ -488,8 +481,6 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_ADR()
 vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 {  
   // Set constants.
-    //[PDB]
-    //std::cout<<"Using find_kt_from_scratch_by_track()"<<std::endl;
 
   const Real eps        = 1e-13;
   const Real eps_zero   = 1e-10;
@@ -521,6 +512,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     PC = true;
 
   // Find min and max refractive index of lossless structure.
+
   Real min_eps_mu_lossless = real(materials[0]->eps_mu());
   Real max_eps_mu_lossless = real(materials[0]->eps_mu());
   
@@ -535,15 +527,11 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       max_eps_mu_lossless = eps_mu_lossless;
   }
 
-  bool metal = (min_eps_mu_lossless < 0.0); 
-  
-  //[PDB] Output for evaluation purposes 
-  //std::cout<< "max_eps_mu_lossless"<<" "<<max_eps_mu_lossless<<" = "<<max_eps_mu_lossless/mu0/eps0<<std::endl;
-  //std::cout<< "min_eps_mu_lossless"<<" "<<min_eps_mu_lossless<<" = "<<min_eps_mu_lossless/mu0/eps0<<std::endl;
-  //std::cout<< "Boolean metal"<<" "<<metal<<std::endl;
+  bool metallic = (min_eps_mu_lossless < 0.0);
   
   // Create dispersion relation for lossless structure.
-  SlabDisp disp(materials, thicknesses, lambda, l_wall, u_wall,global_slab.metal_disp);
+
+  SlabDisp disp(materials,thicknesses,lambda,l_wall,u_wall);
   params = disp.get_params();
 
   vector<Complex> params_lossless;
@@ -576,23 +564,12 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   Complex max_eps_eff = max_eps_mu_lossless;
 
-  if(    (global.polarisation == TM) // Surface plasmon, based on the bulk dispersion relation
-           && (max_eps_mu_lossless*min_eps_mu_lossless < 0.0)  && (abs(min_eps_mu_lossless) > max_eps_mu_lossless))
-  {
-      Real max_kz = real(sqrt(max_eps_mu_lossless/mu0/eps0)*sqrt(C/pow(c,2))*sqrt((min_eps_mu_lossless/mu0/eps0)/(max_eps_mu_lossless/mu0/eps0+min_eps_mu_lossless/eps0/mu0)));
-      if(max_kz<0)
-          max_kz = -max_kz;
-      max_eps_eff = pow(max_kz,2)/(C/(pow(c,2)));
-         
-  }
-  
-  
-  //[PDB] Added a similar foefelfactor over here, to improve the search area 
-  Real cutoff_value_track_solver = global_slab.cutoff_track;
-  max_eps_eff = cutoff_value_track_solver*max_eps_eff;
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (max_eps_mu_lossless*min_eps_mu_lossless < 0.0) )
+    max_eps_eff = 1.0/(1.0/max_eps_mu_lossless + 1.0/min_eps_mu_lossless);
 
-
-  Real prop_kt_end_lossless = abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
+  Real prop_kt_end_lossless = global_slab.estimate_cutoff 
+                         *abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
   
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
@@ -646,7 +623,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
                                I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
 
-      if (!error && metal && abs(real(kt_new)) > 0.001)
+      if (!error && metallic && abs(real(kt_new)) > 0.001)
       {
         py_print("Found complex mode pair.");
         kt_complex.push_back(kt_new);
@@ -691,7 +668,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
           : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
                     1e-11,0,100,&error);
 
-        if (!error && metal && (abs(imag(kt_new)) > 0.001))
+        if (!error && metallic && (abs(imag(kt_new)) > 0.001))
         {
           py_print("Found complex mode pair.");
           kt_complex.push_back(kt_new);
@@ -785,7 +762,7 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
     for (unsigned int i=0; i<materials.size(); i++)
     {
-      Complex kt_i = sqrt(C*(materials[i]->eps_mu() - disp.get_min_eps_mu()));
+      Complex kt_i = sqrt(C*(materials[i]->eps_mu() - disp.get_kt_eps_mu()));
 
       remove_elems(&kt_complex,  kt_i, eps_copies);
       remove_elems(&kt_complex, -kt_i, eps_copies);
@@ -889,7 +866,7 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
   Real eta = global_slab.eta_ASR;
 
   if ( (global.solver == ASR) || (global.solver == stretched_ASR) )
-  { 	  
+  {
    
    f_eps     = fourier_ASR(    eps, disc, 2*M, 0, stretch, extend, eta);
    f_inv_eps = fourier_ASR(inv_eps, disc, 2*M, 0, stretch, extend, eta);
@@ -1018,20 +995,14 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
 {  
   // Set constants.
 
-
-    //std::cout<<"Using estimate_kz2_from_uniform_modes"<<std::endl;
-
   const Complex omega = 2*pi/global.lambda * c;
   const Complex k0 = 2*pi/global.lambda;
 
   // Create eigenvalue problem.
 
   if (global.polarisation == TE) // TODO: reformulate as fourier expansion.
-  { 
-      
+  {
     const int n = M_series ? M_series : int(global.N * global.mode_surplus);
-
-    ;
   
     cMatrix E(n,n,fortranArray);
 
@@ -1080,11 +1051,6 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
   }
   else // TM case.
   {
-      //std::cout<< "1D CALCULATION PARAMETERS"<<std::endl;
-      //std::cout<<"Number of modes"<<" "<< global.N<<std::endl;
-      //std::cout<<"Modesurplus"<<" "<<global.mode_surplus<<std::endl;
-   
-
     // Determine reflection coefficients of walls.
 
     SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
@@ -1207,29 +1173,6 @@ struct kz_sorter
     bool operator()(const Complex& kz_a, const Complex& kz_b)
     {return ( real(kz_a*kz_a) > real(kz_b*kz_b) );}
 };
-//[PDB]
-struct n_eff_sorter
-{
-    bool operator()(const Complex& n_eff_a, const Complex& n_eff_b)
-    {return ( real(n_eff_a) > real(n_eff_b) );}
-};
-//[PDB] Sorts the kz2 list according to the value of n_eff 
-struct kz2_n_eff_sorter
-{
-    bool operator()(const Complex& kz2_a, const Complex& kz2_b)
-    {return ( real(sqrt(kz2_a)) > real(sqrt(kz2_b)) );}
-};
-
-
-struct kt_n_eff_sorter
-{
-    bool operator()(const Complex& kt_a, const Complex& kt_b)
-    {return ( abs(imag((kt_a))) > abs(imag((kt_b))) );}
-
-};   
-
-
-
 
 struct kz2_sorter
 {
@@ -1262,10 +1205,6 @@ struct kt_to_neff : ComplexFunction
 
 std::vector<Complex> Slab_M::find_kt_from_estimates()
 {
-  //[PDB]
-  // std::cout<<"Using find_kt_from_estimates"<<std::endl;  
-  // Get coarse estimates.
-
   vector<Complex> kz2;
 
   if (user_kz2_estimates.size() != 0)
@@ -1288,8 +1227,6 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   Complex min_eps_mu = materials[0]->eps_mu();
   Complex max_eps_mu = materials[0]->eps_mu();
 
-  
-  
   for (unsigned int i=1; i<materials.size(); i++)
   {
     Complex eps_mu = materials[i]->eps_mu();
@@ -1300,163 +1237,70 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
     if (real(eps_mu) > real(max_eps_mu))
       max_eps_mu = eps_mu;
   }
-   
 
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
 
-  //[PDB] Added a boolean that keeps track of the metallic character
-  bool metals = global_slab.metal_disp;
+  Complex kt_eps_mu = metallic ? max_eps_mu : min_eps_mu;
  
   const Complex C0 = pow(2*pi/global.lambda, 2) / eps0 / mu0;
 
   Complex max_eps_eff;
   max_eps_eff = max_eps_mu;
-  
-  Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
- 
 
-  if(    (global.polarisation == TM) // Surface plasmon, based on the bulk dispersion relation
-           && ((real(max_eps_mu)*real(min_eps_mu) < 0.0)  && (abs(real(min_eps_mu)) > real(max_eps_mu))))
-  {
-      max_kz = real(sqrt(max_eps_mu/mu0/eps0)*sqrt(C0/pow(c,2))*sqrt((min_eps_mu/mu0/eps0)/(max_eps_mu/mu0/eps0+min_eps_mu/eps0/mu0)));
-      if(max_kz<0)
-          max_kz = -max_kz;
-         
-  }
+  if (    (global.polarisation == TM) // Surface plasmon.
+       && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
+    max_eps_eff = 1.0/(1.0/max_eps_mu + 1.0/min_eps_mu);
+
+  Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0)) 
+                * global_slab.estimate_cutoff; // Safety factor.
   
  // Refine estimates.
-  vector<Complex> kz2_coarse_temp;//[PDB] Added temp, needed new variable
- 
-  Real cutoff_value = global_slab.cutoff;
+
+  vector<Complex> kz2_coarse;
 
   for (unsigned int i=0; i<kz2.size(); i++)
-  {
-      if ((global.keep_all_1D_estimates || ((real(sqrt(kz2[i]))) < cutoff_value * max_kz)) && imag(sqrt(kz2[i])) <= 1.0)
-      kz2_coarse_temp.push_back(kz2[i]);
-  }
+  if ( global.keep_all_1D_estimates || (real(sqrt(kz2[i])) < max_kz) )
+      kz2_coarse.push_back(kz2[i]);
 
+  std::sort(kz2_coarse.begin(), kz2_coarse.end(), kz2_sorter());
 
+  if (kz2_coarse.size() > global.N+5)
+    kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
 
-
-std::cout<<"Found"<<" "<< kz2_coarse_temp.size()<<" "<<"1D estimates"<<std::endl;
-
-std::sort(kz2_coarse_temp.begin(), kz2_coarse_temp.end(), kz2_sorter());
-  
-
-if (kz2_coarse_temp.size() > global.N+5)
-    kz2_coarse_temp.erase(kz2_coarse_temp.begin()+global.N+5, kz2_coarse_temp.end());
-
-
-//Generating output to compare solvers
-//DELETING HIGHER ORDER MODES BASED ON THE COMPARISON OF THE IMAGINARY AND THE REAL PART OF N_EFF
-//Since this is only necessary for evaluation purposes only the deleting of the higher order modes still occurs
-//For CVS purposes this has temporarily been removed
-vector<Complex> kz2_coarse;
-vector<Complex> kz_coarse;
-  	for(unsigned int i=0; i< kz2_coarse_temp.size();i++)
-  	  {
-        Complex kz = sqrt(kz2_coarse_temp[i]);
-	      kz_coarse.push_back(kz);
-       }
- 
-     
-vector<Complex> n_eff_coarse;
-for(unsigned int i=0; i<kz_coarse.size();i++)
-      {
-        Complex n_eff = kz_coarse[i]/2./pi*global.lambda;
-       n_eff_coarse.push_back(n_eff);
-      }
-
-//[PDB] deleting higher order modes, not active at the moment
-for (unsigned int i=0;i<kz2_coarse_temp.size();i++)
-    {
-     //if ((abs(imag(n_eff_coarse[i]))>1)&&(abs(real(n_eff_coarse[i]))>1))
-     //    std::cout<<"Deleting higher order mode"<<" "<<n_eff_coarse[i]<<std::endl;
-     //else
-     kz2_coarse.push_back(kz2_coarse_temp[i]);
-    }
-//std::sort(n_eff_coarse.begin(), n_eff_coarse.end(), n_eff_sorter());
- 
-
-//std::cout<<"Effective index values"<<std::endl;
-//for(unsigned int i=0; i<n_eff_coarse.size();i++)
-//      std::cout<< i << " " << real(n_eff_coarse[i])
-//               << " " << imag(n_eff_coarse[i]) << std::endl;
-
-  
-//[PDB] For metallic structures one can choose where to calculate values for kt  
-//[PDB] metallic structures
   vector<Complex> kt_coarse;
-  if (metals)
+  for (unsigned int i=0; i<kz2_coarse.size(); i++)
   {
-      std::cout<< "Metallic structures, calculating kt in the max_eps_mu region"<<std::endl;
-    for (unsigned int i=0; i<kz2_coarse.size(); i++)
-    {
-        Complex kt = sqrt(C0*max_eps_mu - kz2_coarse[i]);
-    
-        if (imag(kt) < 0) 
-            kt = -kt;
+    Complex kt = sqrt(C0*kt_eps_mu - kz2_coarse[i]);
 
-        if (abs(imag(kt)) < 1e-10)
-            if (real(kt) > 0)
-                kt = -kt;
+    if (imag(kt) < 0)
+      kt = -kt;
 
-        kt_coarse.push_back(kt);
-    }
-  }
-  else //[PDB] Non metallic structures
-  {
-    std::cout<<"Calculating kt in the min_eps_mu region"<<std::endl;
-    for (unsigned int i=0; i<kz2_coarse.size(); i++)
-    {
-       
-        Complex kt = sqrt(C0*min_eps_mu - kz2_coarse[i]);
-    
-        if (imag(kt) < 0) 
-            kt = -kt;
+    if (abs(imag(kt)) < 1e-10)
+      if (real(kt) > 0)
+        kt = -kt;
+    kt_coarse.push_back(kt);
+  }  
 
-        if (abs(imag(kt)) < 1e-10)
-            if (real(kt) > 0)
-                kt = -kt;
-
-        kt_coarse.push_back(kt); 
-    }
-  }
- 
-  
   SlabWall* l_wall = lowerwall ? lowerwall : global_slab.lowerwall;
   SlabWall* u_wall = upperwall ? upperwall : global_slab.upperwall;
 
-  
-  Complex max_min_eps_mu;
-  if(metals)
-      max_min_eps_mu    = max_eps_mu;
-  else
-      max_min_eps_mu    = min_eps_mu;
+  kt_to_neff transform(C0*kt_eps_mu);
+  SlabDisp disp(materials,thicknesses,global.lambda,l_wall,u_wall);
 
-  kt_to_neff transform(C0*max_min_eps_mu);
-  SlabDisp disp(materials, thicknesses, global.lambda, l_wall, u_wall, metals);
-
-  bool adaptive_spatial_resolution = false;
-  if ((global.solver==ASR)||(global.solver==stretched_ASR))
-      adaptive_spatial_resolution = true;
-
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform,0, adaptive_spatial_resolution);
-  //[PDB] For evaluation purposes 0->3 so the mueller solver generates more output
+  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform, 0);
 
   // Eliminate false zeros.
 
   for (unsigned int i=0; i<materials.size(); i++)
   {
-    Complex kt_i = sqrt(C0*(real(materials[i]->eps_mu())-min_eps_mu));
-    if(metals)
-        kt_i    = sqrt(C0*(real(materials[i]->eps_mu())-max_eps_mu));
+    Complex kt_i = sqrt(C0*(real(materials[i]->eps_mu())-kt_eps_mu));
 
     remove_elems(&kt,  kt_i, 1e-6);
     remove_elems(&kt, -kt_i, 1e-6);
   }
 
   return kt;
-
 }
 
 
@@ -1467,7 +1311,7 @@ for (unsigned int i=0;i<kz2_coarse_temp.size();i++)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
+void Slab_M::build_modeset(vector<Complex>& kt)
 {
   // Set polarisation.
 
@@ -1479,31 +1323,26 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
     delete modeset[i];
   modeset.clear();
 
-  // Find minimum (no metals) or maximum (metallic structures) eps mu.
+  // Find min and max eps mu.
 
-  
-  Complex max_min_eps_mu = materials[0]->eps_mu();
-  if(metals)
-  {
-      for (unsigned int i=1; i<materials.size(); i++)
-      {
-        Complex eps_mu = materials[i]->eps_mu();
-    
-        if (real(eps_mu) > real(max_min_eps_mu))
-            max_min_eps_mu = eps_mu;
-      }
-  }
-  else
-  {
-      for (unsigned int i=1; i<materials.size(); i++)
-      {
-        Complex eps_mu = materials[i]->eps_mu();
-    
-        if (real(eps_mu) < real(max_min_eps_mu))
-            max_min_eps_mu = eps_mu;
-      }
+  Complex min_eps_mu = materials[0]->eps_mu();
+  Complex max_eps_mu = materials[0]->eps_mu();
 
+  for (unsigned int i=1; i<materials.size(); i++)
+  {
+    Complex eps_mu = materials[i]->eps_mu();
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
+
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
   }
+
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
+
+  Complex kt_eps_mu = metallic ? max_eps_mu : min_eps_mu;
  
   const Complex C = pow(2*pi/global.lambda, 2) / (eps0 * mu0);
 
@@ -1599,7 +1438,6 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
         upper_ex += Term(planars[j](thicknesses[j]));
       upper_ex += Term(*u_boundary);
       upper_stacks.push_back(Stack(upper_ex));
-
       
       //std::cout << "lower" << lower_ex << std::endl;
       //std::cout << "upper" << upper_ex << std::endl;
@@ -1619,7 +1457,7 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
     Real best_error;
     for (unsigned int j=0; j<core_index.size(); j++)
     {
-      Complex kz = sqrt(C*max_min_eps_mu - kt[i]*kt[i]);
+      Complex kz = sqrt(C*kt_eps_mu - kt[i]*kt[i]);
     
       if (real(kz) < 0) 
         kz = -kz;
@@ -1645,7 +1483,6 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
       if (error < best_error)
         best_error = error;
 
-      //[PDB] Output to see which cores are important
       //std::cout << kz/2./pi*global.lambda 
       //          << " " << i << " " << j << " " << error 
       //          << std::endl << std::flush;
@@ -1703,8 +1540,7 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
         core = best_cores[i].back();
     }
     
-    
-    //Complex neff = sqrt(C*min_eps_mu - kt[i]*kt[i])/2./pi*global.lambda;
+    //Complex neff = sqrt(C*kt_eps_mu - kt[i]*kt[i])/2./pi*global.lambda;
     //std::cout << "Mode " << i << " " << neff << " : ";
     //for (int j=0; j<best_cores[i].size(); j++)
     //  std::cout << best_cores[i][j] << " ";
@@ -1712,7 +1548,7 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
 
     // Calculate kz.
 
-    Complex kz = sqrt(C*max_min_eps_mu - kt[i]*kt[i]);
+    Complex kz = sqrt(C*kt_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -1735,11 +1571,9 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
     if (global.eigen_calc == arnoldi) // Old method.
       newmode = new Slab_M_Mode(pol, kz, kt[i], this, calc_fw);
     else
-    {    
-        newmode = new Slab_M_Mode(pol, kz, kt[i], this,
+      newmode = new Slab_M_Mode(pol, kz, kt[i], this,
                                 lower_stacks[core], upper_stacks[core]);
 
-    }
     //std::cout << "Mode " << i << kt[i] << kz/2./pi*global.lambda
     //          << " " << pol << " " << calc_fw << std::endl;
     //std::cout<<"lower_stacks[core]"<<" "<<core<<std::endl;
@@ -1749,8 +1583,7 @@ void Slab_M::build_modeset(vector<Complex>& kt, bool metals)
     
     modeset.push_back(newmode);
   }
-  
-  
+
   sort_modes();
   truncate_N_modes();
 
@@ -1834,7 +1667,7 @@ void Slab_M::set_params(const vector<Complex>& params)
   slabmatrix_cache.deregister(this);
 
   // Determine core.
-  //[PDB] I still have some questions about this statement
+
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
     if ( real(materials[i]->eps_mu()) > real(materials[core_index]->eps_mu()) )
@@ -2009,9 +1842,6 @@ void UniformSlab::build_modeset(vector<Complex>& kt)
   // Create new modeset.
 
   const Complex k = 2*pi/global.lambda * core->n();
-  
-  //[PDB] Since this here relies on the core, I would like to know what the core is
-  //std::cout<<"Refractive index of the core"<<" "<<core->n()<<std::endl;
 
   for (unsigned int i=0; i<kt.size(); i++)
   { 

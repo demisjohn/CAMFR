@@ -23,7 +23,7 @@ using std::vector;
 /////////////////////////////////////////////////////////////////////////////
 
 SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
-                   SlabWall* lowerwall_, SlabWall* upperwall_, bool metal)
+                   SlabWall* lowerwall_, SlabWall* upperwall_)
   : lambda(lambda_), lowerwall(lowerwall_), upperwall(upperwall_)
 {
   // Create a table with the eps's and the mu's. This avoids repeated
@@ -31,33 +31,28 @@ SlabDisp::SlabDisp(const Expression& expression, const Complex& lambda_,
   // tampering with the original materials.
 
   material_expression_to_table(expression, &eps, &mu, &thicknesses);
+
+  // Find min and max eps mu. Note: this should be consistent with what
+  // is happing in slab.cpp
+
+  Complex min_eps_mu = eps[0]*mu[0];
+  Complex max_eps_mu = eps[0]*mu[0];
+
+  for (unsigned int i=1; i<eps.size(); i++)
+  {
+    Complex eps_mu = eps[i]*mu[i];
     
-  // Find min or maximum refractive index of structure.
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
 
-  max_min_eps_mu = eps[0]*mu[0];
-  if(metal)
-  {
-      for (unsigned int i=1; i<eps.size(); i++)
-  {
-    Complex eps_mu = eps[i]*mu[i];
-
-    if (real(eps_mu) > real(max_min_eps_mu))
-      max_min_eps_mu = eps_mu; //[PDB] metallic layers, use the maximum value
-
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
   }
-  }
-else
-  {
-      for (unsigned int i=1; i<eps.size(); i++)
-  {
-    Complex eps_mu = eps[i]*mu[i];
 
-    if (real(eps_mu) < real(max_min_eps_mu))
-      max_min_eps_mu = eps_mu; //[PDB] In regular waveguide configuration we will continue working with the min
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
 
-  }
-}
-std::cout<<"Max_min_eps_mu"<<" "<< max_min_eps_mu/eps0/mu0 <<std::endl;
+  kt_eps_mu = metallic ? max_eps_mu : min_eps_mu;
 }
 
 
@@ -71,7 +66,7 @@ std::cout<<"Max_min_eps_mu"<<" "<< max_min_eps_mu/eps0/mu0 <<std::endl;
 SlabDisp::SlabDisp(const vector<Material*>& materials,
                    const vector<Complex>& thicknesses_, 
                    const Complex& lambda_,
-                   SlabWall* lowerwall_, SlabWall* upperwall_, bool metal)
+                   SlabWall* lowerwall_, SlabWall* upperwall_)
   : thicknesses(thicknesses_), lambda(lambda_),
     lowerwall(lowerwall_), upperwall(upperwall_)
 {
@@ -83,35 +78,29 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   {
     eps.push_back(materials[i]->eps());
      mu.push_back(materials[i]->mu());
-  }
+  }  
 
-  // Find min or maximum refractive index of structure.
+  // Find min and max eps mu. Note: this should be consistent with what
+  // is happing in slab.cpp
 
-  max_min_eps_mu = eps[0]*mu[0];
-  if(metal)
+  Complex min_eps_mu = eps[0]*mu[0];
+  Complex max_eps_mu = eps[0]*mu[0];
+
+  for (unsigned int i=1; i<eps.size(); i++)
   {
-      for (unsigned int i=1; i<eps.size(); i++)
-      {
-          Complex eps_mu = eps[i]*mu[i];
+    Complex eps_mu = eps[i]*mu[i];
+    
+    if (real(eps_mu) < real(min_eps_mu))
+      min_eps_mu = eps_mu;
 
-          if (real(eps_mu) > real(max_min_eps_mu))
-            max_min_eps_mu = eps_mu; //[PDB] metallic layers, use the maximum value
-
-      }
+    if (real(eps_mu) > real(max_eps_mu))
+      max_eps_mu = eps_mu;
   }
-else
-  {
-      for (unsigned int i=1; i<eps.size(); i++)
-      {
-        Complex eps_mu = eps[i]*mu[i];
 
-        if (real(eps_mu) < real(max_min_eps_mu))
-            max_min_eps_mu = eps_mu; //[PDB] Non metallic structures use the minimum
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
 
-      }
-  }
-//std::cout<<"Max_min_eps_mu"<<" "<< max_min_eps_mu/eps0/mu0 <<std::endl;
-  
+  kt_eps_mu = metallic ? max_eps_mu : min_eps_mu;
 }
 
 
@@ -127,8 +116,6 @@ else
 Complex SlabDisp::operator()(const Complex& kt)
 {
   counter++;
- 
- 
 
   global.lambda = lambda;
 
@@ -140,7 +127,7 @@ Complex SlabDisp::operator()(const Complex& kt)
   
   for (unsigned int i=0; i<eps.size(); i++)
   {
-    Complex kx_i = sqrt(C*(eps[i]*mu[i] - max_min_eps_mu) + kt*kt);
+    Complex kx_i = sqrt(C*(eps[i]*mu[i] - kt_eps_mu) + kt*kt);
 
     if (real(kx_i) < 0)
       kx_i = -kx_i;
@@ -154,7 +141,7 @@ Complex SlabDisp::operator()(const Complex& kt)
 
   // For SlabWall_PC, we still need to set Planar::kt.
 
-  Complex beta = sqrt(C*max_min_eps_mu - kt*kt);
+  Complex beta = sqrt(C*kt_eps_mu - kt*kt);
 
   if (real(beta) < 0)
     beta = -beta;
@@ -226,8 +213,9 @@ Complex SlabDisp::operator()(const Complex& kt)
     if ( (k == eps.size()-1) && (abs(R_upper) < 1e-10) )
       I_kx_d = 0;
 
-    if ( (global.solver == ADR) || (global.solver == series) || (global.solver == ASR) || global.solver == stretched_ASR) 
-    //[PDB] I think that this scaling thing ruins my results
+    if (    (global.solver == ADR) || (global.solver == series) 
+         || (global.solver == ASR) || (global.solver == stretched_ASR) )
+
     // No scaling to keep the function analytic.
     {
       fw_chunk_end_scaled *= exp(-I_kx_d);      
@@ -247,24 +235,11 @@ Complex SlabDisp::operator()(const Complex& kt)
     bw_chunk_begin_scaled = bw_chunk_end_scaled;
   }
 
-  //[PDB] Compare output values for comparison
-  //if (!u_wall)
-  //{
-  //    Complex value = fw_chunk_end_scaled + bw_chunk_end_scaled;
-  //    std::cout<<"Dispersion relation value for"<<" "<<kt<<" "<< value<<std::endl;
-  //}
-  //else
-  //{
-  //    Complex value = u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
-  //    std::cout<<"Dispersion relation value for"<<" "<<kt<<" "<<value<<std::endl;
-  //}
   // Return error.
   if (!u_wall)
    return fw_chunk_end_scaled + bw_chunk_end_scaled;
   else
    return u_wall->get_error(fw_chunk_end_scaled, bw_chunk_end_scaled);
-    
-  
 }
 
 
@@ -290,7 +265,7 @@ vector<Complex> SlabDisp::get_params() const
 
   params.push_back(lambda);
 
-  params.push_back(max_min_eps_mu);
+  params.push_back(kt_eps_mu);
 
   return params;
 }
@@ -316,5 +291,5 @@ void SlabDisp::set_params(const vector<Complex>& params)
 
   lambda = params[params_index++];
 
-  max_min_eps_mu = params[params_index];
+  kt_eps_mu = params[params_index];
 }

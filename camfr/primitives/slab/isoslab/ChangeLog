@@ -1,3 +1,12 @@
+2005-11-29 Peter Debackere  <Peter.Debackere@UGent.be>
+
+        * slab.cpp: Add option to calculate dispersion relation using kt
+                    from cladding.
+	* slab.h: Ditto.
+	* slabdisp.cpp: Ditto.
+	* slabdisp.h: Ditto.
+	* slabmode.cpp: Ditto.
+
 2005-08-29 Peter Debackere  <Peter.Debackere@UGent.be>
 
         * slab.cpp: Make metal layers always core candidates.
