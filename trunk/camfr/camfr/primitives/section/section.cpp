@@ -36,7 +36,8 @@ using std::endl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,none,0,0,1.01,false,0.5};
+SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,none,0,0,2.0,
+ false,0.5};
 
 
 
@@ -148,8 +149,6 @@ void SectionImpl::calc_overlap_matrices
     // Create field cache.
 
     vector<FieldExpansion> field_I, field_II;
-    
-    //std::cout<<"section(152) global_N"<<global.N<<std::endl;
 
     for (int i=1; i<=int(global.N); i++)
     {
@@ -220,19 +219,6 @@ void SectionImpl::calc_overlap_matrices
       }
   }
 }
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Auxiliary function objects
-//
-/////////////////////////////////////////////////////////////////////////////
-
-//[PDB]
-struct n_eff_sorter
-{
-    bool operator()(const Complex& n_eff_a, const Complex& n_eff_b)
-    {return ( real(n_eff_a) > real(n_eff_b) );}
-};
 
 
 
@@ -549,7 +535,6 @@ Section2D::Section2D
   vector<Material*> right_mat = right.get_materials();
   materials.insert(materials.end(), right_mat.begin(), right_mat.end());
 
-  //[PDB] Hier wordt toch opnieuw automatisch het materiaal met hoogste index als core gekozen
   unsigned int core_index = 0;
   for (unsigned int i=0; i<materials.size(); i++)
     if ( real(materials[i]->eps_mu()) > real(materials[core_index]->eps_mu()) )
@@ -591,7 +576,7 @@ Section2D::Section2D
   discontinuities.pop_back();
   discontinuities.push_back(z_back);
 
-  f = new SectionDisp(left, right, global.lambda, M2, symmetric,global_slab.metal_disp); // TMP [PDB]
+  f = new SectionDisp(left,right,global.lambda,M2,symmetric); // TMP 
 }
 
 
@@ -1514,9 +1499,6 @@ struct IndexConvertor
 
 vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
 {
-  
-  
-    std::cout<<"(3D) Using estimate_kz2_fourier"<<std::endl;  
   // Check values.
 
   if (    (global_section.leftwall  == no_wall)
@@ -1987,7 +1969,6 @@ void Section2D::find_modes_from_estimates()
   
   Complex min_eps_mu, max_eps_mu, clad_eps_mu;
   
-  //[PDB] This cladding thing wont work for surface plasmons
   if (eps_mu.size() >= 2)
   {
      min_eps_mu = eps_mu[0];
@@ -2016,24 +1997,15 @@ void Section2D::find_modes_from_estimates()
   {
     Complex max_eps_eff;
    
-    if ((real(max_eps_mu)*real(min_eps_mu) < 0.0) && (abs(real(min_eps_mu)) > real(max_eps_mu))) // [PDB] Surface plasmon.
-    {
+    if (real(max_eps_mu)*real(min_eps_mu) < 0.0) // Surface plasmon.
         max_eps_eff = 1.0/(1.0/max_eps_mu + 1.0/min_eps_mu);
-                    
-    }   
-     else
+    else
       max_eps_eff = max_eps_mu;
 
     if (abs(real(max_eps_eff)) < abs(real(max_eps_mu)))
       max_eps_eff = max_eps_mu;
-    
-    //[PDB] Again I added an extra foefelfactor to find surface plasmon modes
+
     Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
-    
-    //std::cout<<"(section) Max kz value"<<" "<<max_kz<<" = "<<"max n_eff value"<<max_kz/(2*pi/global.lambda)<<std::endl;
-    Real foefelfactor = global_section.cutoff_value;
-    //std::cout<<"(section) Max kz_value altered"<<" "<< max_kz*foefelfactor<<" = "<<"max n_eff altered"<<max_kz/(2*pi/global.lambda)*foefelfactor<<std::endl;
-    
     vector<ModeEstimate*> estimates_0;   
 
     if (global_section.section_solver == OS)
@@ -2041,10 +2013,9 @@ void Section2D::find_modes_from_estimates()
     else
       estimates_0 = estimate_kz2_fourier();
 
-    //std::cout<<"(section) Passed estimate_kz2_fourier "<<std::endl;
-
+    Real C = global_section.estimate_cutoff;
     for (unsigned int i=0; i<estimates_0.size(); i++)
-      if (    (real(sqrt(estimates_0[i]->kz2)) < foefelfactor*max_kz) 
+      if (    (real(sqrt(estimates_0[i]->kz2)) < C*max_kz) 
            || (global_section.keep_all_estimates == true))
           estimates.push_back(estimates_0[i]);
   }
@@ -2056,8 +2027,6 @@ void Section2D::find_modes_from_estimates()
     s << "Setting N to " << estimates.size() << ".";
     py_print(s.str());
   }
-  std::cout<<"3D CALCULATION PARAMETERS"<<std::endl;
-  std::cout<<"Number of modes"<<global.N<<std::endl;
 
   while (estimates.size() > global.N)
   {
@@ -2065,158 +2034,59 @@ void Section2D::find_modes_from_estimates()
     estimates.erase(estimates.end()-1);
   }
 
-  //[PDB] Added some lines here to see how the estimated fourier modes look
-  //Generating output to compare solvers
-  vector<Complex> kz_coarse;
-  for(unsigned int i=0; i< estimates.size();i++)
-  {
-          Complex kz = sqrt(estimates[i]->kz2);
-  	      kz_coarse.push_back(kz);
-  }
- 
-     
-  vector<Complex> n_eff_coarse;
-  for(unsigned int i=0; i<kz_coarse.size();i++)
-  {
-          Complex n_eff = kz_coarse[i]/2./pi*global.lambda;
-          n_eff_coarse.push_back(n_eff);
-  }
-  std::sort(n_eff_coarse.begin(), n_eff_coarse.end(), n_eff_sorter());
- 
-
-  std::cout<<"(3D) Estimates for n_eff after the  3D Fourier solver"<<std::endl;
-  for(unsigned int i=0; i<n_eff_coarse.size();i++)
-      std::cout<< i << " " << real(n_eff_coarse[i])
-               << " " << imag(n_eff_coarse[i]) << std::endl;
-
-
   // Split off modes to be corrected.
 
+  //bool metallic = (real(min_eps_mu) < 0);
+  bool metallic = global_slab.low_index_core;
+
+  Complex threshold_eps_mu = metallic ? max_eps_mu : clad_eps_mu;
+  Complex        kt_eps_mu = metallic ? max_eps_mu :  min_eps_mu;
+
   vector<Complex> kt_coarse;
-  //[PDB] TODO: For metals, calculate kt in the max eps region
-  
-   //std::cout<<"min_eps_mu"<<" "<<min_eps_mu/eps0/mu0<<", "<<"max_eps_mu "<<max_eps_mu/eps0/mu0<<","<<"eps_mu_cladding"<<clad_eps_mu/mu0/eps0<<std::endl;
-   //std::cout<<"min_n"<<" "<<sqrt(min_eps_mu/eps0/mu0)<<", "<<"max_n "<<sqrt(max_eps_mu/eps0/mu0)<<","<<"n_cladding"<<sqrt(clad_eps_mu/mu0/eps0)<<std::endl;
-   
-   for (unsigned int i=0; i<estimates.size(); i++)
-    {   
-      Complex kz = sqrt(estimates[i]->kz2);
 
-      // Mode to be corrected.
-      //std::cout<<"(section) Correcting mode "<<i+1<<std::endl;
-      //std::cout<<"(section) global.slab.metal_disp "<<global_slab.metal_disp<<std::endl;
-      
-      if(global_slab.metal_disp)
-        {   
-          //std::cout<<" (section) Calculating kt in the max dielectric material"<<std::endl;
-            if (   (user_estimates.size() != 0) 
-                || ( global_section.mode_correction == full)
-                || ((global_section.mode_correction == guided_only)
-                    && (real(kz/2./pi*global.lambda) > 
-                        real(sqrt(max_eps_mu/eps0/mu0)))))
-            {   //std::cout<<"(section) Entered the for loop for kt"<<std::endl; 
-                Complex kt = sqrt(C0*max_eps_mu - estimates[i]->kz2);
+  for (unsigned int i=0; i<estimates.size(); i++)
+  {
+    Complex kz = sqrt(estimates[i]->kz2);
 
-                if (imag(kt) < 0) // 45 degree cut?
-                kt = -kt;
+    // Mode to be corrected.
 
-                if (abs(imag(kt)) < 1e-12)
-                if (real(kt) > 0)
-                kt = -kt;
+    if (    (user_estimates.size() != 0)
+         || ( global_section.mode_correction == full)
+         || (    (global_section.mode_correction == guided_only)
+              && ( real(kz/2./pi*global.lambda) >
+                   real(sqrt(threshold_eps_mu/eps0/mu0)))))
+    {
+      Complex kt = sqrt(C0*kt_eps_mu - estimates[i]->kz2);
 
-                if ((abs(real(kt)) < .001) && (real(kt) < 0))
-                kt -= 2*real(kt);
+      if (imag(kt) < 0) // 45 degree cut?
+        kt = -kt;
 
-                kt_coarse.push_back(kt);
-            } 
-            else // Uncorrected mode.
-            {
-            //std::cout<<"(section) Entered the other thing"<<std::endl;
-            if (imag(kz) > 0)
-            kz = -kz;
+      if (abs(imag(kt)) < 1e-12)
+        if (real(kt) > 0)
+          kt = -kt;
 
-            if (abs(imag(kz)) < abs(real(kz)))
-            if (real(kz) < 0)
-            kz = -kz;
+      if ((abs(real(kt)) < .001) && (real(kt) < 0))
+        kt -= 2*real(kt);
 
-            Section2D_Mode* newmode = new 
-            Section2D_Mode(TE_TM, kz, this,
-                       estimates[i]->Ex, estimates[i]->Ey,
-                       estimates[i]->Hx, estimates[i]->Hy, 
-                       false);
+      kt_coarse.push_back(kt);
+    }
+    else // Uncorrected mode.
+    {
+      if (imag(kz) > 0)
+        kz = -kz;
 
-            newmode->normalise();
+      if (abs(imag(kz)) < abs(real(kz)))
+        if (real(kz) < 0)
+          kz = -kz;
 
-            modeset.push_back(newmode);
-            }
-      }
-      else
-      {     
-          //std::cout<<" (section) Calculating kt in the min dielectric medium"<<std::endl;
-            if (   (user_estimates.size() != 0) 
-                || ( global_section.mode_correction == full)
-                || ((global_section.mode_correction == guided_only)
-                    && (real(kz/2./pi*global.lambda) > 
-                        real(sqrt(clad_eps_mu/eps0/mu0)))))
-            {   //std::cout<<"(section) Emtered the for loop for kt"<<std::endl;
-                Complex kt = sqrt(C0*min_eps_mu - estimates[i]->kz2);
-                
-                if (imag(kt) < 0) // 45 degree cut?
-                kt = -kt;
-
-                if (abs(imag(kt)) < 1e-12)
-                if (real(kt) > 0)
-                kt = -kt;
-
-                if ((abs(real(kt)) < .001) && (real(kt) < 0))
-                kt -= 2*real(kt);
-
-                kt_coarse.push_back(kt);
-            } 
-            else // Uncorrected mode.
-            {
-            //std::cout<<"(section) Entered the other thing"<<std::endl;
-            if (imag(kz) > 0)
-            kz = -kz;
-
-            if (abs(imag(kz)) < abs(real(kz)))
-            if (real(kz) < 0)
-            kz = -kz;
-
-            Section2D_Mode* newmode = new 
-            Section2D_Mode(TE_TM, kz, this,
-                       estimates[i]->Ex, estimates[i]->Ey,
-                       estimates[i]->Hx, estimates[i]->Hy, 
-                       false);
-
-            newmode->normalise();
-
-            modeset.push_back(newmode);
-            }
-      }
+      Section2D_Mode* newmode = new Section2D_Mode(TE_TM, kz, this,
+                                estimates[i]->Ex, estimates[i]->Ey,
+                                estimates[i]->Hx, estimates[i]->Hy, 
+                                false);
+      newmode->normalise();
+      modeset.push_back(newmode);
+    }
   }
-   
-  //std::cout<<"(section) Corrected modes after Fourier solver"<<std::endl;
-  //for(unsigned int i=0; i<kt_coarse.size();i++)
-  //    std::cout<< i << " " << real(kt_coarse[i])
-  //             << " " << imag(kt_coarse[i]) << std::endl;
-
-  //std::cout<<"(section) Corrected modes after Fourier solver n_eff values"<<std::endl;
-  //if(global_slab.metal_disp)
-  //{
-  // 
-  //  for(unsigned int i=0; i<kt_coarse.size();i++)
-  //    std::cout<< i << " " << real(sqrt(C0*max_eps_mu - kt_coarse[i]*kt_coarse[i])/(2*pi/global.lambda))
-  //             << " " << imag(sqrt(C0*max_eps_mu - kt_coarse[i]*kt_coarse[i])/(2*pi/global.lambda)) << std::endl;
-  //}
-  //else
-  //{ 
-  //    
-  //for(unsigned int i=0; i<kt_coarse.size();i++)
-  //    std::cout<< i << " " << real(sqrt(C0*min_eps_mu - kt_coarse[i]*kt_coarse[i])/(2*pi/global.lambda))
-  //             << " " << imag(sqrt(C0*min_eps_mu - kt_coarse[i]*kt_coarse[i])/(2*pi/global.lambda)) << std::endl;
-  //}
-  
   
   user_estimates.clear();
 
@@ -2235,37 +2105,24 @@ void Section2D::find_modes_from_estimates()
       py_print("Refining estimates...");
   }
 
-  
-  Complex max_min_eps_mu;
-  if(global_slab.metal_disp)
-      max_min_eps_mu    = max_eps_mu;
-  else
-      max_min_eps_mu    = min_eps_mu;
-  kt_to_neff transform(C0*max_min_eps_mu);
-  
-  SectionDisp disp(left, right, global.lambda, M2, symmetric,global_slab.metal_disp);//[PDB]
 
+  kt_to_neff transform(C0*kt_eps_mu);
   
+  SectionDisp disp(left, right, global.lambda, M2, symmetric);
 
-  //[PDB] Wanted to check the value of min_eps_mu
-  //std::cout<<"Value of min_eps_mu "<<min_eps_mu<<std::endl;
-
-  //[PDB] Put this back on as I wanted to see the dispersionrelation evolve as I change the number of modes
   //for (Real n_eff=2.2; n_eff<=2.25; n_eff+=0.001)
   //{ 
   //    for (Real n_eff_imag=0.; n_eff_imag<=0.1; n_eff_imag +=0.001)
   //    {
-  //      Complex kt = sqrt(C0*min_eps_mu-pow(2.*pi/global.lambda*(n_eff-n_eff_imag*I),2));
+  //      Complex kt = sqrt(C0*min_eps_mu-pow(2.*pi/global.lambda
+  //                       *(n_eff-n_eff_imag*I),2));
   //      //std::cout << n_eff << " " << real(kt) << " " << imag(kt) 
   //      //      << " " << abs(disp(kt)) << std::endl;
   //      std::cout << n_eff << " " << n_eff_imag << " " 
   //            << " " << abs(disp(kt)) << std::endl;
-  //      
   //  }
   //}
-
-  //[PDB] got rid of exit(-1) statement
-
+  // exit(-1);
 
   vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
 
@@ -2275,7 +2132,7 @@ void Section2D::find_modes_from_estimates()
     for (unsigned int i=1; i<=slabs[k]->N(); i++)
     {
       Complex beta_i = slabs[k]->get_mode(i)->get_kz();
-      Complex kt_i = sqrt(C0*max_min_eps_mu - beta_i*beta_i);
+      Complex kt_i = sqrt(C0*kt_eps_mu - beta_i*beta_i);
 
       remove_elems(&kt,  kt_i, 1e-6);
       remove_elems(&kt, -kt_i, 1e-6);
@@ -2287,7 +2144,7 @@ void Section2D::find_modes_from_estimates()
 
   for (unsigned int i=0; i<kt.size(); i++)
   {
-    Complex kz = sqrt(C0*max_min_eps_mu - kt[i]*kt[i]);
+    Complex kz = sqrt(C0*kt_eps_mu - kt[i]*kt[i]);
     
     if (real(kz) < 0) 
       kz = -kz;
@@ -2507,5 +2364,4 @@ void Section1D::find_modes()
   if (global.gain_mat)
     last_gain_mat_n = global.gain_mat->n();
 }
-
 
