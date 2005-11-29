@@ -1,3 +1,7 @@
+2005-11-29  Peter Debackere <Peter.Debackere@UGent.be>
+
+	* surface_plasmon.py: New test.
+
 2005-06-13  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* polariton2.py: Update.
