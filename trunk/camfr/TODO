@@ -1,3 +1,5 @@
+-experiment with precompiled headers
+
 -add rcled.py and materials.py to the distribution.
 
 -kt^2 instead of kt as independent variable in SectionDisp?
@@ -45,6 +47,9 @@
 -mode_calc from core only for guided modes
 
 -try RCWA like overlap scheme. Could be more stable.
+
+-definition of cladding index in 3D doesn't work well for graded index
+ structures.
 
 CAMFR 3D:
 
