@@ -157,7 +157,6 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
                 Real eps, const vector<Complex>* prev_zeros,
                 int maxiter, bool *errorptr, bool verbose)
 {
-
     
   Complex z3 =   a;  Complex z2 =   b;  Complex z1 = c;
   Complex f3 = f(a); Complex f2 = f(b);
@@ -196,7 +195,6 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
       converged = false;
       break;
     }
-
 
     // Avoid division by zero in case convergence has happened.
 
@@ -245,8 +243,7 @@ Complex mueller(ComplexFunction& f, const Complex& a, const Complex& b,
     {
       cout << "The relative accuracy " << eps << " has been reached." << endl;
       cout << "Number of iteration steps : " << n << endl;
-      cout << "z1 = " << z1 << endl;
-      cout << "Value of f(z1)"<<" "<<f(z1)<<endl;
+      cout << "z1 = " << z1 << " f(z1) = " << " " << f(z1) << endl;
     }
     else
     {
@@ -392,12 +389,11 @@ std::vector<Complex> mueller_multiple
 
 std::vector<Complex> mueller
   (ComplexFunction& f,const std::vector<Complex>& z0,Real eps,int maxiter,
-   ComplexFunction* transform, int verbosity, bool adaptive_spatial_resolution)
+   ComplexFunction* transform, int verbosity)
 {
   // Calculate roots.
 
   vector<Complex> z1;
-  
 
   for (unsigned int i=0; i<z0.size(); i++)
   { 
@@ -419,7 +415,6 @@ std::vector<Complex> mueller
     }
     else
       z1.push_back(new_root);
-
     
     if (verbosity > 0)
     {
@@ -467,8 +462,6 @@ std::vector<Complex> mueller
       duplicates.push_back(duplicates_i);
     }
   }
-
-
     
   // Deflate doubles.
 
