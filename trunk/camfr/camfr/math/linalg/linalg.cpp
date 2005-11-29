@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include "linalg.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1373,6 +1374,8 @@ void write_to_textfile(const std::string& filename, const cMatrix& A)
   py_print(s.str()); 
 
   std::ofstream f(filename.c_str());
+
+  f << std::setprecision(12);
 
   for (int i=1; i<=A.rows(); i++)
   {

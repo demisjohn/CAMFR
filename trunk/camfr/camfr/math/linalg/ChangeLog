@@ -1,3 +1,7 @@
+2005-11-29  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * linalg.cpp: Add more precision to write_to_textfile.
+
 2004-08-18  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
         * linalg.h: Add write_to_textfile.
