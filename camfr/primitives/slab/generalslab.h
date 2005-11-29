@@ -13,14 +13,9 @@
 #ifndef GENERALSLAB_H
 #define GENERALSLAB_H
 
-//#include "isoslab/slabdisp.h" // [PDB]
-
 #include "../../waveguide.h"
 #include "../../expression.h"
 #include "../../math/calculus/function.h"
-#include "../../math/calculus/calculus.h"
-
-class SlabDisp;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -38,9 +33,8 @@ struct SlabGlobal
     SlabWall* lowerwall; // NULL: electric wall.
     SlabWall* upperwall;
     Real      eta_ASR;
-    Real      cutoff;
-    Real      cutoff_track;
-    bool      metal_disp;
+    Real      estimate_cutoff;
+    bool      low_index_core;
 };
 
 extern SlabGlobal global_slab;
@@ -104,13 +98,13 @@ class SlabImpl : public MultiWaveguide
     bool is_dummy() const {return dummy;}
 
     void add_kz2_estimate(const Complex& kz2)
-      {user_kz2_estimates.push_back(kz2);}  
+      {user_kz2_estimates.push_back(kz2);}
 
-  //SlabDisp* get_disp() const {return disp_f;} // [PDB]
+    //SlabDisp* get_disp() const {return disp_f;}
 
   protected:
-   //[PDB] For plotting the 1d dispersion relation
-   //SlabDisp* disp_f; 
+
+    //SlabDisp* disp_f; 
 
     bool dummy;
 
@@ -218,10 +212,8 @@ class Slab : public MultiWaveguide
     bool is_dummy() const {return s->is_dummy();}
 
     void add_kz2_estimate(const Complex& kz2) {s->add_kz2_estimate(kz2);}
- 
-    // Usefull for plotting the dispersion relation for slab structures
-    //SlabDisp* get_disp() const 
-    //  {return (s->get_disp());} // [PDB]
+
+    //SlabDisp* get_disp() const {return (s->get_disp());}
 
   protected:
 
