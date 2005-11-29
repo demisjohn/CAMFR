@@ -497,12 +497,12 @@ class Geometry:
                 e_slab.add(chunk_m(chunk_d))
                 
             s = Slab(e_slab)
-			# Added this to see how this discretisation algorithm works
+
             #print e_slab
             #s.calc()
             #pretty_print(s)
             #plot(s)
-            print "------------"
+            #print "------------"
    
             slab_cache.append(s)
             e.add(s(d[i]))
