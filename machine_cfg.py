@@ -35,15 +35,15 @@ include_dirs = ["/usr/include/python2.4"]
 
 # Library directories.
 
-library_dirs = []
+library_dirs = ["/opt/intel/mkl8/lib/32"]
 #library_dirs = ["/opt/intel/mkl/lib/32"]
 #library_dirs = ["/opt/intel/mkl721/lib/32"]
 
 # Library names.
 
-libs = ["boost_python-gcc", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
-#libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "g2c"]
-#libs = ["boost_python-gcc", "blitz", "lapack", "f77blas", "cblas", "atlas", "g2c"]
+#libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
+libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "g2c"]
+#libs = ["boost_python", "blitz", "lapack", "f77blas", "cblas", "atlas", "g2c"]
 
 # Command to strip library of excess symbols:
 
