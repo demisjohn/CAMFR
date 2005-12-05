@@ -1394,6 +1394,9 @@ void Slab_M::build_modeset(vector<Complex>& kt)
     // Is this layer a core?
     
     bool is_core = false;
+
+    if (materials.size() == 1)
+      is_core = true;
     
     if (i == 0)
     {
@@ -1496,14 +1499,14 @@ void Slab_M::build_modeset(vector<Complex>& kt)
     //std::cout << "bestcores_i";
     //for (int k=0; k<best_cores_i.size(); k++)
     //  std::cout << " " << best_cores_i[k];
-    //std::cout << std::endl;
+    //std::cout << std::endl << std::flush;
 
     best_cores.push_back(best_cores_i);
   }
 
   // Create new modeset.
 
-  bool calc_fw = true; // To be removed.
+  bool calc_fw = true; // To be removed, no longer used.
   int offset = 0;
 
   for (unsigned int i=0; i<kt.size(); i++)
