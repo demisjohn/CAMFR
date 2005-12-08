@@ -280,10 +280,7 @@ void Slab_M::find_modes()
   {
     vector<Complex> old_kt;
     for (unsigned int i=0; i<modeset.size(); i++)
-    {
-      std::cout << i << dynamic_cast<Slab_M_Mode*>(modeset[i]) << std::flush;
       old_kt.push_back(dynamic_cast<Slab_M_Mode*>(modeset[i])->get_kt());
-    }
 
     vector<Complex> kt(find_kt(old_kt));
     build_modeset(kt);  
