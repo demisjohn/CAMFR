@@ -67,7 +67,7 @@ class surface_plasmon(unittest.TestCase):
 	set_polarisation(TE)
 	set_solver(track)
     	set_mode_surplus(1.5)
-        set_low_index_core(True)
+        set_low_index_core(False)
 
         self.failUnless(n_eff_pass)
 
