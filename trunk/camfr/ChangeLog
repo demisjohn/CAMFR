@@ -18,9 +18,9 @@ CAMFR 1.3:
  - get_kt() and set_kt() for Planars now works again (Peter Vandersteegen).
  - Fix field plot bug for Planars.
  - The wavelength can now be complex (Thanks to KC Huang for requesting this)
- - If you're working with circular structures in the regime of backward and
-   complex modes (e.g. when the metal wall is close to the last interface),
-   you can use set_backward_modes(1) for extra stability.
+ - If you're working with circular or slab structures in the regime of 
+   backward and complex modes (e.g. when the metal wall is close to the last 
+   interface), you can use set_backward_modes(1) for extra stability.
  - The 'filename' argument in the plotting functions is now a named argument 
    rather than a positional one, i.e. it has to be specified by 
    filename="string", rather than just by "string" on the correct position.
