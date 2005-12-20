@@ -32,6 +32,8 @@ class SlabMode : public Mode
     SlabMode(Polarisation pol, const Complex& kz0, const SlabImpl* geom_)
       : Mode(pol, kz0, -kz0), geom(geom_) {}
 
+    Real S_flux(Real precision) const;
+
     Complex get_kz0() const {return kz;}
     Complex get_kz () const;
 

@@ -1580,6 +1580,20 @@ void Slab_M::build_modeset(vector<Complex>& kt)
     //std::cout<<"upper_stacks[core]"<<" "<<core<<std::endl;
     
     newmode->normalise();
+
+    if ((global.backward_modes == true) && (real(kz) > imag(kz)))
+    {
+      Real flux = newmode->S_flux(1e-2);
+      if (flux < -1e-6)
+      {
+        std::cout << "Backward mode detected: kz " << kz;
+        std::cout << ", flux " << flux << std::endl;
+        delete newmode;
+        newmode = new Slab_M_Mode(pol, -kz, kt[i], this,
+                                  lower_stacks[core], upper_stacks[core]);
+        newmode->normalise();
+      }
+    }
     
     modeset.push_back(newmode);
   }

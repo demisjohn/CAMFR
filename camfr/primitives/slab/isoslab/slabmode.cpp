@@ -11,12 +11,65 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <sstream>
+#include "../../../math/calculus/quadrature/patterson_quad.h"
 #include "../../planar/planar.h"
 #include "slaboverlap.h"
 #include "slabwall.h"
 #include "slabmode.h"
 
 using std::vector;
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabModeFlux
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class SlabModeFlux : public RealFunction
+{
+  public:
+
+    SlabModeFlux(const SlabMode* m_) : m(m_) {}
+
+    Real operator()(const Real& x)
+    {
+      counter++;
+      Field f = m->field(Coord(x + I*global_slab.lower_PML,0,0));
+      return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
+    }
+
+  protected:
+
+    const SlabMode* m;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SlabMode::S_flux()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Real SlabMode::S_flux(Real precision) const
+{  
+  SlabModeFlux flux(this);
+
+  vector<Complex> slab_disc = geom->get_discontinuities();
+
+  Real result = 0;
+  for (unsigned int k=0; k<slab_disc.size()-1; k++)
+  {
+    Complex x0 = slab_disc[k];
+    Complex x1 = slab_disc[k+1];
+    result += patterson_quad(flux, real(x0), real(x1), precision);
+  }
+  return result;
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
