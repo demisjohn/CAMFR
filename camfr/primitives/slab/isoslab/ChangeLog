@@ -1,3 +1,7 @@
+2006-01-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slaboverlap.cpp: Get rid of same().
+
 2005-11-29 Peter Debackere  <Peter.Debackere@UGent.be>
 
         * slab.cpp: Add option to calculate dispersion relation using kt

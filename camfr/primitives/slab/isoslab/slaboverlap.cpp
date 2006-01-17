@@ -184,8 +184,8 @@ Complex overlap(const SlabMode* mode_I,
     {
       // + f(upper_Min) - f(lower_Plus)
 
-      if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
-               fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
+      //if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
+      //         fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
         term1 += C * d * ( fw_I_l * fw_II_l + bw_I_l * bw_II_l );
     }
     
@@ -206,8 +206,8 @@ Complex overlap(const SlabMode* mode_I,
     else // normalisation integral (same modes) or degenerate case
     {
       // + f(upper_Min) - f(lower_Plus)
-      if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
-               fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
+      //if (same(fw_I_l, fw_II_l, bw_I_l, bw_II_l,
+      //         fw_I_u, fw_II_u, bw_I_u, bw_II_u) || mirrored)
         term2 += C * d * ( fw_I_l * bw_II_l + bw_I_l * fw_II_l );
     }
         
