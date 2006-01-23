@@ -626,8 +626,8 @@ This imaginary cladding thicknesses implement the so-called perfectly matched
 layer (PML) boundary conditions. PML can absorb radiation travelling toward 
 the walls, without introducing any additional parasitic reflections, 
 regardless of wavelength, incidence angle or polarisation of the incident
-light. The larger the imaginary component of the thickness, the stronger the 
-absorption.
+light. The larger the imaginary component (in absolute value) of the 
+thickness, the stronger the absorption.
 
 The presence of advanced boundary conditions like PML is a very powerful
 feature of CAMFR. Without it, the PEC walls would reflect all the
