@@ -1,3 +1,5 @@
+-speed up slabs with small delta n
+
 -experiment with precompiled headers
 
 -add rcled.py and materials.py to the distribution.
