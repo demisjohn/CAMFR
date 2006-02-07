@@ -14,7 +14,7 @@ import blazed_grating, substacks, planarTE, planarTM, VCSEL, SpE, \
        TEM_field, grating2, polariton, gaussian, wg, dent, stack0, stack1, \
        stack2, degenerate2, grating3, sudbo, polariton2, degenerate3, \
        degenerate4, backward, planar_VCSEL, shift, blochstack, w1reson, \
-       surface_plasmon, plasmon_biosensor
+       surface_plasmon, plasmon_biosensor, backward2
 
 alltests = unittest.TestSuite((blazed_grating.suite, substacks.suite, 
        planarTE.suite, planarTM.suite, VCSEL.suite, SpE.suite, fw_bw.suite,
@@ -24,9 +24,9 @@ alltests = unittest.TestSuite((blazed_grating.suite, substacks.suite,
        TEM_field.suite, grating2.suite, polariton.suite, gaussian.suite,
        dent.suite, stack1.suite, field.suite, slab2.suite, stack2.suite,
        degenerate2.suite, grating3.suite, sudbo.suite, polariton2.suite,
-       degenerate3.suite, degenerate4.suite, shift.suite, # backward.suite
+       degenerate3.suite, degenerate4.suite, shift.suite, backward.suite,
        planar_VCSEL.suite, blochstack.suite, w1reson.suite, \
-       surface_plasmon.suite, plasmon_biosensor.suite ))
+       surface_plasmon.suite, plasmon_biosensor.suite, backward2.suite ))
 
 if __name__ == "__main__":
     r = unittest.TextTestRunner()
