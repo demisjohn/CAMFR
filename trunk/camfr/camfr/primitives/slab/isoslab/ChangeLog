@@ -1,3 +1,7 @@
+2006-02-07 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slab.cpp: Improve detection of backward modes.
+
 2006-01-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
         * slaboverlap.cpp: Get rid of same().

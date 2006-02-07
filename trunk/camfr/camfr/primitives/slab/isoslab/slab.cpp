@@ -1581,7 +1581,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
     
     newmode->normalise();
 
-    if ((global.backward_modes == true) && (real(kz) > imag(kz)))
+    if (global.backward_modes == true)
     {
       Real flux = newmode->S_flux(1e-2);
       if (flux < -1e-6)

@@ -1,3 +1,7 @@
+2006-02-07  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* circ.cpp: Improve detection of backward modes.
+
 2005-08-19  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* circ.cpp: Don't copy gain material.
