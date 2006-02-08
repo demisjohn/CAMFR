@@ -1,3 +1,7 @@
+2006-02-08  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* backward3.py: New test.
+
 2006-02-07  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* backward2.py: New test.

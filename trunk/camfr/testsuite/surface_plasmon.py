@@ -14,10 +14,10 @@ import unittest, eps
 class surface_plasmon(unittest.TestCase):
     def test_surface_plasmon(self):
 
-        """Surface Plasmon"""
+        """Surface plasmon"""
 
         print
-        print "Running Surface Plasmon..."
+        print "Running surface plasmon..."
 
         # Initialisation calculation parameters.
         

@@ -1,3 +1,7 @@
+2006-02-08 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+        * slab.cpp: Improve detection of bad estimates.
+
 2006-02-07 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
         * slab.cpp: Improve detection of backward modes.
