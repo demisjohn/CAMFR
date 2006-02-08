@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-# Surface Plasmon Biosensor
+# Surface plasmon biosensor
 #
 #############################################################################
 
@@ -14,19 +14,18 @@ import unittest, eps
 class plasmon_biosensor(unittest.TestCase):
     def test_plasmon_biosensor(self):
 
-        """Plasmon Biosensor"""
+        """Plasmon biosensor"""
 
-       
-        print "Running plasmon Biosensor..."
+        print
+        print "Running plasmon biosensor..."
 
         # Initialisation calculation parameters.
         
         set_lambda(1.550)
 	set_polarisation(TM)
 	set_N(20)
-	set_keep_all_1D_estimates(False)
 	set_solver(stretched_ASR)	
-	set_mode_surplus(20)
+	set_mode_surplus(5)
 	set_low_index_core(True)
         
         # Secondary calculation parameters.	
@@ -38,48 +37,42 @@ class plasmon_biosensor(unittest.TestCase):
 
 	set_orthogonal(False) 
     
-	# Thicknesses and Lengths
+	# Thicknesses and lengths.
         
     	d_wav  = 0.220
 	d_gold = 0.060
 	length = 10.0
 
-	# Initializing and Calculating the Slab.
+	# Initializing and the slabs.
         
     	buffer  = Material(1.33)
 	protein = Material(1.923)
 	Si      = Material(3.47640956822)
 	SiO2	= Material(1.44402)
 	Au      = Material(0.55653715538 - 9.93556321412*1j)
-
-	# Definition of the Slab.
 	
 	sensorslab = Slab(SiO2(5.0)+Si(d_wav)+Au(d_gold)+protein(5.00-d_gold))
 	inoutslab =  Slab(SiO2(5.0)+Si(d_wav)+buffer(5.0))	
   			
-    	# Definition of the Stack.
+    	# Definition of the stack.
         
         stack = Stack(inoutslab(0)+sensorslab(length)+inoutslab(0))
-		
-	# Incident Field
-	inc 	= zeros(N())
-	inc[0]	=  1	
-	stack.set_inc_field(inc)
-		
-	stack.calc()		
-		
-        T_OK   = -25.5819930951
-        T_test = 10*log10(abs(stack.T12(0,0))**2)
+	stack.calc()
         
-        print T_test , "expected", T_OK
-        T_pass = abs((T_test-T_OK)/T_OK) < eps.testing_eps
-
-        free_tmps()
+        T    = 10*log10(abs(stack.T12(0,0))**2)	
+        T_OK = -25.5819930951
+        print T, "expected", T_OK
+        T_pass = abs((T-T_OK)/T_OK) < eps.testing_eps
         
 	set_polarisation(TE)
 	set_solver(track)
     	set_mode_surplus(1.5)
-        set_low_index_core(True)
+        set_low_index_core(False)
+        set_upper_wall(slab_E_wall)
+	set_lower_wall(slab_E_wall)
+        set_upper_PML(0)
+	set_lower_PML(0)
+        set_orthogonal(True)
 
         self.failUnless(T_pass)
 

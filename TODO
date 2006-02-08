@@ -1,3 +1,5 @@
+-get rid of backward modes detection and use always lossy branchcut?
+
 -speed up slabs with small delta n
 
 -experiment with precompiled headers

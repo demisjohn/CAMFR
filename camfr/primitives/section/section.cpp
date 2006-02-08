@@ -2005,7 +2005,7 @@ void Section2D::find_modes_from_estimates()
     if (abs(real(max_eps_eff)) < abs(real(max_eps_mu)))
       max_eps_eff = max_eps_mu;
 
-    Real max_kz = real(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
+    Real max_kz = abs(2*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0));
     vector<ModeEstimate*> estimates_0;   
 
     if (global_section.section_solver == OS)

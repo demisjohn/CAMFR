@@ -1249,7 +1249,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
        && (real(max_eps_mu)*real(min_eps_mu) < 0.0) )
     max_eps_eff = 1.0/(1.0/max_eps_mu + 1.0/min_eps_mu);
 
-  Real max_kz = real(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0)) 
+  Real max_kz = abs(2.0*pi/global.lambda*sqrt(max_eps_eff/eps0/mu0)) 
                 * global_slab.estimate_cutoff; // Safety factor.
   
  // Refine estimates.
