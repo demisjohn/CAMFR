@@ -353,7 +353,7 @@ Complex SectionDisp::calc_split()
       } 
     }
 
-    // Don't count eigevalues twice.
+    // Don't count eigenvalues twice.
 
     if (std::find(min_indices.begin(),min_indices.end(),min_index) 
          == min_indices.end())

@@ -42,7 +42,7 @@ class SlabFlux : public RealFunction
     SlabFlux(const FieldExpansion& fe_) : fe(fe_) {}
 
     Real operator()(const Real& x)
-    {
+    { 
       counter++;
       Field f=fe.field(Coord(x+I*global_slab.lower_PML,0,0));
       return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
