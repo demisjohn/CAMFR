@@ -746,6 +746,16 @@ struct kt_to_neff : ComplexFunction
     {return sqrt(C - kt*kt)/2./pi*global.lambda;}
 };
 
+struct kt2_to_neff : ComplexFunction
+{
+  Complex C;
+
+  kt2_to_neff(const Complex& C_) : C(C_) {}
+
+  Complex operator()(const Complex& kt2)
+    {return sqrt(C - kt2)/2./pi*global.lambda;}
+};
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2042,7 +2052,7 @@ void Section2D::find_modes_from_estimates()
   Complex threshold_eps_mu = metallic ? max_eps_mu : clad_eps_mu;
   Complex        kt_eps_mu = metallic ? max_eps_mu :  min_eps_mu;
 
-  vector<Complex> kt_coarse;
+  vector<Complex> kt2_coarse;
 
   for (unsigned int i=0; i<estimates.size(); i++)
   {
@@ -2056,19 +2066,8 @@ void Section2D::find_modes_from_estimates()
               && ( real(kz/2./pi*global.lambda) >
                    real(sqrt(threshold_eps_mu/eps0/mu0)))))
     {
-      Complex kt = sqrt(C0*kt_eps_mu - estimates[i]->kz2);
-
-      if (imag(kt) < 0) // 45 degree cut?
-        kt = -kt;
-
-      if (abs(imag(kt)) < 1e-12)
-        if (real(kt) > 0)
-          kt = -kt;
-
-      if ((abs(real(kt)) < .001) && (real(kt) < 0))
-        kt -= 2*real(kt);
-
-      kt_coarse.push_back(kt);
+      Complex kt2 = C0*kt_eps_mu - estimates[i]->kz2;
+      kt2_coarse.push_back(kt2);
     }
     else // Uncorrected mode.
     {
@@ -2092,7 +2091,7 @@ void Section2D::find_modes_from_estimates()
 
   // Refine modes using transcendental function.
 
-  if (kt_coarse.size())
+  if (kt2_coarse.size())
   {
     if (global_section.mode_correction == guided_only)
     {
@@ -2105,8 +2104,7 @@ void Section2D::find_modes_from_estimates()
       py_print("Refining estimates...");
   }
 
-
-  kt_to_neff transform(C0*kt_eps_mu);
+  kt2_to_neff transform(C0*kt_eps_mu);
   
   SectionDisp disp(left, right, global.lambda, M2, symmetric);
 
@@ -2124,7 +2122,7 @@ void Section2D::find_modes_from_estimates()
   //}
   // exit(-1);
 
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-8, 100, &transform, 2);
+  vector<Complex> kt2 = mueller(disp, kt2_coarse, 1e-8, 100, &transform, 2);
 
   // Eliminate false zeros.
 
@@ -2132,19 +2130,19 @@ void Section2D::find_modes_from_estimates()
     for (unsigned int i=1; i<=slabs[k]->N(); i++)
     {
       Complex beta_i = slabs[k]->get_mode(i)->get_kz();
-      Complex kt_i = sqrt(C0*kt_eps_mu - beta_i*beta_i);
+      Complex kt2_i = C0*kt_eps_mu - beta_i*beta_i;
 
-      remove_elems(&kt,  kt_i, 1e-6);
-      remove_elems(&kt, -kt_i, 1e-6);
+      remove_elems(&kt2,  kt2_i, 1e-6);
+      remove_elems(&kt2, -kt2_i, 1e-6);
     }
 
   // Add corrected modes to modeset.
 
   py_print("Creating mode profiles...");
 
-  for (unsigned int i=0; i<kt.size(); i++)
+  for (unsigned int i=0; i<kt2.size(); i++)
   {
-    Complex kz = sqrt(C0*kt_eps_mu - kt[i]*kt[i]);
+    Complex kz = sqrt(C0*kt_eps_mu - kt2[i]);
     
     if (real(kz) < 0) 
       kz = -kz;

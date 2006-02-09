@@ -137,7 +137,7 @@ SectionDisp::SectionDisp(Stack& _left, Stack& _right, const Complex& _lambda,
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Complex SectionDisp::operator()(const Complex& kt)
+Complex SectionDisp::operator()(const Complex& kt2)
 {
     counter++;
 
@@ -150,7 +150,7 @@ Complex SectionDisp::operator()(const Complex& kt)
     Complex old_beta = global.slab_ky;
 
     const Complex C = pow(2*pi/lambda, 2) / (eps0 * mu0);
-    Complex beta = sqrt(C*kt_eps_mu - kt*kt);
+    Complex beta = sqrt(C*kt_eps_mu - kt2);
 
     if (real(beta) < 0)
         beta = -beta;
