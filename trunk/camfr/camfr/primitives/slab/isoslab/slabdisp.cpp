@@ -81,7 +81,7 @@ SlabDisp::SlabDisp(const vector<Material*>& materials,
   }  
 
   // Find min and max eps mu. Note: this should be consistent with what
-  // is happing in slab.cpp
+  // is happening in slab.cpp
 
   Complex min_eps_mu = eps[0]*mu[0];
   Complex max_eps_mu = eps[0]*mu[0];
