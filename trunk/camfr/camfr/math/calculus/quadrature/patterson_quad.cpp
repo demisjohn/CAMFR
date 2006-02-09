@@ -33,6 +33,9 @@ Real patterson_quad_sub(RealFunction& f, Real a, Real b, Real eps,
   Real abs_error;
   Real result = patterson(f, a, b, eps, &error, max_k, &abs_error);
 
+  if ( (abs(result_estimate) < 1e-13) && (abs(result) < 1e-13) )
+    return result;
+
   if ( (error == false) || (abs(abs_error) <= abs(result_estimate * eps)) )
     return result;
   

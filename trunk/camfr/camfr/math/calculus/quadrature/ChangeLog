@@ -1,3 +1,8 @@
+2006-02-09  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* patterson_quad.cpp: Improve underflow detection.
+
 2003-05-19  Peter Bienstman  <Peter.Bienstman@rug.ac.be>
 
 	* patterson_quad.cpp: Don't subdivide beyond machine precision.
+
