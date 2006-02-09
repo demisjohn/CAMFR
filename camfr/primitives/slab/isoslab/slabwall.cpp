@@ -19,9 +19,9 @@
 //  
 /////////////////////////////////////////////////////////////////////////////
 
-const SlabWallMixed slab_E_wall   (1.0,  1.0);
-const SlabWallMixed slab_H_wall   (1.0, -1.0);
-const SlabWallMixed slab_open_wall(0.0,  1.0);
+const SlabWallMixed slab_E_wall (1.0,  1.0);
+const SlabWallMixed slab_H_wall (1.0, -1.0);
+const SlabWallMixed slab_no_wall(0.0,  1.0);
 
 
 

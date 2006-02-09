@@ -73,7 +73,7 @@ class SlabWallMixed : public SlabWall
 
 extern const SlabWallMixed slab_E_wall;
 extern const SlabWallMixed slab_H_wall;
-extern const SlabWallMixed slab_open_wall;
+extern const SlabWallMixed slab_no_wall;
 
 
 
