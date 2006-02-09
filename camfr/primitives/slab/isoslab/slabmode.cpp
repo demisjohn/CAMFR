@@ -89,13 +89,40 @@ Complex SlabMode::get_kz() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// SlabMode::get_sin()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SlabMode::get_sin() const
+{
+  Complex sn = global.slab_ky / kz;  
+
+  if (abs(kz) < 1e-5)
+  {
+    py_print("Warning: rotating zero kz mode.");
+    sn = 0.0;
+  }
+
+  return sn;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // SlabMode::get_cos()
 //
 /////////////////////////////////////////////////////////////////////////////
 
 Complex SlabMode::get_cos() const
 {
-  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2));
+  Complex cs = sqrt(1.0 - pow(global.slab_ky / kz, 2));  
+
+  if (abs(kz) < 1e-5)
+  {
+    py_print("Warning: rotating zero kz mode.");
+    cs = 1.0;
+  }
 
 /*
     // cs only
