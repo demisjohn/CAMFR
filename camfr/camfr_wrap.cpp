@@ -1237,9 +1237,9 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<SlabWallMixed, bases<SlabWall> >
     ("SlabWallMixed", init<const Complex&, const Complex&>());
 
-  scope().attr("slab_E_wall")    = SlabWallMixed(1.0,  1.0);
-  scope().attr("slab_H_wall")    = SlabWallMixed(1.0, -1.0);
-  scope().attr("slab_open_wall") = SlabWallMixed(0.0,  1.0);
+  scope().attr("slab_E_wall")  = SlabWallMixed(1.0,  1.0);
+  scope().attr("slab_H_wall")  = SlabWallMixed(1.0, -1.0);
+  scope().attr("slab_no_wall") = SlabWallMixed(0.0,  1.0);
 
   // Wrap SlabWall_TBC.
 
