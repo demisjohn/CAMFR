@@ -156,6 +156,9 @@ Complex SlabMode::get_cos() const
 /*
     // Forward flux.
 
+    // Note: these flux formulas seem to be valid only for plane waves,
+    // and seems to have an error for TM (conj too much).
+
     const Complex C = (pol == TE) ? geom->get_core()->mu() 
                                   : geom->get_core()->eps();
 
@@ -174,20 +177,24 @@ Complex SlabMode::get_cos() const
 */
   // Lossy only.
 
-
+/*
   if (imag(cs*kz) > 0)
     cs = -cs;
 
   if (abs(imag(cs*kz)) < 1e-12)
-    if (real(cs*kz) < 0)
+    if (real(cs*kz) < 0)    
+    {
+      std::cout << "Branchcut sliver" << std::endl;
       cs = -cs;
+    }
 
   if (geom->is_dummy())
     cs = -cs;
 
   return cs;
+*/
 
-  // 45 deg cut.
+  // 45 deg cut. Note: this one seems to give the most robust results.
 
   if (imag(cs*kz) > 0)
     cs = -cs;
@@ -195,6 +202,8 @@ Complex SlabMode::get_cos() const
   if (abs(imag(cs*kz)) < abs(real(cs*kz)))
     if (real(cs*kz) < 0)
       cs = -cs;
+
+  return cs;
 }
 
 
