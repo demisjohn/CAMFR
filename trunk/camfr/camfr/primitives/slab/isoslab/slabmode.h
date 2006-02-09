@@ -37,7 +37,7 @@ class SlabMode : public Mode
     Complex get_kz0() const {return kz;}
     Complex get_kz () const;
 
-    Complex get_sin() const {return global.slab_ky / kz;}
+    Complex get_sin() const;
     Complex get_cos() const;
 
     virtual void normalise() = 0;
