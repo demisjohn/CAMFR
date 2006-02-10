@@ -322,6 +322,70 @@ void SlabImpl::calc_overlap_matrices
                            - m->Ez_Hx_self(2,i,j) * sin_II(n+i))
                              / sqrt(cos_II(n+i)) / sqrt(cos_II(j));
     }
+
+  return;
+
+  // Numerically check overlap integrals.
+
+  for (int i=1; i<=2*n; i++)
+    for (int j=1; j<=2*n; j++)
+    {
+      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_I ->get_mode(i));
+      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_II->get_mode(j));
+ 
+      Complex numeric = overlap_off_axis_numeric(mode_I, mode_II);
+      Complex analytic = (*O_I_II)(i,j);
+
+      if (abs(analytic - numeric) > 1e-9)
+        std::cout << "12 " << i << " " << j << ":" << analytic 
+                  << " " << numeric << " " << abs(analytic-numeric) 
+                  << std::endl;
+    }
+
+  for (int i=1; i<=2*n; i++)
+    for (int j=1; j<=2*n; j++)
+    {
+      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_II->get_mode(i));
+      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_I ->get_mode(j));
+ 
+      Complex numeric = overlap_off_axis_numeric(mode_I, mode_II);
+      Complex analytic = (*O_II_I)(i,j);
+
+      if (abs(analytic - numeric) > 1e-9)
+        std::cout << "21 " << i << " " << j << ":" << analytic 
+                  << " " << numeric << " " << abs(analytic-numeric) 
+                  << std::endl;
+    }   
+
+  for (int i=1; i<=2*n; i++)
+    for (int j=1; j<=2*n; j++)
+    {
+      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_I->get_mode(i));
+      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_I->get_mode(j));
+ 
+      Complex numeric = overlap_off_axis_numeric(mode_I, mode_II);
+      Complex analytic = (*O_I_I)(i,j);
+
+      if (abs(analytic - numeric) > 1e-9)
+        std::cout << "11 " << i << " " << j << ":" << analytic 
+                  << " " << numeric << " " << abs(analytic-numeric) 
+                  << std::endl;
+    }
+
+  for (int i=1; i<=2*n; i++)
+    for (int j=1; j<=2*n; j++)
+    {
+      SlabMode* mode_I  = dynamic_cast<SlabMode*>(medium_II->get_mode(i));
+      SlabMode* mode_II = dynamic_cast<SlabMode*>(medium_II->get_mode(j));
+ 
+      Complex numeric = overlap_off_axis_numeric(mode_I, mode_II);
+      Complex analytic = (*O_II_II)(i,j);
+
+      if (abs(analytic - numeric) > 1e-9)
+        std::cout << "22" << " " << i << " " << j << ":" << analytic 
+                  << " " << numeric << " " << abs(analytic-numeric) 
+                  << std::endl;
+    } 
 }
 
 
