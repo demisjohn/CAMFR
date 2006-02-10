@@ -41,6 +41,7 @@ class SectionDisp : public ComplexFunction
 
     Complex calc_split();
     Complex calc_global();
+    Complex calc_T();
 
     Stack* left;
     Stack* right;
