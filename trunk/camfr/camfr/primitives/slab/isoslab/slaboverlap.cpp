@@ -479,6 +479,92 @@ Complex overlap_numeric_(const SlabMode* mode_I,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Overlap between off axis modes.
+//
+//  Numeric integration, only used for verification purposes. 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class Overlap_off_axis : public ComplexFunction
+{
+  public:
+
+    Overlap_off_axis(const SlabMode* m1_,const SlabMode* m2_)
+      : m1(m1_), m2(m2_) {}
+
+    Complex operator()(const Complex& x)
+    {
+      counter++;
+
+      Field f1 = m1->field(Coord(x,0,0));
+      Field f2 = m2->field(Coord(x,0,0));      
+
+      return f1.E1*f2.H2 - f1.E2*f2.H1;
+    }
+
+  protected:
+
+    const SlabMode* m1;
+    const SlabMode* m2;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// overlap_off_axis_numeric
+//
+//   Verification function which calculates the overlap integrals 
+//   numerically. Slower and less acurate.
+//   To be removed after the analytical overlap calculation matures.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex overlap_off_axis_numeric(const SlabMode* mode_I,
+                                 const SlabMode* mode_II)
+{
+  // Make list of discontinuities.
+
+  const SlabImpl* medium_I  = mode_I ->get_geom();
+  const SlabImpl* medium_II = mode_II->get_geom();
+
+  vector<Complex> disc = medium_I->disc_intersect(medium_II);
+
+  // Do calculation.
+
+  Complex numeric = 0.0;
+
+  for (unsigned int k=0; k<disc.size()-1; k++)
+  {
+    Complex x0 = disc[k];
+    Complex x1 = disc[k+1];
+
+    Overlap_off_axis f(mode_I, mode_II);
+
+    Wrap_real_to_real f_r(f);
+    Wrap_real_to_imag f_i(f);
+
+    // Correction factor for PML. Note: this assumes a linear stretching
+    // profile implemented in slabmode::field().
+
+    Complex C = 1.0;
+
+    if (k == 0)
+      C = 1.0 + I*global_slab.lower_PML / (real(x1)-real(x0));
+    if (k == disc.size() - 2)
+      C = 1.0 + I*global_slab.upper_PML / (real(x1)-real(x0));
+
+    numeric += patterson_quad(f_r, real(x0), real(x1), 1e-6, 4) * C
+           + I*patterson_quad(f_i, real(x0), real(x1), 1e-6, 4) * C;
+  }
+  
+  return numeric;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // overlap_reference_modes
 //
 /////////////////////////////////////////////////////////////////////////////
