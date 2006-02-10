@@ -106,6 +106,16 @@ void overlap_pw(const SlabMode* mode, const Complex& k, bool E,
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Numerically calculates the overlap between two off-axis modes.
+//
+//////////////////////////////////////////////////////////////////////////////
+
+Complex overlap_off_axis_numeric(const SlabMode* mode_I,
+                                 const SlabMode* mode_II);
+
+
 #endif
 
 
