@@ -205,6 +205,11 @@ Complex SectionDisp::calc_global()
   const int K = slabs.size();
   int kl, ku; kl = ku = 3*M-1; // lower and upper diagonals.
   bool band_storage = (K > 3 - .5/M); // only quicker if 6M-1 < 2MK
+
+  // Since the new version uses eigenvalues instead of determinants, we
+  // disable band storage, as we don't have a eigensolver for band matrices.
+
+  band_storage = false;
   
   IndexMap f(band_storage ? ku : -1);
 
@@ -284,7 +289,62 @@ Complex SectionDisp::calc_global()
     Q(f(r+i,M+c+i),M+c+i)= 1.0;
   }
 
-  // Return determinant.
+  cVector e(Q.rows(),fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));
+  
+  // Return product of K best eigenvalues (i.e. closest to 0), 
+  // but don't count the lowest two. (These are parasitic.)
+
+  int K_ = 3;
+
+  Complex product = 1.0;
+  vector<unsigned int> min_indices;
+
+  for (unsigned int k=0; k<K_; k++)
+  {
+    int min_index = 1;
+    Real min_distance = 1e200;
+    for (int i=1; i<=Q.rows(); i++)
+    {
+      if ( (abs(e(i)) < min_distance) &&
+           (std::find(min_indices.begin(),min_indices.end(),i) 
+            == min_indices.end()))
+      {
+        min_index = i;
+        min_distance = abs(e(i));
+      } 
+    }
+
+    // Don't count eigenvalues twice.
+
+    if (std::find(min_indices.begin(),min_indices.end(),min_index) 
+         == min_indices.end())
+    {
+      product *= e(min_index);
+      min_indices.push_back(min_index);
+    }
+  }
+
+  // Only return highest of the three.
+
+  int final_index = 0;
+  Real max_norm = 0;
+ 
+  for (int i=0; i< min_indices.size(); i++)
+  {
+    if (abs(e(min_indices[i])) > max_norm)
+    {
+      final_index = min_indices[i];
+      max_norm = abs(e(min_indices[i]));
+    }
+  }
+
+  return e(final_index);
+
+  // Old version: return the determinant.
 
   // This is prone to overflow, especially for a large number of layers.
   // TODO: try Arnoldi eigenvalue solver for this, or Rayleigh scheme from
@@ -360,6 +420,68 @@ Complex SectionDisp::calc_split()
     {
       product *= e(min_index) - 1.0;
       min_indices.push_back(min_index);
+    }
+  }
+
+  return product;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SectionDisp::calc_T()
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex SectionDisp::calc_T()
+{
+  // Calculate eigenvectors.
+ 
+  left->calcRT();
+  if (! symmetric)
+    right->calcRT();
+
+  cMatrix Q(M,M,fortranArray);
+  Q = left->as_multi()->get_T12();
+  
+  cVector e(M,fortranArray);
+  if (global.stability == normal)
+    e.reference(eigenvalues(Q));
+  else
+    e.reference(eigenvalues_x(Q));  
+  
+  // Return product of K best eigenvalues (i.e. largest).
+  // Don't take zero eigenvalues into account as these are not numerically
+  // relevant.
+
+  int K = 1; //5;
+
+  Complex product = 1.0;
+  vector<unsigned int> max_indices;
+
+  for (unsigned int k=0; k<K; k++)
+  {
+    int max_index = 1;
+    Real max_distance = 1e-200;
+    for (int i=1; i<=M; i++)
+    {
+      if ( (abs(e(i)) > max_distance) &&
+           (std::find(max_indices.begin(),max_indices.end(),i) 
+            == max_indices.end()) )
+      {
+        max_index = i;
+        max_distance = abs(e(i));
+      } 
+    }
+
+    // Don't count eigenvalues twice.
+
+    if (std::find(max_indices.begin(),max_indices.end(),max_index) 
+         == max_indices.end())
+    {
+      product *= 1.0/e(max_index);
+      max_indices.push_back(max_index);
     }
   }
 
