@@ -36,7 +36,7 @@ class SlabModeFlux : public RealFunction
     Real operator()(const Real& x)
     {
       counter++;
-      Field f = m->field(Coord(x + I*global_slab.lower_PML,0,0));
+      Field f = m->field(Coord(x,0,0));
       return real(f.E1*conj(f.H2) - f.E2*conj(f.H1));
     }
 
@@ -247,6 +247,12 @@ Field SlabMode::field(const Coord& coord_) const
 
   Coord coord(coord_);
   coord.c1 = coord_.c1 + I*global_slab.lower_PML;
+
+  if (abs(imag(coord_.c1)) > 1e-6)
+  {
+    py_error("Internal error: adding PML twice.");
+    exit (-1);
+  }
 
   const Real x = real(coord.c1);
   const Real d = real(geom->get_width());
