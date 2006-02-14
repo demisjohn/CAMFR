@@ -376,7 +376,7 @@ class Geometry:
         return self
    
     def to_expression(self, x0, x1, dx, y0, y1, dy, add_flipped=0,
-                      calc_average=0):
+                      calc_average=0, verbose=False):
 
         if (x0 > x1) or (y0 > y1):
             print "Error: Invalid boundaries for to_expression."
@@ -473,7 +473,6 @@ class Geometry:
             i = i_end
 
         d[-1] += (x1-x0) - sum(d)
-
         slabs = new_slabs
 
         # Create expression.
@@ -498,11 +497,12 @@ class Geometry:
                 
             s = Slab(e_slab)
 
-            #print e_slab
-            #s.calc()
-            #pretty_print(s)
-            #plot(s)
-            #print "------------"
+            if verbose == True:
+                print e_slab
+                s.calc()
+                pretty_print(s)
+                plot(s)
+                print "------------"
    
             slab_cache.append(s)
             e.add(s(d[i]))
