@@ -345,7 +345,7 @@ vector<Complex> traceroot(vector<Complex>&     estimate1,
     oldest = (oldest == &zeros) ? &zeros_bis : oldest = &zeros;
     
     if (s)
-      for (unsigned int i=0; i<zeros_try.size();i++)
+      for (unsigned int i=0; i<zeros_try.size(); i++)
         *s << i << " "
            << real(zeros_try[i]) << " "
            << imag(zeros_try[i]) << " "
