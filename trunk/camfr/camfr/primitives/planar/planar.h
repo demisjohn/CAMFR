@@ -51,7 +51,7 @@ class Planar : public MonoWaveguide
     void set_theta(Complex theta_radians);
 
     Complex c1_size() const 
-      {return 0.0;}
+      {return 3.0*global.lambda;} // For plotting.
 
     void find_modes() {calc_kz();}
 
