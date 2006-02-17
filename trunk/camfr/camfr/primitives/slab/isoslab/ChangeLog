@@ -1,5 +1,9 @@
 2006-02-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* slab.cpp: Refrain from overzealous refining.
+
+2006-02-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* slabdisp.cpp: Use 45 degree cut.
 
 2006-02-10 Peter Bienstman  <Peter.Bienstman@UGent.be>
