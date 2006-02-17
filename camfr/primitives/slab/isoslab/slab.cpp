@@ -597,21 +597,20 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
   }
   
   // Check if the minima found correspond really to zeros by using a mueller
-  // Don't do this when there are branchcuts, as this can cause problems for
-  // numerical stability.
+  // solver.
 
   vector<Complex> kt_lossless, kt_complex;
   for (unsigned int i=0; i<kt_prop_lossless.size(); i++)
   {
     const Real f = abs(disp(I*kt_prop_lossless[i]));
-    
-    if ( (f > 1.0) || (branchcut && (f > 1e-2)) )
+
+    if (f > 1e-2) // Don't refine.
     {
-      std::ostringstream s;
-      s << "Warning: possibly insufficient precision around kt "
-        << kt_prop_lossless[i] << "." << std::endl;
-      s << "Removing this candidate with f(x)=" << f << ".";
-      py_print(s.str());
+      //std::ostringstream s;
+      //s << "Warning: possibly insufficient precision around kt "
+      //  << kt_prop_lossless[i] << "." << std::endl;
+      //s << "Removing this candidate with f(x)=" << f << ".";
+      //py_print(s.str());
     }
     else
     {
