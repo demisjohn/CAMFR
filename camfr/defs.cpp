@@ -232,3 +232,26 @@ void pick_sign_k(Complex* k)
     if (imag(*k) > 0)
       *k = - *k;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// sqrt_45
+//
+/////////////////////////////////////////////////////////////////////////////
+
+Complex sqrt_45(const Complex& kz2)
+{
+  Complex kz = sqrt(kz2);
+  
+  if (imag(kz) > 0)
+    kz = -kz;
+
+  if (abs(imag(kz)) < abs(real(kz)))
+    if (real(kz) < 0)
+      kz = -kz;
+
+  return kz;
+}
+
