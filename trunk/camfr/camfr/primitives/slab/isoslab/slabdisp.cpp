@@ -127,28 +127,29 @@ Complex SlabDisp::operator()(const Complex& kt)
   
   for (unsigned int i=0; i<eps.size(); i++)
   {
-    Complex kx_i = sqrt(C*(eps[i]*mu[i] - kt_eps_mu) + kt*kt);
+    // The following sign choice is bad, as it introduces a 
+    // 'branch cut sliver'.
 
-    if (real(kx_i) < 0)
-      kx_i = -kx_i;
+    if (0)
+    {
+      Complex kx_i = sqrt(C*(eps[i]*mu[i] - kt_eps_mu) + kt*kt);
 
-    if (abs(real(kx_i)) < 1e-12)
-      if (imag(kx_i) > 0)
+      if (real(kx_i) < 0)
         kx_i = -kx_i;
+
+      if (abs(real(kx_i)) < 1e-12) // Bad: introduces extra branch cut.
+        if (imag(kx_i) > 0)
+          kx_i = -kx_i;
+    }
+
+    Complex kx_i = sqrt_45(C*(eps[i]*mu[i] - kt_eps_mu) + kt*kt);
 
     kx.push_back(kx_i);
   }
 
   // For SlabWall_PC, we still need to set Planar::kt.
 
-  Complex beta = sqrt(C*kt_eps_mu - kt*kt);
-
-  if (real(beta) < 0)
-    beta = -beta;
-  
-  if (abs(imag(beta)) < 1e-12)
-    if (imag(beta) > 0)
-      beta = -beta;
+  Complex beta = sqrt_45(C*kt_eps_mu - kt*kt);  
 
   Planar::set_kt(beta);
 
@@ -223,7 +224,7 @@ Complex SlabDisp::operator()(const Complex& kt)
     }
     else 
     {
-      if (real(I_kx_d) > 0)
+      if (real(I_kx_d) > 0) // Note: this creates a branch cut!
         fw_chunk_end_scaled *= exp(-2.0*I_kx_d);
       else
         bw_chunk_end_scaled *= exp(+2.0*I_kx_d);
@@ -236,6 +237,7 @@ Complex SlabDisp::operator()(const Complex& kt)
   }
 
   // Return error.
+
   if (!u_wall)
    return fw_chunk_end_scaled + bw_chunk_end_scaled;
   else
