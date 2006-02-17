@@ -1,3 +1,7 @@
+2006-02-17  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* slab3.py: New test.
+	
 2006-02-08  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* backward3.py: New test.
