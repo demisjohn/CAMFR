@@ -1,4 +1,6 @@
 -add doc to make sure the cladding is large enough
+-add doc to do all the dimension in micron?
+-add doc to use gemotry only fo a single period
 
 -get rid of backward modes detection and use always lossy branchcut?
 
