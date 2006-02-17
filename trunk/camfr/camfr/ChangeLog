@@ -1,3 +1,8 @@
+2006-02-17  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* defs.h: Add sqrt_45.
+	* defs.cpp: Ditto.
+
 2005-11-29  Peter Debackere  <Peter.Debackere@UGent.be>
 
 	* camfr_wrap.cpp: Add set_low_index_core, set_estimate_cutoff.
