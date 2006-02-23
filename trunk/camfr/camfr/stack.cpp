@@ -984,34 +984,110 @@ Field Stack::field(const Coord& coord)
 /////////////////////////////////////////////////////////////////////////////
 
 void Stack::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
-{
+{ 
+  // Check if we are calculating the field in an internal point or not.
+
+  const Complex last_z = interface_positions.back();
+
+  bool coord_in_inc_medium = (real(coord.z) < 0)
+    || ((abs(coord.z) < 1e-10) && (coord.z_limit == Min));
+  
+  bool coord_in_ext_medium = (real(coord.z) > real(last_z))
+    || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus));
+
+  if (coord_in_inc_medium || coord_in_ext_medium)
+  {
+    // If we already have all the interface fields, we can use those.
+  
+    if (interface_field.size() > 1)
+    {
+      if (coord_in_inc_medium)
+      {    
+        FieldExpansion f(interface_field[0].propagate(coord.z));
+
+        *fw = f.fw; *bw = f.bw;
+
+        return;
+      }
+
+      if (coord_in_ext_medium)
+      {    
+        FieldExpansion f(interface_field.back().
+                         propagate(coord.z-get_total_thickness()));
+    
+        *fw = f.fw; *bw = f.bw;
+    
+        return;
+      }
+    }
+
+    // Else, no need to calculate all the interface fields.
+
+    if (inc_field.rows() == 0)
+    {
+      py_error("Error: incident field not set.");
+      return;
+    }
+
+    calcRT();
+
+    if (coord_in_inc_medium)
+    { 
+      cVector left_bw(inc_field.rows(), fortranArray);
+
+      if (as_multi())
+      {
+        left_bw.reference(multiply(as_multi()->get_R12(), inc_field));
+
+        if (bw_inc)
+          left_bw += multiply(as_multi()->get_T21(), inc_field_bw);
+      }
+      else
+      {
+        left_bw(1) = R12(1,1) * inc_field(1);
+
+        if (bw_inc)
+          left_bw(1) += T21(1,1) * inc_field_bw(1);
+      }
+
+      FieldExpansion inc(get_inc(), inc_field, left_bw);
+      FieldExpansion f(inc.propagate(coord.z));
+      *fw = f.fw; *bw = f.bw;
+
+      return;
+    }
+
+    if (coord_in_ext_medium)
+    {
+      cVector right_fw(inc_field.rows(), fortranArray);
+
+      if (as_multi())
+      {
+        right_fw.reference(multiply(as_multi()->get_T12(), inc_field));
+        
+        if (bw_inc)
+          right_fw += multiply(as_multi()->get_R21(), inc_field_bw);
+      }
+      else
+      {
+        right_fw(1) = T12(1,1) * inc_field(1);
+
+        if (bw_inc)
+          right_fw(1) += R21(1,1) * inc_field_bw(1);
+      }
+
+      FieldExpansion ext(get_ext(), right_fw, inc_field_bw);
+      FieldExpansion f(ext.propagate(coord.z-get_total_thickness()));
+      *fw = f.fw; *bw = f.bw;
+
+      return;
+    }
+  }
+
   // If needed, calculate field at each interface.
   
   if (interface_field.size() <= 1)
     calc_interface_fields();
-
-  // Special cases: coord lies in incidence or exit medium.
-
-  if (    (real(coord.z) < 0)
-       || ((abs(coord.z) < 1e-10) && (coord.z_limit == Min)) )
-  {    
-    FieldExpansion f(interface_field[0].propagate(coord.z));
-    *fw = f.fw; *bw = f.bw;
-    return;
-  }
-  
-  const Complex last_z = interface_positions.back();
-
-  if (    (real(coord.z) > real(last_z))
-       || ((abs(coord.z - last_z) < 1e-10) && (coord.z_limit == Plus)) )
-  {    
-    FieldExpansion f(interface_field.back().
-                     propagate(coord.z-get_total_thickness()));
-    
-    *fw = f.fw; *bw = f.bw;
-    
-    return;
-  }
 
   // Calculate index in chunk vector (first chunk is zero).
   
@@ -1588,7 +1664,7 @@ void Stack::calc_interface_positions()
 /////////////////////////////////////////////////////////////////////////////
 
 void Stack::calc_interface_fields()
-{
+{ 
   // Build incident field if necessary.
 
   if (interface_field.size() == 0)
@@ -1626,7 +1702,7 @@ void Stack::calc_interface_fields()
     return;
   
   // Calculate field at each interface.
-  
+
   const vector<Chunk>* chunks
     = dynamic_cast<StackImpl*>(flat_sc)->get_chunks();
 

@@ -1,3 +1,7 @@
+2006-02-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* stack.cpp: Speed up fw_bw_field in special cases.
+
 2006-02-17  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Add sqrt_45.
