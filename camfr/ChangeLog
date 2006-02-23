@@ -1,5 +1,9 @@
 2006-02-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* bloch.cpp: Speed up get_expansion_matrices considerably.
+
+2006-02-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* stack.cpp: Speed up fw_bw_field in special cases.
 
 2006-02-17  Peter Bienstman  <Peter.Bienstman@UGent.be>

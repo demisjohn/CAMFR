@@ -177,7 +177,7 @@ void BlochStack::find_modes_GEV()
  
   // Create modeset. 
 
-  modeset.clear(); 
+  modeset.clear();
 
   for (int mode=1; mode<=2*N; mode++) 
   {
@@ -367,26 +367,34 @@ Mode* BlochStack::get_bw_mode(int i) const
 void BlochStack::get_expansion_matrices(cMatrix& ff, cMatrix& fb, 
                                         cMatrix& bf, cMatrix& bb, bool left)
 {
-  Coord c(0.0,0.0,(left)?0.0:stack.get_total_thickness());
+  Coord c(0.0,  0.0,  left ? 0.0 : stack.get_total_thickness(),
+          Plus, Plus, left ? Min : Plus);
+
+  cVector fffield(global.N,fortranArray);
+  cVector bbfield(global.N,fortranArray);
+  cVector bffield(global.N,fortranArray);
+  cVector fbfield(global.N,fortranArray);
 
   for (int i=1;i<=global.N;i++)
   {
     BlochMode* fwm = dynamic_cast<BlochMode*>(get_fw_mode(i));
     BlochMode* bwm = dynamic_cast<BlochMode*>(get_bw_mode(i));
 
-    if ( !fwm || !bwm )
+    if (fwm)
+      fwm->fw_bw_field(c, &fffield, &fbfield);
+    else
     {
-      py_error("Not enough forward or backward modes in BlochStack");
-      exit(-1);
+      fffield = 0.0;
+      fbfield = 0.0;
     }
-
-    cVector fffield(global.N,fortranArray);
-    cVector bbfield(global.N,fortranArray);
-    cVector bffield(global.N,fortranArray);
-    cVector fbfield(global.N,fortranArray);
-
-    fwm->fw_bw_field(c,&fffield,&fbfield);
-    bwm->fw_bw_field(c,&bffield,&bbfield);
+    
+    if (bwm)
+      bwm->fw_bw_field(c, &bffield, &bbfield);
+    else
+    {
+      bffield = 0.0;
+      bbfield = 0.0;   
+    }
 
     for (int j=1; j<=global.N; j++)
     {
@@ -475,7 +483,7 @@ Field BlochMode::field(const Coord& coord) const
 /////////////////////////////////////////////////////////////////////////////
 
 void BlochMode::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
-{
+{ 
   Coord coord2(coord);
   
   if (real(coord.z) > real(geom->get_total_thickness()))
@@ -495,9 +503,11 @@ void BlochMode::fw_bw_field(const Coord& coord, cVector* fw, cVector* bw)
     geom->set_inc_field(interface_field[0].fw, &inc_bw);
   }
 
-  geom->fw_bw_field(coord,fw,bw);
+  geom->fw_bw_field(coord, fw, bw);
 
-  if (interface_field.size() <= 1)
+  if (    (interface_field.size() <= 1) 
+       && (abs(real(coord.z)) > 1e-6)
+       && (abs(real(coord.z - geom->get_total_thickness())) > 1e-6) )
     geom->get_interface_field(&interface_field);
 }
 
