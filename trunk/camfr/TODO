@@ -2,6 +2,8 @@
 -add doc to do all the dimension in micron?
 -add doc to use gemotry only fo a single period
 
+-BlochStack(0) + .. + BlochStack(0) doesn't cache calculations.
+
 -get rid of backward modes detection and use always lossy branchcut?
 
 -speed up slabs with small delta n
@@ -9,8 +11,6 @@
 -experiment with precompiled headers
 
 -add rcled.py and materials.py to the distribution.
-
--kt^2 instead of kt as independent variable in SectionDisp?
 
 -document ASR solver
 -BlochSection with single non-uniform slab
