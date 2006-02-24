@@ -268,6 +268,9 @@ struct Global
 
     // Switch to skip calculation of SectionModes.
     bool calc_field_profiles;
+
+    // Switch to set whether interfaces are always treated as dense.
+    bool always_dense;
 };
 
 extern Global global;

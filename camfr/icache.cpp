@@ -31,8 +31,18 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   bool found = cache.lookup(std::pair<Waveguide*, Waveguide*>(wg1, wg2), &sc);
 
   if (found)
-    return sc;
-
+  {
+    if (    (global.always_dense == true) 
+         && (!dynamic_cast<DenseScatterer*>(sc))
+         && (wg1 != wg2) )
+    {
+      deregister(wg1, wg2);
+      deregister(wg2, wg1);
+    }
+    else
+      return sc;
+  }
+  
   // Transparent DiagScatterer?
 
   if ( (wg1 == wg2) && (!dynamic_cast<MonoWaveguide*>(wg1)) )
@@ -44,7 +54,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
  
   // General case.
 
-  if (wg1->is_uniform() && wg2->is_uniform())
+  if (wg1->is_uniform() && wg2->is_uniform() && (global.always_dense == false))
   {
     if (    dynamic_cast<MonoWaveguide*>(wg1)
          && dynamic_cast<MonoWaveguide*>(wg2) )
@@ -60,8 +70,8 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   if (wg1 != wg2)
   {
     Scatterer* sc_flip;
-
-    if (wg1->is_uniform() && wg2->is_uniform())
+    if (    wg1->is_uniform() && wg2->is_uniform() 
+        && (global.always_dense == false))
     {
       if (    dynamic_cast<MonoWaveguide*>(wg1)
            && dynamic_cast<MonoWaveguide*>(wg2) )
@@ -113,7 +123,29 @@ void InterfaceCache::deregister(Waveguide* wg)
   for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     if ( (i->first.first == wg) || (i->first.second == wg) )
+    {
+      delete i->second;
       cache.erase(i->first);
+    }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// InterfaceCache::deregister
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void InterfaceCache::deregister(Waveguide* wg1, Waveguide* wg2)
+{
+  for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
+         i=cache.begin(); i!=cache.end(); ++i)
+    if ( (i->first.first == wg1) && (i->first.second == wg2) )
+    {
+      delete i->second;
+      cache.erase(i->first);
+    }
 }
 
 
