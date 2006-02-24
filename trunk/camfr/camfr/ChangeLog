@@ -1,3 +1,10 @@
+2006-02-24  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* defs.h: Add always dense.
+	* defs.cpp: Same.
+	* icache.h: Same.
+	* icache.cpp: Same.
+
 2006-02-23  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* bloch.cpp: Speed up get_expansion_matrices considerably.

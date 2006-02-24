@@ -36,6 +36,7 @@ class InterfaceCache
     Scatterer* get_interface(Waveguide* wg1, Waveguide* wg2);
 
     void deregister(Waveguide* wg);
+    void deregister(Waveguide* wg1, Waveguide* wg2);
     
     void clear();
 
