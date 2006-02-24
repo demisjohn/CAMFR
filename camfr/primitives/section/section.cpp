@@ -256,7 +256,7 @@ Section::Section(const Term& t) : leftwall_sc(NULL), rightwall_sc(NULL)
 
 Section::Section(Expression& expression, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
-{
+{ 
   //if ( (M1 < M2) || (M2 < global.N) )
   //  py_print("Warning: M1 > M2 > N not fulfilled.");
 
@@ -287,6 +287,8 @@ Section::Section(Expression& expression, int M1, int M2)
   //
   // 2D section.
   //
+
+  global.always_dense = true; // Uniform slabs are not orthogonal here.
   
   // Find core.
 
@@ -405,6 +407,8 @@ Section::Section(Expression& expression, int M1, int M2)
   s = new Section2D(left_ex, right_ex, M1, M2);
   uniform = s->is_uniform();
   core = s->get_core();
+
+  global.always_dense = false;
 }
 
 
@@ -423,6 +427,8 @@ Section::Section(Expression& expression, int M1, int M2)
 Section::Section(Expression& left_ex_, Expression& right_ex_, int M1, int M2)
   : leftwall_sc(NULL), rightwall_sc(NULL)
 {
+  global.always_dense = true; // Uniform slabs are not orthogonal here.
+
   //if ( (M1 < M2) || (M2 < global.N) )
   //  py_print("Warning: M1 > M2 > N not fulfilled.");
 
@@ -481,6 +487,8 @@ Section::Section(Expression& left_ex_, Expression& right_ex_, int M1, int M2)
   s = new Section2D(left_ex, right_ex, M1, M2);
   uniform = s->is_uniform();
   core = s->get_core();
+
+  global.always_dense = false;
 }
 
 

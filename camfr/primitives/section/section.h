@@ -266,7 +266,7 @@ class Section2D : public SectionImpl
     void set_estimate(const Complex& c) {user_estimates.push_back(c);}
 
     void find_modes();
-     
+
   protected:
     
     Stack left;
