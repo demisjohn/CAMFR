@@ -1,5 +1,9 @@
 2006-02-24  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* interface.cpp: Warn about incorrect assumptions.
+
+2006-02-24  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* defs.h: Add always dense.
 	* defs.cpp: Same.
 	* icache.h: Same.

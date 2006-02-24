@@ -779,6 +779,12 @@ void calc_RT_fresnel(const Mode* m1,       const Mode* m2,
 
 void DiagInterface::calcRT()
 {
+  if (abs(global.slab_ky) > 1e-6)
+  {
+    py_error("Error: uniform wg with off-axis incidence is not diagonal.");
+    exit (-1);
+  }
+  
   if (!recalc_needed())
     return;
 
@@ -795,12 +801,6 @@ void DiagInterface::calcRT()
 
   inc->find_modes();
   ext->find_modes();
-
-  if (!global.orthogonal)
-  {
-    //py_error("Error: uniform waveguide with PC_Walls is not diagonal.");
-    //exit (-1);
-  }
   
   // Calc RT according to Fresnel laws.
   
