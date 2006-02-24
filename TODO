@@ -4,6 +4,8 @@
 
 -BlochStack(0) + .. + BlochStack(0) doesn't cache calculations.
 
+-remove explicit dependency on python version from machine_cfp.py.
+
 -get rid of backward modes detection and use always lossy branchcut?
 
 -speed up slabs with small delta n
