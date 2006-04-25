@@ -226,6 +226,12 @@ inline void set_always_recalculate(bool b)
 inline void set_calc_field_profiles(bool b)
   {global.calc_field_profiles = b;}
 
+inline void set_always_dense(bool b)
+  {global.always_dense = b;}
+
+inline void set_mueller_precision(Real d)
+  {global.mueller_precision = d;}
+
 inline void set_fourier_orders(int Mx, int My=0)
 {
   global_blochsection.Mx = Mx;
@@ -901,6 +907,8 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_davy",                   set_davy);  
   def("set_always_recalculate",     set_always_recalculate);  
   def("set_calc_field_profiles",    set_calc_field_profiles);
+  def("set_always_dense",           set_always_dense);  
+  def("set_mueller_precision",      set_mueller_precision);
   def("free_tmps",                  free_tmps);
   def("free_tmp_interfaces",        free_tmp_interfaces);
 

@@ -42,7 +42,7 @@ class stack2(unittest.TestCase):
         s.calc()
 
         R = s.R12(0,0)
-        R_OK = -0.0541641330902+7.24044199701e-05j
+        R_OK = -0.0579512119293+0.00108957290649j
         
         print R, "expected", R_OK
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
