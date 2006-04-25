@@ -612,7 +612,7 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
     eps_y_x.reference(invert_svd(t));
 
   eps_x_y.reference(fourier_2D_split(disc_x_rot,disc_y_rot,f_inv_eps_rot,N,M));
-  
+
   // Calculate alpha and beta vector.
 
   cVector alpha(MN,fortranArray);
@@ -1129,8 +1129,8 @@ void UniformBlochSection::find_modes()
 {
   // Set constants.
 
-  const Complex k = 2*pi/global.lambda*core->n();
-  const Complex Y = sqrt(core->eps()/core->mu());
+  const Complex k0 = 2*pi/global.lambda;
+  const Complex k  = k0*core->n();
   
   int M = global_blochsection.Mx;
   int N = global_blochsection.My;
@@ -1170,8 +1170,6 @@ void UniformBlochSection::find_modes()
       if ((abs(imag(alpha)) > 1e-6) || (abs(imag(beta)) > 1e-6))
         py_print("Warning:formulas not checked for complex alpha and beta.");
 
-      Complex phi = atan2(real(beta),real(alpha));
-
       Complex kz = sqrt(k*k - alpha*alpha - beta*beta);
 
       if (imag(kz) > 0)
@@ -1181,18 +1179,33 @@ void UniformBlochSection::find_modes()
         if (real(kz) < 0)
           kz = -kz;
       
-      // Add TE mode.
+      // Add TE mode (Ez=0).
+      // E.k = 0 and H = k x E / (omega mu)
 
       cVector Ex(MN,fortranArray);
       cVector Ey(MN,fortranArray);
       cVector Hx(MN,fortranArray);
       cVector Hy(MN,fortranArray);
 
-      Ex(i1) =      -sin(phi);
-      Ey(i1) =       cos(phi);
-      Hx(i1) = - Y * cos(phi) * kz / k;
-      Hy(i1) = - Y * sin(phi) * kz / k;
+      Complex C = 1. / core->mu() / (k0*c);
 
+      if ( (abs(alpha) < 1e-8) && (abs(beta) < 1e-8) ) // TEM
+      {
+        Ex(i1) = 0.0;
+        Ey(i1) = 1.0;
+    
+        Hx(i1) = -C * kz;
+        Hy(i1) = 0.0;        
+      }
+      else
+      {
+        Ex(i1) = -beta;
+        Ey(i1) = alpha;
+    
+        Hx(i1) = -C * alpha * kz;
+        Hy(i1) = -C *  beta * kz;
+      }
+      
       UniformBlochSectionMode *newmode
         = new UniformBlochSectionMode(TE, kz, this, int(m), int(n), 
                                       Ex, Ey, Hx, Hy);
@@ -1200,13 +1213,27 @@ void UniformBlochSection::find_modes()
       newmode->normalise();
       modeset.push_back(newmode);
 
-      // Add TM mode.
+      // Add TM mode (Hz=0).
 
-      Ex(i1) =       cos(phi) * kz / k;
-      Ey(i1) =       sin(phi) * kz / k;
-      Hx(i1) = - Y * sin(phi);
-      Hy(i1) =   Y * cos(phi);
- 
+      C = 1. / core->eps() / (k0*c);
+
+      if ( (abs(alpha) < 1e-8) && (abs(beta) < 1e-8) ) // TEM
+      {
+        Hx(i1) = 0.0;
+        Hy(i1) = 1.0;
+    
+        Ex(i1) = C * kz;
+        Ey(i1) = 0.0;        
+      }
+      else
+      {  
+        Hx(i1) = -beta;
+        Hy(i1) = alpha;
+
+        Ex(i1) = C * alpha * kz;
+        Ey(i1) = C *  beta * kz;
+      }
+      
       newmode
         = new UniformBlochSectionMode(TM, kz, this, int(m), int(n), 
                                       Ex, Ey, Hx, Hy);
