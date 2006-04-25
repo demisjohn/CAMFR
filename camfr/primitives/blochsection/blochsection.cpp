@@ -1189,6 +1189,8 @@ void UniformBlochSection::find_modes()
 
       Complex C = 1. / core->mu() / (k0*c);
 
+      Complex norm = sqrt(alpha*alpha + beta*beta);
+
       if ( (abs(alpha) < 1e-8) && (abs(beta) < 1e-8) ) // TEM
       {
         Ex(i1) = 0.0;
@@ -1199,11 +1201,11 @@ void UniformBlochSection::find_modes()
       }
       else
       {
-        Ex(i1) = -beta;
-        Ey(i1) = alpha;
+        Ex(i1) = -beta / norm;
+        Ey(i1) = alpha / norm;
     
-        Hx(i1) = -C * alpha * kz;
-        Hy(i1) = -C *  beta * kz;
+        Hx(i1) = -C * alpha * kz / norm;
+        Hy(i1) = -C *  beta * kz / norm;
       }
       
       UniformBlochSectionMode *newmode
@@ -1227,11 +1229,11 @@ void UniformBlochSection::find_modes()
       }
       else
       {  
-        Hx(i1) = -beta;
-        Hy(i1) = alpha;
+        Hx(i1) = -beta / norm;
+        Hy(i1) = alpha / norm;
 
-        Ex(i1) = C * alpha * kz;
-        Ey(i1) = C *  beta * kz;
+        Ex(i1) = C * alpha * kz / norm;
+        Ey(i1) = C *  beta * kz / norm;
       }
       
       newmode
