@@ -271,6 +271,9 @@ struct Global
 
     // Switch to set whether interfaces are always treated as dense.
     bool always_dense;
+
+    // Set precision used in Mueller solver (not yet used everywhere).
+    Real mueller_precision;  
 };
 
 extern Global global;

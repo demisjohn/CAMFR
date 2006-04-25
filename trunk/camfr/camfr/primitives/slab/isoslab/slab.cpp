@@ -616,8 +616,10 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     {
       bool error = false;
 
+      Real prec = global.mueller_precision;
+
       Complex kt_new = mueller(disp, I*kt_prop_lossless[i],
-                               I*kt_prop_lossless[i]+0.002,1e-11,0,100,&error);
+                               I*kt_prop_lossless[i]+0.002,prec,0,100,&error);
 
       if (!error && metallic && abs(real(kt_new)) > 0.001)
       {
@@ -659,10 +661,12 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
       {
         bool error = false;
 
+        Real prec = global.mueller_precision;
+
         Complex kt_new = branchcut
           ? kt_evan_lossless[i]
           : mueller(disp,kt_evan_lossless[i],kt_evan_lossless[i]+0.002*I,
-                    1e-11,0,100,&error);
+                    prec,0,100,&error);
 
         if (!error && metallic && (abs(imag(kt_new)) > 0.001))
         {
@@ -701,9 +705,11 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
     remove_elems(&kt_lossless, -kt_i, eps_copies);
   }
 
+  Real prec = global.mueller_precision;
+
   vector<Complex> kt_lossless_single = kt_lossless;
   if (global.degenerate)
-    kt_lossless = mueller_multiple(disp, kt_lossless_single, 1e-11, 0, 100);
+    kt_lossless = mueller_multiple(disp, kt_lossless_single, prec, 0, 100);
   for (unsigned int i=0; i<kt_lossless.size(); i++)
   {
     if (abs(real(kt_lossless[i])) < abs(imag(kt_lossless[i])))
@@ -1284,7 +1290,9 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   kt_to_neff transform(C0*kt_eps_mu);
   SlabDisp disp(materials,thicknesses,global.lambda,l_wall,u_wall);
 
-  vector<Complex> kt = mueller(disp, kt_coarse, 1e-11, 100, &transform, 0);
+  Real prec = global.mueller_precision;
+
+  vector<Complex> kt = mueller(disp, kt_coarse, prec, 100, &transform, 0);
 
   // Eliminate false zeros.
 
