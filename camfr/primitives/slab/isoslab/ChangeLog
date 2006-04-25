@@ -1,3 +1,7 @@
+2006-04-25 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slab.cpp: Use mueller_precision.
+
 2006-02-17 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Refrain from overzealous refining.
