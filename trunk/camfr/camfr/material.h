@@ -77,52 +77,54 @@ inline std::ostream& operator<<(std::ostream& s, const BaseMaterial& m)
 //
 //   Note: access the current wavelength through the global variable
 //   'global.lambda' (see defs.h)
-//
-//   Be careful not to confuse Material(3.5, 0.1)
-//   and Material(Complex(3.5, 0.1)). The former is a magnetic material.
-//   A check is provided to avoid this error.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
 class Material : public BaseMaterial
 {
   public:
+    
+    Material(const Complex& n) : i_n(n), i_etar(i_n) {};
+    Material(const Complex& n, const Complex& etar) : i_n(n), i_etar(etar) {};
+    
+    const Complex   epsr() const {return i_n * i_etar;}
+    const Complex    mur() const {return i_n / i_etar;}
+    const Complex    eps() const {return epsr() * eps0;}
+    const Complex     mu() const {return mur() * mu0;}
+	  
+    const Complex      n() const {return i_n;}
+    const Complex eps_mu() const {return epsr() * eps0 * mur() * mu0;}
+    const Complex   etar() const {return i_etar;}
+    const Complex    eta() const {return i_etar * sqrt(eps0 / mu0);}
+    
+    const Complex epsr(int) const {return epsr();}
+    const Complex  mur(int) const {return mur();}     
+    
+    Real gain() const {return 4*imag(i_n)*pi/(real(global.lambda)*1e-4);}
+    
+    void set_epsr_mur(const Complex& epsr, const Complex& mur);
+    void set_epsr    (const Complex& epsr) {set_epsr_mur(epsr,   mur());}
+    void set_mur     (const Complex& mur)  {set_epsr_mur(epsr(), mur);}
 
-     Material(const Complex& n, const Complex& mur=1.0)
-       : i_n(n), i_mur(mur)
-       {if (i_mur != 1.0) std::cout << "Magnetic material" << std::endl;}
-     
-     const Complex      n() const {return i_n;}
-     const Complex   epsr() const {return i_n * i_n;}
-     const Complex    mur() const {return i_mur;}
-     const Complex    eps() const {return i_n * i_n * eps0;}
-     const Complex     mu() const {return i_mur * mu0;}
-     const Complex eps_mu() const {return i_n * i_n * eps0 * i_mur * mu0;}
+    void set_n(Complex n)        {i_n = n;}
+    void set_n_imag(Real n_imag) {i_n = Complex(real(i_n), n_imag);}
+    void set_etar(Complex etar)  {i_etar = etar;}
+    
+    bool no_gain_present() const {return (imag(i_n) < 1e-12);}
+    
+    bool operator==(const Material& m) const
+      {return (abs(i_n - m.i_n) < 1e-12) && (abs(i_etar - m.i_etar) < 1e-12);}
+    
+    bool operator!=(const Material& m) const
+      {return !(*this == m);};
+    
+    std::string repr() const
+      {std::ostringstream s; s << "Isotropic n=" << i_n; return s.str();};
 
-     const Complex epsr(int) const {return epsr();}
-     const Complex  mur(int) const {return mur();}     
-
-     Real gain() const {return 4*imag(i_n)*pi/(real(global.lambda) * 1e-4);}
-
-     void set_n(Complex n)        {i_n   = n;}
-     void set_mur(Complex mur)    {i_mur = mur;}   
-     void set_n_imag(Real n_imag) {i_n   = Complex(real(i_n), n_imag);}
-
-     bool no_gain_present() const {return (imag(i_n) < 1e-12);}
-
-     bool operator==(const Material& m) const
-       {return (abs(i_n - m.i_n) < 1e-12) && (abs(i_mur - m.i_mur) < 1e-12);}
-
-     bool operator!=(const Material& m) const
-       {return !(*this == m);}
-
-     std::string repr() const
-       {std::ostringstream s; s << "Isotropic n=" << i_n; return s.str();}
-     
   protected:
-
-     Complex i_n;
-     Complex i_mur; 
+    
+    Complex i_n;
+    Complex i_etar;
 };
 
 inline std::ostream& operator<<(std::ostream& s, const Material& m)

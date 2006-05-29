@@ -1,3 +1,10 @@
+2006-04-25  Philippe Tassin <Philippe.Tassin@vub.ac.be>
+
+	* materials.h: Add leeft support for left handed materials.
+	* materials.cpp: Ditto.
+	* waveguide.h: Ditto.
+	* camfr_wrap.cpp: Ditto.
+
 2006-04-25  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Add mueller precision.

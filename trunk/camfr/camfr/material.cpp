@@ -28,6 +28,30 @@ const Material_length BaseMaterial::operator()(const Complex& d) const
 
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Material::set_epsr_mur
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Material::set_epsr_mur(const Complex& epsr_, const Complex& mur_)
+{
+  if ((real(epsr_) > 0.0) && (real(mur_) > 0.0)) // Right-handed materials.
+  {
+    i_n    = sqrt(epsr_*mur_);
+    i_etar = sqrt(epsr_/mur_);
+  }
+
+  else // Use safe square roots for left-handed materials.
+  {
+    i_n    = sqrt(abs(epsr_)*abs(mur_))*exp(I*(arg(epsr_)+arg(mur_))/2.0);
+    i_etar = sqrt(abs(epsr_)/abs(mur_))*exp(I*(arg(epsr_)-arg(mur_))/2.0);
+  };
+}
+
+
+
+
 // Note: following is obsolete and will be removed
 
 /////////////////////////////////////////////////////////////////////////////
