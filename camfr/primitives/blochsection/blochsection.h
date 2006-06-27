@@ -234,6 +234,8 @@ class BlochSection2D : public BlochSectionImpl
 
     std::vector<Material*> materials;
 
+    cMatrix inv_eps_2, eps_x_y, eps_y_x; // Cache these.
+
     friend class BlochSectionMode;
 };
 
