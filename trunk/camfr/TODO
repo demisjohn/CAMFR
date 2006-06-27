@@ -1,5 +1,3 @@
--add get_fourier orders
-
 -add span check to substrate_grating code
 
 -change blochmode.get_kx() to blochmode.kx()

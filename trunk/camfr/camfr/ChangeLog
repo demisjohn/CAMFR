@@ -1,3 +1,7 @@
+2006-06-27  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.cpp: Add get_fourier_orders.
+
 2006-04-25  Philippe Tassin <Philippe.Tassin@vub.ac.be>
 
 	* materials.h: Add leeft support for left handed materials.
