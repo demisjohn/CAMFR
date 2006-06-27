@@ -1328,7 +1328,7 @@ const Complex Stack::R21(int i, int j) const
     BlochStack* bs_ext = dynamic_cast<BlochStack*>(multi->get_ext());
     
     if (bs_ext) // Normalise.
-    {
+    { 
       BlochMode* fm = dynamic_cast<BlochMode*>(bs_ext->get_fw_mode(i));
       BlochMode* bm = dynamic_cast<BlochMode*>(bs_ext->get_bw_mode(j));
       
@@ -1463,6 +1463,11 @@ const Complex Stack::T21(int i, int j) const
 
 const cMatrix Stack::get_R12() const
 {
+  BlochStack* bs_inc = dynamic_cast<BlochStack*>(as_multi()->get_inc());
+
+  if (!bs_inc)
+    return as_multi()->get_R12();
+  
   cMatrix R12p(global.N,global.N,fortranArray);
 
   for (int i=1; i<=global.N; i++)
@@ -1482,6 +1487,11 @@ const cMatrix Stack::get_R12() const
 
 const cMatrix Stack::get_R21() const
 {
+  BlochStack* bs_ext = dynamic_cast<BlochStack*>(as_multi()->get_ext());
+
+  if (!bs_ext)
+    return as_multi()->get_R21();
+
   cMatrix R21p(global.N,global.N,fortranArray);
 
   for (int i=1; i<=global.N; i++)
@@ -1501,6 +1511,12 @@ const cMatrix Stack::get_R21() const
 
 const cMatrix Stack::get_T12() const
 {
+  BlochStack* bs_inc = dynamic_cast<BlochStack*>(as_multi()->get_inc());
+  BlochStack* bs_ext = dynamic_cast<BlochStack*>(as_multi()->get_ext());
+
+  if (!bs_inc && !bs_ext)
+    return as_multi()->get_T12();  
+
   cMatrix T12p(global.N,global.N,fortranArray);
 
   for (int i=1; i<=global.N; i++)
@@ -1520,6 +1536,12 @@ const cMatrix Stack::get_T12() const
 
 const cMatrix Stack::get_T21() const
 {
+  BlochStack* bs_inc = dynamic_cast<BlochStack*>(as_multi()->get_inc());
+  BlochStack* bs_ext = dynamic_cast<BlochStack*>(as_multi()->get_ext());
+
+  if (!bs_inc && !bs_ext)
+    return as_multi()->get_T21();  
+
   cMatrix T21p(global.N,global.N,fortranArray);
 
   for (int i=1; i<=global.N; i++)

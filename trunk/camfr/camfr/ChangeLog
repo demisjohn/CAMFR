@@ -1,5 +1,9 @@
 2006-06-27  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* stack.cpp: Speed up get_R12() and friends.
+
+2006-06-27  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* camfr_wrap.cpp: Add get_fourier_orders.
 
 2006-04-25  Philippe Tassin <Philippe.Tassin@vub.ac.be>
