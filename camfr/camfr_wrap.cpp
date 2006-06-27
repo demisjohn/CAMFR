@@ -239,6 +239,12 @@ inline void set_fourier_orders(int Mx, int My=0)
   global.N = 2*(2*Mx+1)*(2*My+1);
 }
 
+inline int get_fourier_orders_x()
+   {return global_blochsection.Mx;}
+
+inline int get_fourier_orders_y()
+   {return global_blochsection.My;}
+
 inline Polarisation mode_pol(const Mode& m) {return m.pol;}
 
 inline Complex field_E1(const Field& f) {return f.E1;}
@@ -903,7 +909,9 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_mode_surplus",           set_mode_surplus);
   def("set_backward_modes",         set_backward_modes);
   def("set_keep_all_1D_estimates",  set_keep_all_1D_estimates);
-  def("set_fourier_orders",         set_fourier_orders); 
+  def("set_fourier_orders",         set_fourier_orders);   
+  def("get_fourier_orders_x",       get_fourier_orders_x);
+  def("get_fourier_orders_y",       get_fourier_orders_y);
   def("set_davy",                   set_davy);  
   def("set_always_recalculate",     set_always_recalculate);  
   def("set_calc_field_profiles",    set_calc_field_profiles);
