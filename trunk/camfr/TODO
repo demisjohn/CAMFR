@@ -3,8 +3,8 @@
 -change blochmode.get_kx() to blochmode.kx()
 
 -add doc to make sure the cladding is large enough
--add doc to do all the dimension in micron?
--add doc to use gemotry only fo a single period
+-add doc to do all the dimensions in micron?
+-add doc to use geometry only fo a single period
 
 -BlochStack(0) + .. + BlochStack(0) doesn't cache calculations.
 
