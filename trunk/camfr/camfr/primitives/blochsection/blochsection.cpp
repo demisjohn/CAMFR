@@ -149,7 +149,7 @@ BlochSection::BlochSection(const Term& t)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BlochSection::BlochSection(Expression& expression) 
+BlochSection::BlochSection(Expression& expression)
 {
   // Uniform Section
   
@@ -191,7 +191,9 @@ BlochSection::BlochSection(Expression& expression)
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BlochSection2D::BlochSection2D(Expression& ex) : st(ex)
+BlochSection2D::BlochSection2D(Expression& ex) 
+  : st(ex), inv_eps_2(fortranArray), 
+    eps_x_y(fortranArray), eps_y_x(fortranArray)
 {
   // Determine core.
 
@@ -347,7 +349,7 @@ struct kt_to_neff : ComplexFunction
 // TODO: remove redundant copy
 
 void rotate_slabs_(const vector<Slab*>& slabs, const vector<Complex>& disc,
-                  vector<Slab*>* slabs_rot,   vector<Complex>* disc_rot)
+                   vector<Slab*>* slabs_rot,   vector<Complex>* disc_rot)
 {
   // Create list of discontinuities in the y-direction.
 
@@ -516,104 +518,114 @@ void BlochSection2D::create_FG_NT(cMatrix* F, cMatrix* G, int M, int N,
 void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
                                   const Complex& alpha0, const Complex& beta0)
 {
-  const Complex k0 = 2.0*pi/global.lambda;
-
-  // Construct data structures for fourier analysis.
-
-  vector<Complex> disc_x(discontinuities);
-  disc_x.insert(disc_x.begin(), 0.0);
-
-  vector<vector<Complex> > disc_y, f_eps;
-
-  for (int i=0; i<disc_x.size()-1; i++)
-  {
-    vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
-    disc_y_i.insert(disc_y_i.begin(), 0.0);
-
-    vector<Complex> f_eps_i;
-    for (int j=0; j<disc_y_i.size()-1; j++)
-    {
-      Coord coord(disc_y_i[j],0,0,Plus);
-      
-      f_eps_i.push_back(slabs[i]->eps_at(coord)/eps0);
-    }
-
-    disc_y.push_back(disc_y_i);
-    f_eps.push_back(f_eps_i);
-  }
-
-  vector<Slab*> slabs_rot;
-  vector<Complex> disc_x_rot;
-  rotate_slabs_(slabs, disc_x, &slabs_rot, &disc_x_rot);
-
-  vector<vector<Complex> > disc_y_rot, f_eps_rot, f_inv_eps_rot;
-  for (int i=0; i<disc_x_rot.size()-1; i++)
-  {
-    vector<Complex> disc_y_rot_i(slabs_rot[i]->get_discontinuities());
-    disc_y_rot_i.insert(disc_y_rot_i.begin(), 0.0);
-
-    vector<Complex> f_eps_rot_i, f_inv_eps_rot_i;
-    for (int j=0; j<disc_y_rot_i.size()-1; j++)
-    {
-      Coord coord(disc_y_rot_i[j],0,0,Plus);
-
-      f_eps_rot_i.    push_back(slabs_rot[i]->eps_at(coord)/eps0);
-      f_inv_eps_rot_i.push_back(eps0/slabs_rot[i]->eps_at(coord));
-    }
-
-    disc_y_rot.push_back(disc_y_rot_i);
-    f_eps_rot.push_back(f_eps_rot_i);
-    f_inv_eps_rot.push_back(f_inv_eps_rot_i);
-  }
-
-  // Construct fourier matrices.
-
-  cMatrix eps_(4*M+1,4*N+1,fortranArray);
-
-  eps_ = fourier_2D(disc_x, disc_y, f_eps, 2*M, 2*N);
-  
   int m_ = 2*M+1;  
   int n_ = 2*N+1;
 
   const int MN = m_*n_;
-  
-  cMatrix eps(MN,MN,fortranArray);
 
-  for (int m=-M; m<=M; m++)
-    for (int n=-N; n<=N; n++)
+  if (MN != inv_eps_2.rows())
+  {    
+    inv_eps_2.resize(MN,MN);
+    eps_x_y  .resize(MN,MN);
+    eps_y_x  .resize(MN,MN);
+
+    // Construct data structures for fourier analysis.
+
+    vector<Complex> disc_x(discontinuities);
+    disc_x.insert(disc_x.begin(), 0.0);
+
+    vector<vector<Complex> > disc_y, f_eps;
+
+    for (int i=0; i<disc_x.size()-1; i++)
     {
-      int i1 = (m+M+1) + (n+N)*(2*M+1);
-     
-      for (int j=-M; j<=M; j++)
-        for (int l=-N; l<=N; l++)
-        {
-          int i2 = (j+M+1) + (l+N)*(2*M+1);
+      vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
+      disc_y_i.insert(disc_y_i.begin(), 0.0);
 
-          eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1); 
-        }
+      vector<Complex> f_eps_i;
+      for (int j=0; j<disc_y_i.size()-1; j++)
+      {
+        Coord coord(disc_y_i[j],0,0,Plus);
+      
+        f_eps_i.push_back(slabs[i]->eps_at(coord)/eps0);
+      }
+
+      disc_y.push_back(disc_y_i);
+      f_eps.push_back(f_eps_i);
     }
 
-  cMatrix inv_eps_2(MN,MN,fortranArray);
-  if (global.stability != SVD)
-    inv_eps_2.reference(invert(eps));
-  else
-    inv_eps_2.reference(invert_svd(eps));
+    vector<Slab*> slabs_rot;
+    vector<Complex> disc_x_rot;
+    rotate_slabs_(slabs, disc_x, &slabs_rot, &disc_x_rot);
 
-  // Calculate split fourier transforms.
+    vector<vector<Complex> > disc_y_rot, f_eps_rot, f_inv_eps_rot;
+    for (int i=0; i<disc_x_rot.size()-1; i++)
+    {
+      vector<Complex> disc_y_rot_i(slabs_rot[i]->get_discontinuities());
+      disc_y_rot_i.insert(disc_y_rot_i.begin(), 0.0);
 
-  cMatrix eps_y_x(MN,MN,fortranArray);
-  cMatrix eps_x_y(MN,MN,fortranArray);
+      vector<Complex> f_eps_rot_i, f_inv_eps_rot_i;
+      for (int j=0; j<disc_y_rot_i.size()-1; j++)
+      {
+        Coord coord(disc_y_rot_i[j],0,0,Plus);
 
-  cMatrix t(MN,MN,fortranArray);
-  t.reference(fourier_2D_split(disc_x_rot,disc_y_rot,f_eps_rot,N,M));
-  if (global.stability != SVD)
-    eps_y_x.reference(invert(t));
-  else
-    eps_y_x.reference(invert_svd(t));
+        f_eps_rot_i.    push_back(slabs_rot[i]->eps_at(coord)/eps0);
+        f_inv_eps_rot_i.push_back(eps0/slabs_rot[i]->eps_at(coord));
+      }
 
-  eps_x_y.reference(fourier_2D_split(disc_x_rot,disc_y_rot,f_inv_eps_rot,N,M));
+      disc_y_rot.push_back(disc_y_rot_i);
+      f_eps_rot.push_back(f_eps_rot_i);
+      f_inv_eps_rot.push_back(f_inv_eps_rot_i);
+    }
+
+    // Construct fourier matrices.
+
+    cMatrix eps_(4*M+1,4*N+1,fortranArray);
+
+    eps_ = fourier_2D(disc_x, disc_y, f_eps, 2*M, 2*N);
+  
+    cMatrix eps(MN,MN,fortranArray);
+
+    for (int m=-M; m<=M; m++)
+      for (int n=-N; n<=N; n++)
+      {
+        int i1 = (m+M+1) + (n+N)*(2*M+1);
+     
+        for (int j=-M; j<=M; j++)
+          for (int l=-N; l<=N; l++)
+          {
+            int i2 = (j+M+1) + (l+N)*(2*M+1);
+
+            eps(i1,i2) = eps_(m-j + 2*M+1, n-l + 2*N+1); 
+          }
+      }
+
+    if (global.stability != SVD)
+      inv_eps_2.reference(invert(eps));
+    else
+      inv_eps_2.reference(invert_svd(eps));
+
+    // Calculate split fourier transforms.
+
+    cMatrix t(MN,MN,fortranArray);
+    t.reference(fourier_2D_split(disc_x_rot,disc_y_rot,f_eps_rot,N,M));
+    if (global.stability != SVD)
+      eps_y_x.reference(invert(t));
+    else
+      eps_y_x.reference(invert_svd(t));
+
+    eps_x_y.reference(fourier_2D_split(disc_x_rot,disc_y_rot,
+                                       f_inv_eps_rot,N,M));
+
+    // Free rotated slabs.
+
+    for (int i=0; i<slabs_rot.size(); i++)
+      delete slabs_rot[i];
+  
+  } // End of calculation which only depends on the geometry.
 
   // Calculate alpha and beta vector.
+
+  const Complex k0 = 2.0*pi/global.lambda;
 
   cVector alpha(MN,fortranArray);
   cVector  beta(MN,fortranArray);
@@ -661,11 +673,6 @@ void BlochSection2D::create_FG_li(cMatrix* F, cMatrix* G, int M, int N,
         (*G)(i1+MN,i2)    -=  beta(i2)*beta(i2);
       }
     }
-
-  // Free rotated slabs.
-
-  for (int i=0; i<slabs_rot.size(); i++)
-    delete slabs_rot[i];
 }
 
 
