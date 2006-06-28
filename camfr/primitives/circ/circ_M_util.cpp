@@ -33,7 +33,7 @@ cMatrix transfer_matrix(const Complex& r,
   const Complex n1 = mat1.n();
   const Complex n2 = mat2.n();
 
-  if ((mat1.mur() != 1.0) || (mat2.mur() != 1.0))
+  if ( (abs(mat1.mur() - 1.0) > 1e-10) || (abs(mat2.mur() - 1.0) > 1e-10) )
   {
     cout << "Only mur=1 case implemented in transfer_matrix" << endl;
     return cMatrix();

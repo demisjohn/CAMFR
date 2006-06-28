@@ -922,8 +922,8 @@ void Circ_2::find_modes_from_scratch_by_track()
   Real guided_k_end_lossless = abs(k0*sqrt(Complex(
     real(n1)*real(n1)*real(mur1) - real(n2)*real(n2)*real(mur2) )));
 
-  Material co_lossless(real(n1), real(mur1));
-  Material cl_lossless(real(n2), real(mur2));
+  Material co_lossless(real(n1), real(material[0]->etar()));
+  Material cl_lossless(real(n2), real(material[1]->etar()));
   
   Circ_2_closed guided_disp_lossless
     (radius[0], real(radius[1]), co_lossless, cl_lossless, lambda,
