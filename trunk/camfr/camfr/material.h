@@ -84,8 +84,8 @@ class Material : public BaseMaterial
 {
   public:
     
-    Material(const Complex& n) : i_n(n), i_etar(i_n) {};
-    Material(const Complex& n, const Complex& etar) : i_n(n), i_etar(etar) {};
+    Material(const Complex& n) : i_n(n), i_etar(i_n) {}
+    Material(const Complex& n, const Complex& etar) : i_n(n), i_etar(etar) {}
     
     const Complex   epsr() const {return i_n * i_etar;}
     const Complex    mur() const {return i_n / i_etar;}

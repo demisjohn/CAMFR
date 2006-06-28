@@ -116,9 +116,9 @@ vector<Complex> Circ_2_open::get_params() const
 
   params.push_back(r);
   params.push_back(core.n());
-  params.push_back(core.mur());
+  params.push_back(core.etar());
   params.push_back(cladding.n());
-  params.push_back(cladding.mur());
+  params.push_back(cladding.etar());
   params.push_back(lambda);
 
   return params;  
@@ -575,9 +575,9 @@ vector<Complex> Circ_2_closed::get_params() const
   params.push_back(r);
   params.push_back(R);
   params.push_back(core.n());
-  params.push_back(core.mur());
+  params.push_back(core.etar());
   params.push_back(cladding.n());
-  params.push_back(cladding.mur());
+  params.push_back(cladding.etar());
   params.push_back(lambda);
 
   return params;  
@@ -735,7 +735,7 @@ vector<Complex> Circ_M_closed::get_params() const
   {
     params.push_back(radius[i]);
     params.push_back(material[i]->n());
-    params.push_back(material[i]->mur());
+    params.push_back(material[i]->etar());
   }
 
   return params;  

@@ -959,7 +959,8 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Material.
 
   class_<Material, bases<BaseMaterial> >
-    ("Material", init<const Complex&, optional<const Complex&> >())
+    ("Material", init<const Complex& >())
+    .def(init<const Complex&, const Complex& >())
     .def("__call__",     material_to_term)
     .def("epsr",         material_epsr)
     .def("mur",          material_mur)
