@@ -106,8 +106,10 @@ class Material : public BaseMaterial
     void set_epsr    (const Complex& epsr) {set_epsr_mur(epsr,   mur());}
     void set_mur     (const Complex& mur)  {set_epsr_mur(epsr(), mur);}
 
+    void set_n_imag(Real n_imag)
+      {i_n = Complex(real(i_n), n_imag); i_etar = i_n;}
+
     void set_n(Complex n)        {i_n = n;}
-    void set_n_imag(Real n_imag) {i_n = Complex(real(i_n), n_imag);}
     void set_etar(Complex etar)  {i_etar = etar;}
     
     bool no_gain_present() const {return (imag(i_n) < 1e-12);}
