@@ -267,7 +267,7 @@ Real Cavity::calc_sigma(int* dominant_mode)
 
   std::ostringstream s;
 
-  s << "@ " << global.lambda
+  s << "@ " << real(global.lambda)
     << " " << (global.gain_mat ? imag(global.gain_mat->n()) : 0.0)
     << " " << (global.gain_mat ? global.gain_mat->gain()    : 0.0)
     << " " << sigma(N)

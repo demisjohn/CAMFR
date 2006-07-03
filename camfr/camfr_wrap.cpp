@@ -957,7 +957,6 @@ BOOST_PYTHON_MODULE(_camfr)
   class_<BaseMaterial, boost::noncopyable>("BaseMaterial", no_init);
 
   // Wrap Material.
-
   class_<Material, bases<BaseMaterial> >
     ("Material", init<const Complex& >())
     .def(init<const Complex&, const Complex& >())

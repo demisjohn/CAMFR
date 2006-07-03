@@ -912,6 +912,8 @@ void Circ_2::find_modes_from_scratch_by_track()
   const Complex   k1    = k0*n1*sqrt(mur1);
   const Complex   k2    = k0*n2*sqrt(mur2);
 
+
+
   //
   // (I) : Find kr2 of guided modes (along pos. imag. kr2 axis).
   //

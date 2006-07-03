@@ -8,8 +8,8 @@
 
 -BlochStack(0) + .. + BlochStack(0) doesn't cache calculations.
 
--switch to SVN on sourceforge.
-
+-switch to SVN on sourceforge?
+-cmake?
 -investigate setuptools
 
 -remove explicit dependency on python version from machine_cfp.py.
