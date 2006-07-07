@@ -30,7 +30,7 @@ fflags = flags
 
 # Include directories.
 
-include_dirs = ["/usr/include/python2.4"]
+include_dirs = ["/usr/include/python2.4", "/usr/lib/python2.4/site-packages"]
 
 # Library directories.
 
