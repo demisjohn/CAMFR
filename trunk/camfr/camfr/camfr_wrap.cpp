@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <boost/python.hpp>
-#include "Numeric/arrayobject.h"
+#include "numpy/core/include/numpy/arrayobject.h"
 
 #include "defs.h"
 #include "coord.h"
@@ -534,7 +534,6 @@ inline void stack_set_inc_field_plane_wave
 }
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Functions converting C++ objects to and from Python objects.
@@ -562,7 +561,7 @@ struct register_cVector_from_python
 
   register_cVector_from_python()
   {
-    boost::python::converter::registry::insert
+    boost::python::converter::registry::push_back
       (&convertible, &construct, boost::python::type_id<cVector>());
   }
 

@@ -1,5 +1,5 @@
 from camfr import *
-from Numeric import *
+from numpy import *
 import MLab, pymat
 
 ##############################################################################

@@ -13,7 +13,7 @@
 
 from math import *
 from camfr_work import *
-from Numeric import *
+from numpy import *
 
 ############################################################################
 #

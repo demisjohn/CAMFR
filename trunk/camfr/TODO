@@ -12,6 +12,15 @@
 -cmake?
 -investigate setuptools
 
+-check if numpy wrappers can get get of copying
+-check ref_counting in these wrappers
+-compare with numpy boost python code
+-throws
+-see if camfr_wrap can be updated further (default arguments)
+-speed up by splitting into different parts?
+
+-automatically build docs too
+
 -remove explicit dependency on python version from machine_cfp.py.
 
 -get rid of backward modes detection and use always lossy branchcut?

@@ -8,7 +8,7 @@
 ##############################################################################
 
 from camfr_work import *
-from Numeric import *
+from numpy import *
 from Tkinter import *
 from TkPlotCanvas import *
 import arrayfns
@@ -434,7 +434,7 @@ class PlotCanvasXY(PlotCanvas):
         scale, shift = self.transformation
         x       = self.canvas.canvasx(event.x)
         y       = self.canvas.canvasy(event.y)
-        point   = Numeric.array([x, y])
+        point   = numpy.array([x, y])
         point   = (point-shift)/scale
         self.giveXY(point)
 

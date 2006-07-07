@@ -8,7 +8,7 @@
 ##############################################################################
 
 from camfr_work import *
-from Numeric import *
+from numpy import *
 from Tkinter import *
 
 # win bug?? of toch ergens code die ik mis
