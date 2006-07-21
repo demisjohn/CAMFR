@@ -231,8 +231,8 @@ def _scale_function(z, r_x, r_y, min_area, scale):
     height = z.shape[0]
     width  = z.shape[1]
 
-    if not r_x: r_x = range(width)
-    if not r_y: r_y = range(height)
+    if type(r_x)!=ndarray or asarray(r_x).shape[0]==1: r_x = range(width)
+    if type(r_y)!=ndarray or asarray(r_y).shape[0]==1: r_y = range(height)
 
     if len(r_x)>1:  d_x = r_x[1] - r_x[0]
     else :          d_x = 1
@@ -304,18 +304,18 @@ def _create_arrow(draw, p, dx, dy):
 def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
                         min_area=100000, scale=1):
 
-    import MLab
+    import numpy.lib.mlab as ml
         
     # Scale z and find appropriate colormap.
 
     z = z_.copy()
     
-    zmax = MLab.max(MLab.max(z))
-    zmin = MLab.min(MLab.min(z))
+    zmax = ml.max(ml.max(z))
+    zmin = ml.min(ml.min(z))
 
     if (zmin < 0) and (0 < zmax) and (not colorcode):
         colormap = create_bipolar_colormap()
-        zmax = MLab.max([-zmin, zmax])
+        zmax = ml.max(asarray([-zmin, zmax]))
         z += zmax
         z *= (len(colormap)-1)/(2*zmax)
     else:
@@ -345,11 +345,11 @@ def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
 
 def _create_arrow_plot(px, pz, r_x=0, r_y=0,
                        min_area=100000, scale=1):
-    import MLab
+    import numpy.lib.mlab as ml
     
     # Scale pz & px
     
-    pmax    = max( MLab.max(MLab.max(abs(pz))), MLab.max(MLab.max(abs(px))))
+    pmax    = max( ml.max(ml.max(abs(pz))), ml.max(ml.max(abs(px))))
     if (pmax == 0): cst     = 0
     else:           cst     = ARROWSIZE/pmax
     pz      = pz*cst 
@@ -455,7 +455,7 @@ def plot_arrow(px, pz, r_x=0, r_z=0, filename=0):
 
 def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
     
-    import MLab
+    import numpy.lib.mlab as ml
     
     # Make movie memory.
     
@@ -477,7 +477,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         # the feeling of the image.. so not that correct.
         zcst    = 1e-8
 
-        zmax    = 2*log(MLab.max(MLab.max(abs(z)))+ zcst)
+        zmax    = 2*log(ml.max(ml.max(abs(z)))+ zcst)
         zmin    = log(zcst)                 # Around -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
         
@@ -495,7 +495,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         
         # Scale factors for z.
 
-        zmax    = MLab.max(MLab.max(abs(z)))
+        zmax    = ml.max(ml.max(abs(z)))
         if (zmax == 0):
             # in this case, z=0, the middle of the color palet
             #(z+zmax)*z_scale) should be = len(colormap)/2
@@ -825,10 +825,10 @@ def plot_n_section(stack, r_x, r_y, filename, colormap):
 
 def plot_n(o, r1, r2=0, r3=0, filename=0, colormap=whiteblack):
 
-    if not r2:
+    if type(r2)!=ndarray or asarray(r2).shape[0]==1:
         plot_n_waveguide(o, r1)
     elif type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
-        if not r3:
+        if type(r3)!=ndarray or asarray(r3).shape[0]==1:
           plot_n_stack(o, r1, r2, 0.0, filename, colormap)
         else:
           plot_n_stack(o, r1, r3, r2, filename, colormap)
@@ -948,7 +948,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 
 def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
-   if not r_z:
+   if array(r_z).shape[0]==1:
         # 2D 
  	for x in range(len(r_x)):
 		for z in range(len(r_y)):
@@ -977,7 +977,7 @@ def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
 def _calc_n_stack(n, stack, r_x, r_y, r_z=0):
 
-    if not r_z:
+    if array(r_z).shape[0]==1:
     	# 2D
 	for x in range(len(r_x)):
 		for z in range(len(r_y)):
@@ -1100,10 +1100,10 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 def plot_field(o, component, r1, r2=0, r3=0, filename=0,
                colormap=0, overlay_n=1, contour=1, arrow=0):
 
-    if not r2:
+    if type(r2)!=ndarray or asarray(r2).shape[0]==1:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        if not r3: # 2D stack.
+        if type(r3)!=ndarray or asarray(r3).shape[0]==1: # 2D stack.
           plot_field_stack(o, component, r1, r2, 0, filename, colormap,
                          overlay_n,contour,arrow)
         else:
@@ -1230,7 +1230,7 @@ def animate_field(o, component, r1, r2, r3=0, filename=0, overlay_n=1,
                   contour=1, ln=0):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-      if not r3: # 2D
+      if type(r3)!=ndarray: # 2D
          animate_field_stack(o,component,r1,r2,0.0,filename,
                             overlay_n,contour,ln)
       else:

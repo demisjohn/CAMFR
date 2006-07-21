@@ -11,7 +11,7 @@
 -switch to SVN on sourceforge?
 -cmake?
 -investigate setuptools
-
+-investigate pyste?
 -check if numpy wrappers can get get of copying
 -check ref_counting in these wrappers
 -compare with numpy boost python code
