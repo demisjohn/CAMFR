@@ -948,7 +948,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 
 def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
-   if array(r_z).shape[0]==1:
+   if type(r_z)!=ndarray or asarray(r_z).shape[0]==1:
         # 2D 
  	for x in range(len(r_x)):
 		for z in range(len(r_y)):
@@ -977,7 +977,7 @@ def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
 def _calc_n_stack(n, stack, r_x, r_y, r_z=0):
 
-    if array(r_z).shape[0]==1:
+    if type(r_z)!=ndarray or asarray(r_z).shape[0]==1:
     	# 2D
 	for x in range(len(r_x)):
 		for z in range(len(r_y)):
