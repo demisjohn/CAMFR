@@ -19,14 +19,13 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
+base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
 
-flags = base_flags + " -O3 -march=pentium4 -g -funroll-loops -fstrict-aliasing "
+flags = base_flags + "-O3 -march=pentium4 -g -funroll-loops "
 
-fflags = flags
+fflags = flags + "-fPIC "
 
 # Include directories.
 
@@ -35,14 +34,10 @@ include_dirs = ["/usr/include/python2.4", "/usr/lib/python2.4/site-packages"]
 # Library directories.
 
 library_dirs = ["/opt/intel/mkl8/lib/32"]
-#library_dirs = ["/opt/intel/mkl/lib/32"]
-#library_dirs = ["/opt/intel/mkl721/lib/32"]
 
 # Library names.
 
-#libs = ["boost_python", "blitz", "mkl_lapack", "mkl_p4", "guide", "g2c"]
 libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "g2c"]
-#libs = ["boost_python", "blitz", "lapack", "f77blas", "cblas", "atlas", "g2c"]
 
 # Command to strip library of excess symbols:
 

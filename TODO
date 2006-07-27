@@ -15,11 +15,15 @@
 -check if numpy wrappers can get get of copying
 -check ref_counting in these wrappers
 -compare with numpy boost python code
--throws
--see if camfr_wrap can be updated further (default arguments)
--speed up by splitting into different parts?
+-pass C++ exception to Python
+-see if camfr_wrap can be updated further (default arguments, python function)
+-DT_TEXTREL
+-fPIC for fortran, scons bug?
 
 -automatically build docs too
+
+-check -funroll_loops
+-test with -Wall
 
 -remove explicit dependency on python version from machine_cfp.py.
 
