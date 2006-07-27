@@ -6,6 +6,7 @@ noopt = []
 noopt.append(env_noopt.SharedObject(source = 'defs.cpp'))
 noopt.append(env_noopt.SharedObject(source = 'math/bessel/slatec/limits.c'))
 noopt.append(env_noopt.SharedObject(source = 'camfr_wrap.cpp'))
+noopt.append(env_noopt.SharedObject(source = 'camfr_wrap_2.cpp'))
 
 # Contruct names of all Fortran files.
 

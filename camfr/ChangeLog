@@ -1,3 +1,9 @@
+2006-07-27  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* camfr_wrap.cpp: Split in two.
+	* camfr_wrap_2.cpp: New file.
+	* camfr_wrap.h: New file.
+
 2006-07-07  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* camfr_wrap.cpp: Migrate to numpy.
