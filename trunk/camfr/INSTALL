@@ -21,8 +21,8 @@ to compile CAMFR:.
 - for visualisation, the Python Image Library from 
   www.pythonware.com/products/pil/.
 
-Now edit machine_cfg.py to adjust the location of these libraries, as well
-as other machine-dependent parameters and compiler flags. There are some 
-examples in the files machine_cfg.py.{various_platforms}.
+Now copy one of the machine_cfg.py.{various_platforms} files to 
+machine_cfg.py, and edit it to reflect the location of these libraries, as 
+well as other machine-dependent parameters and compiler flags.
 
-Install the CAMFR library by typing 'python setup.py install'.
+Install the CAMFR library by typing 'python setup.py install' as root.
