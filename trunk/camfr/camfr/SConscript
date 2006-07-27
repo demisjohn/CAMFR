@@ -25,6 +25,9 @@ slatec_names = slatec.split()
 for i in range(len(slatec_names)):
   fortran_files.append('math/bessel/slatec/' + slatec_names[i])
 
+if env['F77'] == "":
+  fortran_files = []
+
 # Build CAMFR library.
 
 env.SharedLibrary(target = '_camfr',

@@ -9,12 +9,12 @@ import os
 
 env = Environment(CPPPATH = include_dirs,
  		  LIBPATH = library_dirs,
-	          CC   = cc,   CCFLAGS   = flags,
+		  CC   = cc,   CCFLAGS   = flags,
 		  CXX  = cxx,  CXXFLAGS  = flags,
-	          F77  = f77,  F77FLAGS  = fflags,
+		  F77  = f77,  F77FLAGS  = fflags,
 		  LINK = link, LINKFLAGS = link_flags,
 		  LIBS = libs, SHLIBPREFIX = "", 
-		  ENV = {'PATH' : os.environ['PATH']})
+		  ENV  = os.environ)
 
 env_noopt = env.Copy(CCFLAGS = flags_noopt, CXXFLAGS = flags_noopt)
 
