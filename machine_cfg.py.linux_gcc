@@ -3,9 +3,9 @@
 
 # Compilers to be used.
 
-cc  = "/home/pbienst/local/bin/gcc"
-cxx = "/home/pbienst/local/bin/g++"
-f77 = "/home/pbienst/local/bin/g77"
+cc  = "gcc"
+cxx = "g++"
+f77 = "g77"
 
 link = cxx
 link_flags = ""
@@ -19,31 +19,25 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
+base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
 
-flags = base_flags + " --param max-inline-insns=600 -O3 -march=pentiumpro \
-                       -ffast-math -funroll-loops -fstrict-aliasing -g"
+flags = base_flags + "-O3 -march=pentium4 -g -funroll-loops "
 
-fflags = flags
+fflags = flags + "-fPIC "
 
 # Include directories.
 
-include_dirs = ["/home/pbienst/blitz-20001213",
-	        "/home/pbienst/boost_cvs/boost",
-	        "/home/pbienst/local/include/python2.2"]
+include_dirs = ["/usr/include/python2.4", "/usr/lib/python2.4/site-packages"]
 
 # Library directories.
 
-library_dirs = ["/home/pbienst/blitz-20001213/lib",
-                "/opt/intel/mkl/lib/32",
-                "/home/pbienst/local/lib"]
+library_dirs = ["/opt/intel/mkl8/lib/32"]
 
 # Library names.
 
-libs = ["bpl", "blitz", "mkl_lapack", "mkl_def", "guide", "g2c"]
+libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "g2c"]
 
 # Command to strip library of excess symbols:
 
@@ -53,4 +47,4 @@ strip_command = ""
 
 # Extra files to copy into installation directory.
 
-extra_files = []
+extra_files = [("doc", ["docs/camfr.pdf"])]
