@@ -13,7 +13,6 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#include <Python.h>
 #include <math.h>
 #include <complex>
 #include <string>
