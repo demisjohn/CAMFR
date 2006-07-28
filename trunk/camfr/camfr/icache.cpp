@@ -120,13 +120,18 @@ InterfaceCache::~InterfaceCache()
 
 void InterfaceCache::deregister(Waveguide* wg)
 {
+  std::vector<std::pair<Waveguide*,Waveguide*> > to_wipe;
+
   for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     if ( (i->first.first == wg) || (i->first.second == wg) )
     {
       delete i->second;
-      cache.erase(i->first);
+      to_wipe.push_back(i->first);
     }
+
+  for (int i=0; i<to_wipe.size(); i++)
+    cache.erase(to_wipe[i]);
 }
 
 
@@ -138,14 +143,19 @@ void InterfaceCache::deregister(Waveguide* wg)
 /////////////////////////////////////////////////////////////////////////////
 
 void InterfaceCache::deregister(Waveguide* wg1, Waveguide* wg2)
-{
+{  
+  std::vector<std::pair<Waveguide*,Waveguide*> > to_wipe;
+
   for (Cache<std::pair<Waveguide*, Waveguide*>, Scatterer*>::iter
          i=cache.begin(); i!=cache.end(); ++i)
     if ( (i->first.first == wg1) && (i->first.second == wg2) )
     {
-      delete i->second;
-      cache.erase(i->first);
-    }
+      delete i->second;      
+      to_wipe.push_back(i->first);
+    }  
+
+  for (int i=0; i<to_wipe.size(); i++)
+    cache.erase(to_wipe[i]);
 }
 
 
