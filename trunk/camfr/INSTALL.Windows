@@ -1,0 +1,51 @@
+To install CAMFR on a Windows platform, it's easiest to use the binary 
+installers for the follwing packages:
+
+- Python 2.4.x from http://www.python.org
+- NumPy and optionally SciPy from http://www.scipy.org
+- CAMFR itself
+
+(Note: I used Python 2.4.3, NumPy 0.9.8 and SciPy 0.4.9. It still needs to be
+tested how sensitive the use of the exact same version is.)
+
+You can also compile CAMFR from sources, which is useful if you e.g. want to
+link with a LAPACK library which is specifically optimised for your system,
+or if you want to develop on a Windows machine.
+
+As compiler, we recommend Microsoft Visual Studio .NET 2003, as this is the 
+same version that was used to compile Python 2.4. Other versions (e.g. Visual 
+Studio .NET 2005) use different run-time libraries which can cause
+incompatibilities.
+
+First, install the build tool scons from http://www.scons.org, as well as the
+versioning control tool darcs from http://abridgegame.org/darcs. Then, save
+yourself a lot of trouble and copy a directory over from a fellow developper.
+
+If not, you'll have to go through a number of steps to install all the
+libraries. We assume that you use the following directory layout (if not, 
+you'll have to edit machine_cfg.py):
+
+C:\Program Files\source\camfr
+C:\Program Files\source\boost_1_33_1
+C:\Program Files\source\blitz_0.9
+C:\Program Files\source\fortran
+
+* Download the latest CAMFR source code from our local darcs server:
+
+darcs get http://claudia.intec.ugent.be/repos/camfr
+
+(Currently, you can still use CVS from the Sourceforge site as well)
+
+* Copy machine_cfg.py.MSVC to machine_cfg.py and edit if needed.
+
+* Download the Boost sources and the bjam executable from 
+http:\\www.boost.org. You don't need to install the whole library, just 
+Boost.Python, so you can cd to 
+C:\Program Files\boost_1_33_1\libs\python\build 
+and do 
+bjam -sTOOLS=vc-7_1 -sBUILD=release
+
+* Download Blitz from http://www.oonumerics.org/blitz/. There is a
+Blitz-VS.NET.zip in the top level directory blitz-0.9. Unzip its contents to
+blitz-0.9, not to blitz-0.9/Blitz-VS.NET. Open the Blitz-Library.sln. First,
+make sure the drop-down box in the  
