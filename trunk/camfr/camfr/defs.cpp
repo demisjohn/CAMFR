@@ -18,20 +18,6 @@ Global global={0,0,TE,0,track,normal,100,1,0.01,100,100,Complex(1,1),false,
                20,1e-14,true,1e-12,identical,GEV,lapack,true,true,false,
                0.0,1.2,false,false,false,true,false,1e-14};
 
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Workaround for inferior compilers.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#ifdef NO_CXX_ABS
-Real abs(Real x) {return x >= 0.0 ? x : -x;}
-#endif
-
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // operator<< for Polarisation

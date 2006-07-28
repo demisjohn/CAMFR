@@ -1,5 +1,10 @@
 2006-07-28  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
+	* defs.h: Remove obsolete compiler workaround.
+	* defs.cpp: Ditto.
+
+2006-07-28  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
 	* icache.cpp: Don't delete elements of a list while iterating over it.
 
 2006-07-27  Peter Bienstman  <Peter.Bienstman@UGent.be>

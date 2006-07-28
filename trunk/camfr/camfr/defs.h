@@ -29,10 +29,6 @@ using std::sin;
 using std::log;
 using std::arg;
 
-#ifndef _WIN32
-using std::isnan;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // General conventions
@@ -99,22 +95,6 @@ typedef enum {lapack, arnoldi} Eigen_calc;
 typedef enum {unknown, TEM, TE, TM, HE, EH, TE_TM} Polarisation;
 extern const std::string Pol_string[11];
 std::ostream& operator<< (std::ostream& s, const Polarisation& pol);
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Workaround for inferior compilers.
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#ifdef _WIN32
-#define NO_CXX_ABS
-#endif
-
-#ifdef NO_CXX_ABS
-Real abs(Real x);
-#endif
 
 
 
