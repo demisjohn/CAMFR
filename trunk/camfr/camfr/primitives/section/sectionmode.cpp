@@ -313,6 +313,14 @@ void Section2D_Mode::get_fw_bw(const Complex& c, Limit c_limit,
 
 void Section2D_Mode::normalise() 
 {
+
+  // Note: overlap_slice currently gives linking errors under Windows
+
+  py_print("Warning: Section2D_Mode::normalise temporarily disabled.");
+  return;
+  
+#if 0
+
   if (global.calc_field_profiles == false)
     return;
   
@@ -371,6 +379,7 @@ void Section2D_Mode::normalise()
     right_interface_field[i].fw /= norm;
     right_interface_field[i].bw /= norm;
   }
+#endif
 }
 
 
