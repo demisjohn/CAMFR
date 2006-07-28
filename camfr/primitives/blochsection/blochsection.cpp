@@ -1109,6 +1109,7 @@ void BlochSection2D::find_modes()
 int BlochSection2D::order(Polarisation pol, int Mx, int My) const
 {
   py_error("'order' not defined for non-uniform BlochSections.");
+  return -1;
 }
 
 

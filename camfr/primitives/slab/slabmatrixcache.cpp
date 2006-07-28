@@ -14,7 +14,7 @@
 #include "isoslab/slabmode.h"
 #include "slabmatrixcache.h"
 #include "generalslab.h"
-#include <iomanip.h>
+#include <iomanip>
 
 using std::vector;
 using std::pair;
