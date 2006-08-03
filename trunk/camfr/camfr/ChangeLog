@@ -1,3 +1,7 @@
+2006-08-03  Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+       * icache.cpp: Fix bad check for monoscatterers.
+
 2006-07-28  Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* defs.h: Remove obsolete compiler workaround.
