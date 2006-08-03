@@ -32,8 +32,8 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
 
   if (found)
   {
-    if (    (global.always_dense == true) 
-         && (!dynamic_cast<DenseScatterer*>(sc))
+    if (    (global.always_dense == true)
+         && (wg1->is_uniform() && wg2->is_uniform())
          && (wg1 != wg2) )
     {
       deregister(wg1, wg2);
