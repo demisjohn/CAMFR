@@ -1,5 +1,9 @@
 2006-08-04  Peter Bienstman <Peter.Bienstman@UGent.be>
 
+	* section3.py: New test.
+
+2006-08-04  Peter Bienstman <Peter.Bienstman@UGent.be>
+
 	* section1.py: New test.
 	* section2.py: Ditto.
 

@@ -341,7 +341,7 @@ struct register_cVector_from_python
   }
 
   static void* convertible(PyObject* o)
-  {
+  { 
     if (!PyArray_Check(o))
       return NULL;
 
