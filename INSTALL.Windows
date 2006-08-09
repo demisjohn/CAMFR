@@ -75,7 +75,7 @@ g77 -O3 -c *.f
 ar -cr fortran.lib *.o
 ranlib fortran.lib
 
-Copy C:\MinGW\lib\lib2gc.a to fortran\g2c.lib (i.e. renaming it in the
+Copy C:\MinGW\lib\libg2c.a to fortran\g2c.lib (i.e. renaming it in the
 process) as well as C:\MinGW\lib\gcc\mingw32\3.4.4\libgcc.a to fortran\gcc.lib
 
 * Now open a Visual Studio command line, go to the camfr directory and type
