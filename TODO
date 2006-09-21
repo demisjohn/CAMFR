@@ -18,7 +18,7 @@
 -pass C++ exception to Python
 -see if camfr_wrap can be updated further (default arguments, python function)
 -DT_TEXTREL
--fPIC for fortran, scons bug?
+-fPIC, optimise options for fortran, scons bug?
 -testsuite windows
 -overlap_slice under windows.
 -automatically build docs too
