@@ -61,7 +61,7 @@ email:   Lieven.Vanholme@intec.ugent.be"""
 
 class StackPlot:
     
-    import camfr_PIL, arrayfns
+    import camfr_PIL
 
     # Stack values.
     N               = 0         # Number of modes if blochstack.
@@ -85,10 +85,10 @@ class StackPlot:
     # Memory values.
     fm              = [[],[],[]]        # Array of field Matrices.
     fm_nr           = 0                 # Current field Matrix number.
-    mat_f           = zeros(0,Float)    # Field matrix.
-    mat_n           = zeros(0,Float)    # Index matrix.
-    mat_px          = zeros(0,Float)    # Poynting-x matrix.
-    mat_py          = zeros(0,Float)    # Poynting-y matrix.
+    mat_f           = zeros(0,float)    # Field matrix.
+    mat_n           = zeros(0,float)    # Index matrix.
+    mat_px          = zeros(0,float)    # Poynting-x matrix.
+    mat_py          = zeros(0,float)    # Poynting-y matrix.
 
     # Picture variables.
     PLAY            = 0                 # Stop-play-pause = 0-1-2.
@@ -522,7 +522,7 @@ class StackPlot:
     def _drawStack(self):
         xr = self.stackRange[3]
         yr = self.stackRange[4]
-        n = zeros([len(yr),len(xr)], Float)
+        n = zeros([len(yr),len(xr)], float)
 
         camfr_PIL._calc_n_stack(n, self.stack, yr, xr)
 
@@ -545,7 +545,7 @@ class StackPlot:
                                          # the old movie
         
         field   = self.field.get()
-        z       = zeros(0,Complex)
+        z       = zeros(0,complex)
 
         def setfield(nr, comp):
             self.fm_nr = nr
@@ -587,7 +587,7 @@ class StackPlot:
     def _calcIndex(self):      
         xr = self.fieldRange[3]
         yr = self.fieldRange[4]
-        n = zeros([len(yr),len(xr)], Float)
+        n = zeros([len(yr),len(xr)], float)
 
         camfr_PIL._calc_n_stack(n, self.stack, yr, xr)
 
@@ -602,8 +602,8 @@ class StackPlot:
     def _calcPoynting(self):    
         xr = self.fieldRange[3]
         yr = self.fieldRange[4]      
-        px   = zeros([len(yr),len(xr)], Float)
-        py   = zeros([len(yr),len(xr)], Float)
+        px   = zeros([len(yr),len(xr)], float)
+        py   = zeros([len(yr),len(xr)], float)
 
         if self._hasField():
             camfr_PIL._calc_arrow_stack(py, px, self.stack, yr, xr)
@@ -759,7 +759,7 @@ class StackPlot:
 
         xr = self.fieldRange[3]
         yr = self.fieldRange[4]
-        f  = zeros([len(yr),len(xr)], Complex)
+        f  = zeros([len(yr),len(xr)], complex)
 
         if self._hasField():
             #a 'popup' appears while calculating 

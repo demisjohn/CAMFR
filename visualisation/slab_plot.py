@@ -11,7 +11,6 @@ from camfr_work import *
 from numpy import *
 from Tkinter import *
 from TkPlotCanvas import *
-import arrayfns
 
 
 
@@ -368,7 +367,7 @@ class SlabPlot:
    def getNlines(self,cmp,col):
         r, pr = [], self.plRange
         
-        for x in arrayfns.span(pr[0],pr[1],100):
+        for x in arrayrange(pr[0],pr[1],100):
             r.append((x, cmp(self.slab.n(Coord(x,0,0)))  ))
             
         self.lines.append(PolyLine(r, color=self.colors[col]))
@@ -382,7 +381,7 @@ class SlabPlot:
    def getFieldLines(self,cmp, col):        
         r, mo, sl, pr = [], self.mode.get(), self.slab, self.plRange
 
-        for x in arrayfns.span(pr[0],pr[1],100):
+        for x in arrayrange(pr[0],pr[1],100):
             r.append(( x, cmp(sl.mode(mo).field(Coord(x,0,0))) ))
 
         self.lines.append(PolyLine(r, color=self.colors[col]))     
