@@ -643,7 +643,7 @@ def _create_color_range(c1=(0,0,0), c2=(255,255,255), ad_last = 0 ):
     # Start_to_end + dc.
     if ad_last: colors +=1
 
-    return [sum( (c1 + (x*dc).astype(Int))*[1, 0x100, 0x10000] )
+    return [sum( (c1 + (x*dc).astype(int))*[1, 0x100, 0x10000] )
             for x in range(int(colors))]
 
 
@@ -684,7 +684,7 @@ def plot_neff(waveguide):
 
 def plot_f(f, r_x, r_y, filename=0, colormap=palet):
     
-    fz = zeros([len(r_y),len(r_x)], Float)
+    fz = zeros([len(r_y),len(r_x)], float)
 
     for i_y in range(len(r_y)):
       for i_x in range(len(r_x)):
@@ -749,7 +749,7 @@ def plot_n_stack(stack, r_x, r_z, r_y=0, filename=0, colormap=whiteblack):
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections."
 
-    n = zeros([len(ax1),len(ax2)],Float)
+    n = zeros([len(ax1),len(ax2)],float)
     if rzrange:
      _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -786,9 +786,9 @@ def plot_arrow_stack(stack, r_x, r_z, r_y = 0, filename=0):
       rzrange = True
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
-    px   = zeros([len(r_x),len(r_z)], Float)
-    py   = zeros([len(r_y),len(r_z)], Float)
-    pz   = zeros([len(r_x),len(r_z)], Float)
+    px   = zeros([len(r_x),len(r_z)], float)
+    py   = zeros([len(r_y),len(r_z)], float)
+    pz   = zeros([len(r_x),len(r_z)], float)
     if rzrange:
       _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -810,7 +810,7 @@ def plot_arrow_stack(stack, r_x, r_z, r_y = 0, filename=0):
 
 def plot_n_section(stack, r_x, r_y, filename, colormap):
     
-    n = zeros([len(r_y),len(r_x)], Float)
+    n = zeros([len(r_y),len(r_x)], float)
     _calc_n_stack(n, stack, array(r_x)[::-1], r_y)
 
     plot_matrix(n, r_x, r_y, filename, colormap)    
@@ -895,7 +895,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
 
-    f = zeros([len(ax1),len(ax2)], Float)
+    f = zeros([len(ax1),len(ax2)], float)
     if rzrange:
       _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
     else:
@@ -906,7 +906,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     # Overlay index/arrow profile.
     
     if overlay_n:
-        n = zeros([len(ax1),len(ax2)], Float)
+        n = zeros([len(ax1),len(ax2)], float)
         if rzrange:
           _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
         else:
@@ -914,9 +914,9 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
         pic_n = _create_matrix_plot(n, ax2, ax1, whiteblack)
 
     if arrow:
-        px   = zeros([len(r_x),len(r_z)], Float)
-        py   = zeros([len(r_y),len(r_z)], Float)
-        pz   = zeros([len(r_x),len(r_z)], Float)
+        px   = zeros([len(r_x),len(r_z)], float)
+        py   = zeros([len(r_y),len(r_z)], float)
+        pz   = zeros([len(r_x),len(r_z)], float)
         if rzrange:
           _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
         else:
@@ -1066,7 +1066,7 @@ def _calc_arrow_stack(px, pz, stack, r_x, r_z):
 def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
                             overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], Float)
+    f = zeros([len(r_y),len(r_x)], float)
     
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -1078,7 +1078,7 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 
     # Overlay index profile.
         
-    n = zeros([len(r_y),len(r_x)], Float)
+    n = zeros([len(r_y),len(r_x)], float)
         
     for i_x in range(len(r_x)):
         for i_y in range(len(r_y)):
@@ -1157,7 +1157,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
 
-    f = zeros([len(ax1),len(ax2)], Complex)
+    f = zeros([len(ax1),len(ax2)], complex)
     if rzrange:
       _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
     else:
@@ -1167,7 +1167,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 
     # Overlay index profile.
 
-    n = zeros([len(ax1),len(ax2)], Float)
+    n = zeros([len(ax1),len(ax2)], float)
     if rzrange:
       _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -1192,7 +1192,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
                                overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], Complex)
+    f = zeros([len(r_y),len(r_x)], complex)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -1204,7 +1204,7 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
 
     # Overlay index profile.
         
-    n = zeros([len(r_y),len(r_x)], Float)
+    n = zeros([len(r_y),len(r_x)], float)
         
     for i_x in range(len(r_x)):
         for i_y in range(len(r_y)):

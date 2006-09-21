@@ -325,7 +325,7 @@ def plot_neff(waveguide):
 
 def plot_f(f, r_x, r_y, filename=0, colormap=palet):
     
-    fz = zeros([len(r_y),len(r_x)], Float)
+    fz = zeros([len(r_y),len(r_x)], float)
 
     for i_y in range(len(r_y)):
       for i_x in range(len(r_x)):
@@ -360,7 +360,7 @@ def plot_n_waveguide(waveguide, r_x):
 
 def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
     
-    n = zeros([len(r_x),len(r_z)], Float)
+    n = zeros([len(r_x),len(r_z)], float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
@@ -378,7 +378,7 @@ def plot_n_stack(stack, r_x, r_z, filename=0, colormap=whiteblack):
 
 def plot_n_section(stack, r_x, r_y, filename, colormap):
     
-    n = zeros([len(r_y),len(r_x)], Float)
+    n = zeros([len(r_y),len(r_x)], float)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -432,7 +432,7 @@ def plot_field_waveguide(mode, component, r_x):
 def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
                      overlay_n=1, contour=1):
     
-    f = zeros([len(r_x),len(r_z)], Float)
+    f = zeros([len(r_x),len(r_z)], float)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
@@ -452,7 +452,7 @@ def plot_field_stack(stack, component, r_x, r_z, filename, colormap,
 def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
                             overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], Float)
+    f = zeros([len(r_y),len(r_x)], float)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -492,7 +492,7 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
 def animate_field_stack(stack, component, r_x, r_z, filename=0,
                         overlay_n=1, contour=1):
     
-    f = zeros([len(r_x),len(r_z)], Complex)
+    f = zeros([len(r_x),len(r_z)], complex)
 
     for i_x in range(len(r_x)):
       for i_z in range(len(r_z)):
@@ -512,7 +512,7 @@ def animate_field_stack(stack, component, r_x, r_z, filename=0,
 def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
                                overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], Complex)
+    f = zeros([len(r_y),len(r_x)], complex)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
