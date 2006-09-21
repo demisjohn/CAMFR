@@ -304,7 +304,7 @@ def _create_arrow(draw, p, dx, dy):
 def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
                         min_area=100000, scale=1):
 
-    import numpy.lib.mlab as ml
+    import numpy.oldnumeric.mlab as ml
         
     # Scale z and find appropriate colormap.
 
@@ -345,7 +345,7 @@ def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
 
 def _create_arrow_plot(px, pz, r_x=0, r_y=0,
                        min_area=100000, scale=1):
-    import numpy.lib.mlab as ml
+    import numpy.oldnumeric.mlab as ml
     
     # Scale pz & px
     
@@ -455,7 +455,7 @@ def plot_arrow(px, pz, r_x=0, r_z=0, filename=0):
 
 def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
     
-    import numpy.lib.mlab as ml
+    import numpy.oldnumeric.mlab as ml
     
     # Make movie memory.
     
