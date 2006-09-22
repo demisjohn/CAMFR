@@ -58,6 +58,7 @@ Real SlabMode::S_flux(Real precision) const
   SlabModeFlux flux(this);
 
   vector<Complex> slab_disc = geom->get_discontinuities();
+  slab_disc.insert(slab_disc.begin(), 0.0);
 
   Real result = 0;
   for (unsigned int k=0; k<slab_disc.size()-1; k++)

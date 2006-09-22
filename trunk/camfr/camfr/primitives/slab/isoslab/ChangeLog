@@ -1,3 +1,7 @@
+2006-09-22 Peter Bienstman  <Peter.Bienstman@UGent.be>
+
+	* slab.cpp: Fix S_flux bug.
+
 2006-04-25 Peter Bienstman  <Peter.Bienstman@UGent.be>
 
 	* slab.cpp: Use mueller_precision.
