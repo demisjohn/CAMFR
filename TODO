@@ -23,6 +23,8 @@
 -overlap_slice under windows.
 -automatically build docs too
 
+-write Error: didn't find enough modes, and Warning: singular system to stdout?
+
 -check -funroll_loops
 -test with -Wall
 

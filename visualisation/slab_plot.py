@@ -76,7 +76,9 @@ class SlabPlot:
         fileMenu = Menu(self.menuBar,tearoff=0)
         fileMenu.add_command( label="Quit",
                               command = self.window.master.destroy)
-
+        fileMenu.add_command( label = "Save as raw data",
+                              command = lambda:self._save())
+                              
         configMenu = Menu(self.menuBar,tearoff=0)
         configMenu.add_checkbutton( label='show effective index distribution',
                                     command = self.changeViewMode)
@@ -404,7 +406,16 @@ class SlabPlot:
 
         self.mode.set(mo)
 
+   ###########################################################################
+   #
+   # Save this mode
+   #
+   ###########################################################################
 
+   def _save(self):
+        File = open("mymode.xls","w")
+        PlotGraphics(self.lines).writeToFile(File,'\t')
+        File.close()
 
 ##############################################################################
 #
