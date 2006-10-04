@@ -40,9 +40,9 @@ class PolyPoints:
         self.scaled = scale*self.points+shift
 
     def writeToFile(self, file, separator):
-        if self.points:
+        if self.points.any():
             for p in self.points:
-                file.write(`p[0]` + ' ' + `p[1]` + '\n')
+                file.write(`p[0]` + separator + `p[1]` + '\n')
             return 1
         else:
             return 0
