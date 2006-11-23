@@ -1252,7 +1252,13 @@ void UniformBlochSection::find_modes()
       modeset.push_back(newmode);
     }
 
-  sort_modes();
+  // Note: do not sort the modes here, as just calling the regular
+  // sort_modes() routine does not take alpha and beta into account, and
+  // sometimes modes in different layers with the same alpha and beta 
+  // end up at different indices, resulting in incorect results 
+  // in calc_RT_fresnel and other problems.
+
+  //sort_modes();
 
   // Remember wavelength and gain these modes were calculated for.
 
