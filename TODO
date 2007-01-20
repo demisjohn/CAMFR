@@ -1,3 +1,7 @@
+-T scheme when S scheme fails due to resonance?
+
+-cavity: order top and bottom, invert one of the stacks?
+
 -add span check to substrate_grating code
 
 -change blochmode.get_kx() to blochmode.kx()

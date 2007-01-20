@@ -304,17 +304,23 @@ void Cavity::set_source_expansion(const FieldExpansion& f)
 
   cMatrix inv_Rd_Ru(N,N,fortranArray);
   tmp = U1 - multiply(Rd, Ru);
-  if (global.stability != SVD)
-    inv_Rd_Ru.reference(invert    (tmp));
-  else
+
+  if (global.stability == extra)
+    inv_Rd_Ru.reference(invert_x  (tmp));
+  else if (global.stability == SVD)
     inv_Rd_Ru.reference(invert_svd(tmp));
+  else
+    inv_Rd_Ru.reference(invert    (tmp));
 
   cMatrix inv_Ru_Rd(N,N,fortranArray);
   tmp = U1 - multiply(Ru, Rd);
-  if (global.stability != SVD)
-    inv_Ru_Rd.reference(invert    (tmp));
-  else
+
+  if (global.stability == extra)
+    inv_Ru_Rd.reference(invert_x  (tmp));
+  else if (global.stability == SVD)
     inv_Ru_Rd.reference(invert_svd(tmp));
+  else
+    inv_Ru_Rd.reference(invert    (tmp));
 
   // Calculate total field incident on top mirror.
 

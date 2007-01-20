@@ -317,7 +317,7 @@ void S_scheme(const vector<Chunk>& chunks, MonoScatterer* result)
   // Initialise variables from first chunk.
 
   calc_tilde(chunks[0], &r12, &r21, &t12, &t21);
-  
+
   result->set_R12(r12); result->set_R21(r21);
   result->set_T12(t12); result->set_T21(t21);
   
@@ -333,7 +333,6 @@ void S_scheme(const vector<Chunk>& chunks, MonoScatterer* result)
     // Calculate new result variables.
 
     calc_tilde(chunks[k], &r12, &r21, &t12, &t21);
-    
     Complex res = 1.0-r12*pR21;
     
     Complex M = 1.0/res;

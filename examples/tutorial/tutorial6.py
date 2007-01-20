@@ -7,7 +7,6 @@
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1)
 set_N(10)
