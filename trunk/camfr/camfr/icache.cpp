@@ -32,6 +32,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
 
   if (found)
   {
+    
     if (    (global.always_dense == true)
          && (wg1->is_uniform() && wg2->is_uniform())
          && (wg1 != wg2) )
@@ -64,7 +65,7 @@ Scatterer* InterfaceCache::get_interface(Waveguide* wg1, Waveguide* wg2)
   }
   else
     sc = new DenseInterface(*wg1, *wg2);
-
+  
   cache.store(std::pair<Waveguide*, Waveguide*>(wg1, wg2), sc);
 
   if (wg1 != wg2)

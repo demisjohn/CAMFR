@@ -43,9 +43,8 @@ class Scatterer
     virtual bool contains(const Material& m)  const {return false;}
     virtual bool no_gain_present()            const {return true;}
     virtual bool recalc_needed()              const {return true;}
-    
-    virtual bool all_layers_uniform() const {return false;}
-    virtual bool is_mono() const {return false;}
+    virtual bool all_layers_uniform()         const {return false;}
+    virtual bool is_mono()                    const {return false;}
     
     virtual void  calcRT() {}
     virtual void allocRT() {}
@@ -66,8 +65,8 @@ class Scatterer
 //   Scatterer where multiple modes are considered, therefore having
 //   (dense or diagonal) R and T matrices.
 //
-//   Note that it is not yet specified how the storage should be handled,
-//   only that a cMatrix can be returned.
+//   The interface specifies that both dense and diagonal matrices can be
+//   returned, in order to allow for FlippedScatterers of DiagScatterers.
 //  
 /////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +85,12 @@ class MultiScatterer : public Scatterer
     virtual const cMatrix& get_R12() const = 0;
     virtual const cMatrix& get_R21() const = 0;
     virtual const cMatrix& get_T12() const = 0;
-    virtual const cMatrix& get_T21() const = 0;
+    virtual const cMatrix& get_T21() const = 0;    
+
+    virtual const cVector& get_diag_R12() const = 0;
+    virtual const cVector& get_diag_R21() const = 0;
+    virtual const cVector& get_diag_T12() const = 0;
+    virtual const cVector& get_diag_T21() const = 0;
 
   protected:
 
@@ -124,6 +128,11 @@ class DenseScatterer : public MultiScatterer
     const cMatrix& get_T12() const {return T12;}
     const cMatrix& get_T21() const {return T21;}
 
+    const cVector& get_diag_R12() const {internal_error();} 
+    const cVector& get_diag_R21() const {internal_error();} 
+    const cVector& get_diag_T12() const {internal_error();} 
+    const cVector& get_diag_T21() const {internal_error();} 
+
     void set_R12(const cMatrix& M) {R12.reference(M);}
     void set_R21(const cMatrix& M) {R21.reference(M);}
     void set_T12(const cMatrix& M) {T12.reference(M);}
@@ -140,6 +149,10 @@ class DenseScatterer : public MultiScatterer
   protected:
 
     cMatrix R12, R21, T12, T21;
+
+    void internal_error() const
+      {py_error("Diag matrix of DenseScatterer asked.");}
+    
 };
 
 
@@ -271,14 +284,23 @@ class FlippedScatterer : public MultiScatterer
     std::vector<Material*> get_materials() const {return sc->get_materials();}
     bool contains(const Material& m) const {return sc->contains(m);}
 
-    void allocRT() {return sc->allocRT();}
-    void  freeRT() {return sc->freeRT();}
+    bool recalc_needed()      const {return sc->recalc_needed();}
+    bool all_layers_uniform() const {return sc->all_layers_uniform();} 
+    bool is_mono()            const {return sc->is_mono();}
+
+    void allocRT() {} // Don't erase alloc from orginal sc.
+    void  freeRT() {}
     void  calcRT() {return sc->calcRT();}
 
     const cMatrix& get_R12() const {return sc->get_R21();}  
     const cMatrix& get_R21() const {return sc->get_R12();} 
     const cMatrix& get_T12() const {return sc->get_T21();} 
-    const cMatrix& get_T21() const {return sc->get_T12();} 
+    const cMatrix& get_T21() const {return sc->get_T12();}
+
+    const cVector& get_diag_R12() const {return sc->get_diag_R21();}  
+    const cVector& get_diag_R21() const {return sc->get_diag_R12();} 
+    const cVector& get_diag_T12() const {return sc->get_diag_T21();} 
+    const cVector& get_diag_T21() const {return sc->get_diag_T12();} 
     
   protected:
 

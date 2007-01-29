@@ -156,7 +156,7 @@ void calc_tilde(const Chunk& chunk,
 {
   // No propagation needed?
 
-  DiagScatterer* s = dynamic_cast<DiagScatterer*>(chunk.sc);
+  MultiScatterer* s = dynamic_cast<MultiScatterer*>(chunk.sc);
 
   if (abs(chunk.d) == 0)
   {
