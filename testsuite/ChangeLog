@@ -1,3 +1,7 @@
+2007-01-30  Peter Bienstman <Peter.Bienstman@UGent.be>
+
+	* stack2.py: Hopefully make stack2.py stable.
+
 2006-08-04  Peter Bienstman <Peter.Bienstman@UGent.be>
 
 	* section3.py: New test.
