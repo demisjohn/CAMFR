@@ -567,6 +567,9 @@ vector<Complex> Slab_M::find_kt_from_scratch_by_track()
 
   Real prop_kt_end_lossless = global_slab.estimate_cutoff 
                          *abs(sqrt(C*(max_eps_eff - min_eps_mu_lossless)));
+
+  if (uniform == true)
+    prop_kt_end_lossless = 0.0;
   
   vector<Real> kt_prop_lossless;
   if (abs(prop_kt_end_lossless) > 0)
