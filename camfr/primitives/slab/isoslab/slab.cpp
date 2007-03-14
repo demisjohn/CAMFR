@@ -56,7 +56,7 @@ Slab_M::Slab_M(const Expression& expression, int M_series_)
     if (i == ex.get_size()-1)
       thickness += I*global_slab.upper_PML;
 
-    // Combine succesive terms containing the same material.      
+    // Combine succesive terms containing the same material.
 
     while ( (i+1 < ex.get_size())
          && (*m == *(dynamic_cast<Material*>(ex.get_term(i+1)->get_mat()))) )
@@ -864,22 +864,72 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
     h_eps.push_back(1.0);
   }
 
+  if (0)
+  {
+    for (int i=0; i<eps.size(); i++)
+      std::cout << "eps i " << eps[i] << std::endl;
+    for (int i=0; i<inv_eps.size(); i++)
+      std::cout << "inv_eps i " << inv_eps[i] << std::endl;
+    for (int i=0; i<h_eps.size(); i++)
+      std::cout << "h_eps i " << h_eps[i] << std::endl;
+  }
+
   // Construct fourier matrices.
  
   bool extend = true;
   bool stretch = (global.solver == stretched_ASR);
   Real eta = global_slab.eta_ASR;
 
+  // Create the stretched index profile for the stretched ASR solver.
+ 
+  vector<Complex> udisc;
+  if (stretch == true)
+  {  
+    Complex u_begin = real(disc[1]-disc[0]);
+    Complex u_end   = real(disc[disc.size()-1]-disc[disc.size()-2]);
+    udisc.push_back(0.0);
+
+    Complex u_step = (real(u_begin) >= real(u_end)) ? u_begin : u_end;
+    for (unsigned int i=1; i<disc.size(); i++)
+      udisc.push_back(Real(i)*u_step);
+
+    // Adding the imaginary (PML) part of the disc vector to udisc.
+
+    for (unsigned int i=1; i<disc.size(); i++)
+      udisc[i] += imag(disc[i])*I;
+  }
+  else
+  {
+    udisc = disc;
+  }
+
+  if (0)
+  {
+    for (int i=0; i<disc.size(); i++)
+      std::cout << "disc i " << disc[i] << std::endl;
+    for (int i=0; i<udisc.size(); i++)
+      std::cout << "udisc i " << udisc[i] << std::endl;
+  }
+
   if ( (global.solver == ASR) || (global.solver == stretched_ASR) )
   {
-   
-   f_eps     = fourier_ASR(    eps, disc, 2*M, 0, stretch, extend, eta);
-   f_inv_eps = fourier_ASR(inv_eps, disc, 2*M, 0, stretch, extend, eta);
+    f_eps     = fourier_ASR(    eps, disc, udisc, 2*M, extend, eta);
+    f_inv_eps = fourier_ASR(inv_eps, disc, udisc, 2*M, extend, eta);
   }
   else
   {
     f_eps     = fourier(    eps, disc, 2*M, 0, extend);
     f_inv_eps = fourier(inv_eps, disc, 2*M, 0, extend);
+  }
+
+  if (0)
+  {
+    for (int i=1; i<=4*M+1; i++)
+      std::cout << " f_eps[" << i << "] " << real(f_eps(i)) << " " 
+                            << imag(f_eps(i)) << std::endl;
+    for (int i=1; i<=4*M+1; i++)
+      std::cout << "f_inv_eps[" << i << "] " << real(f_inv_eps(i)) 
+                << " " << imag(f_inv_eps(i)) << std::endl;
   }
 
   cMatrix Eps(n,n,fortranArray);
@@ -915,7 +965,7 @@ void Slab_M::fill_E_matrix(cMatrix* E, int M, int n,
   else
   {
     cVector f_h_eps(4*M+1,fortranArray);
-    f_h_eps = fourier_ASR(h_eps, disc, 2*M, 0, extend, stretch, eta);
+    f_h_eps = fourier_ASR(h_eps, disc, udisc, 2*M, extend, eta);
 
     for (int i=1; i<=n; i++)
       for (int j=1; j<=n; j++)
@@ -1067,7 +1117,6 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
     Complex D = get_width();
 
     // Recalculate for a stretched structure.
-    // TODO_PDB: this is probably where the udisc calculation should go?
 
     if (global.solver == stretched_ASR)
     {
@@ -1082,7 +1131,6 @@ std::vector<Complex> Slab_M::estimate_kz2_from_uniform_modes()
     }
 
     const Complex lambda_over_d = global.lambda / D / 2.;
-
 
     Complex offset = (abs(R_lower*R_upper-1.0) < 1e-10) ? 0 : lambda_over_d/2.;
 
@@ -1179,6 +1227,12 @@ struct kz_sorter
     {return ( real(kz_a*kz_a) > real(kz_b*kz_b) );}
 };
 
+struct n_eff_sorter
+{
+    bool operator()(const Complex& n_eff_a, const Complex& n_eff_b)
+    {return ( real(n_eff_a) > real(n_eff_b) );}
+};
+
 struct kz2_sorter
 {
     bool operator()(const Complex& kz2_a, const Complex& kz2_b)
@@ -1273,6 +1327,20 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
   if (kz2_coarse.size() > global.N+5)
     kz2_coarse.erase(kz2_coarse.begin()+global.N+5, kz2_coarse.end());
 
+  if (0)
+  {
+    vector<Complex> n_eff_coarse;
+    for (unsigned int i=0; i<kz2_coarse.size(); i++)
+      n_eff_coarse.push_back(sqrt(kz2_coarse[i])/2./pi*global.lambda);
+
+    std::sort(n_eff_coarse.begin(), n_eff_coarse.end(), n_eff_sorter());
+
+    std::cout << "Effective index values" << std::endl;
+    for (unsigned int i=0; i<n_eff_coarse.size(); i++)
+      std::cout << i << " " << real(n_eff_coarse[i])
+                     << " " << imag(n_eff_coarse[i]) << std::endl;
+  }
+  
   vector<Complex> kt_coarse;
   for (unsigned int i=0; i<kz2_coarse.size(); i++)
   {
