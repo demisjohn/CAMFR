@@ -37,8 +37,7 @@ using std::endl;
 /////////////////////////////////////////////////////////////////////////////
 
 SectionGlobal global_section = {0.0,0.0,E_wall,E_wall,L,none,0,0,2.0,
- false,0.5};
-
+   false,0.5,1.0,false,true,false,true,true,false,10.,50,0.0,0.0,1.0,false};
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -926,6 +925,28 @@ void rotate_slabs(const vector<Slab*>& slabs, const vector<Complex>& disc,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// rebuild_slabs()
+//
+// Given a stack with a core that hes been split into two pieces, restore
+// the stack by removing all artificial discontinuities.
+//
+// PB: would there be a safer way to achieve this?
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void rebuild_slabs(const vector<Slab*>& slabs, const vector<Complex>& disc,
+                  vector<Slab*>* slabs_rebuilt, vector<Complex>* disc_rebuilt)
+{
+  vector<Slab*> slabs_rot;
+  vector<Complex> disc_x_rot;
+  rotate_slabs(slabs, disc, &slabs_rot, &disc_x_rot);
+  rotate_slabs(slabs_rot, disc_x_rot, slabs_rebuilt, disc_rebuilt);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Section2D::create_FG_NT
 //
 //   Noponen/Turunen formulation
@@ -1494,6 +1515,741 @@ void Section2D::create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Section2D::create_FG_ASR
+//
+// Adaptive Spatial Resolution formulation of the Li algorithm.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+void Section2D::create_FG_ASR(cMatrix* F, cMatrix* G, int M, int N,
+                              const Complex& alpha0, const Complex& beta0)
+{
+  const Complex k0 = 2*pi/global.lambda;
+  bool  extend     = true;
+  const Real eta   = global_section.eta_ASR;
+  bool  stretching = (global_section.section_solver == ASR_2D_stretched);
+  
+  // These booleans change the integration sequence.
+
+  bool A_switch = global_section.A_switch;
+  bool B_switch = global_section.B_switch;
+  bool C_switch = global_section.C_switch;
+  bool D_switch = global_section.D_switch;
+  
+  // Varying these parameters has shown that only the combination 
+  // false, true, false, true works.
+
+  // [PDB] this is kind of arbitrary here, I just wanted to see the effect 
+  // of changing the stretching parameters.
+
+  const Real u_step_given = global_section.u_step_given;
+  const Real v_step_given = global_section.v_step_given;
+
+  /*
+  [PDB]
+  Again, this is a desperate measure in order to find the error in 
+  the algorithm, this value is a value between 1 and 0
+  ---> 0 no stretching, so only ASR
+  ---> 1 full stretching, ASR_stretched
+  --->everything in between is, well, in between...
+  This method is only to be used in combination with asr_2D_stretched
+  */
+  
+  const Real percentage_stretched = global_section.percentage_stretched;
+  bool extended_output = global_section.extended_output;
+
+  // Construct data structures for fourier analysis.
+
+  // [PDB] Because there is a problem with the artificial discontinuity
+  // in the core, we remove this discontinuity with the function rebuild_slabs.
+  
+  // Preliminary declaration of disc_x (with artificial core discontinuity).
+  
+  vector<Complex> disc_x_temp(discontinuities);
+  disc_x_temp.insert(disc_x_temp.begin(), 0.0);
+  
+  // Construct slab structure without an artificial discontinuity in the core.
+
+  vector<Slab*> slabs_new;
+  vector<Complex> disc_x;
+
+  rebuild_slabs(slabs, disc_x_temp, &slabs_new, &disc_x);
+
+  // Create list of discontinuities in the y direction.
+
+  // Search for largest possible section in the y direction (slab-thickness)
+  // PB: I don't understand this comment. disc_y_max --> disc_y?
+  
+  vector<Complex> disc_y_max;
+  disc_y_max.push_back(0.0);
+  
+  for (int i=0; i<slabs_new.size(); i++)
+  {
+    vector<Complex> disc_y_i = slabs_new[i]->get_discontinuities();
+    
+    for (int j=0; j<disc_y_i.size(); j++)
+      disc_y_max.push_back(disc_y_i[j]);
+  }
+
+  remove_copies(&disc_y_max, 1e-9);
+  std::sort(disc_y_max.begin(), disc_y_max.end(), RealSorter());
+ 
+  // Create disc_x, disc_y, f_eps, f_inv_eps.	.
+  // While doing this, look for step_u and step_v in order to save some time.
+
+  Real step_u = 0.0;
+  Real step_v = 0.0;
+
+  if (extended_output)
+    for (int i=0; i<disc_x.size(); i++)
+      std::cout << "disc_x(" << i << ") = " << disc_x[i] << std::endl;
+
+  // Create extra matrix h_eps, which has the same dimension as f_eps but 
+  // which is filled with the value 1.0.
+
+  vector<vector<Complex> > disc_y, f_eps, f_inv_eps, h_eps;
+  for (int i=0; i<disc_x.size()-1; i++)
+  {
+     // Determine biggest step in x direction for ASR stretching algorithm.
+
+    if (real(disc_x[i+1]-disc_x[i]) > step_u)
+      step_u = real(disc_x[i+1] - disc_x[i]);
+
+    //vector<Complex> disc_y_i(slabs[i]->get_discontinuities());
+    //disc_y_i.insert(disc_y_i.begin(), 0.0);
+    // PB: Why can't you use this?
+   
+    vector<Complex> f_eps_i,f_inv_eps_i,h_eps_i;
+    for (int j=0; j<disc_y_max.size()-1; j++)
+    {
+       // Determine biggest step in y direction for ASR stretching algorithm.
+
+      if (real(disc_y_max[j+1] - disc_y_max[j])> step_v)
+        step_v = real(disc_y_max[j+1] - disc_y_max[j]);
+
+      Coord coord(disc_y_max[j],0,0,Plus);
+      
+      f_eps_i.push_back(slabs_new[i]->eps_at(coord)/eps0);
+      f_inv_eps_i.push_back(eps0/slabs_new[i]->eps_at(coord));
+      h_eps_i.push_back(1.0); 	
+    }
+
+    disc_y.push_back(disc_y_max); // PB: all columns same?
+    f_eps.push_back(f_eps_i);
+    f_inv_eps.push_back(f_inv_eps_i);
+    h_eps.push_back(h_eps_i);
+  }
+
+  if (extended_output)
+  {
+    for (int i=0; i<disc_x.size()-1; i++)
+      for (int j=0; j<disc_y[i].size(); j++)
+        std::cout << "disc_y(" << i << "," << j << ") = " 
+                  << disc_y[i][j] <<std::endl;
+
+    for (int i=0; i<disc_x.size()-1; i++)
+      for (int j=0; j<f_eps[i].size(); j++)
+        std::cout << "f_eps(" << i << "," << j << ") = " 
+                  << f_eps[i][j] << std::endl;
+
+    for (int i=0; i<disc_x.size()-1; i++)
+      for (int j=0; j<f_inv_eps[i].size(); j++)
+        std::cout << "f_inv_eps(" << i << "," << j <<" ) = " 
+                  << f_inv_eps[i][j] <<std::endl;
+
+    for (int i=0; i<disc_x.size()-1; i++)
+      for (int j=0; j<h_eps[i].size(); j++)
+        std::cout << "h_eps(" << i << "," << j << ") = "
+                  << h_eps[i][j] << std::endl;
+  }
+
+  // Create rotated slabs.
+
+  vector<Slab*> slabs_rot;
+  vector<Complex> disc_x_rot;
+  rotate_slabs(slabs_new, disc_x, &slabs_rot, &disc_x_rot);
+  
+  // Create list of discontinuities in the y-direction.
+
+  vector<Complex> disc_y_rot_max;
+  disc_y_rot_max.clear();
+  disc_y_rot_max.push_back(0.0);
+  
+  for (int i=0; i<slabs_rot.size(); i++)
+  {
+    vector<Complex> disc_y_i = slabs_rot[i]->get_discontinuities();
+    
+    for (int j=0; j<disc_y_i.size(); j++)
+      disc_y_rot_max.push_back(disc_y_i[j]);
+  }
+
+  remove_copies(&disc_y_rot_max, 1e-9);
+  std::sort(disc_y_rot_max.begin(), disc_y_rot_max.end(), RealSorter());
+ 
+  // Again we have to create a matrix with the same dimensions as f_eps_rot 
+  // but filled with the value 1.0.
+
+  vector<vector<Complex> > disc_y_rot, f_eps_rot, f_inv_eps_rot,h_eps_rot;
+  for (int i=0; i<disc_x_rot.size()-1; i++)
+  { 
+    //vector<Complex> disc_y_rot_i(slabs_rot[i]->get_discontinuities());
+    //disc_y_rot_i.insert(disc_y_rot_i.begin(), 0.0);
+
+    vector<Complex> f_eps_rot_i,f_inv_eps_rot_i,h_eps_rot_i;
+    for (int j=0; j<disc_y_rot_max.size()-1; j++)
+    {
+      Coord coord(disc_y_rot_max[j],0,0,Plus);
+
+      // PDB: Changed this statement.
+
+      f_eps_rot_i.push_back(slabs_rot[i]->eps_at(coord)/eps0);
+      f_inv_eps_rot_i.push_back(eps0/slabs_rot[i]->eps_at(coord));
+      h_eps_rot_i.push_back(1.0);
+    }
+
+    disc_y_rot.push_back(disc_y_rot_max);
+    f_eps_rot.push_back(f_eps_rot_i);
+    f_inv_eps_rot.push_back(f_inv_eps_rot_i);
+    h_eps_rot.push_back(h_eps_rot_i);
+  }
+
+  if (extended_output)
+  {
+    for(int i=0; i<disc_x_rot.size()-1; i++)
+      for(int j=0; j<disc_y_rot[i].size(); j++)
+        std::cout << "disc_y_rot(" << i << "," << j << ") = "
+                  << disc_y_rot[i][j] << std::endl;
+
+    for(int i=0; i<disc_x_rot.size()-1; i++)
+      for(int j=0; j<f_inv_eps_rot[i].size(); j++)
+        std::cout << "f_inv_eps_rot(" << i << "," << j << ") = "
+                  << f_inv_eps_rot[i][j] << std::endl;
+
+    for(int i=0; i<disc_x_rot.size()-1; i++)
+      for(int j=0; j<f_eps_rot[i].size(); j++)
+        std::cout << "f_eps_rot(" << i << "," << j << ") = "
+                  << f_eps_rot[i][j] << std::endl;
+
+    for(int i=0; i<disc_x_rot.size()-1; i++)
+      for(int j=0; j<h_eps_rot[i].size(); j++)
+        std::cout << "h_eps_rot(" << i << "," << j << ") = "
+                  << h_eps_rot[i][j] << std::endl;	
+  }
+
+  /*
+
+  CODE EXPLANATION
+
+  Construct the ASR versions of the matrices 
+  x_disc, y_disc, x_disc_rot and y_disc_rot.
+
+  Method:	 
+
+  1. Find the biggest thickness of the structure along x
+  2. Create a number of equally thick sections along x, with the thickness 
+     of the thickest structure
+  3. Find the thickest structure along the y direction
+  4. Create a number of equally thick sections along y, with the thickness 
+     of the thickest structure
+  
+  Step 1 and 3 have already been performed earlier in order to save time.
+
+  The following code is actually just an experiment
+  How about taking step_u = step_v = the average of both
+  Maybe this will make the ASR algorithm more consistent
+
+  Real step = (step_u + step_v)/2.;
+  std::cout << "Stepsizes " << " u " << step_u << " v " << step_v << " avg "
+            << step << std::endl;
+  step_u = step;
+  step_v = step;
+
+  I've tried this but there is no improvement compared to the old formulation
+
+  */
+
+  // [PDB] The following code lets you chose the amount of stretching by
+  // chosing step_u and step_v yourself.
+
+  if (abs(u_step_given) > 1e-16)
+  {
+   step_u = u_step_given;
+   std::cout << "Using the given step for u" <<std::endl;
+  }
+ 
+  if (abs(v_step_given) > 1e-16)
+  {
+   step_v = v_step_given;
+   std::cout << "Using the given step for v" << std::endl;
+  }
+ 
+  // Creation of the new disc_u and disc_v vector.
+  // I also took care of the PML conditions (I think).
+
+  vector<Complex> disc_u;
+  disc_u.insert(disc_u.begin(), 0.0);
+ 
+  // Question: why doesn't the first element have a PML contribution.
+
+  vector<vector<Complex> > disc_v;
+
+  // Checking the ASR_stretched algorithm in general.
+
+  if (stretching)
+  {
+    for (int i=1; i<disc_x.size(); i++)
+    {
+      disc_u.push_back(percentage_stretched*Real(i)*step_u 
+                       +(1.-percentage_stretched)*
+                       real(disc_x[i])+ imag(disc_x[i])*I);
+
+      // [PDB] I have messed with this code in order to be able to change 
+      // the stretching percentage.
+
+      vector<Complex> disc_v_i;
+      disc_v_i.insert(disc_v_i.begin(), 0.0);
+      for (int j=1; j<disc_y[i-1].size(); j++)
+        disc_v_i.push_back(percentage_stretched*Real(j)*step_v
+                           +(1.-percentage_stretched)*real(disc_y[i-1][j]) 
+                           + imag(disc_y[i-1][j])*I);
+      
+      disc_v.push_back(disc_v_i);
+    }
+  }
+  else
+  {
+    disc_u = disc_x;
+    disc_v = disc_y;
+  }
+
+  // Question: Why doesn't the first element have a PML contribution?
+
+  if (extended_output)
+  {
+    for (int i=0; i<disc_u.size(); i++)
+      std::cout << "disc_u(" << i << ") = " << disc_u[i] << std::endl;
+
+    for (int i=0; i<disc_u.size()-1; i++)
+      for (int j=0; j<disc_v[i].size(); j++)
+        std::cout << "disc_v(" << i << "," << j << ") = "
+                  << disc_v[i][j] << std::endl;
+  }
+
+  // Create rotated matrices disc_u_rot, disc_v_rot.
+
+  vector<Complex> disc_u_rot;
+  disc_u_rot.insert(disc_u_rot.begin(), 0.0);
+
+  // Question: why doesn't the first element have a PML contribution?
+
+  vector<vector<Complex> > disc_v_rot;
+  if (stretching)
+  {
+    for (int i=1; i<(disc_v[0]).size(); i++)
+    {
+      disc_u_rot.push_back(percentage_stretched*Real(i)*step_v 
+                           + (1.-percentage_stretched)*real(disc_y[0][i]) 
+                           + imag(disc_v[0][i])*I);
+
+      vector<Complex> disc_v_rot_i;
+      disc_v_rot_i.insert(disc_v_rot_i.begin(), 0.0);
+      for (int j=1; j<disc_u.size(); j++)
+        disc_v_rot_i.push_back(percentage_stretched*Real(j)*step_u 
+                               + (1.-percentage_stretched)*real(disc_x[j])
+                               + imag(disc_x[j])*I);
+
+      disc_v_rot.push_back(disc_v_rot_i);
+    }
+  }
+  else
+  {
+    disc_u_rot = disc_x_rot;
+    disc_v_rot = disc_y_rot;
+  }
+
+  if (extended_output)
+  {
+    for (int i=0; i<disc_u_rot.size(); i++)
+      std::cout << "disc_u_rot("<<i<<") = " << disc_u_rot[i] << std::endl;
+
+    for (int i=0; i<disc_u_rot.size()-1; i++)
+      for (int j=0; j<disc_v_rot[i].size(); j++)
+        std::cout << "disc_v_rot(" << i << "," << j << ") = " 
+                  << disc_v_rot[i][j] << std::endl;
+  }
+
+  /*
+  We have now constructed the following data structures
+  TODO_PDB exploit the fact that some matrices only have to be calculated 
+  for Li_1 or for Li_2
+  
+  disc_x        Discontinuities along the x-axis
+  disc_y        Discontinuities along the y-axis 
+  f_eps	        Dielectric constant
+  f_inv_eps     Inverse of the dielectric constant, ONLY FOR LI_1
+  h_eps	        Matrix with same dimension as f_eps, filed with 1.
+  
+  disc_x_rot    Discontinuities along the x-axis, rotated structure
+  disc_y_rot    Discontinuities along the y-axis, rotated sytructure
+  f_eps_rot     Dielectric constant, rotated structure, ONLY FOR LI_2
+  f_inv_eps_rot	Inverse of the dielectric constant, rotated structure
+  h_eps_rot     Matrix with same dimension as f_inv_eps_rot, filled with 1
+
+  disc_u	Discontinuities along the u-axis
+  disc_v	Discontinuities along the v-axis
+  
+  disc_u_rot	Discontinuities along the u-axis, rotated structure
+  disc_v_rot    Discontinuities along the v-axis, rotated structure
+  */
+
+  // Construct fourier matrices
+	
+  // [PDB] First we will calculate the Fourier matrices for which the Li 
+  // formulation does not apply.
+
+  // Normal matrices.
+  
+  cMatrix eps_f_g_(4*M+1,4*N+1,fortranArray);
+  cMatrix     f_g_(4*M+1,4*N+1,fortranArray);
+
+  eps_f_g_ = fourier_2D_ASR(disc_x,disc_y,disc_u,disc_v,f_eps,
+                            2*M,2*N,extend,eta);
+  f_g_	   = fourier_2D_ASR(disc_x,disc_y,disc_u,disc_v,h_eps,
+                            2*M,2*N,extend,eta);
+  
+  int m_ = 2*M+1;  
+  int n_ = 2*N+1;
+
+  const int MN = m_*n_;
+  
+  // (Double) Toeplitz matrices.
+
+  cMatrix eps_f_g(MN,MN,fortranArray);
+  cMatrix f_g(MN,MN,fortranArray);
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {
+      int i1 = (m+M+1) + (n+N)*(2*M+1);
+     
+      for (int j=-M; j<=M; j++)
+        for (int l=-N; l<=N; l++)
+        {
+          int i2 = (j+M+1) + (l+N)*(2*M+1);
+
+          eps_f_g(i1,i2) = eps_f_g_(m-j + 2*M+1, n-l + 2*N+1);
+          f_g(i1,i2) = f_g_(m-j + 2*M+1, n-l + 2*N+1);
+        }
+    }
+
+  // Inverse (double) Toeplitz matrices.
+
+  cMatrix inv_eps_f_g(MN,MN,fortranArray);
+  cMatrix inv_f_g    (MN,MN,fortranArray);
+  
+  if (global.stability != SVD)
+  {
+    inv_eps_f_g.reference(invert(eps_f_g));
+    inv_f_g.    reference(invert(f_g));
+  }   
+  else
+  {
+    inv_eps_f_g.reference(invert_svd(eps_f_g));
+    inv_f_g.    reference(invert_svd(f_g));
+  }
+  
+  if (extended_output)
+  {
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "inv_eps_f_g(" << i << "," << j << ") = "
+                  << inv_eps_f_g(i,j) <<std::endl;
+
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "inv_f_g(" << i << "," << j << ") = "
+                  << inv_f_g(i,j) <<std::endl;
+  }
+
+  /*
+  Now we will calculate the Fourier matrices for which the Li formulation 
+  does apply. We wil use fourier_2D_split_ASR instead of fourier_2D_ASR
+  
+  Note:
+  Li uses a somewhat different form for the Fourier matrices in the paper
+  "Fourier modal methods for crossed anisotropic gratings with arbitrary 
+  permittivity and permeability tensors", Josa A, 5(2002), 345-355	
+  However, the small difference in convergence is a purely numerical effect, 
+  the faster convergence of this method for the ASR configuration remains 
+  unclear up till now. That is why I have included all possible formulations 
+  in this solver. It is possible to switch  between formulations by changing 
+  the booleans A_switch, B_switch, C_switch and D_switch.
+ 
+  These booleans change the integration sequence of the matrices
+  g_f_v_u                               
+  inv_eps_g_f_v_u
+  f_g_u_v
+  inv_eps_f_g_u_v
+
+  */
+
+  cMatrix         g_f_v_u(MN,MN,fortranArray);
+  cMatrix inv_eps_g_f_v_u(MN,MN,fortranArray);
+  cMatrix         f_g_u_v(MN,MN,fortranArray);
+  cMatrix inv_eps_f_g_u_v(MN,MN,fortranArray);
+   
+  // TODO_PDB Simplify fourier calculations of gfvu and fguv, by not using 
+  // pseudo fourier transforms but full Fourier transforms in both directions.
+  
+  // Calculation of the matrix F_G_U_V, so what I always refer to as A
+
+  if (!A_switch)
+  {
+    // Calculation of the fourier components of f according to u, and of g
+    // according to v, this routine uses the rotated structure.
+
+    f_g_u_v.reference(fourier_2D_split_ASR(disc_x_rot,disc_y_rot,disc_u_rot,
+                      disc_v_rot,h_eps_rot,N,M,extend,eta));
+  }
+  else
+  {
+    // For simplicity reasons we will keep the names that were assigned to 
+    // these matrice for the original Li formulation, although it is quite 
+    // obvious now that these names do not reflect the correct mathematical 
+    // approach for the modified method.
+
+    // Calculation of the fourier components of g according to v, and of f
+    // according to u, this routine uses the regular structure.
+
+    cMatrix temp(MN,MN,fortranArray);
+
+    temp.reference(fourier_2D_split_ASR(disc_x,disc_y,disc_u,disc_v,
+                                        h_eps,N,M,extend,eta));
+
+    if (global.stability != SVD)
+      f_g_u_v.reference(invert(temp));
+    else
+      f_g_u_v.reference(invert_svd(temp));
+  }
+
+  // Calculation of the matrix G_F_V_U, so what I always refer to as B.
+
+  if (!B_switch) // Original.
+  {
+    // Calculation of the fourier components of g according to v, 
+    // and of f according to u.
+
+    g_f_v_u.reference(fourier_2D_split_ASR(disc_x,disc_y,disc_u,disc_v,
+                                           h_eps,M,N,extend,eta));
+  }
+  else
+  {
+    // Calculation of the fourier components of f according to u and of g 
+    // according to v.
+
+    cMatrix temp(MN,MN,fortranArray);
+
+    temp.reference(fourier_2D_split_ASR(disc_x_rot,disc_y_rot,disc_u_rot, 
+                                        disc_v_rot,h_eps_rot,N,M,extend,eta));
+
+    if (global.stability != SVD)
+      g_f_v_u.reference(invert(temp));
+    else
+      inv_eps_g_f_v_u.reference(invert_svd(temp));
+  }
+
+  // Calculation of the matrix inv_eps_f_g_u_v, so what I always refer to as C
+
+  if (!C_switch)
+  {
+    inv_eps_f_g_u_v.reference(fourier_2D_split_ASR(disc_x_rot,disc_y_rot,
+                                                   disc_u_rot,disc_v_rot,
+                                                   f_inv_eps_rot,N,M,extend, 
+                                                   eta));
+  }
+  else
+  {
+    // Calculation of the fourier components of g/eps according to v, and of f
+    // according to u, this routine uses the regular structure.
+
+    cMatrix temp(MN,MN,fortranArray);
+
+    temp.reference(fourier_2D_split_ASR(disc_x,disc_y,disc_u,disc_v,
+                                        f_inv_eps,N,M,extend,eta));
+
+    if (global.stability != SVD)
+      inv_eps_f_g_u_v.reference(invert(temp));
+    else
+      inv_eps_f_g_u_v.reference(invert_svd(temp));
+   }
+
+  // Calculation of the matrix INV_EPS_G_F_V_U, so what I always refer to as D
+  
+  if (!D_switch) 
+  {
+    // Calculation of the fourier components of g/eps according to v, and of 
+    // f according to u.
+
+    inv_eps_g_f_v_u.reference(fourier_2D_split_ASR(disc_x,disc_y,disc_u,
+                                                   disc_v,f_inv_eps,
+                                                   M,N,extend,eta));
+  }
+  else
+  {
+    // Calculation of the fourier components of eps*f according to u, and of g
+    // according to v.
+
+    cMatrix temp(MN,MN,fortranArray);
+
+    temp.reference(fourier_2D_split_ASR(disc_x_rot,disc_y_rot,
+                                        disc_u_rot,disc_v_rot,
+                                        f_eps_rot,N,M,extend,eta));
+
+    if (global.stability != SVD)
+      inv_eps_g_f_v_u.reference(invert(temp));
+    else
+      inv_eps_g_f_v_u.reference(invert_svd(temp));
+  }
+
+  if (extended_output)
+  {
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "g_f_v_u(" << i << "," << j << ") = "
+                  << g_f_v_u(i,j) << std::endl;
+
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "inv_eps_g_f_v_u(" << i << "," << j << ") ="
+                  << inv_eps_g_f_v_u(i,j) << std::endl;
+
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "f_g_u_v(" << i << "," << j << ") =" 
+                  << f_g_u_v(i,j) << std::endl;
+
+    for (int i=1; i<=MN; i++)
+      for (int j=1; j<=MN; j++)
+        std::cout << "inv_eps_f_g_u_v(" << i << "," << j << ")  ="
+                  << inv_eps_f_g_u_v(i,j) << std::endl;
+  }
+
+  // Calculate alpha and beta vector.
+
+  cVector alpha(MN,fortranArray);
+  cVector  beta(MN,fortranArray);
+
+  /*
+  Since the structure will be stretched(sometimes), the functions get_width()
+  and get_height() cannot be trusted anymore. Therefore we calculate here the
+  exact (stretched) height and width
+  */
+
+  const Complex Lu = disc_u.back()     - disc_u.front();
+  const Complex Lv = disc_u_rot.back() - disc_u_rot.front();
+
+  if (extended_output)
+    std::cout << "Lu " << Lu << ", Lv " << Lv << std::endl;
+
+  for (int m=-M; m<=M; m++)
+    for (int n=-N; n<=N; n++)
+    {      
+      int i = (m+M+1) + (n+N)*(2*M+1);
+
+      alpha(i) = alpha0 + m*2.*pi/Lu/2.; // This used to be get_width()
+       beta(i) =  beta0 + n*2.*pi/Lv/2.; // This used to be get_height()
+    }
+  
+  if (extended_output)
+  {
+    for (int i=1; i<=MN; i++)
+      std::cout << "alpha(" << i << ") = " << alpha(i) << std::endl;
+
+    for (int i=1; i<=MN; i++)
+      std::cout << "beta(" << i << ") = " << beta(i) << std::endl;
+  }
+
+  // Construction of the F and G matrix of the ASR formalism
+  // Construct F matrix.
+
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+
+      (*F)(i1,   i2)    =  alpha(i1) * inv_eps_f_g(i1,i2) *  beta(i2);
+      (*F)(i1,   i2+MN) =  k0 * k0 * g_f_v_u(i1,i2) 
+                            - alpha(i1) * inv_eps_f_g(i1,i2) * alpha(i2);
+      (*F)(i1+MN,i2)    = -k0 * k0 * f_g_u_v(i1,i2) 
+                            + beta(i1) *inv_eps_f_g(i1,i2) * beta(i2);
+      (*F)(i1+MN,i2+MN) = -beta(i1) * inv_eps_f_g(i1,i2) * alpha(i2);
+
+    }
+
+  // Construct G matrix.
+	
+  for (int i1=1; i1<=MN; i1++)
+    for (int i2=1; i2<=MN; i2++)
+    {
+      //if (eta == 0.0)
+      //  (*G)(i1,   i2)    = (i1==i2) ? -alpha(i1)*beta(i2) : 0.0;
+      //else
+
+	  (*G)(i1,   i2)    = -alpha(i1) * inv_f_g(i1,i2) * beta(i2);
+	  (*G)(i1,   i2+MN) = -k0 * k0 * inv_eps_g_f_v_u(i1,i2) 
+                                + alpha(i1) * inv_f_g(i1,i2) * alpha(i2);
+          (*G)(i1+MN,i2)    =  k0 * k0 * inv_eps_f_g_u_v(i1,i2) 
+                                - beta(i1) * inv_f_g(i1,i2) * beta(i2);
+
+      //if (eta == 0.0)
+      //  (*G)(i1+MN,i2+MN) = (i1==i2) ?  alpha(i1)*beta(i2) : 0.0;
+      //else
+          (*G)(i1+MN,i2+MN) =  alpha(i1) * inv_f_g(i1,i2) * beta(i2) ;  
+     
+    }
+
+    /*
+
+    In case of eta=0 the ASR formalism should be reduced to the Li formalism, 
+    that is why we check here what happend to the matrices inv_f_g
+    
+    for (int i=1;i<MN;i++)
+      for (int j=1;j<MN;j++)
+        std::cout << "inv_f_g(" << i << "," << j << ") =" 
+                  << real(inv_f_g(i,j)) << " " << imag(inv_f_g(i,j))
+                  << std::endl;
+   */
+
+
+  if (extended_output)
+  {
+    for (int i=1; i<=2*MN; i++)
+      for (int j=1; j<=2*MN; j++)
+        std::cout << "F(" << i << "," << j <<") ="
+                  << real((*F)(i,j)) << " " << imag((*F)(i,j)) <<std::endl;
+
+    for (int i=1; i<=2*MN; i++)
+      for (int j=1; j<=2*MN; j++)
+        std::cout << "G(" << i << "," << j <<") ="
+                  << real((*G)(i,j)) << " "<< imag((*G)(i,j)) << std::endl;
+  }
+
+  std::cout << "Created ASR eigenproblem" << std::endl;
+
+  // Free rotated slabs.
+  
+  for (int i=0; i<slabs_rot.size(); i++)
+    delete slabs_rot[i];
+
+  // Free rebuilt slabs.
+  
+  for (int i=0; i<slabs_new.size(); i++)
+    delete slabs_new[i];
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // IndexConvertor
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -1592,44 +2348,81 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
     create_FG_li_biaxial(&F, & G, M, N, real(alpha0), real(beta0));
   else if (global_section.section_solver == L)
     create_FG_li(&F, & G, M, N, alpha0, beta0);
+   else if (global_section.section_solver == ASR_2D 
+         || global_section.section_solver == ASR_2D_stretched)
+  	create_FG_ASR(&F, & G, M, N, alpha0, beta0);
 
   cMatrix FG(2*MN,2*MN,fortranArray);  
   FG.reference(multiply(F,G));
 
-/*
-
-  cVector E(2*MN,fortranArray); 
-  cMatrix eig(2*MN,2*MN,fortranArray); 
-
-  if (global.stability == normal)
-    E = eigenvalues(FG, &eig);
-  else
-    E = eigenvalues_x(FG, &eig);
-
-  for (int i=1; i<=eig.columns(); i++)
+  bool reduced = global_section.reduced_eigenmatrix;
+  
+  if (!reduced)
   {
-    //std::cout << "eig " << i << " " << sqrt(E(i)/k0/k0)/k0 << std::endl;
+    cVector E(2*MN,fortranArray); 
+    cMatrix eig(2*MN,2*MN,fortranArray); 
+
+    if (global.stability == normal)
+      E = eigenvalues(FG, &eig);
+    else
+      E = eigenvalues_x(FG, &eig);
+
+    //for (int i=1; i<=eig.columns(); i++)
+    //{
+    //  std::cout << "eig " << i << " " << sqrt(E(i)/k0/k0)/k0 << std::endl;
     
     //for (int m=-M; m<=M; m++)
-    //  for (int n=-N; n<=N; n++)
-    //  {
+    // for (int n=-N; n<=N; n++)
+    // {
     //    int i1 = (m+M+1) + (n+N)*(2*M+1);
     //    std::cout << i << " " <<m << " " << n << " " 
     //              << eig(i1,i)/eig(1,i) <<eig(MN+i1,i)/eig(1,i)<< std::endl;
     //  }
     //std::cout << std::endl;
+    //}
+
+    // The following code is only used to generate output.
+
+    if (global_section.print_estimates)
+    {
+      // Sorting the E(i) vector might be a better idea.
+
+      vector<Complex> E_temp;
+      vector<Complex> E_final;
+
+      for (int i=1; i <=E.rows(); i++)
+        E_temp.push_back(E(i));
+
+      std::sort(E_temp.begin(), E_temp.end(), RealSorter());
+
+      vector<Complex> neff_temp;
+      vector<Complex> neff;
+      
+      for (int i=1; i<=E_temp.size(); i++)
+        neff_temp.push_back(sqrt(E_temp[i]/k0/k0)/k0);
+
+      //std::sort(neff_temp.begin(), neff_temp.end(),RealSorter());
+
+      Real n_eff_max = global_section.n_eff_max;
+      int nov        = global_section.number_of_values;
+
+      for (unsigned int i=0; i<neff_temp.size(); i++)
+        if (real(neff_temp[i]) < n_eff_max)
+        {
+          neff.push_back(neff_temp[i]);
+          E_final.push_back(E_temp[i]);
+        }
+
+      //std::sort(neff.begin() , neff.end(), RealSorter())
+
+      for (int i=neff.size()-1; i>=neff.size()-1-nov; i--)
+        std::cout << "n_eff_full " << neff.size()-i-1  
+                  << " " << real(neff[i]) << " " << imag(neff[i]) 
+                  << " " << "E " << real(E_final[i]) << " " << imag(E_final[i])
+                  << std::endl;
+    }
   }
-
-  vector<Complex> neff;
-  for (int i=1; i<= E.rows(); i++)
-    neff.push_back(sqrt(E(i)/k0/k0)/k0);
-  std::sort(neff.begin(), neff.end(),RealSorter());
-
-  for (int i=neff.size()-1; i>=0; i--)
-    std::cout << "full " << neff.size()-i-1  << " " << neff[i] << std::endl;
-*/
-  
-  
+   
   //
   // Reduced eigenvalue problem.
   //
@@ -1767,7 +2560,40 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   else
     E_ = eigenvalues_x(FG_, &eig_);
 
-/*
+  // The following code is only used to generate output.
+
+  if (global_section.print_estimates)
+  {
+    vector<Complex> E_temp;
+
+    for (int i=1; i<=E_.rows(); i++)
+      E_temp.push_back(E_(i));
+
+    std::sort(E_temp.begin(), E_temp.end(), RealSorter());
+
+    vector<Complex> neff_temp;
+
+    for (int i=0; i<E_temp.size(); i++) // BUG PDB
+      neff_temp.push_back(sqrt(E_temp[i]/k0/k0)/k0);
+
+    int nov = global_section.number_of_values;
+
+    vector<Complex> E_final;
+    vector<Complex> neff;
+
+    for (unsigned int i=0; i<neff_temp.size(); i++)
+      if (real(neff_temp[i]) < global_section.n_eff_max)
+      {
+        neff.push_back(neff_temp[i]);
+        E_final.push_back(E_temp[i]);
+      }
+
+    for (int i=neff.size()-1; i>=neff.size()-nov; i--)
+      std::cout << "n_eff " << N << " " << neff.size()-i-1 << " " 
+                << real(neff[i]) << " " << imag(neff[i]) << std::endl;
+  }
+
+  /*
   for (int i=1; i<=eig_.columns(); i++)
   {
     std::cout << "eig_ " << i << " " << sqrt(E_(i)/k0/k0)/k0 << std::endl;
@@ -1784,8 +2610,8 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
       }
     std::cout << std::endl;
   }
-*/
-
+  */
+  
   vector<Complex> neff_;
   for (int i=1; i<= E_.rows(); i++)
     neff_.push_back(sqrt(E_(i)/k0/k0)/k0);
@@ -1795,7 +2621,7 @@ vector<ModeEstimate*> Section2D::estimate_kz2_fourier()
   //  std::cout << "reduced " << i << " " << neff_[i] << std::endl;
 
   std::cout << "Eigenproblem size " << 2*MN_ << std::endl;
-
+  
   // Calculate field expansion.
 
   // TODO: try to do this using reduced matrices, or at least return

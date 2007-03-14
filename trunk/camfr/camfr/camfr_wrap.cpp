@@ -198,11 +198,46 @@ inline void set_keep_all_1D_estimates(bool b)
 inline void set_section_solver(Section_solver s)
   {global_section.section_solver = s;}
 
+inline void A_switch(bool b)
+  {global_section.A_switch = b;}
+
+inline void B_switch(bool b)
+  {global_section.B_switch = b;}
+
+inline void C_switch(bool b)
+  {global_section.C_switch = b;}
+
+inline void D_switch(bool b)
+  {global_section.D_switch = b;}
+
+inline void print_estimates(bool b)
+  {global_section.print_estimates = b;}
+
+inline void set_u_step(Real u_step)
+  {global_section.u_step_given = u_step;}
+
+inline void set_v_step(Real v_step)
+  {global_section.v_step_given = v_step;}
+
+inline void set_percentage_stretched(Real percentage)
+  {global_section.percentage_stretched = percentage;}
+
+inline void set_extended_output(bool output)
+  {global_section.extended_output = output;}
+
 inline void set_mode_correction(Mode_correction c)
   {global_section.mode_correction = c;}
 
 inline void set_keep_all_estimates(bool b)
   {global_section.keep_all_estimates = b;}
+
+inline void set_section_eta_ASR(Real eta)
+{
+  if ((eta > 1.0) || (eta < 0.0))
+    py_print("Warning: eta_ASR should be between 0 and 1.");
+
+  global_section.eta_ASR = eta;
+} 
 
 inline void set_eta_ASR(Real eta)
 {
@@ -211,9 +246,21 @@ inline void set_eta_ASR(Real eta)
 
   global_slab.eta_ASR=eta;
 }
+ 
+inline void set_section_reduction(bool b)
+  {global_section.reduced_eigenmatrix = b;}
+
+inline void set_n_eff_max(Real max)
+  {global_section.n_eff_max = max;}
+
+inline void set_NOV(int nov)
+  {global_section.number_of_values=nov;}
 
 inline void set_estimate_cutoff(Real d)
   {global_slab.estimate_cutoff = d;}
+
+inline void set_estimate_cutoff_section(Real d)
+  {global_section.estimate_cutoff = d;}
 
 inline void set_low_index_core(bool b)
   {global_slab.low_index_core = b;}
@@ -659,16 +706,20 @@ BOOST_PYTHON_MODULE(_camfr)
   // Wrap Section_solver enum.
 
   enum_<Section_solver>("Section_solver")
-    .value("OS",     OS)
-    .value("NT",     NT)
-    .value("L",      L)
-    .value("L_anis", L_anis)
+    .value("OS",                OS)
+    .value("NT",                NT)
+    .value("L",                 L)
+    .value("L_anis",            L_anis)
+    .value("ASR_2D",            ASR_2D)
+    .value("ASR_2D_stretched",	ASR_2D_stretched)
     ;
 
-  scope().attr("OS")      = OS;
-  scope().attr("NT")      = NT; 
-  scope().attr("L")       = L;  
-  scope().attr("L_anis")  = L_anis;  
+  scope().attr("OS")                = OS;
+  scope().attr("NT")                = NT; 
+  scope().attr("L")                 = L;  
+  scope().attr("L_anis")            = L_anis; 
+  scope().attr("ASR_2D")            = ASR_2D;
+  scope().attr("ASR_2D_stretched")  = ASR_2D_stretched;
 
   // Wrap Mode_correction enum.
 
@@ -722,10 +773,24 @@ BOOST_PYTHON_MODULE(_camfr)
   def("set_lower_PML",              set_lower_PML);
   def("set_circ_PML",               set_circ_PML);  
   def("set_eta_ASR",                set_eta_ASR);
+  def("set_section_reduction",      set_section_reduction);
+  def("set_n_eff_max",              set_n_eff_max);
+  def("set_NOV",                    set_NOV);
   def("set_estimate_cutoff",        set_estimate_cutoff);
+  def("set_estimate_cutoff_section",set_estimate_cutoff_section);
   def("set_low_index_core",         set_low_index_core);
   def("set_beta",                   set_beta);
   def("set_section_solver",         set_section_solver);    
+  def("set_section_eta_ASR",        set_section_eta_ASR);
+  def("A_switch",                   A_switch);
+  def("B_switch",                   B_switch);
+  def("C_switch",                   C_switch);
+  def("D_switch",                   D_switch);
+  def("print_estimates",            print_estimates);
+  def("set_u_step",                 set_u_step);
+  def("set_v_step",                 set_v_step);
+  def("set_percentage_stretched",   set_percentage_stretched);
+  def("set_extended_output",        set_extended_output);
   def("set_keep_all_estimates",     set_keep_all_estimates);  
   def("set_mode_correction",        set_mode_correction);
   def("set_mode_surplus",           set_mode_surplus);

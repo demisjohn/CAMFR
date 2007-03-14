@@ -21,7 +21,7 @@
 #include "sectiondisp.h" // TMP
 
 typedef enum {lowest_loss, highest_index} Sort_type;
-typedef enum {OS, NT, L, L_anis} Section_solver;
+typedef enum {OS, NT, L, L_anis, ASR_2D, ASR_2D_stretched} Section_solver;
 typedef enum {none, snap, guided_only, full} Mode_correction;
 
 
@@ -48,6 +48,19 @@ struct SectionGlobal
     Real estimate_cutoff;
     bool keep_all_estimates;
     Real PML_fraction;
+    Real eta_ASR;
+    bool A_switch;
+    bool B_switch;
+    bool C_switch;
+    bool D_switch;
+    bool reduced_eigenmatrix;
+    bool print_estimates;
+    Real n_eff_max;
+    int number_of_values;
+    Real u_step_given;
+    Real v_step_given;
+    Real percentage_stretched;
+    bool extended_output;
 };
 
 extern SectionGlobal global_section;
@@ -290,6 +303,9 @@ class Section2D : public SectionImpl
                       const Complex& alpha0, const Complex& beta0);    
 
     void create_FG_li_biaxial(cMatrix* F, cMatrix* G, int M, int N,
+                      const Complex& alpha0, const Complex& beta0);
+    
+    void create_FG_ASR(cMatrix* F, cMatrix* G, int M, int N,
                       const Complex& alpha0, const Complex& beta0);
 
     std::vector<Complex> user_estimates;
