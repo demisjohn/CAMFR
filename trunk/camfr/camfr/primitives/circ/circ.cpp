@@ -202,15 +202,15 @@ Complex Circ_M::kt_to_kz(const Complex& kt)
 
   Complex kz = sqrt(klast*klast - kt*kt);
 
-  // always put kz in 4th or 1st quadrant
+  // Always put kz in 4th or 1st quadrant.
 
-  if (real(kz)<0)
+  if (real(kz) < 0)
     kz = -kz;
 
-  // also if kz is on imaginary axis make its imaginary part negative
-  // (avoid noise problems)
+  // Also if kz is on imaginary axis make its imaginary part negative
+  // (avoid noise problems).
 
-  if (abs(real(kz))<1e-12)
+  if (abs(real(kz)) < 1e-12)
     if (imag(kz)>0)
       kz = -kz;
       
@@ -234,12 +234,14 @@ Complex Circ_M::kz_to_kt(const Complex& kz)
 
   Complex kt = sqrt(klast*klast - kz*kz);
 
-  // always put kt in the semicircle centered on the first quadrant
+  // Always put kt in the semicircle centered on the first quadrant.
 
   if ((real(kt)+imag(kt))<0)
   {
     kt = -kt;
-    // give a warning if kt is close to this branch-cut
+
+    // Give a warning if kt is close to this branch-cut
+
     if (abs(real(kt)+imag(kt))<0.01*abs(kt))
       std::cout << "Warning: branch-cut in circ.cpp: " << -kt
                 << "became " << kt << std::endl;
@@ -321,9 +323,10 @@ void Circ_M::find_modes_from_scratch_by_track()
     if (max_n < real( material[i]->n() * sqrt( material[i]->mur()) ))
       max_n = real( material[i]->n() * sqrt( material[i]->mur()) );
   Real guided_kt_end = abs(kz_to_kt(1.01 * max_n * k0));
-  // 1.01 above is to avoid problems when last layer is also highest index
 
-  Real guided_dkt = abs(0.5*pi*real(global.lambda)/real(radius[0])); // roughly
+  // 1.01 above is to avoid problems when last layer is also highest index.
+
+  Real guided_dkt = abs(0.5*pi*real(global.lambda)/real(radius[0]));
   
   Wrap_imag_to_abs guided_disp(disp);
     
@@ -332,10 +335,9 @@ void Circ_M::find_modes_from_scratch_by_track()
   if (guided_dkt > guided_kt_end)
     guided_dkt = guided_kt_end;
 
-  int sec = (global.precision_enhancement == 1) ? 1 : 0; // security level.
+  int sec = (global.precision_enhancement == 1) ? 1 : 0; // Security level.
 
-  Real kt_min = 1e-4; // Don't go to abs(kt) < kt_min because disp 
-  // is ill-behaved
+  Real kt_min = 1e-4; // Don't go lower because disp is ill-behaved there.
 
   kt_guided_lossless = brent_all_minima(guided_disp, kt_min, 
                                         guided_kt_end-1e-9,
@@ -362,6 +364,7 @@ void Circ_M::find_modes_from_scratch_by_track()
     Real v1_right = guided_disp(kt0 + dk);
     Real v2_left, v2_right;
     int mintype = 3;
+
     while (dk > 1e-06)
     {
       v2_left  = v1_left ;
@@ -398,8 +401,9 @@ void Circ_M::find_modes_from_scratch_by_track()
       dk = dk/ratio;
     }
 
-    //cout << "kt_guided_lossless = " << kt_guided_lossless[i] 
-    //     << "   min type = " << mintype << std::endl;
+    //std::cout << "neff_guided_lossless = " 
+    //          << kt_to_kz(I*kt_guided_lossless[i])/2./pi*global.lambda
+    //          << " min type = " << mintype << std::endl;
 
     if (mintype == 1)
       kt_lossless.push_back(I*kt_guided_lossless[i]);
@@ -427,10 +431,10 @@ void Circ_M::find_modes_from_scratch_by_track()
   remove_copies(&kt_lossless, eps_copies);
   remove_elems(&kt_lossless, Complex(0.0), eps_copies);
 
-  //cout << "guided: kt \t kz" << std::endl;
+  //std::cout << "guided: kt \t kz" << std::endl;
   //for (unsigned int i=0; i<kt_lossless.size(); i++)
-  //  cout << kt_lossless[i] 
-  //	 << " " << kt_to_kz(kt_lossless[i]) << std::endl;
+  //  std::cout << kt_lossless[i] 
+  //    	<< " " << kt_to_kz(kt_lossless[i]) << std::endl;
   
 
 
@@ -453,9 +457,6 @@ void Circ_M::find_modes_from_scratch_by_track()
 
     for (unsigned int i=0; i<kt_radiation_lossless.size(); i++)
     {
-      //cout << kt_radiation_lossless[i] << " " 
-      //     << kt_to_kz(kt_radiation_lossless[i]) << std::endl;
-
       Real kt0 = kt_radiation_lossless[i];
       Real dk = kt0 * 1e-02;
       Real ratio = 3;
@@ -464,6 +465,7 @@ void Circ_M::find_modes_from_scratch_by_track()
       Real v1_right = radiation_disp(kt0 + dk);
       Real v2_left, v2_right;
       int mintype = 3;
+
       while (dk > 1e-06)
       {
         v2_left  = v1_left ;
@@ -471,61 +473,68 @@ void Circ_M::find_modes_from_scratch_by_track()
         v1_left  = radiation_disp(kt0 - dk/ratio);
         v1_right = radiation_disp(kt0 + dk/ratio);
       
-        // test to see if we have type 1 (true zero)
+        // Test to see if we have type 1 (true zero).
+
         Real average = (v1_left*ratio+v1_right*ratio+v2_left+v2_right)/4.0;
         Real maxerr = 0.1;
-      if ((abs(v1_left *ratio - average) < maxerr * average) &&
-	  (abs(v1_right*ratio - average) < maxerr * average) &&
-	  (abs(v2_left        - average) < maxerr * average) &&
-	  (abs(v2_right       - average) < maxerr * average))
-	mintype = 1;
+        if ((abs(v1_left *ratio - average) < maxerr * average) &&
+	    (abs(v1_right*ratio - average) < maxerr * average) &&
+	    (abs(v2_left        - average) < maxerr * average) &&
+	    (abs(v2_right       - average) < maxerr * average))
+          mintype = 1;
       
-      // test to see if we have type 2 (quadratic)
-      Real average2 = (v0 + v1_left + v1_right + v2_left + v2_right)/5.0;
-      Real maxerr2 = 0.01;
-      if ((mintype == 3) &&
-	  (abs(v0       - average2) < maxerr2 * average2) &&
-	  (abs(v1_left  - average2) < maxerr2 * average2) &&
-	  (abs(v1_right - average2) < maxerr2 * average2) &&
-	  (abs(v2_left  - average2) < maxerr2 * average2) &&
-	  (abs(v2_right - average2) < maxerr2 * average2))
-	if ((v0 < (v1_left+v1_right)/2.0) && 
-	    ((v1_left+v1_right)/2.0 < (v2_left+v2_right)/2.0))
-	  mintype = 2;
+        // Test to see if we have type 2 (quadratic).
 
-      //if not type 1 or 2 yet then decrease dk and try again
-      dk = dk/ratio;
-    }
+        Real average2 = (v0 + v1_left + v1_right + v2_left + v2_right)/5.0;
+        Real maxerr2 = 0.01;
+        if ((mintype == 3) &&
+	    (abs(v0       - average2) < maxerr2 * average2) &&
+	    (abs(v1_left  - average2) < maxerr2 * average2) &&
+	    (abs(v1_right - average2) < maxerr2 * average2) &&
+	    (abs(v2_left  - average2) < maxerr2 * average2) &&
+	    (abs(v2_right - average2) < maxerr2 * average2))
+	  if ((v0 < (v1_left+v1_right)/2.0) && 
+	      ((v1_left+v1_right)/2.0 < (v2_left+v2_right)/2.0))
+	    mintype = 2;
 
-      //cout << "kt_radiation_lossless = " << kt_radiation_lossless[i] 
-      //   << "   min type = " << mintype << std::endl;
-    
-    if (mintype == 1)
-      kt_lossless.push_back(kt_radiation_lossless[i]);
-    else if (mintype == 2)
-    {
-      // follow mode in complex plane
-      bool error = false;
-      Complex kt_new = mueller(disp, kt_radiation_lossless[i],
-			       kt_radiation_lossless[i]+0.002*I,1e-11,0,100,
-                               &error);
-      if (!error && abs(real(kt_new)) > 0.001 && abs(imag(kt_new)) > 0.001)
-      {
-	std::cout << "Found complex mode pair. " << kt_new << std::endl;
-	std::cout << "Started from  " << kt_radiation_lossless[i] << std::endl;
-	kt_complex.push_back(kt_new);
+        // If not type 1 or 2 yet then decrease dk and try again.
+
+        dk = dk/ratio;
       }
-    }
-    else
-      std::cout << "Removing bad minimum " << kt_radiation_lossless[i] 
-                << std::endl;
-    }
+
+      //std::cout << "neff_radiation_lossless = "
+      //          << kt_to_kz(kt_radiation_lossless[i])/2./pi*global.lambda 
+      //          << " min type = " << mintype << std::endl;
+    
+      if (mintype == 1)
+        kt_lossless.push_back(kt_radiation_lossless[i]);
+      else if (mintype == 2)
+      {
+        // Follow mode in complex plane.
+
+        bool error = false;
+        Complex kt_new = mueller(disp, kt_radiation_lossless[i],
+	  		         kt_radiation_lossless[i]+0.002*I,1e-11,0,100,
+                                 &error);
+        if (!error && abs(real(kt_new)) > 0.001 && abs(imag(kt_new)) > 0.001)
+        {
+	  std::cout << "Found complex mode pair." << kt_new << std::endl;
+	  std::cout << "Started from " 
+                    << kt_radiation_lossless[i] << std::endl;
+	  kt_complex.push_back(kt_new);
+        }
+      }
+      else
+        std::cout << "Removing bad minimum " << kt_radiation_lossless[i] 
+                  << std::endl;
+    } // End for.
     
     modes_left = (kt_lossless.size() >= global.N + 2) ? 0 
       : global.N - kt_lossless.size() + 2;
 
     kt_begin = kt_radiation_lossless[kt_radiation_lossless.size()-1];
-  }  // what does the "extra" variable do in slab.cpp??
+
+  } // End while.
 
   for (unsigned int i=0; i<kt_complex.size(); i++)
   {  
