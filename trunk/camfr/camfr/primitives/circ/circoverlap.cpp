@@ -62,7 +62,8 @@ Complex overlap(const CircMode*  mode_I,
   
   // Outer radii equal?
   
-  if (medium_I->radius[medium_I->M-1] != medium_II->radius[medium_II->M-1])
+  if (abs(medium_I->radius[medium_I->M-1] - medium_II->radius[medium_II->M-1])
+      > 1e-9)
   {
     std::ostringstream s;
     s << "Error: outer radii don't match: "
