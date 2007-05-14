@@ -112,6 +112,8 @@ class MultiScatterer : public Scatterer
 //  
 /////////////////////////////////////////////////////////////////////////////
 
+extern cVector dummy; // Used to keep the compiler happy.
+
 class DenseScatterer : public MultiScatterer
 {
   public:
@@ -128,10 +130,10 @@ class DenseScatterer : public MultiScatterer
     const cMatrix& get_T12() const {return T12;}
     const cMatrix& get_T21() const {return T21;}
 
-    const cVector& get_diag_R12() const {internal_error();} 
-    const cVector& get_diag_R21() const {internal_error();} 
-    const cVector& get_diag_T12() const {internal_error();} 
-    const cVector& get_diag_T21() const {internal_error();} 
+    const cVector& get_diag_R12() const {internal_error(); return dummy;} 
+    const cVector& get_diag_R21() const {internal_error(); return dummy;} 
+    const cVector& get_diag_T12() const {internal_error(); return dummy;} 
+    const cVector& get_diag_T21() const {internal_error(); return dummy;} 
 
     void set_R12(const cMatrix& M) {R12.reference(M);}
     void set_R21(const cMatrix& M) {R21.reference(M);}
@@ -150,7 +152,7 @@ class DenseScatterer : public MultiScatterer
 
     cMatrix R12, R21, T12, T21;
 
-    void internal_error() const
+    void internal_error() const 
       {py_error("Diag matrix of DenseScatterer asked.");}
     
 };
