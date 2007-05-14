@@ -12,6 +12,8 @@
 
 #include "scatterer.h"
 
+cVector dummy; // Used to keep the compiler happy.
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // MultiScatterer::recalc_needed
