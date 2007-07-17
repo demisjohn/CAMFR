@@ -2,10 +2,14 @@
 
 from __future__ import division
 
+from numpy import *
+from pylab import *
+
 from _camfr import *
 from camfr_PIL import *
 from geometry import *
 from geometry3d import *
+from material import *
 from camfrversion import *
 
 # Splash screen.

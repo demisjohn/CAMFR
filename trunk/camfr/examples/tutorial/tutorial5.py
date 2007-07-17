@@ -35,13 +35,6 @@ stack.set_inc_field(inc)
 
 stack.calc()
 
-# Save the field to a file.
+# Do some interactive plotting.
 
-outfile = file("tutorial5.out",'w')
-
-for x in arange(0.000, 4.500, 0.100):
-    for z in arange(0.000, 0.500, 0.010):
-	print >> outfile, x, z, abs(stack.field(Coord(x,0,z)).E2())
-    print >> outfile
-
-outfile.close()
+stack.plot()

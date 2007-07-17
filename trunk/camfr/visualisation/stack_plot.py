@@ -7,7 +7,7 @@
 #
 ##############################################################################
 
-from camfr_work import *
+from camfr import *
 from numpy import *
 from Tkinter import *
 
@@ -64,7 +64,7 @@ class StackPlot:
     import camfr_PIL
 
     # Stack values.
-    N               = 0         # Number of modes if blochstack.
+    N               = 0         # Number of modes in blochstack.
 
     # Canvas values.
     MINVALUE        = 1         # The smallest size for the canvas.

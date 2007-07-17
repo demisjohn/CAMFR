@@ -7,9 +7,7 @@
 #
 ####################################################################
 
-from Numeric import *
 from camfr import *
-from cmath import *
 
 def squares_GM(slices,waveguides,ambient,rod,r,a,xz):
     # define half the unit cell

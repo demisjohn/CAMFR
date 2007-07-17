@@ -7,7 +7,7 @@
 @ifinfo
 CAMFR manual v1.3.
 
-Copyright @copyright{} 1998-2005 Peter Bienstman - Ghent University.
+Copyright @copyright{} 1998-2007 Peter Bienstman - Ghent University.
 @end ifinfo
 
 @ignore
@@ -24,13 +24,13 @@ END-INFO-DIR-ENTRY
 @sp 10
 @title {CAMFR manual}
 @subtitle {version 1.3}
-@subtitle {November, 2003}
+@subtitle {September 2007}
 @author Peter Bienstman
 
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1998-2005 Peter Bienstman - Ghent University.
+Copyright @copyright{} 1998-2007 Peter Bienstman - Ghent University.
 @end titlepage
 
 @contents 
@@ -40,9 +40,8 @@ Copyright @copyright{} 1998-2005 Peter Bienstman - Ghent University.
 * Introduction::                
 * Tutorial::                    
 * Modelling optical devices::   
-* Visualisation::               
 * Reference guide::             
-* Index::                       
+* Index::                       @detailmenu
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -66,13 +65,12 @@ Modelling optical devices
 * Semi-infinite stacks::        
 * Defining complicated structures::  
 * General excitations for slabs::  
+* Dispersive materials::        
+* planar LEDs::                 
+* LEDs with gratings::          
 * CAMFR 3D::                    
+* Low level field plotting::    
 * Tips for troubleshooting problems::  
-
-Visualisation
-
-* Basic visualisation::         
-* Advanced visualisation::      
 
 Reference guide
 
@@ -123,13 +121,6 @@ Reference guide
 * Planar::                      
 * Circ::                        
 * Slab::                        
-* plot::                        
-* plot_vector::                 
-* plot_matrix::                 
-* plot_n_eff::                  
-* plot_n::                      
-* plot_field::                  
-* animate_field::               
 
 @end detailmenu
 @end menu
@@ -177,8 +168,7 @@ This functionality is currently available for two types of geometries:
 @item
 2D Cartesian structures
 @item
-3D cylindrical symmetric structures with at most one refractive index jump 
-in the radial direction
+3D cylindrical symmetric structures
 @end itemize
 
 The rest of this manual is structured as follows:
@@ -189,8 +179,6 @@ a tutorial introducing the basic concepts of CAMFR
 a chapter containing examples which illustrate other features, like modelling 
 more complicated optical structures (VCSEls, spontaneous emission, photonic
 crystals,... )
-@item
-a chapter on how to integrate CAMFR with several visualisation toolkits
 @item
 a reference guide
 @end itemize
@@ -292,6 +280,13 @@ print slab.mode(1).n_eff()
 print slab.mode(2).field(Coord(2.5, 0, 0))
 print slab.mode(3).field(Coord(2.5, 0, 0)).E2()
 print slab.mode(4).field(Coord(2.5, 0, 0)).E2().real
+
+@end group
+
+@group
+# Do some interactive plotting.
+
+slab.plot()
 @end group
 @end example
 
@@ -363,6 +358,8 @@ a built-in Python attribute of a complex number, and as such requires no extra
 parentheses.) Similarly, the imaginary component can be extracted with
 @code{imag}.
 
+Finally, @code{slab.plot()} shows a widget which can be used to interactively explore the properties of the waveguide modes, field profiles and effective index distribution. Note that you can zoom in these plots by drawing a rectangle with the left mouse button pressed. You can also bring up the effective index distribution in the complex plane and click on the modes in that plane to plot their field profiles.
+
 @cindex invoking Python scripts
 @cindex Python, invoking scripts
 
@@ -377,7 +374,7 @@ Regardless of the invocation method, the output that will be printed out will
 look something like this:
 
 @example
-CAMFR 1.3 - Copyright (C) 1998-2004 Peter Bienstman - Ghent University.
+CAMFR 1.3 - Copyright (C) 1998-2007 Peter Bienstman - Ghent University.
 
 (21.3499038707+0j)
 (3.07668661368+0j)
@@ -424,7 +421,6 @@ of waveguides and how to loop over a simulation parameter:
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1)
 set_N(20)
@@ -507,15 +503,12 @@ for L in arange(0.005, 0.100, 0.005):
 @end group
 @end example
 
-@cindex Numerical Python
-@cindex Python, Numerical
+@cindex Numpy
 @cindex whitespace in Python
 @cindex Python, whitespace
 
 The function @code{arange} is not part of the core Python language, but rather
-of the extension package Numerical Python. In order to use it, we have to
-import this package into the language with the statement 
-@code{from Numeric import *}.
+of the extension package NumPy. 
 
 Very important to notice is that Python uses indentation to distinguish 
 statements which form part of the loop and which don't. So, writing
@@ -564,7 +557,6 @@ to work with files.
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 # Set constants.
 
@@ -671,7 +663,6 @@ This is illustrated in the following Python file:
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1)
 set_N(20)
@@ -771,7 +762,6 @@ incident field distribution and calculate the resulting field in the stack.
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1)
 set_N(20)
@@ -804,16 +794,11 @@ stack.calc()
 
 @end group
 @group
+
 # Save the field to a file.
+# Do some interactive plotting.
 
-outfile = file("tutorial5.out",'w')
-
-for x in arange(0.000, 4.500, 0.100):
-    for z in arange(0.000, 0.500, 0.010):
-        print >> outfile, abs(stack.field(Coord(x,0,z)).E2()),
-    print >> outfile
-
-outfile.close()
+stack.plot()
 @end group
 @end example
 
@@ -829,23 +814,12 @@ These commands prepare a column vector named @code{inc} describing the
 incident field. This vector consists of @code{N} elements, one for each 
 eigenmode. Initially, all elements are zero, but afterwards, we set the 
 element corresponding to the fundamental mode equal to one. This vector is
-then used as the incident field. Note that in order to create 
-these vectors, we first have to import Numerical Python with 
-@code{from Numeric import *}.
+then used as the incident field.
 
-Calculating the field at a given position inside the stack uses the same
-syntax as calculating the field of an individual eigenmode:
+@code{stack.plot()} brings up a widget which can show and animate the field profile in a stack, write the pictures to files, ... . Once again, you can zoom in these widgets by drawing a rectangle with the left mouse button pressed.
 
-@code{stack.field(Coord(x,0,z))}
+If you want to do some post-processing of the field data yourself, you can access it by commands like @code{stack.field(Coord(x,0,z))}.
 
-@cindex Python, preventing line break
-@cindex linebreaks, preventing
-
-When printing the field, note the trailing command at the end of the 
-@code{print} statement. This will prevent the @code{print} statement from going
-to the next line. After we have iterated over all @code{z}-values for a given
-@code{x}-value, we force a line break with the command @code{print >> outfile}.
-In this way, the field data is nicely arranged in a matrix format.
 
 @page
 
@@ -870,7 +844,6 @@ calculation.
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1)
 set_N(10)
@@ -941,6 +914,11 @@ Another thing to pay attention to is that in this case there is only PML
 at the upper wall, since the lower wall is effectively the inside of the
 structure we want to model, so we don't want any absorbing boundary
 conditions there.
+
+@cindex Python, preventing line break
+@cindex linebreaks, preventing
+
+This time, instead of interactively plotting the field, we choose to write it to a file for further analysis. When printing the field, note the trailing command at the end of the @code{print} statement. This will prevent the @code{print} statement from going to the next line. After we have iterated over all @code{z}-values for a given @code{x}-value, we force a line break with the command @code{print >> outfile}. In this way, the field data is nicely arranged in a matrix format.
 
 
 @page
@@ -1064,7 +1042,7 @@ list at the top level in the source code.
 
 @page
 
-@node Modelling optical devices, Visualisation, Tutorial, top
+@node Modelling optical devices, Reference guide, Tutorial, top
 @chapter Modelling optical devices
 
 In this chapter, we will build upon the basic concepts introduced in the
@@ -1087,7 +1065,11 @@ cylindrical), although the examples given are only for a single geometry.
 * Semi-infinite stacks::        
 * Defining complicated structures::  
 * General excitations for slabs::  
+* Dispersive materials::        
+* planar LEDs::                 
+* LEDs with gratings::          
 * CAMFR 3D::                    
+* Low level field plotting::    
 * Tips for troubleshooting problems::  
 @end menu
 
@@ -1124,7 +1106,6 @@ can be found in @code{examples/other}:
 ###################################################################
 
 from camfr import *
-from Numeric import *
 
 set_polarisation(TE)
 set_lambda(1.5)
@@ -1445,8 +1426,6 @@ analytically, we can easily verify the results.
 ###################################################################
 
 from camfr import *
-from math import *
-from Numeric import *
 
 set_N(60)
 set_lambda(1)
@@ -1524,166 +1503,11 @@ given vectorial orientation, we use the following command:
 From Poynting's theorem, we can calculate the total power radiated by this
 dipole from the real part of the electric field at the dipole itself.
 
-@cindex power flow
-The final example models spontaneous emission in a more complicated layer
-structure. Main new features that are introduced are @code{stack.inc_S_flux}
-and @code{ext_S_flux} to calculate the real power flow at the incidence and 
-at the exit side of a stack. Arguments for this function are the beginning
-and the end @code{rho} or @code{x} coordinate for the flux integration, and
-the relative precision required when doing the integration.
+This is much more accurate than explicitly calculating power flows using e.g.
+the commands @code{stack.inc_S_flux} and @code{stack.ext_S_flux} to calculate 
+the real power flow at the incidence and at the exit side of a stack (see 
+reference manual).
 
-@example
-@group
-#!/usr/bin/env python
-
-####################################################################
-#
-# Calculates spontaneous emission rate and extraction efficiency in
-# planar RCLEDs.
-#
-####################################################################
-
-from camfr import *
-from cmath import *
-from Numeric import *
-
-set_lambda(0.980)
-set_circ_order(1)
-
-@end group
-@group
-# Define materials.
-
-metal_m = Material(0.2-6.5j)
-air_m   = Material(1.0)
-GaAs_m  = Material(3.5)
-QW_m    = Material(3.5-0.1j)
-AlOx_m  = Material(1.55)
-
-d_AlOx = get_lambda()/4.0/AlOx_m.n().real
-d_GaAs = get_lambda()/4.0/GaAs_m.n().real
-
-@end group
-@group
-# Define the calculate function
-
-def calc(r, PML, M, max_rho, spacer, resolution):
-  
-  # 1-D structures
-
-  set_N(M)
-
-  set_circ_PML(PML)
-  
-  metal = Circ(metal_m(r))
-  air   = Circ(  air_m(r)) 
-  GaAs  = Circ( GaAs_m(r))
-  QW    = Circ(   QW_m(r))
-  AlOx  = Circ( AlOx_m(r))
-
-@end group
-@group
-  # Reference bulk emitter
-
-  half_open = Stack(GaAs(1))
-
-  r0 = Coord(0,0,0)
-  orientation = Coord(1,0,0)
-
-  open = Cavity(half_open,half_open)
-  open.set_source(r0, orientation)
-
-  ref_rate = (half_open.field(r0).E1()).real
-
-@end group
-@group  
-  # 2-D structure
-
-  top = Stack(GaAs(0)+QW(.0025)+GaAs(.048-.0025)+metal(.120)+air(.002))
-  bot = Stack(GaAs(0)+QW(.0025)+GaAs(spacer)+AlOx(d_AlOx)+GaAs(0))
-
-@end group
-@group  
-  # Cavity
-
-  rcled = Cavity(bot,top)
-  rcled.set_source(r0, orientation)
-
-@end group
-@group
-  # Calculate spontaneous emission rate.
-
-  rate = rcled.field(r0).E1().real / ref_rate
-
-@end group
-@group
-  # Calculate QW emission.
-
-  S_top_QW = top.inc_S_flux(0, max_rho, resolution)
-  S_bot_QW = bot.inc_S_flux(0, max_rho, resolution)
-
-@end group
-@group
-  # Calculate bottom exit emission.
-  # Assume incoherent reflection from bottom substrate-air interface.
-  
-  outcoupling = Stack(GaAs(0.0) + air(0.0))
-  outcoupling.set_inc_field(bot.trans_field())
-
-  S_top_out =         top.ext_S_flux(0, max_rho, resolution)
-  S_bot_out = outcoupling.ext_S_flux(0, max_rho, resolution)
-
-@end group
-@group
-  # Calculate extraction efficiency.
-
-  eta = S_bot_out / (S_bot_QW + S_top_QW)
-
-@end group
-@group
-  # Crude approximate of coupling efficiency to NA.
-
-  NA = 0.5
-  out = outcoupling.trans_field()
-  k = 2.0 * pi / get_lambda() # n = 1 in air
-
-  P = P_NA = 0
-  for i in range(N()):
-    kz = air.mode(i).kz()
-    theta = acos(kz.real / k).real
-
-    if abs(kz.real) > abs(kz.imag):
-      P_theta = pow(abs(out[i]), 2) * sin(theta)
-      P += P_theta
-
-      if (sin(theta) <= NA):
-        P_NA += P_theta
-
-@end group
-@group    
-  # Report results
-
-  print "@ ", spacer, r, PML, M, max_rho, resolution, ":", \
-        rate, eta, P_NA/P, eta*P_NA/P, \
-        S_top_QW, S_bot_QW, S_top_out, S_bot_out
-
-  free_tmps()
-@end group
-@group
-
-# Main loop.
-
-eps = 1e-10
-
-for spacer in arange(0.130, 0.160, 0.002):
-  for r in arange(10.0, 10.0+eps, 2.0):
-    for PML in arange(-0.05, -0.05+eps, 0.01):
-      for M in arange(300, 301, 20):
-        max_rho = r
-        resolution = 1e-10
-        calc(r, PML, M, max_rho, spacer, resolution)
-@end group
-@end example
 
 @page
 
@@ -1706,7 +1530,6 @@ all the layers extend infinitely in the transverse direction.
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 # Define structure.
 
@@ -1789,7 +1612,6 @@ The following code illustrates how to achieve this:
 ###################################################################
 
 from camfr import *
-from Numeric import *
 
 set_lambda(1.5)
 set_N(50)
@@ -1949,7 +1771,7 @@ custom shapes by defining a Python object which overloads
 
 @page
 
-@node General excitations for slabs, CAMFR 3D, Defining complicated structures, Modelling optical devices
+@node General excitations for slabs, Dispersive materials, Defining complicated structures, Modelling optical devices
 @section General excitations for slabs
 
 @cindex general excitations, gaussian incidence, plane wave incidence
@@ -1988,6 +1810,8 @@ slab = Slab(air(2)+ GaAs(1)+ air(2))
 s = Stack(slab(1))
 
 eps = 1e-3 # Precision for calculating overlap integrals.
+@end group
+@group
 
 # General excitation using a Python function.
 
@@ -1999,6 +1823,8 @@ def f(x):
   return A*exp(-0.5*((x-x0)/sigma)**2)
 
 s.set_inc_field_function(f, eps)
+@end group
+@group
 
 # Faster variant using a built-in Gaussian excitation.
 
@@ -2047,7 +1873,436 @@ when modelling discontinuous functions, just like e.g. in Fourier analysis.
 
 @page
 
-@node CAMFR 3D, Tips for troubleshooting problems, General excitations for slabs, Modelling optical devices
+@node Dispersive materials, planar LEDs, General excitations for slabs, Modelling optical devices
+@section Working with dispersive materials
+
+@cindex materials, dispersive
+@cindex dispersive materials
+
+Since CAMFR is a frequency domain method, working with dispersive materials is in a sense trivial: just do a different simulation for each wavelength with adjusted material parameters.
+
+There are however a few convenience functions to help you work with materials whose refractive index is specified in an external file. A popular format among material scientists is a text file consisting of three columns: the wavelength in nm, the real part of the index, the imaginary part of the index where a positive value means loss. The following code shows how to use such a file, automatically adapting it to the CAMFR conventions (i.e. wavelength in micron and loss corresponding to a negative imaginary index):
+
+@example
+@group
+SiO2_factory = Dispersive_Material_Factory('SiO2.txt')
+
+for wavelength in arange(1,2,0.1):
+  set_lambda(wavelength)
+  m = SiO2_factory()
+  print m.n()
+@end group
+@end example
+
+This assumes that a file @code{SiO2.txt} is present in your current location. Note how you first need to set the wavelength, and then let the factory object create a new material object for you to use in the rest of your calculations. Changing the wavelength after the structure is created will NOT change the refractive index.
+
+In case your refractive index data is tabulated in a different way, have a look at @code{material.py} in the CAMFR source code at the implementation of @code{Dispersive_Material_Factory} to see how to adapt it.
+
+Sometimes, the refractive index is given by a formula. In this case, you can write your own factory object like this:
+
+@example
+@group
+class ZnS_Factory:
+
+  def __call__(self):
+
+    eps = 5.164 + 0.1208 / (get_lambda().real **2 - 0.27055**2)
+    return Material(sqrt(eps))
+@end group
+@end example
+
+
+@page
+
+@node planar LEDs, LEDs with gratings, Dispersive materials, Modelling optical devices
+@section Modelling light emission in planar LEDs
+
+@cindex LEDs
+
+There is an extra set of functions written on top of CAMFR which allows you
+to study spontaneous emission and light extraction in planar stratified resonant cavity light emitting diodes. The sponteneous emission is modelled as a dipole source with a certain orientation which is then expanded in plane waves.
+
+These functions can be imported by @code{from RCLED import *}. An example of using this module is given by the following code (available as @code{OLED.py} in the @code{examples/other} directory): 
+
+@example
+@group
+#!/usr/bin/env python
+
+####################################################################
+#
+# Extraction efficiency in an organic LED
+#
+####################################################################
+
+from RCLED import *
+
+# Set parameters.
+
+set_lambda(0.565)
+@end group
+@group
+# Create materials.
+  
+Al    = Material(1.031-6.861j)
+Alq3  = Material(1.655)
+NPD   = Material(1.807)
+ITO   = Material(1.806-0.012j)
+glass = Material(1.528)
+air   = Material(1)
+@end group
+@group
+# Define layer structure.
+
+top = Uniform(Alq3,  0.050) + \
+      Uniform(Al,    0.150) + \
+      Uniform(air,   0.000)
+
+bot = Uniform(Alq3,  0.010) + \
+      Uniform(NPD,   0.045) + \
+      Uniform(ITO,   0.050) + \
+      Uniform(glass, 0.000)
+
+sub = Uniform(glass, 0.000) + \
+      Uniform(air,   0.000)
+
+ref = Uniform(10)
+
+cav = RCLED(top, bot, sub, ref)
+
+@end group
+@group
+# Calculate.
+
+cav.calc()
+
+cav.radiation_profile(horizontal)
+
+@end group
+@end example
+
+This defines a structure where the sequence of layers from top to bottom is air, 150 nm Al, 50 nm Alq3 with the dipole 50 nm from the Al, 45 nm NPD, 50 nm ITO, an optically thick glass substrate and finally air below.
+
+Just as in other cavity calculations, the @code{top} and @code{bot} stacks are defined from the inside out, i.e. from the location of the emitter (in this case the Alq3 layer) to the outside world.
+
+@code{Uniform} is a convenience function of the @code{RCLED} module, which relieves the user of having to create the @code{Planar} objects (@xref{1D planar structures}).
+
+The distinction between the @code{bot} and @code{sub} stacks is needed because the substrate is considered to be optically thick, in the sense that reflections from the substrate-air interface do not contribute to the microcavity effect. In this way, it is also possible to separately calculate how much light is coupled into the glass substrate and how much is coupled into the air, which is sometimes useful information. Note that in order to calculate the extraction to air, the correct Fresnel coefficients for the substrate-air interface are taken into account.
+
+The @code{ref} stack also deserves additional explanation. For numerical reasons, the emission is actually taking place in a zero-thickness reference layer which in this example is set to have an index of 10. The index of the reference layer is particularly important when the dipole emits close to a metal layer and you want to model the coupling to surface plasmons accurately. In this case, you might want to experiment with the reference index to make sure it is high enough.
+
+The @code{cav.calc()} command prints out the following summary of where the light goes for different dipole orientations:
+
+@example
+@group
+Source orientation: vertical (weight=1)
+Emitted power                                 : 2.393
+Extraction efficiency to substrate            : 0.094
+Extraction efficiency to bottom outside world : 0.009
+
+@end group
+@group
+Source orientation: horizontal (weight=2)
+Emitted power                                 : 0.909
+Extraction efficiency to substrate            : 0.758
+Extraction efficiency to bottom outside world : 0.312
+
+@end group
+@group
+Source orientation: average
+Emitted power                                 : 1.404
+Extraction efficiency to substrate            : 0.380
+Extraction efficiency to bottom outside world : 0.139
+@end group
+@end example
+
+The vertical dipole is oriented perpendicular to the layer interfaces, and the horizontal one has random azimuth in the plane of the layers. Also note that the convention we adopt here is that the useful emission is in the bottom direction. If your device is actually top emitting, you have to invert the layer stack.
+
+If you want to do some post-processing on these numbers, or plug them in an optimisation routine, the function @code{cav.calc()} actually returns a data structure which can be used to access these numbers. E.g., the following code will print out the same sequence of nine numbers as above:
+
+@example
+@group
+res=cav.calc()
+@end group
+@group
+
+print res[vertical].P_source
+print res[vertical].eta_sub
+print res[vertical].eta_out
+@end group
+@group
+
+print res[horizontal].P_source
+print res[horizontal].eta_sub
+print res[horizontal].eta_out
+@end group
+@group
+
+print res.P_source
+print res.eta_sub
+print res.eta_out
+@end group
+@end example
+
+If you are only interested in e.g. the horizontal dipole, you can specify this in the code as follows: @code{cav.calc(sources=[horizontal])}. (By default, the following calculation is performed: @code{calc(sources = [vertical,horizontal], weights = [1,2]}, indicating that the horizontal dipole needs to be counted twice to get the correct average over source orientation.)
+
+Finally, the command @code{cav.radiation_profile(horizontal)} will plot the TE and the TM radiation profile of a horizontal dipole. To look at the radiation profile of a vertical dipole, simply replace @code{horizontal} by @code{vertical}.
+
+To do your own post-processing, the function returns the following values:
+
+@example
+theta, P_TE, P_TM = cav.radiation_profile(horizontal)
+@end example 
+
+By default, the @code{radiation_profile} command plots the radiation profile in the bottom output medium, in the case of our example air. To look at the field in other locations, there is an optional function argument @code{location}, which can be any of the following strings:  @code{'source_top'} or @code{'source_bot'} (to look at the upward and downward radition profile at the dipole location),  @code{'top'} (in the top output medium, in this case above the metal),  @code{'sub'} (in the substrate, in this case glass) and @code{'out'} (the default value). Note that the angles always refer to angles in the particular layer indicated by the @code{location} parameter, e.g. for @code{'sub'} the angles are angles in the glass substrate.
+
+The values which are plotted by the function are densities per unit solid angle, i.e. the total power is given by the integral of the @code{P} values times an infinitesimal solid angle. For densities per other units, use the following optional argument: @code{density='per_kt'} or @code{density='per_kx_ky'}.
+
+To turn off the interactive plotting (e.g. for use in batch calculations) use the optional argument @code{show = False}. To write the figures to files, specify the base filename by the optional argument @code{filename='my_file_name'}, which will create @code{my_file_name_TE.png} and @code{my_file_name_TM.png}.
+
+
+@page
+
+@node LEDs with gratings, CAMFR 3D, planar LEDs, Modelling optical devices
+@section Modelling light emission in LEDs with gratings
+
+@cindex LEDs with gratings
+@cindex gratings in LEDs
+
+The presence of a grating (or a photonic crystal if you prefer), can have a big influence on optical outcoupling. Therefore, CAMFR also contains a library @code{GARCLED} for modelling these kinds of grating-assisted resonant-cavity LEDs. The gratings can be placed at the interface between the cavity and the substrate, and/or at the interface between the substrate and the air. Multiple incoherent reflections in the optically thick substrate can also be taken into account.
+
+The following is a simple example:
+
+@example
+@group
+#!/usr/bin/env python
+
+####################################################################
+#
+# Extraction efficiency in an organic LED with gratings
+#
+####################################################################
+
+from GARCLED import *
+
+# Set parameters.
+  
+set_lambda(0.565)
+
+orders = 2
+set_fourier_orders(orders,orders)
+
+L = 0.400
+set_period(L, L)
+@end group
+@group
+
+# Create materials.
+  
+Al    = Material(1.031-6.861j)
+Alq3  = Material(1.655)
+NPD   = Material(1.807)
+SiO2  = Material(1.48)
+SiN   = Material(1.95) 
+ITO   = Material(1.806-0.012j)
+glass = Material(1.528)
+air   = Material(1)
+@end group
+@group
+
+# Define layer structure.
+ 
+top = Uniform(Alq3,  0.050) + \
+      Uniform(Al,    0.150) + \
+      Uniform(air,   0.000)
+  
+bot = Uniform(Alq3,  0.010) + \
+      Uniform(NPD,   0.045) + \
+      Uniform(ITO,   0.050) + \
+      SquareGrating(L/4, SiO2, SiN, "1", 0.100) + \
+      Uniform(glass, 0.000)
+  
+sub = Uniform(glass, 0.000) + \
+      Uniform(air,   0.000)
+
+ref = Uniform(3) # Don't choose too high: otherwise takes too long
+
+cav = RCLED(top, bot, sub, ref)
+@end group
+@group
+
+# Calculate.
+  
+cav.calc(sources=[vertical, horizontal_x], weights=[1, 2],
+         steps=30, symmetric=True)
+
+cav.radiation_profile(horizontal_x, steps=30)
+@end group
+@end example
+
+The main structure of the code should look very similar as compared to the planar case from the previous section.
+
+The command @code{set_period(Lx,Ly)} allows you to set the period in the x and y transverse directions.  @code{set_fourier_orders(Nx,Ny)} sets the number of diffraction orders that are taken into account when simulating the grating with the rigorous coupled wave analysis model (RCWA). This number has a big influence on the calculation time.
+
+Also for reasons of calculation time, the index of the reference material should not be excessively high (but at least as high as the index of the material where the emission takes place).
+
+@code{SquareGrating(D, square_m, surround_m, pos, thickness)} is a convenience function to create a square grating of squares of material @code{square_m} in a background material @code{surround_m}. The side of the squares has length @code{D} and the period of the grating has already been set by @code{set_period(Lx,Ly)}. The thickness or height of the grating layer is given by the @code{thickness} parameter. The position of the emitting dipole with respect the grating pattern has an influence on the radiation profile. With the @code{pos} argument you can specify three different high-symmetry positions @code{'1'}, @code{'2'} and @code{'3'}. These are illustrated in the following figure.
+
+@image{figs/dipole_pos}
+
+For this particular example, the extraction efficiency for the @code{horizontal_x} and @code{horizontal_y} dipoles will be the same due to symmetry. Therefore, we only calculate the @code{horizontal_x} dipole, but give it a weight coefficient of two, so that the average over dipole orientation gives the correct result.
+
+The @code{steps} parameter determines in how many equidistant steps the basic integration interval along one @code{k}-axis is subdivided. Together with  @code{set_fourier_orders(Nx,Ny)}, these are the main parameters that determine accuracy and calculation time.
+
+@code{symmetric=True} tells the software that the grating together with the dipole orientation possess mirror symmetry along the @code{x} and @code{y} axis. This allows the integration to be restricted to positive values of @code{kx} and @code{ky}, resulting in a factor 4 speedup.
+
+@code{cav.calc()} also returns an object containing all the results, which can be queried in exactly the same way as for the planar case. 
+
+Finally, @code{cav.radiation_profile(horizontal_x, steps=30)} calculates the TE and TM polarised radiation profile for a single source orientation. This functions in exactly the same way as in the planar case, e.g. it also supports the same optional arguments: @code{radiation_profile(source, steps=30, location='out', density='per_solid_angle', show=True, filename=None)}. The return values of this function are similarly @code{k, P_TE, P_TM}, where @code{k} is a 1D vector containing the k-values which are used both for kx and ky. @code{P_TE} and @code{P_TM} are matrices.
+
+There is also a function to create a square grating with round holes: @code{SquareGratingRoundHoles(D, dx, dy, core_m, surround_m, pos, thickness)}. Here, @code{dx} and @code{dy} are the same discretisation parameters used for @code{Geometry} (@xref{Defining complicated structures}).
+
+To show how you can manually create different unit cells which are not covered by the convenience functions, we will now explain the code behind the @code{SquareGrating} at position 1. As shown in the following figure, the unit cell is built up from three vertical slices, which are represented in the following code by the @code{Slab}s @code{s1}, @code{s2} and @code{s1}. These are then combined in a @code{BlochSection}.
+
+@image{figs/pos1}
+
+@example
+@group
+s1 = Slab(square_m(D/2.) + surround_m(_Ly-D) + square_m(D/2.))
+s2 = Slab(surround_m(_Ly))  
+  
+grating = BlochSection(s1(D/2.) + s2(_Lx-D) + s1(D/2.))
+@end group
+@end example
+
+To use this @code{grating} object in your stack definition, just do the following:
+
+@example
+@group
+bot = Uniform(Alq3,  0.010) + \
+      Uniform(NPD,   0.045) + \
+      Uniform(ITO,   0.050) + \
+      grating(0.010) + \
+      Uniform(glass, 0.000)
+@end group
+@end example
+              
+In reality, the dipole position will be random with respect to the grating. The following code illustrates a more elaborate example, where the emission is averaged over the three high-symmetry dipole positions. Also, the structure is calculated for several grating parameters.
+
+@example
+@group
+#!/usr/bin/env python
+
+######################################################################
+#
+# Extraction efficiency in an organic LED with gratings
+# averaged over dipole position.
+#
+######################################################################
+
+from GARCLED import *
+
+def calc(L, h, D, orders, wavelength=0.565):
+
+  # Set parameters.
+
+  set_period(L, L)
+  
+  set_lambda(wavelength)
+
+  set_fourier_orders(orders, orders)
+
+  print
+  print "wavelength, orders L h:", wavelength, orders, L, h
+
+  # Create materials.
+  
+  Al    = Material(1.031-6.861j)
+  Alq3  = Material(1.655)
+  NPD   = Material(1.807)
+  ITO   = Material(1.806-0.012j)
+  SiO2  = Material(1.48)
+  SiN   = Material(1.95)  
+  glass = Material(1.528)
+  air   = Material(1)
+
+  eta_sub, eta_out = [], []
+@end group
+@group
+
+  # Define layer structure.
+
+  for pos in ['1', '2', '3']:
+
+    print
+    print "*** Position", pos, "***"
+    print
+  
+    top = Uniform(Alq3,  0.050) + \
+          Uniform(Al,    0.150) + \
+          Uniform(air,   0.000)
+  
+    bot = Uniform(Alq3,  0.010) + \
+          Uniform(NPD,   0.045) + \
+          Uniform(ITO,   0.050) + \
+          SquareGrating(D, SiO2, SiN, pos, h) + \
+          Uniform(glass, 0.000)
+  
+    sub = Uniform(glass, 0.000) + \
+          Uniform(air,   0.000)
+
+    ref = Uniform(3) # Don't choose too high: otherwise takes too long
+  
+    cav = RCLED(top, bot, sub, ref)
+@end group
+@group
+
+    # Calculate average over source orientation for a given position.
+     
+    res = cav.calc(sources = [vertical, horizontal_x, horizontal_y],
+                   steps=100, symmetric=True)
+
+    eta_sub.append(res.eta_sub)
+    eta_out.append(res.eta_out)
+      
+    sys.stdout.flush()
+  
+    free_tmps()
+@end group
+@group
+
+  # Print average over position and source.
+
+  print
+  print "*** Averaged over dipole position and source orientation ***"
+  print
+  print "Averaged extraction efficiency to substrate            :", \
+                                                        average(eta_sub)
+  print "Averaged extraction efficiency to bottom outside world :", \
+                                                        average(eta_out)
+
+@end group
+@group
+# Loop over period and thickness of the grating.
+
+for L in [.300, .500, .700]:
+  for h in [.100, .200, .400]:
+    calc(L, h, L/2, orders=3)
+@end group
+@end example  
+
+A grating close to the light emitting layer will have an influence on the extraction of the light trapped inside the active layers. However, as the figure below illustrates, this grating can also help to couple out light trapped inside the substrate, provided the lateral extent of the device is sufficienly large.
+
+@image{figs/cavity_grating}
+
+These multipass effects in the substrate happen incoherently because of the large thickness of the substrate. Normally, they are not taken into account, i.e. the substrate is considered to be single-pass. You can calculate the multipass effects by specifying the optional parameter @code{single_pass_substrate=False} to @code{cav.calc()}.
+
+Finally, instead of placing the grating at the cavity-substrate interface, you can place it at the substrate-air interface by including a grating in the @code{sub} stack. In this case, the grating will only have an influence on the substrate modes, and you need to specify @code{single_pass_substrate=False}.
+
+
+
+@page
+
+@node CAMFR 3D, Low level field plotting, LEDs with gratings, Modelling optical devices
 @section CAMFR 3D
 
 @cindex three-dimensional structures
@@ -2057,7 +2312,7 @@ The following pages illustrate how to use CAMFR to find modes of waveguides with
 The following code looks for the ground mode of a (quarter) of a square waveguide, exploiting symmetry:
 @example
 @group
-from camfr_work import *
+from camfr import *
 
 set_lambda(1.0)
 set_N(1)
@@ -2087,8 +2342,6 @@ s.calc()
 print s
 @end group
 @end example
-
-Note that the development version of camfr with the latest version of the 3D solver is called @code{camfr_work} rather then @code{camfr}. This allows people to have the release and the development version installed side-by-side.
 
 In order to explain all the options, some insight into the nature of the 3D model is needed.
 
@@ -2121,9 +2374,98 @@ Some interface quirks which are due to the development nature of the model and w
  
 @end itemize
 
+
 @page
 
-@node Tips for troubleshooting problems,  , CAMFR 3D, Modelling optical devices
+@node Low level field plotting, Tips for troubleshooting problems, CAMFR 3D, Modelling optical devices
+@section Low level field plotting
+
+@cindex field plotting
+
+In you want more control over the field plotting than is provided by the @code{plot} widgets, you can use a set of lower level plotting functions:
+
+@example
+@group
+####################################################################
+#
+# Illustrates low level plotting.
+#
+####################################################################
+
+from camfr import *
+
+set_N(40)
+set_lambda(1.55)
+
+# Define materials.
+
+GaAs = Material(3.5)
+air  = Material(1.0)
+@end group
+@group
+
+# Define geometry.
+
+set_lower_PML(-0.1)
+set_upper_PML(-0.1)
+
+wg  = Slab(air(2.0) + GaAs(0.2) + air(2.0))
+gap = Slab(air(4.2))
+
+s = Stack(wg(0) + gap(1) + wg(0))
+
+inc = zeros(N())
+inc[0] = 1
+s.set_inc_field(inc)
+
+s.calc()
+@end group
+@group
+
+# Do some plotting.
+
+r_x = arange( 1.5, 2.8, 0.05)
+r_z = arange(-1.0, 2.0, 0.05)
+
+print "Doing some plots. Close window to continue to the next one."
+
+wg.plot_n(r_x)
+
+wg.mode(0).plot_field(lambda f : f.E2().real, r_x)
+
+s.plot_field(lambda f : f.E2().real, r_x, r_z)
+
+s.animate_field(lambda f : f.E2(), r_x, r_z)
+
+@end group
+@end example
+
+This code is pretty self-explanatory. Ranges are used to specify the area to be plotted and the resolutions.
+
+Note the use of Python's lambda functions to indicate which field component to
+plot. Lambda functions are little anonymous functions which in this case will 
+be called on a @code{Field} object. This greatly increases the flexibility of 
+the @code{plot_field} function: e.g. to plot the absolute value one would 
+write @code{lambda f : abs(f.E2()**2)}.
+
+In all these plots, you can zoom by dragging a rectangle in the window. 
+Also, left clicking and dragging under the horizontal axis will print the
+corresponding coordinates. Note that these functions are also very handy in
+interactive mode, to quickly inspect modes and their field profiles.
+
+Important to note is that @code{animate_field} requires a complex number to
+work correctly, so the full complex field component needs to be used rather
+than e.g. the real part.
+
+@code{plot_n}, @code{plot_field} and @code{animate_field} can take an additional named argument like @code{filename="out.gif"} which indicates the filename to write the picture to. For pictures, a variety of formats are supported (gif, jpg, png, eps, ...), where the suffix of the filename will determine the format to be used. For animations only uncompressed animated gif is supported.
+
+Note that these plotting functions also work for @code{BlochStack}, @code{BlochMode} and @code{Cavity}.
+
+For additional functionality of these functions, see the reference guide.
+
+@page
+
+@node Tips for troubleshooting problems,  , Low level field plotting, Modelling optical devices
 @section Tips for troubleshooting problems
 
 @cindex convergence problems, troubleshooting, core dump, crash
@@ -2180,240 +2522,7 @@ behaviour now, include @code{from __future__ import division} at the top
 of your scripts.
 @page
 
-@node Visualisation, Reference guide, Modelling optical devices, top
-@chapter Visualisation
-
-@cindex visualisation
-
-@menu
-* Basic visualisation::         
-* Advanced visualisation::      
-@end menu
-
-@node Basic visualisation, Advanced visualisation, Visualisation, Visualisation
-@section Basic visualisation
-
-CAMFR contains a number of interactive widgets to visualise modes, fields, 
-index profiles, show field animations, show the distribution of propagation
-constants in the complex plane, ...
-
-To activate these widgets, use the @code{plot} command e.g.:
-
-
-@code{plot(Slab)}
-
-@code{plot(Stack)}
-
-@code{plot(BlochStack)}
-
-@page
-
-@node Advanced visualisation,  , Basic visualisation, Visualisation
-@section Advanced visualisation
-
-For more fine-grained control over plotting, CAMFR comes standard with a 
-thin wrapper around some Tk plotting facilities, which are partly based 
-on code from Scientific Python, 
-@uref{http://starship.python.net/crew/hinsen/scientific.html}. 
-
-The following code illustrates some of these plotting routines:
-
-@example
-@group
-#!/usr/bin/env python
-
-####################################################################
-#
-# Simple visualisation example.
-#
-####################################################################
-
-from camfr import *
-
-set_lambda(1)
-set_N(50)
-set_polarisation(TE)
-
-# Define materials.
-
-GaAs = Material(3.5)
-air  = Material(1.0)
-
-# Define waveguide.
-
-set_lower_PML(-0.1)
-set_upper_PML(-0.1)
-
-slab = Slab(air(2) + GaAs(0.5) + air(2))
-
-slab.calc()
-
-@end group
-@group
-# Visualise.
-
-r_x = arange(1.0, 3.5, 0.01)
-
-print "Plotting mode distribution (close window to continue)"
-plot_neff(slab)
-
-print "Plotting E field (close window to continue)"
-plot_field(slab.mode(0), lambda f : f.E2().real, r_x)
-
-print "Plotting H field (close window to continue)"
-plot_field(slab.mode(0), lambda f : f.H2().real, r_x)
-
-print "Plotting refractive index profile (close window to continue)"
-plot_n(slab, r_x)
-@end group
-@end example
-
-Note the use of Python's lambda functions to indicate which field component to
-plot. Lambda functions are little anonymous functions which in this case will 
-be called on a @code{Field} object. This greatly increases the flexibility of 
-the @code{plot_field} function: e.g. to plot the absolute value one would 
-write @code{lambda f : abs(f.E2()**2)}.
-
-In all these plots, you can zoom by dragging a rectangle in the window. 
-Also, left clicking and dragging under the horizontal axis will print the
-corresponding coordinates. Note that these functions are also very handy in
-interactive mode, to quickly inspect modes and their field profiles.
-
-@page
-
-The next example illustrates how we can use custom plotting in our own 
-simulations (examples from the chapter can be found in the
-@code{visualisation/examples/} directory).
-
-@example
-@group
-#!/usr/bin/env python
-
-####################################################################
-#
-# Illustrates custom plotting.
-#
-####################################################################
-
-from camfr import *
-from Numeric import *
-
-set_lambda(1)
-set_N(50)
-set_polarisation(TE)
-
-@end group
-@group
-# Define materials.
-
-GaAs = Material(3.5)
-air  = Material(1.0)
-
-@end group
-@group
-# Define slabs.
-
-set_lower_PML(-0.1)
-set_upper_PML(-0.1)
-
-space = Slab(air(4))
-
-@end group
-@group
-# Loop over width.
-
-v = [] # To keep track of the data points.
-
-for W in arange(0.100, 0.200, 0.005):
-    slab = Slab(air(2 - W/2.0) + GaAs(W) + air(2 - W/2.0))
-    stack = Stack(space(0) + slab(0.5) + space(0))
-    stack.calc()
-
-    print W
-
-    v.append((W,abs(stack.R12(0,0))))
-
-    free_tmps()
-
-plot_vector(v)    
-@end group
-@end example
-
-Plotting is as simple as creating an empty vector to hold the data points 
-@code{v = []}, collecting the data points @code{v.append((x,y))}, and finally
-plotting it @code{plot_vector(v)}.
-
-This example shows how to inspect the refractive index of a stack, as well 
-as how to plot and animate field profiles in a stack:
-
-@example
-@group
-#! /usr/bin/env python
-
-####################################################################
-#
-# Illustrates 2D plotting.
-#
-####################################################################
-
-from camfr import *
-from Numeric import *
-
-set_N(40)
-set_lambda(1.55)
-
-# Define materials.
-
-GaAs = Material(3.5)
-air  = Material(1.0)
-
-# Define geometry.
-
-set_lower_PML(-0.1)
-set_upper_PML(-0.1)
-
-wg  = Slab(air(2.0) + GaAs(0.2) + air(2.0))
-gap = Slab(air(4.2))
-
-s = Stack(wg(0) + gap(1) + wg(0))
-
-@end group
-@group
-# Do some plotting.
-
-r_x = arange( 1.5, 2.8, 0.05)
-r_z = arange(-1.0, 2.0, 0.05)
-
-plot_n(s, r_x, r_z)
-
-inc = zeros(N())
-inc[0] = 1
-s.set_inc_field(inc)
-
-plot_field(s, lambda f : f.E2().real, r_x, r_z)
-
-animate_field(s, lambda f : f.E2(), r_x, r_z)
-@end group
-@end example
-
-This code is pretty self-explanatory. Once again, ranges are used to specify
-the area to be plotted and the resolutions. Lambda functions take care of 
-determining which field component is to be plotted.
-
-Important to note is that @code{animate_field} requires a complex number to
-work correctly, so the full complex field component needs to be used rather
-than e.g. the real part.
-
-Both @code{plot_field} and @code{animate_field} can take an additional named argument like @code{filename="out.gif"} which indicates the filename to write the picture to. For pictures, a variety of formats are supported (gif, jpg, png, eps, ...), where the suffix of the filename will determine the format to be used. For animations only uncompressed animated gif is supported.
-
-Note that instead of a @code{Stack}, one can also pass a 
-@code{BlochStack.mode} to @code{animate_field}.
-
-Finally, the 2D equivalent of @code{plot_vector(v)} is @code{plot_matrix(z)}.
-
-@page
-
-@node Reference guide, Index, Visualisation, top
+@node Reference guide, Index, Modelling optical devices, top
 @chapter Reference guide
 
 @noindent
@@ -2468,13 +2577,6 @@ This chapter contains a listing all classes and functions contained in CAMFR.
 * Planar::                      
 * Circ::                        
 * Slab::                        
-* plot::                        
-* plot_vector::                 
-* plot_matrix::                 
-* plot_n_eff::                  
-* plot_n::                      
-* plot_field::                  
-* animate_field::               
 @end menu
 
 @node set_lambda, get_lambda, Reference guide, Reference guide
@@ -2944,6 +3046,27 @@ Member functions:
 mode.
 @item
 @code{calc()}: calculates the modes in this waveguide.
+@item
+@code{plot()}: interactively plots the modes in this waveguide.
+@item
+@code{plot_n(r_x))}: lower level routine to plot the refractive index.
+@code{r_x} is range objects (e.g @code{arange(x0, x1, dx)}) specifying which 
+interval to plot and with which resolution. @code{x} is the transverse 
+direction. An extra named argument @code{filename='outputname.formatextension'} is supported. For pictures, a variety of formats are supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will determine the format to be used.
+@item
+@code{plot_field(component, r_x))}: lower level field plot routine.
+@code{component} is a function operating on a @code{Field} object specifying
+which field component to plot, e.g. @code{lambda f : f.E2().real}. 
+@code{r_x} is a range object (e.g @code{arange(x0, x1, dx)}) 
+specifying which  interval to plot and with which resolution. @code{x} is the 
+transverse  direction. Note that the function
+also supports an additional named argument @code{filename='outputname.formatextension'}. For pictures, a variety of formats are 
+supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the 
+suffix of the filename will determine the format to be used. Other arguments
+are @code{overlay_n} (defaults to true) which overlays the index profile
+on the field plot, and @code{contour} (defaults to true) which uses contours
+to show the index profile rather than gray scale.
+
 @end itemize
 
 @noindent
@@ -3121,6 +3244,11 @@ with amplitude @code{A}, angle @code{theta} in radians, and use precision @code{
 a function @code{f} and use precision @code{eps} to calculate the overlap 
 integrals. @code{f} describes the @code{E2} for TE polarisation and the 
 @code{H2} field for TM polarisation. 
+@item
+@code{plot_n(stack, r_x, r_z)}: lower level routine to plot the refractive index.
+@code{r_x} and @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying which 
+interval to plot and with which resolution. @code{x} is the transverse 
+direction, @code{z} the propagation direction. An extra named argument @code{filename='outputname.formatextension'} is supported. For pictures, a variety of formats are supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will determine the format to be used.
 @end itemize
 
 @noindent
@@ -3128,6 +3256,30 @@ The following functions are only meaningful when an incident field has
 been set:
 
 @itemize @bullet
+@item
+@code{plot()}: interactively plots the fields in the stack.
+@item
+@code{plot_field(component, r_x, r_z))}: lower level field plotting routine.
+@code{component} is a function operating on a @code{Field} object specifying
+which field component to plot, e.g. @code{lambda f : f.E2().real}. 
+@code{r_x} and @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) 
+specifying which  interval to plot and with which resolution. @code{x} is the 
+transverse  direction, @code{z} the propagation direction. Note that the function
+also supports an additional named argument @code{filename='outputname.formatextension'}. For pictures, a variety of formats are 
+supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the 
+suffix of the filename will determine the format to be used. Other arguments
+are @code{overlay_n} (defaults to true) which overlays the index profile
+on the field plot, and @code{contour} (defaults to true) which uses contours
+to show the index profile rather than gray scale.
+@item
+@code{animate_field(stack, component, r_x, r_z)}: animates the 
+2D field profile. @code{component} is a 
+function operating on a  @code{Field} object specifying which (complex) 
+field component to plot, e.g. @code{lambda f : f.E2()}. @code{r_x} and 
+@code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying 
+which  interval to plot and with which resolution. @code{x} is the 
+transverse  direction, @code{z} the propagation direction. Note that the function
+also supports an additional named argument @code{filename='outputname'}, which writes the animation to an uncompressed gif. Other arguments are @code{overlay_n} (defaults to true) which overlays the index profile on the field plot, and @code{contour} (defaults to true) which uses contours to show the index profile rather than gray scale.
 @item
 @code{field(Coord)}: returns field at a given coordinate.
 @item
@@ -3200,6 +3352,14 @@ described by the expansion vectors @code{forward} and @code{backward}.
 @code{field(Coord)}: returns field at given coordinate. Only meaningful if
 a laser mode has been located, or if a source has been explicitly set.
 @item
+@code{plot()}: interactively plots the fields in the cavity.  Only meaningful ifa laser mode has been located, or if a source has been explicitly set.
+@item
+@code{plot_n()}: lower level routine to plot the refractive index. See @code{Stack} for more details.
+@item
+@code{plot_field()}: lower level field plot routine. See @code{Stack} for more details.
+@item
+@code{animate_field()}: lower level field plot routine. See @code{Stack} for more details.
+@item
 @code{n(Coord)}: returns refractive index at given coordinate.
 @item
 @code{bot_stack()}: returns bottom stack. 
@@ -3239,6 +3399,10 @@ by @code{set_N()}, as it includes both forward and backward Bloch waves.
 zero.
 @item
 @code{calc()}: calculates the BlochModes in this waveguide.
+@item
+@code{plot()}: plots the BlochModes.
+@item
+@code{plot_n()}: lower level routine to plot the refractive index. See @code{Stack} for more details.
 @item
 @code{length()}: returns the @code{z}-length of the basic period.
 @item
@@ -3286,6 +3450,10 @@ optional and can be either @code{Min} or @code{Plus}.
 @code{S_flux(Complex x0, Complex x1, Real eps)}: returns power flux in the
 @code{z}-direction at @code{z=0} between @code{x0} and @code{x1}, calculated 
 with relative precision @code{eps}.
+@item
+@code{plot_field()}: lower level field plot routine. See @code{Stack} for more details.
+@item
+@code{animate_field()}: lower level field plot routine. See @code{Stack} for more details.
 @end itemize
 
 @noindent
@@ -3489,7 +3657,7 @@ Member functions: same as @code{Waveguide}.
 
 
 
-@node Slab, plot, Circ, Reference guide
+@node Slab,  , Circ, Reference guide
 @unnumberedsec @code{Slab}
 @cindex @code{Slab}
 @cindex boundary conditions for slabs
@@ -3528,101 +3696,6 @@ for this slab. Possible choices for SlabWall include @code{slab_E_wall} and
 @xref{Waveguide}.
 
 
-@node plot, plot_vector, Slab, Reference guide
-@unnumberedsec @code{plot}
-@cindex @code{plot}
-
-@noindent
-@code{plot(s)}: starts the interactive plotting widget. @code{s} can be a 
-@code{Slab}, @code{Stack} or @code{BlochStack}.
-
-@node plot_vector, plot_matrix, plot, Reference guide
-@unnumberedsec @code{plot_vector}
-@cindex @code{plot_vector}
-
-@noindent
-@code{plot_vector(v)}: makes a 1D plot of a vector. @code{v} is a list of
-@code{(x,y)}-pairs or alternatively just a list of @code{y}-values. The 
-actual display is dependent on which visualisation backend is loaded.
-
-
-
-@node plot_matrix, plot_n_eff, plot_vector, Reference guide
-@unnumberedsec @code{plot_matrix}
-@cindex @code{plot_matrix}
-
-@noindent
-@code{plot_matrix(z, r_x=0, r_y=0, filename="")}: makes a 2D colour plot of 
-a matrix. @code{z} is a  Numerical Python matrix. The actual display is 
-dependent on which visualisation backend is loaded.
-
-
-
-@node plot_n_eff, plot_n, plot_matrix, Reference guide
-@unnumberedsec @code{plot_n_eff}
-@cindex @code{plot_n_eff}
-
-@noindent
-@code{plot_n_eff(waveguide)}: plots the distribution of the propagation 
-constants of a waveguide in the complex plane. The actual display is dependent
-on which visualisation backend is loaded.
-
-
-
-@node plot_n, plot_field, plot_n_eff, Reference guide
-@unnumberedsec @code{plot_n}
-@cindex @code{plot_n}
-
-@noindent
-This function comes in two forms: @code{plot_n(waveguide, r_x)} and 
-@code{plot_n(stack, r_x, r_z)}, to plot either the 1D index distribution in
-a waveguide or the 2D index distribution in a Cartesian stack. @code{r_x} and 
-@code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying which 
-interval to plot and with which resolution. @code{x} is the transverse 
-direction, @code{z} the propagation direction. The actual display is dependent
-on which visualisation backend is loaded. An extra named argument @code{filename='outputname.formatextension'} is supported. For pictures, a variety of formats are supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the suffix of the filename will determine the format to be used.
-
-
-
-@node plot_field, animate_field, plot_n, Reference guide
-@unnumberedsec @code{plot_field}
-@cindex @code{plot_field}
-
-@noindent
-This function comes in two forms: @code{plot_field(waveguide, component, r_x)}
-and  @code{plot_field(stack, component, r_x, r_z)}, to plot either the 1D 
-field profile in a waveguide or the 2D field profile in a Cartesian stack.
-@code{component} is a function operating on a @code{Field} object specifying
-which field component to plot, e.g. @code{lambda f : f.E2().real}. 
-@code{r_x} and @code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) 
-specifying which  interval to plot and with which resolution. @code{x} is the 
-transverse  direction, @code{z} the propagation direction. The actual display
-is dependent on which visualisation backend is loaded. Note that the function
-also supports an additional named argument @code{filename='outputname.formatextension'}. For pictures, a variety of formats are 
-supported (gif, jpg, png, bmp, eps, ps, tiff, pdf, xbm, dib), where the 
-suffix of the filename will determine the format to be used. Other arguments
-are @code{overlay_n} (defaults to true) which overlays the index profile
-on the field plot, and @code{contour} (defaults to true) which uses contours
-to show the index profile rather than gray scale.
-
-
-
-
-
-@node animate_field,  , plot_field, Reference guide
-@unnumberedsec @code{animate_field}
-@cindex @code{animate_field}
-
-@noindent
-@code{animate_field(stack, component, r_x, r_z)}: animates the 
-2D field  profile in a Cartesian stack or a BlochMode. @code{component} is a 
-function operating on a  @code{Field} object specifying which (complex) 
-field component to plot, e.g. @code{lambda f : f.E2()}. @code{r_x} and 
-@code{r_z} are range objects (e.g @code{arange(x0, x1, dx)}) specifying 
-which  interval to plot and with which resolution. @code{x} is the 
-transverse  direction, @code{z} the propagation direction. The actual display 
-is dependent on which visualisation  backend is loaded. Note that the function
-also supports an additional named argument @code{filename='outputname'}, which writes the animation to an uncompressed gif. Other arguments are @code{overlay_n} (defaults to true) which overlays the index profile on the field plot, and @code{contour} (defaults to true) which uses contours to show the index profile rather than gray scale.
 
 
 @node Index,  , Reference guide, top

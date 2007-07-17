@@ -8,8 +8,6 @@
 ###################################################################
 
 from camfr import *
-from math import *
-from Numeric import *
 
 set_N(60)
 set_lambda(1)

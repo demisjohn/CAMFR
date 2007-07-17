@@ -7,7 +7,6 @@
 ####################################################################
 
 from camfr import *
-from Numeric import *
 
 # Define structure.
 

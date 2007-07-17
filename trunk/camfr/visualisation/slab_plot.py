@@ -7,7 +7,7 @@
 #
 ##############################################################################
 
-from camfr_work import *
+from camfr import *
 from numpy import *
 from Tkinter import *
 from TkPlotCanvas import *
