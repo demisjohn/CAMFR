@@ -14,4 +14,5 @@ html:
 
 clean:
 	rm -f *~ *.aux *.cp *.cps *.dvi *.fn *.ky *.log *.pdf *.pg *.toc \
-	*.tp *.vr *.html
+	*.tp *.vr *.html *.ps
+

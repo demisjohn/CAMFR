@@ -16,7 +16,7 @@ class camfr_build(build):
 
     import os
     
-    os.system("cd docs; make")
+    #os.system("cd docs; make")
      
     os.system("scons")
     os.system(strip_command)

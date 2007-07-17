@@ -1,1 +1,5 @@
-camfr_version = "1.3 RC1 20070621"
+camfr_version = "20070717"
+
+if __name__ == "__main__":
+    print camfr_version
+
