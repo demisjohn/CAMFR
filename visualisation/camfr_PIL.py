@@ -9,7 +9,7 @@
 #
 ##############################################################################
 
-from camfr_work import *
+from camfr import *
 from numpy import *
 
 # Colormap codes.
@@ -1246,17 +1246,32 @@ def animate_field(o, component, r1, r2, r3=0, filename=0, overlay_n=1,
 
 ##############################################################################
 #
-# Wrapper for stack_plot (for Stack, Cavity and BlochStack)
-# and slabPlot (for Slab).
+# Inject plot functions into C++ classes.
 #
 ##############################################################################
 
-def plot(o):
-    import slab_plot, stack_plot
-    if (type(o) == Stack) or (type(o) == BlochStack) or (type(o) == Cavity):
-        stack_plot.StackPlot(o)
-    elif (type(o) == Slab):
-        slab_plot.SlabPlot(o)
-    else:
-        print "Unsupported argument for plot."
-    
+import slab_plot, stack_plot
+
+Slab.plot       = lambda self : slab_plot.SlabPlot(self)
+Stack.plot      = lambda self : stack_plot.StackPlot(self)
+BlochStack.plot = lambda self : stack_plot.StackPlot(self)
+Cavity.plot     = lambda self : stack_plot.StackPlot(self)
+
+Slab.plot_n = plot_n
+Circ.plot_n = plot_n
+
+Mode.plot_field = plot_field
+
+Stack.plot_n        = plot_n
+Stack.plot_field    = plot_field
+Stack.animate_field = animate_field
+
+BlochStack.plot_n = plot_n
+
+BlochMode.plot_field    = plot_field
+BlochMode.animate_field = animate_field
+
+Cavity.plot_n        = plot_n
+Cavity.plot_field    = plot_field
+Cavity.animate_field = animate_field
+

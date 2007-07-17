@@ -9,7 +9,7 @@
 #
 ############################################################################
 
-from camfr_work import *
+from camfr import *
 
 import unittest, eps
 

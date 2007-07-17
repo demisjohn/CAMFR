@@ -14,7 +14,7 @@ w.close()
 
 cc  = "gcc"
 cxx = "g++"
-f77 = "gfortran -fPIC"
+f77 = "gfortran-4.1.2 -fPIC"
 
 link = cxx
 link_flags = ""
@@ -28,30 +28,32 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
+base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
+
 flags = base_flags + " " + CXXFLAGS
-fflags = flags
+
+fflags = flags + "-fPIC "
 
 # Include directories.
 
-include_dirs = ["/usr/include/python2.4","/usr/lib64/python2.4/site-packages"]
+include_dirs = ["/usr/include/python2.4", "/usr/lib/python2.4/site-packages"]
 
 # Library directories.
 
-library_dirs = ["/usr/lib64/blas/threaded-atlas","/usr/lib64/lapack/atlas"]
+library_dirs = []
 
 # Library names.
 
-libs = ["boost_python", "blitz", "lapack", "blas"]
+libs = ["boost_python", "blitz", "lapack", "blas", "gfortran"]
 
 # Command to strip library of excess symbols:
 
 dllsuffix = ".so"
 strip_command = "strip --strip-unneeded camfr/_camfr" + dllsuffix
+strip_command = ""
 
 # Extra files to copy into installation directory.
 
-extra_files = []
+extra_files = [("doc", ["docs/camfr.pdf"])]

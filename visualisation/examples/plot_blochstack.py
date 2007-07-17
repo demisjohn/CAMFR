@@ -32,5 +32,5 @@ rods    = Slab(air(a-r) + periods*(GaAs(2*r) + air(a-2*r)) )
 wg = BlochStack(rods(2*r) + no_rods(a-2*r) + rods(2*r) + no_rods(a-2*r))
 wg.calc()
 
-plot(wg)
+wg.plot()
 

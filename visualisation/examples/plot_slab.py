@@ -28,5 +28,5 @@ slab.calc()
 
 # Plot out some waveguide characteristics. 
 
-plot(slab)
+slab.plot()
 

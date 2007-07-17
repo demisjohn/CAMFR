@@ -9,6 +9,8 @@ which must be installed first and built with the same version of gcc used
 to compile CAMFR:.
 
 - Python 2.4 from http://www.python.org
+- NumPy and SciPy from http://www.scipy.org/
+- matplotlib from http://matplotlib.sourceforge.net/
 - The Scons building tool from http://www.scons.org. (version 0.9 or later)
 - numpy 1.0 or later from http://numpy.scipy.org
 - The Boost Python Library from http://www.boost.org. At least version 1.33

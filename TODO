@@ -1,13 +1,23 @@
+-cvs new files: examples, figs, python code (double check)
+
+-document photonic wire, plot example of BlochStack, Cavity
+-document BlochSection
+-document band diagrams
+-document Blochstack
+-document ASR solver
+-document keep_all_estimates?
+-example with scipy.io.write_array(outfile, P_TM)
+
+-testsuite for oleds
+-what to do with code for grating at the substrate side?
+
 -T scheme when S scheme fails due to resonance?
-
--cavity: order top and bottom, invert one of the stacks?
-
--add span check to substrate_grating code
 
 -change blochmode.get_kx() to blochmode.kx()
 
 -add doc to make sure the cladding is large enough
--add doc to do all the dimensions in micron?
+-add doc to do all the dimensions in micron
+-loss is negative index
 -add doc to use geometry only fo a single period
 
 -BlochStack(0) + .. + BlochStack(0) doesn't cache calculations.
@@ -16,16 +26,14 @@
 -cmake?
 -investigate setuptools
 -investigate pyste?
--check if numpy wrappers can get get of copying
+-check if numpy wrappers can get rid of copying
 -check ref_counting in these wrappers
 -compare with numpy boost python code
 -pass C++ exception to Python
 -see if camfr_wrap can be updated further (default arguments, python function)
--DT_TEXTREL
 -fPIC, optimise options for fortran, scons bug?
 -testsuite windows
 -overlap_slice under windows.
--automatically build docs too
 
 -write Error: didn't find enough modes, and Warning: singular system to stdout?
 
@@ -40,12 +48,8 @@
 
 -experiment with precompiled headers
 
--add rcled.py and materials.py to the distribution.
-
--document ASR solver
 -BlochSection with single non-uniform slab
 
--document keep_all_estimates?
 
 -fix pw_vcsel.py
 -phasar2.py
@@ -118,7 +122,6 @@ CAMFR 3D:
 
 MEDIUM TERM:
 
--study latest Li paper on S matrix
 -enum.export_values()
 -speed up M - U1, where U1 is unit matrix
 -speed up S_scheme_fields by avoiding explicit matrix multiplication.
@@ -138,8 +141,7 @@ MEDIUM TERM:
 
 -blochmode fw,bw at
 
--implementation of flipped stacks
--easier notation for InfStack: inf*(expression)
+-easier notation for InfStack: inf*(expression)?
 
 -prevent GC of temporary objects in expressions (walls, flipped, infstack)
 
@@ -152,8 +154,6 @@ MEDIUM TERM:
 -implement Bloch modes for MonoScatterers, InfStack for DiagScatters
 -speed up Bloch for symmetric structures?
 
--investigate worse convergence for TM modes
-
 -investigate throwing exceptions to Python
 
 -tune new complex zero finder
@@ -162,7 +162,9 @@ MEDIUM TERM:
 -related: reenable complex modes in circ
 -related: test sign of beta in backward modes in circ (using power flux)
 
--use asymptotic expansions for circular structures
+-investigate mode problems for CircM with large claddings
+-use asymptotic expansions to find high order modes for circular 
+ structures
 -write a GUI for defining complicated structures
 -add Python docbook comments
 
@@ -185,19 +187,15 @@ MEDIUM TERM:
 -kill virtual functions in SlabWall (perhaps elsewhere too, get_kz()?)
 -PC and TBC walls for Sections
 
--investigate pickling
-
 
 
 SOURCE MAINTENANCE
 
--dynamic dame of camfr library (i.e. camfr vs camfr_work defined in only
+-dynamic name of camfr library (i.e. camfr vs camfr_work defined in only
  one place) http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/223972
 -Use scons Clean function
 -remove old mode profile calculator
 -Section sorter to mode.h
--Numeric is imported automatically. Remove from docs and examples.
--move to uBLAS? (www.genesys-e.org/ublas)
 -build: eliminate as many makefiles as possible
 -remove set_precision_enhancement and friends
 -make the C++ naming convention more uniform and in sync with Python names
@@ -212,8 +210,6 @@ LOW PRIORITY
 
 -is reciprocity exploitable?
 -auto-partitioning of stacks in optimal diagonal substacks
--investigate Airy media
--test corner effects
 
 -narrower minima in cavity::find_all_modes? (Peter)
 -tilde in S_scheme: return more refs? (Peter)
@@ -222,15 +218,3 @@ LOW PRIORITY
 
 -check sqrt(power) -> -1 norm (Peter)
 -related: consolidate signedsqrt in material.h and circ.cpp (Peter)
-
-
-THEORY:
-
--check formulas for power circ_1
--check sign_TM in slabdisp
--quadrant leaky modes (upperright neg imag?)
--loss in cladding (no PML): check quadrant
--analytic solution uniform TBC
--Reduced order modelling?
--Oblique expansion?
-

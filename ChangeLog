@@ -1,5 +1,8 @@
 CAMFR 1.3:
 
+ - Added code to model spontaneous emission and light extraction in light
+   emitting diodes, both for planar structures and for structures with a
+   2D periodic grating in the cavity or in the substrate. 
  - Now a BlochStack can also be used inside a Stack, either as first term,
    last term or both:
 
@@ -9,6 +12,15 @@ CAMFR 1.3:
    In this case, the reflection and transmission coefficients relate to
    BlochModes, rather than to the SlabModes in the last slab of the 
    BlochStack, which is much more useful. (Pieter Dumon)
+ - All plotting functions like plot(stack), animate_field(), ... are now
+   class member functions and need to be called as stack.plot().
+ - By default, NumPy and matplotlib are imported to create a more 
+   complete Matlab-like environment. SciPy is also required for the RCLED
+   modelling code.
+ - Added Dispersive_Material_Factory, to make it easier to work with 
+   materials whose index is defined as a table in a text file.
+ - Reworked manual, a.o. integrating plotting more with the rest of the 
+   examples.
  - Better stability when joining together two slabs which are each other's
    mirror image. (This can occur when modelling triangular lattices.)
  - New solver for 1D slabs based on adaptive spatial resolution. Very useful

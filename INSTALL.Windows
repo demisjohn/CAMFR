@@ -1,12 +1,10 @@
 To install CAMFR on a Windows platform, it's easiest to use the binary 
 installers for the following packages:
 
-- Python 2.4.x from http://www.python.org
-- NumPy and optionally SciPy from http://www.scipy.org
+- Python from http://www.python.org
+- NumPy and SciPy from http://www.scipy.org
+- matplotlib from http://matplotlib.sourceforge.net/
 - CAMFR itself
-
-(Note: I used Python 2.4.3, NumPy 1.0b1 and SciPy 0.5.0. It still needs to be
-tested how sensitive the use of the exact same version is.)
 
 You can also compile CAMFR from sources, which is useful if you e.g. want to
 link with a LAPACK library which is specifically optimised for your system,

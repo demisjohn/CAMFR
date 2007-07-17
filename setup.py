@@ -15,7 +15,9 @@ class camfr_build(build):
   def run(self):
 
     import os
-        
+    
+    os.system("cd docs; make")
+     
     os.system("scons")
     os.system(strip_command)
 
@@ -53,21 +55,23 @@ class camfr_install_data(install_data):
 
 # Set up the module.
 
-setup(name         = "camfr_work",
+setup(name         = "camfr",
       version      =  camfr_version,
       description  = "CAvity Modelling FRamework",
       author       = "Peter Bienstman",
       author_email = "Peter.Bienstman@UGent.be",
       url          = "http://camfr.sourceforge.net",
-      extra_path   = "camfr_work",
+      extra_path   = "camfr",
       packages     = ["examples.tutorial", "examples.other",
-                      "examples.contrib",
-                      "visualisation.examples", "testsuite"],
+                      "examples.contrib", "testsuite"],
       data_files   = [(".", ["COPYRIGHT", "camfrversion.py",
                              "camfr/__init__.py",
                              "camfr/_camfr" + dllsuffix,
                              "camfr/geometry.py",
                              "camfr/geometry3d.py",
+                             "camfr/material.py",
+                             "camfr/RCLED.py",
+                             "camfr/GARCLED.py",
                              "visualisation/camfr_PIL.py",
                              "visualisation/camfr_matlab.py",
                              "visualisation/camfr_tk.py",

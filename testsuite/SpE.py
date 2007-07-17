@@ -7,7 +7,7 @@
 #
 ###################################################################
 
-from camfr_work import *
+from camfr import *
 from math import *
 
 import unittest, eps

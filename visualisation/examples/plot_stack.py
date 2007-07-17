@@ -32,5 +32,5 @@ s.set_inc_field(inc)
 
 # Do some plotting.
 
-plot(s)
+s.plot()
 
