@@ -1,5 +1,3 @@
--cvs new files: examples, figs, python code (double check)
-
 -document photonic wire, plot example of BlochStack, Cavity
 -document BlochSection
 -document band diagrams
@@ -9,6 +7,7 @@
 -example with scipy.io.write_array(outfile, P_TM)
 
 -testsuite for oleds
+-PhC splitter in testsuite
 -what to do with code for grating at the substrate side?
 
 -T scheme when S scheme fails due to resonance?
