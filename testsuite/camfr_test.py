@@ -19,7 +19,8 @@ import blazed_grating, substacks, planarTE, planarTM, VCSEL, SpE, \
 
 alltests = unittest.TestSuite((blazed_grating.suite, substacks.suite, 
        planarTE.suite, planarTM.suite, VCSEL.suite, SpE.suite, fw_bw.suite,
-       PhC_splitter.suite, expressions.suite, coupled.suite, slab.suite,
+       #PhC_splitter.suite,
+       expressions.suite, coupled.suite, slab.suite,
        cladding.suite, grating.suite, degenerate.suite, stack0.suite,
        precision.suite, infstack.suite, taper.suite, rods.suite, wg.suite,
        TEM_field.suite, grating2.suite, polariton.suite, gaussian.suite,

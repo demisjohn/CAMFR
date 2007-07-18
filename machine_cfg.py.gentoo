@@ -1,23 +1,25 @@
 # This Python script contains all the machine dependent settings
 # needed during the build process.
 
+import popen2, os
+
 # Get compiler flags from Gentoo's /etc/make.conf.
 
-import popen2
-
-r, w = popen2.popen2("source /etc/make.conf ; echo $CXXFLAGS")
+r, w = popen2.popen2("source /etc/make.conf ; echo $CFLAGS")
 CXXFLAGS = r.readline().strip()
 r.close()
 w.close()
 
+# For gcc 4.2.1, filter the flags a bit.
+
+if "pentium-m" in CXXFLAGS or "pentium4" in CXXFLAGS:
+   CXXFLAGS = CXXFLAGS.replace("-O3", "-O2")
+   
 # Compilers to be used.
 
 cc  = "gcc"
 cxx = "g++"
-f77 = "g77"
-
-link = cxx
-link_flags = ""
+f77 = "gfortran -fPIC" # Workaround for scons bug.
 
 # Compiler flags.
 #
@@ -28,24 +30,45 @@ link_flags = ""
 #           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
 #           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
 
-base_flags = "-ftemplate-depth-60 \
-	      -DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG"
+base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
+
 flags = base_flags + " " + CXXFLAGS
-fflags = flags
+
+fflags = flags + " -fPIC "
+
+# Linker and linker flags to be used.
+
+link = cxx
+link_flags = ""
 
 # Include directories.
 
-include_dirs = ["/usr/include/python2.2"]
+include_dirs = []
+
+if os.path.isdir("/usr/include/python2.5"):
+   include_dirs.append("/usr/include/python2.5")   
+   include_dirs.append("/usr/lib/python2.5/site-packages")
+elif os.path.isdir("/usr/include/python2.4"):
+   include_dirs.append("/usr/include/python2.4")
+   include_dirs.append("/usr/lib/python2.4/site-packages")
+elif os.path.isdir("/usr/include/python2.3"):
+   include_dirs.append("/usr/include/python2.3")   
+   include_dirs.append("/usr/lib/python2.3/site-packages")
+else:
+   print "Python dir not found!"
+   sys.exit()
 
 # Library directories.
 
-library_dirs = [""]
+library_dirs = []
+#library_dirs = ["/opt/intel/mkl8/lib/32"]
 
 # Library names.
 
-libs = ["boost_python", "blitz", "lapack", "blas", "g2c"]
+libs = ["boost_python", "blitz", "lapack", "blas", "gfortran"]
+#libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "gfortran"]
 
 # Command to strip library of excess symbols:
 
@@ -54,4 +77,4 @@ strip_command = "strip --strip-unneeded camfr/_camfr" + dllsuffix
 
 # Extra files to copy into installation directory.
 
-extra_files = []
+extra_files = [("doc", ["docs/camfr.pdf"])]
