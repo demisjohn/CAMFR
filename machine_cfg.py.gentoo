@@ -1,25 +1,20 @@
 # This Python script contains all the machine dependent settings
 # needed during the build process.
 
-import popen2, os
+import os, sys
 
-# Get compiler flags from Gentoo's /etc/make.conf.
-
-r, w = popen2.popen2("source /etc/make.conf ; echo $CFLAGS")
-CXXFLAGS = r.readline().strip()
-r.close()
-w.close()
-
-# For gcc 4.2.1, filter the flags a bit.
-
-if "pentium-m" in CXXFLAGS or "pentium4" in CXXFLAGS:
-   CXXFLAGS = CXXFLAGS.replace("-O3", "-O2")
-   
 # Compilers to be used.
 
 cc  = "gcc"
 cxx = "g++"
 f77 = "gfortran -fPIC" # Workaround for scons bug.
+
+if os.environ.has_key("CC"):
+   cc = os.environ["CC"]
+if os.environ.has_key("CXX"):
+   cxx = os.environ["CXX"]
+if os.environ.has_key("FORTRANC"):
+   f77 = os.environ["FORTRANC"] + " -fPIC"
 
 # Compiler flags.
 #
@@ -34,7 +29,16 @@ base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
 
-flags = base_flags + " " + CXXFLAGS
+# If you manually want to add optimisation flags, this is where you do it:
+
+flags = base_flags
+
+if os.environ.has_key("CXXFLAGS"):
+   flags = flags + " " + os.environ["CXXFLAGS"]
+
+# For gcc 4.2.1, filter the flags a bit.
+if "pentium-m" in flags or "pentium4" in flags:
+   flags = flags.replace("-O3", "-O2")
 
 fflags = flags + " -fPIC "
 
@@ -43,22 +47,23 @@ fflags = flags + " -fPIC "
 link = cxx
 link_flags = ""
 
+if os.environ.has_key("LDFLAGS"):
+	link_flags = os.environ["LDFLAGS"]
+
 # Include directories.
 
 include_dirs = []
 
-if os.path.isdir("/usr/include/python2.5"):
-   include_dirs.append("/usr/include/python2.5")   
-   include_dirs.append("/usr/lib/python2.5/site-packages")
-elif os.path.isdir("/usr/include/python2.4"):
-   include_dirs.append("/usr/include/python2.4")
-   include_dirs.append("/usr/lib/python2.4/site-packages")
-elif os.path.isdir("/usr/include/python2.3"):
-   include_dirs.append("/usr/include/python2.3")   
-   include_dirs.append("/usr/lib/python2.3/site-packages")
+pyver = ""
+if os.path.isdir("/usr/include/python2.5"):   pyver = "2.5"
+elif os.path.isdir("/usr/include/python2.4"): pyver = "2.4"
+elif os.path.isdir("/usr/include/python2.3"): pyver = "2.3"
 else:
    print "Python dir not found!"
    sys.exit()
+
+include_dirs.append("/usr/include/python" + pyver)
+include_dirs.append("/usr/lib/python" + pyver + "/site-packages")
 
 # Library directories.
 
