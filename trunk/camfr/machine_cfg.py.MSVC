@@ -10,7 +10,7 @@ f77 = ""
 debug = False
 
 link = "link.exe"
-link_flags = "/DLL /nologo /LIBPATH:C:\PYTHON24\libs \
+link_flags = "/DLL /nologo /LIBPATH:C:\PYTHON25\libs \
               /EXPORT:init_camfr /NODEFAULTLIB:libc.lib /INCREMENTAL:NO"
 
 if debug == True:
@@ -39,29 +39,41 @@ fflags = flags
 
 # Include directories.
 
-include_dirs = ["C:/Python24/include",
-                "C:/Python24/Lib/site-packages",
-                "C:/Program Files/source/blitz-0.9",
-                "C:/Program Files/source/boost_1_33_1"]
+include_dirs = ["C:/Python25/include",
+                "C:/Python25/Lib/site-packages",
+                "E:/lib/blitz-0.9",
+                "E:/lib/boost/boost_1_33_1"]
 
 # Library directories.
 
-library_dirs = ["C:/Python24/libs",
-                "C:/Program Files/source/blitz-0.9/lib",
-                "C:/Program Files/source/boost_1_33_1/libs/python/build/bin-stage",
-                "C:/Program Files/source/fortran"]
+library_dirs = ["C:/Python25/libs",
+                "e:/lib/blitz-0.9/lib",
+                "e:/lib/boost/boost_1_33_1/libs/python/build/bin-stage",
+                "e:/lib/fortran"]
 
 # Library names.
 
-libs = ["boost_python", "python24", "blitz", "fortran", "gcc", "g2c"]
+libs = ["boost_python", "python25", "blitz", "fortran", "gcc", "g2c"]
 
 # Command to strip library of excess symbols:
 
-dllsuffix = ".dll"
+dllsuffix = ".pyd"
 strip_command = "strip --strip-unneeded camfr/_camfr" + dllsuffix
 strip_command = ""
+
+# all pil scripts and libs, something shorter once...?
+import os
+pilpath	    = "E:\\camfrcode/Pil1.1.6-py25/" 
+all_pil_files = os.listdir(pilpath)
+pillist     = []
+
+for n in all_pil_files: pillist.append(pilpath+ n)
+
 
 # Extra files to copy into installation directory.
 
 extra_files = [(".",
-  ["C:\\Program Files/source/boost_1_33_1/libs/python/build/bin-stage/boost_python.dll"])]
+    ["e:\\lib/boost/boost_1_33_1/libs/python/build/bin-stage/boost_python.dll"]),
+    ("./.." , ["visualisation/pil.pth"]),
+    ("pil" , pillist )
+    ]
