@@ -1980,7 +1980,7 @@ cav.radiation_profile(horizontal)
 @end group
 @end example
 
-This defines a structure where the sequence of layers from top to bottom is air, 150 nm Al, 50 nm Alq3 with the dipole 50 nm from the Al, 45 nm NPD, 50 nm ITO, an optically thick glass substrate and finally air below.
+This defines a structure where the sequence of layers from top to bottom is air, 150 nm Al, 60 nm Alq3 with the dipole 50 nm from the Al, 45 nm NPD, 50 nm ITO, an optically thick glass substrate and finally air below.
 
 Just as in other cavity calculations, the @code{top} and @code{bot} stacks are defined from the inside out, i.e. from the location of the emitter (in this case the Alq3 layer) to the outside world.
 
