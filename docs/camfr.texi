@@ -3008,7 +3008,7 @@ Member functions:
 @item
 @code{mur()}: returns relative permeability.
 @item
-@code{set_mur()}: returns relative permeability.
+@code{set_mur()}: sets relative permeability.
 @item
 @code{eps()}: returns permittivity.
 @item
