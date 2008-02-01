@@ -236,7 +236,7 @@ The examples in this chapter can be found in the directory
 @code{examples/tutorial} in the main CAMFR directory. If you're on a Windows
 system, this directory could by something like 
 @code{C:\python23\Lib\site-packages\camfr}, on a Unix system it is usually 
-@code{/usr/lib/python2.3/site-packages/camfr}.
+@code{/usr/lib/python2.5/site-packages/camfr}.
 
 The first file 
 @code{tutorial1.py} introduces some simple waveguide simulations and 
@@ -277,9 +277,9 @@ slab.calc()
 
 print slab.mode(0).kz()
 print slab.mode(1).n_eff()
-print slab.mode(2).field(Coord(2.5, 0, 0))
-print slab.mode(3).field(Coord(2.5, 0, 0)).E2()
-print slab.mode(4).field(Coord(2.5, 0, 0)).E2().real
+print slab.mode(2).field(Coord(2.25, 0, 0))
+print slab.mode(3).field(Coord(2.25, 0, 0)).E2()
+print slab.mode(4).field(Coord(2.25, 0, 0)).E2().real
 
 @end group
 
@@ -344,15 +344,15 @@ Python script.
 fundamental mode of the slab, while @code{slab.mode(1).n_eff()} displays
 the effective index of the first order mode.
 
-@code{print slab.mode(2).field(Coord(2.5, 0, 0))} shows the field of the 
-second order mode at @code{x=2.5}, which is in the center of the core. This 
+@code{print slab.mode(2).field(Coord(2.25, 0, 0))} shows the field of the 
+second order mode at @code{x=2.25}, which is in the center of the core. This 
 field consists of six complex numbers. @code{E1}, @code{E2}, @code{Ez} are the
 phasors for the components of the electric field, and @code{H1}, @code{H2},
 @code{Hz} represent the magnetic field. Here, 1 refers to the 
 @code{x}-direction and 2 to the @code{y}-direction. (For cylindrical 
 structures, 1 refers to the radial direction and 2 to the angular direction.)
 
-@code{print slab.mode(4).field(Coord(2.5, 0, 0)).E2().real} illustrates how
+@code{print slab.mode(4).field(Coord(2.25, 0, 0)).E2().real} illustrates how
 we can extract the real part from a complex number in Python. (@code{real} is
 a built-in Python attribute of a complex number, and as such requires no extra
 parentheses.) Similarly, the imaginary component can be extracted with
