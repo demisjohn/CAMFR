@@ -272,6 +272,34 @@ def horizontal_y(cav, kx0, ky0):
 
 #############################################################################
 #
+# Safe matrix inversion, uses svd if matrix is singular.
+#
+#############################################################################
+
+def inv_safe(A):
+
+  try:
+
+    return inv(A)
+
+  except:
+
+    print "Singularities dectected in matrix inversion."
+
+    # A = U * sigma * Vh
+
+    U, sigma, Vh = linalg.svd(A)
+
+    # inv_A = V * 1/sigma * Uh, but set 1/0 in sigma to 0.
+
+    inv_sigma = where(abs(sigma) <= 1e-11, 0, 1/sigma) 
+    
+    return dot(Vh.conj().T, dot(diag(inv_sigma), U.conj().T))
+
+
+
+#############################################################################
+#
 # Calculate extracted field through a cavity, but only for waves
 # coupled to kx0 and ky0 through the Bragg condition.
 #
@@ -306,8 +334,8 @@ def P(cav, sources, kx0, ky0, single_pass_substrate=True, add_all=True,
 
   N = cav.top.inc().N()
 
-  inv_1 = inv(identity(N) - dot(R_bot, R_top)) 
-  inv_2 = inv(identity(N) - dot(R_top, R_bot))
+  inv_1 = inv_safe(identity(N) - dot(R_bot, R_top)) 
+  inv_2 = inv_safe(identity(N) - dot(R_top, R_bot))
 
   # Loop over the different sources.
 
@@ -398,7 +426,7 @@ def P(cav, sources, kx0, ky0, single_pass_substrate=True, add_all=True,
       # Calculate transmitted power density.
         
       if len(propagating) > 0: # LAPACK crashes on empty matrix.
-        inv_  = inv(identity(len(propagating)) - dot(R_cav, R_sub))
+        inv_  = inv_safe(identity(len(propagating)) - dot(R_cav, R_sub))
         P_out = dot(T_sub, dot(inv_, P_sub_))
       else:
         P_out = [0.0]

@@ -1,3 +1,5 @@
+ - Better handling of near-singular matrices in GARCLED.py.
+
 CAMFR 1.3:
 
  - Added code to model spontaneous emission and light extraction in light
