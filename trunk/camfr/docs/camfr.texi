@@ -117,7 +117,8 @@ Reference guide
 * Circle::                      
 * Square::                      
 * Rectangle::                   
-* Triangle::                    
+* Triangle::
+* Picture::                    
 * Planar::                      
 * Circ::                        
 * Slab::                        
@@ -3497,19 +3498,22 @@ Constructor:
 @noindent
 Member functions:
 
+
 @itemize @bullet
 @item
 @code{+= Shape}: add a shape, which can be a @code{Circle}, @code{Square}.
-@code{Rectangle} or a @code{Triangle}. In case of overlap, shapes that are
-added later take precedence.
+@code{Rectangle}, @code{Triangle} or a @code{Picture}. In case of overlap, 
+shapes that are added later take precedence. When using Picture, only the last 
+one added will be used.
 @item
 @code{to_expression(prop0,prop1,d_prop,trans0,trans1,d_trans)}: see
-the explanation in @xref{Defining complicated structures} of a description of 
-these arguments.
+the explanation in @xref{Defining complicated structures} for a description of 
+these arguments. When working with Picture, see @xref{Picture} for more details.
 @end itemize
 
+
 @noindent
-@xref{Circle}, @xref{Square}, @xref{Rectangle}, @xref{Triangle}.
+@xref{Circle}, @xref{Square}, @xref{Rectangle}, @xref{Triangle}, @xref{Picture}.
 
 
 
@@ -3576,12 +3580,12 @@ given bottom left and top right point and material.
 
 
 
-@node Triangle, Planar, Rectangle, Reference guide
+@node Triangle, Picture, Rectangle, Reference guide
 @unnumberedsec @code{Triangle}
 @cindex @code{Triangle}
 
 @noindent
-A Triangular shape for use in a @code{Geometry}.
+A triangular shape for use in a @code{Geometry}.
 
 @noindent
 Constructor:
@@ -3597,7 +3601,51 @@ triangle out of three vertices and a material.
 
 
 
-@node Planar, Circ, Triangle, Reference guide
+@node Picture, Planar, Triangle, Reference guide
+@unnumberedsec @code{Picture}
+@cindex @code{Picture}
+
+@noindent
+A picture (in png, jpg, ... format) for use in a @code{Geometry}, to be converted to an expression. It will not be combined with the other shapes in @code{Geometry},  and only the picture that is added last to the @code{Geometry} will be used.
+
+@noindent
+Constructor:
+
+@itemize @bullet
+@item
+@code{Picture(picturename, n_min=x, n_max=y)}: creates a picture object from filename @code{picturename} to be used in a @code{Geometry}.    
+@end itemize
+
+@noindent
+
+The picture will be converted to grayscale, with white being mapped to a material with refractive index @code{n_min} and black to @code{n_max}. The indices for grayscales are obtained through linear interpolation.
+ 
+When using the @code{Geometry} function
+
+@code{to_expression(prop0, prop1, d_prop, verbose=True,rescaling='ANTIALIAS')},
+the following will happen. The values of @code{prop0} and @code{prop1} will set the conversion from pixel units to physical length units. The parameter @code{d_prop} determines the resolution: when set to 0 (the default), no information is lost in the picture and every pixel is used as is. In case the thickness of the slice @code{d_prop} is set to such a value that results in a coarser picture than the original one, the following down-sample mechanisms can be used:
+
+
+@itemize @bullet
+@item
+@code{NEAREST}: 'Nearest' algorithm from the PIL library. As this method takes
+ the nearest point, no new gray colours will be created.
+@item
+@code{ANTIALIAS}: 'Average' algorithm from the PIL library. This will create a
+grayscale image.    
+@item
+@code{INV_AVERAGE}: Similar to @code{ANTIALIAS}, but use geometric averaging.
+@end itemize
+
+
+@noindent
+@xref{Geometry}
+
+
+
+
+
+@node Planar, Circ, Picture, Reference guide
 @unnumberedsec @code{Planar}
 @cindex @code{Planar}
 
