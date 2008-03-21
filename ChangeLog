@@ -1,4 +1,6 @@
  - Better handling of near-singular matrices in GARCLED.py.
+ - Added routines to Geometry to convert images into an Expression
+   (Lieven Vanholme).
 
 CAMFR 1.3:
 

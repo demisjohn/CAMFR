@@ -5,6 +5,7 @@
 -document ASR solver
 -document keep_all_estimates?
 -example with scipy.io.write_array(outfile, P_TM)
+-GARCLED: tip to choose ref index non integer
 
 -testsuite for oleds
 -PhC splitter in testsuite
