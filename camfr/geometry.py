@@ -660,15 +660,15 @@ class Geometry:
 
         # Test whether geometry contains a picture.
         
-        picture, place = True, 0
+        place = None
         for i in range(len(self.shapes)):    
             if (type(self.shapes[i]) == Picture):
-                picture, place = True, i
+                place = i
 
         # Geometry does contain a picture.
         
-        if picture:
-            
+        if place!=None:       
+
             return self.shapes[place].img_to_expression( 
                 x0, x1, dx, verbose, rescaling)
 

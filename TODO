@@ -1,3 +1,5 @@
+-don't polute global namespace with scipy
+
 -document photonic wire, plot example of BlochStack, Cavity
 -document BlochSection
 -document band diagrams
