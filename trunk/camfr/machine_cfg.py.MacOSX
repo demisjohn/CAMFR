@@ -1,0 +1,46 @@
+# This Python script contains all the machine dependent settings
+# needed during the build process.
+
+# Compilers to be used.
+
+cc  = "/usr/bin/gcc-4.0"
+cxx = "/usr/bin/g++-4.0"
+f77 = "/usr/local/gfortran/bin/gfortran"
+
+link = cxx
+link_flags = " -undefined dynamic_lookup -dynamic"#-dynamic -single_module -undefined dynamic_lookup"
+# Compiler flags.
+#
+# Note: for the Fortran name definition you can define one of the following
+#       preprocessor macros:
+#
+#           FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
+#           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
+#           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
+
+base_flags = " -DFORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORE -DNDEBUG"
+
+flags_noopt = base_flags
+
+fflags = base_flags + " -march=prescott -O2 -pipe -fomit-frame-pointer -funroll-loops -fstrict-aliasing -g -fPIC"
+flags = fflags + " -arch i386 -ftemplate-depth-60"
+
+# Include directories.
+
+include_dirs = ["/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5", "/Users/bram/Documents/Work/Compilaties/BuildFolder/include/boost-1_33_1","/Users/bram/Documents/Work/Compilaties/blitz-0.9","/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages"]
+
+library_dirs = ["/Users/bram/Documents/Work/Compilaties/blitz-0.9/lib/.libs","/Users/bram/Documents/Work/Compilaties/BuildFolder/lib/libjuist","/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A","/usr/local/gfortran/lib"]#"/Users/bram/Documents/Work/Compilaties/gfortran"]
+
+
+# Library names.
+
+libs = ["boost_python", "blitz", "LAPACK","BLAS","gfortran"]
+# Command to strip library of excess symbols:
+
+
+dllsuffix = ".so"
+
+strip_command = ""#"strip --strip-unneeded camfr/_camfr" + dllsuffix
+# Extra files to copy into installation directory.
+
+extra_files = [("doc", ["docs/camfr.pdf"])]
