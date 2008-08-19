@@ -1358,7 +1358,7 @@ std::vector<Complex> Slab_M::find_kt_from_estimates()
 
     int limit = global.N+5+5*counter;
     if (limit > kz2_coarse.size())
-      limit = kz2_coarse.size() 
+      limit = kz2_coarse.size();
 
     vector<Complex> kt_coarse;
     for (unsigned int i=0; i<limit; i++)
