@@ -49,6 +49,9 @@ void remove_elems(vector<T>* v, const T& t, Real eps=0)
 //
 //   Remove double elements from vector if abs(v[i]-v[j]) < eps.
 //
+//   Note: we do the funky cast to Complex because we also use this
+//   routine to compare pointers. Oh my...
+//
 /////////////////////////////////////////////////////////////////////////////
 
 template <class T>
@@ -63,7 +66,7 @@ void remove_copies(vector<T>* v, Real eps=0)
       continue;
     
     for (unsigned int j=i+1; j<v_bis.size(); j++)
-      if (abs(v_bis[i] - v_bis[j]) <= eps)
+      if (abs(Complex(v_bis[i] - v_bis[j])) <= eps)
         unique[j] = false;   
   }
 
