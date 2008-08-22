@@ -1891,7 +1891,7 @@ SiO2_factory = Dispersive_Material_Factory('SiO2.txt')
 for wavelength in arange(1,2,0.1):
   set_lambda(wavelength)
   m = SiO2_factory()
-  print m.n()
+  print m()
 @end group
 @end example
 

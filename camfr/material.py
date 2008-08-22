@@ -69,7 +69,7 @@ if __name__ == "__main__":
   for wavelength in arange(1,2,0.1):
     set_lambda(wavelength)
     m = SiO2_factory()
-    print m.n()
+    print m()
 
 
 
