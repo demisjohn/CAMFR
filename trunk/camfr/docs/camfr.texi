@@ -1571,7 +1571,7 @@ planar layer, which can be used in @code{Stack} to create a layered 1D
 structure.
 
 The stack is calculated for one angle at a time, which can be set in radians 
-using @code{set_angle} on a given material.
+using @code{set_theta} on a given material. Note that you should set the wavelength before setting the angle, as @code{set_theta} effectively sets the transverse part of the wavevector, which is dependent on the wavelength.
 
 Because only one mode (or plane wave in this case) is needed at any time for 
 a calculation, the reflection and transmission matrices have only one element.
@@ -3671,7 +3671,7 @@ Member functions: same as @code{Waveguide}, in addition to
 @item
 @code{set_theta(Complex)}: set propagation angle in radians in this layer. This
 automatically fixes the propagation angle in the other Planars
-because of Snell's Law.
+because of Snell's Law. Note that you should set the wavelength before setting the angle, as @code{set_theta} effectively sets the transverse part of the wavevector, which is dependent on the wavelength.
 @end itemize
 
 @noindent
