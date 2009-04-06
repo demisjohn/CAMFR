@@ -5,7 +5,7 @@
 
 cc  = "gcc"
 cxx = "g++"
-f77 = "g77"
+f77 = "gfortran -O3 -march=core2 "
 
 link = cxx
 link_flags = ""
@@ -23,21 +23,21 @@ base_flags = "-DFORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE -DNDEBUG "
 
 flags_noopt = base_flags
 
-flags = base_flags + "-O3 -march=pentium4 -g -funroll-loops "
+flags = base_flags + "-O3 -march=core2 "
 
 fflags = flags + "-fPIC "
 
 # Include directories.
 
-include_dirs = ["/usr/include/python2.4", "/usr/lib/python2.4/site-packages"]
+include_dirs = ["/usr/include/python2.5", "/usr/lib/python2.5/site-packages"]
 
 # Library directories.
 
-library_dirs = ["/opt/intel/mkl8/lib/32"]
+library_dirs = []
 
 # Library names.
 
-libs = ["boost_python", "blitz", "mkl_lapack64", "mkl", "g2c"]
+libs = ["boost_python", "blitz", "lapack", "blas", "gfortran"]
 
 # Command to strip library of excess symbols:
 
