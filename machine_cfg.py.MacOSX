@@ -1,9 +1,32 @@
 # This Python script contains all the machine dependent settings
 # needed during the build process.
 
-# based on MacOSX cfg.
-# building for python 2.7, installed using MacPorts python2.7
-# libs installed via macports
+# based on MacOSX cfg., Mac OS 10.12 "Sierra"
+# building for python 2.7, with all dependencies installed using MacPorts
+# 
+# Ports+variants to install via MacPorts (and @version used in this build):
+#   py27-spyder @2.3.8_0
+#   py27-Pillow @3.2.0_0 (replaces PIL)
+#   blitz @0.10_4+gcc5
+#   boost @1.66.0_0+no_single+no_static+python27
+#   lapack @3.7.1_0+gfortran
+#   llvm-3.3 @3.3_10
+#   scons @3.0.1_0
+# ports that were probably installed as dependencies to the above:
+#   gcc5 @5.5.0_0 (also installs 64-bit gfortran libraries, unlike XCode's 32-bit versions)
+#   py27-scipy @1.0.0_0+gfortran
+#   py27-numpy @1.14.1_0+gfortran
+#   py27-matplotlib @1.5.1_2+cairo+tkinter
+#   blitz @0.10_4+gcc7
+#
+# All ports built for x86_64 as per MacPorts default on 64-bit machines
+# Install cmd for MacPorts py27:     sudo python2.7 setup.py install
+
+# Known bugs:
+#   Currently installs the _camfr.dylib file.  This needs to be renamed to _camfr.so for Python to use it.
+
+# Demis D. John, 2018-02-27, demis@ucsb.edu
+
 
 # Compilers to be used.
 
