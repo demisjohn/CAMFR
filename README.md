@@ -16,6 +16,8 @@ It is based on a combination of eigenmode expansion and advanced boundary condit
 
 Using an intuitive python scripting interface one can create and solve for the optical modes/fields in various wavelength-scale structures. Additional math and plotting can then be performed via the SciPy stack. The Eigenmode Expansion (EME) method is especially well-suited to solving for very thin layers, or structures in which the X and Y dimensions are very different, where typical methods like FDTD and FEM have trouble with the vastly differing X/Y discretization.
 
+You can find more information, publications and details [here](http://www.photonics.intec.ugent.be/research/topics.asp?ID=17).
+
 ## Features
 
 CAMFR is an ongoing active research project, started at the photonics group of the Department of Information Technology (INTEC) at Ghent University in Belgium. This means that it contains many attractive features and algorithms currently not yet found in commercial modelling tools. CAMFR can be used to calculate
