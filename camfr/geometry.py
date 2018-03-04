@@ -11,9 +11,10 @@
 #
 ############################################################################
 
-from math import *
+from math import *      # pretty sure this isn't used in this module
 from camfr import *
-from numpy import *
+#from numpy import *
+import numpy as np
 
 import PIL.Image as Image
 import PIL.ImageFile as ImageFile
@@ -109,7 +110,7 @@ class Circle:
     def intersection_at_x(self, x):
         D = self.r**2 - (x - self.c.x)**2
         if D > 0:
-            return [ self.c.y - sqrt(D), self.c.y + sqrt(D) ]
+            return [ self.c.y - np.sqrt(D), self.c.y + np.sqrt(D) ]
         else:
             return []
     
@@ -272,13 +273,13 @@ def similar(slab1, slab2, dy):
 
     # Same interface positions?
 
-    if abs(dy) < 1e-12:
+    if np.abs(dy) < 1e-12:
         dy = 1e-12
 
     for i in range(len(slab1)):
-        if abs(slab1[i][0] - slab2[i][0]) >= dy:
+        if np.abs(slab1[i][0] - slab2[i][0]) >= dy:
             return 0
-        if abs(slab1[i][1] - slab2[i][1]) >= dy:
+        if np.abs(slab1[i][1] - slab2[i][1]) >= dy:
             return 0
 
     return 1
@@ -541,7 +542,7 @@ def rescale_nearest(self, image, Xsteps, Zsteps):
 def rescale_antialias(image, Xsteps, Zsteps):
     return image.resize((Xsteps,Zsteps),Image.ANTIALIAS )
 
-def rescale_custom(image, x, z, Xsteps, Zsteps, method='AVARAGE'):
+def rescale_custom(image, x, z, Xsteps, Zsteps, method='AVERAGE'):
                        
     # Algorithm =
     # resize from fine grid x-z to X-Z 
@@ -562,10 +563,10 @@ def rescale_custom(image, x, z, Xsteps, Zsteps, method='AVARAGE'):
     for Z in range (Zsteps):
       for X in range (Xsteps):
       
-        x1 = int(floor(X*dX/dx))         # First x-matching value.
-        j = int(floor(dX/dx))            # Number of pixels in x direction.
-        z1 = int(floor(Z*dZ/dz))         # First z-matching value
-        k = int(floor(dZ/dz))            # Number of pixels in z direction.
+        x1 = int(np.floor(X*dX/dx))         # First x-matching value.
+        j = int(np.floor(dX/dx))            # Number of pixels in x direction.
+        z1 = int(np.floor(Z*dZ/dz))         # First z-matching value
+        k = int(np.floor(dZ/dz))            # Number of pixels in z direction.
 
         #list with x-lenghts
         LX = [(x1+1)*dx - X*dX] 
@@ -591,9 +592,9 @@ def rescale_custom(image, x, z, Xsteps, Zsteps, method='AVARAGE'):
                   average += opp / (1+pix[x1+_x,z1+_z])   
         
         if (method=='AVERAGE'):
-            newcolor = floor(average/(dX*dZ))  
+            newcolor = np.floor(average/(dX*dZ))  
         else:                              # Inverse average.
-            newcolor = floor((dX*dZ)/average)-1               
+            newcolor = np.floor((dX*dZ)/average)-1               
         L[Ln] =(newcolor)
         Ln += 1
         
@@ -703,7 +704,7 @@ class Geometry:
                     if ys1 > y1:
                         ys1 = y1
     
-                    def same(y0,y1): return abs(y0-y1) < 1e-6
+                    def same(y0,y1): return np.abs(y0-y1) < 1e-6
     
                     new_slab = []      
                     j = 0
@@ -711,7 +712,7 @@ class Geometry:
     
                         if (slab[j][1] < ys0) or same(slab[j][1], ys0) or \
                            (slab[j][0] > ys1) or same(slab[j][0], ys1) or \
-                           (abs(ys0-ys1) < .001*dy):
+                           (np.abs(ys0-ys1) < .001*dy):
                             new_slab.append(slab[j]) # No intersection.
                         else:
                             if not same(slab[j][0], ys0): # Old material pre.
@@ -771,7 +772,7 @@ class Geometry:
                                                   
                 i = i_end
     
-            d[-1] += (x1-x0) - sum(d)
+            d[-1] += (x1-x0) - np.sum(d)
             slabs = new_slabs
     
             # Create expression.
@@ -825,10 +826,10 @@ def pretty_print(s):
         nr = s.mode(i).n_eff().real
         ni = s.mode(i).n_eff().imag
 
-        if abs(nr) < 1e-6:
+        if np.abs(nr) < 1e-6:
             nr = 0
             
-        if abs(ni) < 1e-6:
+        if np.abs(ni) < 1e-6:
             ni = 0
 
         print i, nr, ni
