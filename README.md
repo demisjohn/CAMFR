@@ -7,7 +7,7 @@ Originally written by [Peter Bienstman at Ghent University, Belgium](http://www.
 
 ## Introduction
 
-CAMFR (CAvity Modelling FRamework) is a fast, flexible, friendly full-vectorial Maxwell solver. Its main focus is on applications in the field of nanophotonics, like
+CAMFR (CAvity Modelling FRamework) is a fast, flexible, friendly full-vectorial Maxwell solver for electromagnetics simulations. Its main focus is on applications in the field of nanophotonics, like
 - wavelength-scale microstructures (like photonic crystal devices, optical waveguides)
 - lasers (like vertical-cavity surface-emitting lasers)
 - light-emitting diodes (like resonant-cavity LEDs)
@@ -18,9 +18,11 @@ Using an intuitive python scripting interface one can create and solve for the o
 
 You can find more information, publications and details [here](http://www.photonics.intec.ugent.be/research/topics.asp?ID=17).
 
+
+
 ## Features
 
-CAMFR is an ongoing active research project, started at the photonics group of the Department of Information Technology (INTEC) at Ghent University in Belgium. This means that it contains many attractive features and algorithms currently not yet found in commercial modelling tools. CAMFR can be used to calculate
+CAMFR was a research project, started at the photonics group of the Department of Information Technology (INTEC) at Ghent University in Belgium. CAMFR can be used to calculate
 - the scattering matrix of a structure
 - the field inside a structure, for any given excitation
 - band diagrams of an infinite periodic structure
@@ -36,11 +38,31 @@ Additionally, there is code to model the extraction from light emitting diodes, 
 
 Defining structures is quite straightforward, either layer-by-layer, or using geometric primitive shapes. There are also integrated plotting routines for rapid simulation feedback.
 
+
+
 ## Framework character
 
 CAMFR is conceived as a C++ framework, with all the algorithms implemented in terms of abstract waveguides and scatterers. This makes it extremely easy to extend CAMFR to new geometries.
 
-The end user does not deal with this C++ code directly, but rather through bindings to the Python scripting language. This makes the code very clear and flexible, and allows e.g. to seamlessly integrate CAMFR with Python-aware visualistion tools.
+The end user does not deal with this C++ code directly, but rather through bindings to the Python scripting language. This makes the code very clear and flexible, and allows e.g. to seamlessly integrate CAMFR with Python-aware visualistion tools such as [matplotlib](https://matplotlib.org) and [numpy](http://www.numpy.org).
+
+
+
+## Examples
+### Silicon Waveguide Mode Solver
+![Silicon Mode Solve](examples/contrib/Silicon_WG_-_Modesolver_example_v1.png)
+
+
+## Installation
+pyFIMM currently only supports Python 2.7.
+
+To use pyFIMM, simply download one of the released versions (see the "releases" or "tags" section of this page), or the bleeding-edge code, and extract the archive into a directory.  Your Python script should reside in the same directory as the *pyfimm* folder, or else you should add the parent directory of the *pyfimm* folder to your Python path at the beginning of your script.    
+
+The preferred method to run your scripts is through a Python IDE like Spyder (a matlab-like IDE).  The simplest installation of Spyder (along with all typical scientific python modules) can be accomplished via [Python(x,y)](https://code.google.com/p/pythonxy/) (Win) or [Anaconda](http://continuum.io/downloads) (Mac,Win,Linux). 
+
+These pyfimm scripts can also be run like any typical Python script on the command line via `python myScript.py` or `python -i myScript.py` to make it interactive afterwards.
+
+
 
 ## License and support
 
