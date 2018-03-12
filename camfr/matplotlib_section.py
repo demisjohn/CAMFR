@@ -14,7 +14,7 @@
 from _camfr import *    # import the Section and Slab classes, in order to add functions to them.
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm      # colormaps
+
 
 
 ############################################################################
@@ -31,7 +31,24 @@ import matplotlib.cm as cm      # colormaps
 #
 ############################################################################
 
+############################################################################
+#
+# Choose some global plotting options:
+#
+############################################################################
 
+## Colormap
+colormap = plt.get_cmap('hot')
+
+AxisBGColor = 'black'   # background color of every axis
+
+
+
+############################################################################
+#
+# Functions
+#
+############################################################################
 
 def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=True):
     '''
@@ -172,12 +189,13 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             
             ## Plot the specified mode/field:
             axis = ax[ m , f ]  # which axis to plot on
-                
-            axis.pcolormesh( X, Y, F, cmap=cm.hot )
+            
+            axis.pcolormesh( X, Y, F, cmap=colormap )
             axis.set_xlabel(r'x ($\mathregular{\mu{}m}$)')  # LaTeX notation, overkill
             axis.set_ylabel(r'y ($\mathregular{\mu{}m}$)')
             axis.set_xlim( axis.get_xlim()[0], obj.width() )
             axis.set_ylim( axis.get_ylim()[0], obj.height() )
+            axis.set_axis_bgcolor( AxisBGColor )
             
             if annotations:
                 titlestr = "Mode(" + str(modeN) + "): " + field[f].title()
