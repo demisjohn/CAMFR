@@ -10,9 +10,10 @@ if not os.environ.get('NO_CAMFR_GRAPHICS'):
 
 from _camfr import *
 from camfr_PIL import *     # converted numpy* to np.*
-from geometry import *
-from geometry3d import *
+from geometry import *      # converted numpy* to np.*
+from geometry3d import *    # converted numpy* to np.*
 from material import *
+from matplotlib_section import *    # matplotlib functions for Section objects
 from camfrversion import *
 
 # Splash screen.
