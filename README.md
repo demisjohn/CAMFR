@@ -54,13 +54,13 @@ The end user does not deal with this C++ code directly, but rather through bindi
 
 
 ## Installation
-pyFIMM currently only supports Python 2.7.
+CAMFR currently only supports Python 2.7.
 
-To use pyFIMM, simply download one of the released versions (see the "releases" or "tags" section of this page), or the bleeding-edge code, and extract the archive into a directory.  Your Python script should reside in the same directory as the *pyfimm* folder, or else you should add the parent directory of the *pyfimm* folder to your Python path at the beginning of your script.    
+To use CAMFR, download one of the released versions (see the "releases" or "tags" section of this github repo), or the bleeding-edge code, and extract the archive into a directory.  Follow the instruction in the `INSTALL` text file for your system.  You will have to compile the CAMFR library, as it compiles C code to generate the Python library.  A number of dependencies are required, which you can hopefully install easily through your system's package manager, or download directly from the developer websites.
 
-The preferred method to run your scripts is through a Python IDE like Spyder (a matlab-like IDE).  The simplest installation of Spyder (along with all typical scientific python modules) can be accomplished via [Python(x,y)](https://code.google.com/p/pythonxy/) (Win) or [Anaconda](http://continuum.io/downloads) (Mac,Win,Linux). 
+The preferred method to run your scripts is through a Python IDE like Spyder (a matlab-like IDE).  The simplest installation of Spyder (along with all required scientific python modules) can be accomplished via [Python(x,y)](https://code.google.com/p/pythonxy/) (Win) or [Anaconda](http://continuum.io/downloads) (Mac,Win,Linux), or from source, for example via MacPorts `port install py27-spyder` on Mac OS. 
 
-These pyfimm scripts can also be run like any typical Python script on the command line via `python myScript.py` or `python -i myScript.py` to make it interactive afterwards.
+CAMFR scripts can also be run like any typical Python script on the command line via `python myScript.py` or `python -i myScript.py` to make it interactive afterwards.
 
 
 
