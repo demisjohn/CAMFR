@@ -29,7 +29,7 @@ from numpy import pi
 ''' Some refractive indices ("n"), thicknesses and widths '''
 wl = 1.550      # wavelength in microns
 
-nSiN = 3.4   # Silicon
+nSi = 3.4   # Silicon
 nTOX = 1.446  # Thermal Oxide
 
 
@@ -55,7 +55,7 @@ camfr.set_N(4)
 
 ''' Construct Waveguide '''
 
-core = camfr.Material(nSiN)
+core = camfr.Material(nSi)
 clad = camfr.Material(nTOX)
 air = camfr.Material( 1.0 )
 
