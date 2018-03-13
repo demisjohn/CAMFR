@@ -40,7 +40,7 @@ Defining structures is quite straightforward, either layer-by-layer, or using ge
 
 
 
-## Framework character
+## Framework Character
 
 CAMFR is conceived as a C++ framework, with all the algorithms implemented in terms of abstract waveguides and scatterers. This makes it extremely easy to extend CAMFR to new geometries.
 
@@ -50,8 +50,70 @@ The end user does not deal with this C++ code directly, but rather through bindi
 
 ## Examples
 ### Silicon Waveguide Mode Solver
-![Silicon Mode Solve](examples/contrib/Silicon_WG_-_Modesolver_example_v1.png)
+Silicon waveguide, Power, Ex and Ey plotted with matplotlib:
+<img src="examples/contrib/Silicon_WG_-_Modesolver_example_v1.png" width="350">
+See the file `examples/contrib/Example - Silicon-Waveguide ModeSim v2018-01.py` for a full working example.
 
+### Brief Example
+Example of rectangular waveguide construction syntax: We will create a rectangular waveguide of SiO2 cladding and Silicon core, calculate the first 4 modes mode & plot them.  
+
+    >>> import camfr
+
+First, create some Materials with some refractive index:
+
+    >>> SiO = camfr.Material( 1.45 )    # refractive index of SiO2
+    >>> Si = camfr.Material( 3.4 )    # refractive index of Silicon
+
+Then, create some 1-D slabs, by calling those Materials with a thickness value, and adding them together from top to bottom in a Slice:
+
+    >>> clad = camfr.Slab(  SiO(15.75)  )      # Thicknesses in microns
+    >>> core = camfr.Slab(  SiO(10.0) + Si(2.5) + SiO(5.0)  )
+    
+This created an imaginary "Slab" structure from bottom-to-top. For example `core` looks like:
+
+            top         
+    --------------------
+            SiO
+        5.0 um thick
+    --------------------
+            SiN
+       2.50 um thick
+    --------------------
+            SiO
+       10.0 um thick
+    --------------------
+           bottom
+
+Then make a 2-D structure by calling these Slices with a width value, and adding them together from left to right in a Waveguide:
+
+    >>> WG = camfr.Section(  clad(3.0) + core(1.0) + clad(4.0)  )   # Widths in microns
+    
+Which creates this imaginary 2-D Waveguide structure from left-to-right:
+
+                                top         
+    ---------------------------------------------------------
+    |<----- 3.0um------>|<-----1.0um------>|<---- 4.0um---->|
+    |                   |        SiO       |                |
+    |                   |    5.0 um thick  |                |                
+    |                   |------------------|                |
+    |        SiO        |        SiN       |       SiO      |
+    |      15.75um      |   2.50 um thick  |     15.75um    |
+    |       thick       |------------------|      thick     |
+    |                   |        SiO       |                |
+    |                   |   10.0 um thick  |                |
+    ---------------------------------------------------------
+                               bottom
+
+You can then have CAMFR calculate the modes as so:
+
+    >>> WG.calc()
+
+And plot the modes like so:
+
+    >>> WG.plot()   # plots the fundamental mode.
+    >>> fig = s.plot(field=['P','Ex','Ey'], mode=[0,1,2])   # plots the Power and fields of 3 modes
+    
+See the Examples directory for full examples, as some details are missing here.
 
 ## Installation
 CAMFR currently only supports Python 2.7.
