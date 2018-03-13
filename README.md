@@ -51,7 +51,9 @@ The end user does not deal with this C++ code directly, but rather through bindi
 ## Examples
 ### Silicon Waveguide Mode Solver
 Silicon waveguide, Power, Ex and Ey plotted with matplotlib:
+
 <img src="examples/contrib/Silicon_WG_-_Modesolver_example_v1.png" width="350">
+
 See the file `examples/contrib/Example - Silicon-Waveguide ModeSim v2018-01.py` for a full working example.
 
 ### Brief Example
