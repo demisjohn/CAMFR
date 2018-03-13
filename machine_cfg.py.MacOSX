@@ -1,7 +1,7 @@
 # This Python script contains all the machine dependent settings
 # needed during the build process.
 
-# based on MacOSX cfg., Mac OS 10.12 "Sierra"
+# Tested up to Mac OS 10.13 "High Sierra"
 # building for python 2.7, with all dependencies installed using MacPorts
 # 
 # Ports+variants to install via MacPorts (and @version used in this build):
@@ -12,21 +12,16 @@
 #   lapack @3.7.1_0+gfortran
 #   llvm-3.3 @3.3_10
 #   scons @3.0.1_0
-# ports that were probably installed as dependencies to the above:
-#   gcc5 @5.5.0_0 (also installs 64-bit gfortran libraries, unlike XCode's 32-bit versions)
-#   py27-scipy @1.0.0_0+gfortran
-#   py27-numpy @1.14.1_0+gfortran
-#   py27-matplotlib @1.5.1_2+cairo+tkinter
-#   blitz @0.10_4+gcc7
 #
-# All ports built for x86_64 as per MacPorts default on 64-bit machines
-# Install cmd for MacPorts py27:     sudo python2.7 setup.py install
+# All ports built for x86_64 as per MacPorts default on recent 64-bit machines
 
 # Known bugs:
-#   Currently installs the _camfr.dylib file.  This needs to be renamed to _camfr.so for Python to use it.
+#   Currently installs a _camfr.dylib file into the module folder.  This needs to be renamed to _camfr.so for Python to use it.
+#   Command to rename the file before using CAMFR in python (triple-click to select):
+#       mv /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib  /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
 
 # Demis D. John, 2018-02-27, demis@ucsb.edu
-
+############################################
 
 # Compilers to be used.
 
@@ -35,7 +30,7 @@ cxx = "/usr/bin/g++"
 f77 = "/usr/local/gfortran/bin/gfortran"
 
 link = cxx
-link_flags = " -undefined dynamic_lookup -dynamic"#-dynamic -single_module -undefined dynamic_lookup"
+link_flags = " -undefined dynamic_lookup -dynamic"  #-dynamic -single_module -undefined dynamic_lookup"
 # Compiler flags.
 #
 # Note: for the Fortran name definition you can define one of the following
@@ -53,13 +48,14 @@ fflags = base_flags + " -march=native -O2 -pipe -fomit-frame-pointer -funroll-lo
 flags = fflags + " -arch x86_64 -ftemplate-depth-60"
 
 # Include directories.
+#   MacPorts directories, MacPorts python2.7
 include_dirs = ["/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7", 
 "/opt/local/include",
 "/opt/local/include/boost",
 "/opt/local/include/blitz",
 "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages"]
 
-
+#   MacPorts directories
 library_dirs = ["/opt/local/lib/",
 "/opt/local/lib/lapack/",
 "/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A",
@@ -71,12 +67,9 @@ libs = ["libboost_python-mt", "libblitz", "liblapack","libblas","gfortran"]
 
 
 # Command to strip library of excess symbols:
-
-
 dllsuffix = ".dylib"
-
 strip_command = ""#"strip --strip-unneeded camfr/_camfr" + dllsuffix
-#strip_command = ""
-# Extra files to copy into installation directory.
 
+# Extra files to copy into installation directory.
+#   This PDF should be Built first or the command will fail.
 extra_files = [("doc", ["docs/camfr.pdf"])]
