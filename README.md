@@ -2,6 +2,8 @@
 Forked from Sourceforge project for maintenance
 Originally written by Peter Bienstman
 
+Better maintained fork by [demisjohn](https://github.com/demisjohn/CAMFR)
+
 # Description from [SourceForge](http://camfr.sourceforge.net/)
 ## Introduction
 
@@ -29,9 +31,9 @@ Additionally, there is code to model the extraction from light emitting diodes, 
 
 Defining structures is quite straightforward, either layer-by-layer, or using geometric primitive shapes. There are also integrated plotting routines for rapid simulation feedback.
 
-##Framework character
+## Framework character
 CAMFR is conceived as a C++ framework, with all the algorithms implemented in terms of abstract waveguides and scatterers. This makes it extremely easy to extend CAMFR to new geometries.
 The end user does not deal with this C++ code directly, but rather through bindings to the Python scripting language. This makes the code very clear and flexible, and allows e.g. to seamlessly integrate CAMFR with Python-aware visualistion tools.
 
-##License and support
+## License and support
 All the code is released under the GPL.
