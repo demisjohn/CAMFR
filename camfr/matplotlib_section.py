@@ -145,6 +145,7 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm      # colormaps
     import numpy as np
+    plt.ion()   # interactive plotting mode, for live updating
     
     
 
@@ -191,19 +192,22 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             axis = ax[ m , f ]  # which axis to plot on
             
             axis.pcolormesh( X, Y, F, cmap=colormap )
-            axis.set_xlabel(r'x ($\mathregular{\mu{}m}$)')  # LaTeX notation, overkill
-            axis.set_ylabel(r'y ($\mathregular{\mu{}m}$)')
+            if m==( len(Modes)-1 ):   axis.set_xlabel(r'x ($\mu{}m$)')  # LaTeX notation, overkill
+            if f==0:    axis.set_ylabel(r'y ($\mu{}m$)')
             axis.set_xlim( axis.get_xlim()[0], obj.width() )
             axis.set_ylim( axis.get_ylim()[0], obj.height() )
             axis.set_axis_bgcolor( AxisBGColor )
+            if (m==0) and (f==0): fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
+            fig.canvas.draw()  # update the figure
+            plt.pause(0.05) # allow GUI to update (may pop a warning)
             
             if annotations:
                 titlestr = "Mode(" + str(modeN) + "): " + field[f].title()
                 #axis.set_title(  titlestr  )
-                axis.text( 0.95, 0.9, titlestr, transform=axis.transAxes, horizontalalignment='right', color='green', fontsize=9, fontweight='bold')
+                axis.text( 0.05, 0.9, titlestr, transform=axis.transAxes, horizontalalignment='left', color='green', fontsize=9, fontweight='bold')
                 
                 n_str = "$\mathregular{n_{eff} =}$ %0.5f" % ( obj.mode(modeN).n_eff().real )
-                axis.text( 0.05, 0.9, n_str, transform=axis.transAxes, horizontalalignment='left', color='green', fontsize=9, fontweight='bold')
+                if f==0: axis.text( 0.05, 0.05, n_str, transform=axis.transAxes, horizontalalignment='left', color='green', fontsize=9, fontweight='bold')
             #end if(annotations)
             
             
@@ -215,7 +219,7 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
     
     fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
     fig.canvas.draw()  # update the figure
-    return fig, X, Y, F
+    return fig
         
 #end _Section_plot()
 
