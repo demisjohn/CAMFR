@@ -197,9 +197,7 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             axis.set_xlim( axis.get_xlim()[0], obj.width() )
             axis.set_ylim( axis.get_ylim()[0], obj.height() )
             axis.set_axis_bgcolor( AxisBGColor )
-            if (m==0) and (f==0): fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
-            fig.canvas.draw()  # update the figure
-            plt.pause(0.05) # allow GUI to update (may pop a warning)
+            
             
             if annotations:
                 titlestr = "Mode(" + str(modeN) + "): " + field[f].title()
@@ -210,15 +208,14 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
                 if f==0: axis.text( 0.05, 0.05, n_str, transform=axis.transAxes, horizontalalignment='left', color='green', fontsize=9, fontweight='bold')
             #end if(annotations)
             
+            ## update the plots:
+            if (m==0) and (f==0): fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
+            fig.canvas.draw()   # update the figure
+            plt.pause(0.05)     # allow GUI to update (may pop a warning)
             
-            #confinement = (core.n().real)/(s.mode(modeN).n_eff().real)*(corefield/(TEtot+TMtot))
-            #print '* The confinement factor for the core is: %1.5f' %confinement
         # end for Fields
     # end for Modes
 
-    
-    fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
-    fig.canvas.draw()  # update the figure
     return fig
         
 #end _Section_plot()
