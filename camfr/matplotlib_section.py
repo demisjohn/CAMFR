@@ -196,7 +196,8 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             if f==0:    axis.set_ylabel(r'y ($\mu{}m$)')
             axis.set_xlim( axis.get_xlim()[0], obj.width() )
             axis.set_ylim( axis.get_ylim()[0], obj.height() )
-            axis.set_axis_bgcolor( AxisBGColor )
+            #axis.set_axis_bgcolor( AxisBGColor )   # this version works for matplotlib <v2.0
+            axis.set_facecolor( AxisBGColor )       # only matplotlib >v2.0
             
             
             if annotations:
@@ -209,7 +210,8 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             #end if(annotations)
             
             ## update the plots:
-            if (m==0) and (f==0): fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
+            if (m==0) and (f==0): 
+                fig.canvas.window().raise_()    # bring plot window to front (a hack - delete this if it causes trouble)
             fig.canvas.draw()   # update the figure
             plt.pause(0.05)     # allow GUI to update (may pop a warning)
             
