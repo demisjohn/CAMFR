@@ -29,9 +29,9 @@ from numpy import pi
 ''' Some refractive indices ("n"), thicknesses and widths '''
 wl = 1.550      # wavelength in microns
 
-nSi = 3.4   # Silicon
-nTOX = 1.446  # Thermal Oxide
-
+core = camfr.Material( 3.4 )   # Silicon, RIx
+clad = camfr.Material( 1.446 ) # Thermal Oxide
+air = camfr.Material( 1.0 )
 
 tCore = 0.300   # core thickness in Microns
 tClad = 2.0
@@ -53,12 +53,7 @@ camfr.set_N(4)
 
 
 
-''' Construct Waveguide '''
-
-core = camfr.Material(nSi)
-clad = camfr.Material(nTOX)
-air = camfr.Material( 1.0 )
-
+''' -- Construct Waveguide -- '''
 ''' Vertical, bottom-to-top '''
 center = camfr.Slab( clad(tClad) + core(tCore) + clad(tClad) )
 side = camfr.Slab( clad(2*tClad) + air(center.width() - 2*tClad)  )
@@ -67,13 +62,14 @@ side = camfr.Slab( clad(2*tClad) + air(center.width() - 2*tClad)  )
 wg = side(wSides) + center(wCore) + side(wSides)    
 
 
-s = camfr.Section(wg, 16, 30)    
+s = camfr.Section( wg, 16, 30 )    
 '''
     Section(
         Waveguide, 
         <# plane waves in 1st stage estimation>, 
         <# 1D modes in each Slab during 2nd stage>
     )
+    
     Num. of planewaves should improve mode ordering and finding
     Num. of Slab Modes should improve accuracy of final mode profiles
 '''
