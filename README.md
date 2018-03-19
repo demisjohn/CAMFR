@@ -80,7 +80,7 @@ This created an imaginary "Slab" structure from bottom-to-top. For example `core
             SiO
         5.0 um thick
     --------------------
-            SiN
+            Si
        2.50 um thick
     --------------------
             SiO
@@ -114,8 +114,8 @@ You can then have CAMFR calculate the modes as so:
 
 And plot the modes like so:
 
-    >>> WG.plot()   # plots the fundamental mode.
-    >>> fig = s.plot(field=['P','Ex','Ey'], mode=[0,1,2])   # plots the Power and fields of 3 modes
+    >>> WG.plot()   # plots the fundamental mode with MatPlotLib.
+    >>> fig = WG.plot(field=['P','Ex','Ey'], mode=[0,1,2])   # plots the Power and fields of 3 modes
     
 See the Examples directory for full examples, as some details are missing here.
 
