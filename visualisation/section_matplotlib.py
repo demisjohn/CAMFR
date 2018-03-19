@@ -193,7 +193,12 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
             
             axis.pcolormesh( X, Y, F, cmap=colormap )
             if m==( len(Modes)-1 ):   axis.set_xlabel(r'x ($\mu{}m$)')  # LaTeX notation, overkill
-            if f==0:    axis.set_ylabel(r'y ($\mu{}m$)')
+            if f==0:    
+                ystr = "Mode(" + str(modeN) + ")"
+                axis.set_ylabel(ystr)
+            #if f==0:    axis.set_ylabel(r'y ($\mu{}m$)')
+            if m==0:
+                axis.set_title( field[f].title() )
             axis.set_xlim( axis.get_xlim()[0], obj.width() )
             axis.set_ylim( axis.get_ylim()[0], obj.height() )
             #axis.set_axis_bgcolor( AxisBGColor )   # this version works for matplotlib <v2.0

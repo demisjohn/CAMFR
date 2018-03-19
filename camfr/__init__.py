@@ -13,7 +13,7 @@ from camfr_PIL import *     # converted numpy* to np.*
 from geometry import *      # converted numpy* to np.*
 from geometry3d import *    # converted numpy* to np.*
 from material import *
-from matplotlib_section import *    # matplotlib functions for Section objects
+from section_matplotlib import *    # matplotlib functions for Section objects
 from camfrversion import *
 
 # Splash screen.
