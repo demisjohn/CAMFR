@@ -232,8 +232,8 @@ def _scale_function(z, r_x, r_y, min_area, scale):
     height = z.shape[0]
     width  = z.shape[1]
 
-    if type(r_x)!=np.ndarray or np.asarray(r_x).shape[0]==1: r_x = np.range(width)
-    if type(r_y)!=np.ndarray or np.asarray(r_y).shape[0]==1: r_y = np.range(height)
+    if type(r_x)!=np.ndarray or np.asarray(r_x).shape[0]==1: r_x = range(width)
+    if type(r_y)!=np.ndarray or np.asarray(r_y).shape[0]==1: r_y = range(height)
 
     if len(r_x)>1:  d_x = r_x[1] - r_x[0]
     else :          d_x = 1
@@ -484,7 +484,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         
         # Calculate each frame.
         
-        for Nr in np.range(0,frames):
+        for Nr in range(0,frames):
             pic = _create_scaled_matrix_plot(colormap,
                         ((np.log(z.real**2 + zcst) - zmin)*z_scale),
                         r_x, r_y, min_area = min_area, scale = scale)
@@ -507,7 +507,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
 
         # Calculate each frame.
         
-        for Nr in np.range(0,frames):
+        for Nr in range(0,frames):
             pic = \
               _create_scaled_matrix_plot(
                   colormap,((z+zmax)*z_scale).real,r_x,r_y,
@@ -574,7 +574,7 @@ def _output_movie(movie, filename):
                                 height=movie[0].size[1])
 
         while not stop[0]:
-            for x in np.range(frames):
+            for x in range(frames):
                 if stop[0]: break
                 backdrop = ImageTk.PhotoImage(movie[x])
                 canvas.create_image(0, 0, image=backdrop, anchor=Tkinter.NW)
@@ -618,7 +618,7 @@ def create_unipolar_colormap():
     colormap, l, end = [], len(MAPCOLORS), 0
 
     if (l > 1) :
-        for x in np.range(l-1):
+        for x in range(l-1):
             if (x == l-2): end = 1            
             colormap += _create_color_range(MAPCOLORS[x],MAPCOLORS[x+1], end)
             
@@ -645,7 +645,7 @@ def _create_color_range(c1=(0,0,0), c2=(255,255,255), ad_last = 0 ):
     if ad_last: colors +=1
 
     return [sum( (c1 + (x*dc).astype(int))*[1, 0x100, 0x10000] )
-            for x in np.range(int(colors))]
+            for x in range(int(colors))]
 
 
 
@@ -668,7 +668,7 @@ def plot_neff(waveguide):
     
     x,y = [],[]
     
-    for i in np.range(waveguide.N()):
+    for i in range(waveguide.N()):
 	n = waveguide.mode(i).n_eff()
 	x.append(n.real)
         y.append(n.imag)
@@ -687,8 +687,8 @@ def plot_f(f, r_x, r_y, filename=0, colormap=palet):
     
     fz = np.zeros([len(r_y),len(r_x)], float)
 
-    for i_y in np.range(len(r_y)):
-      for i_x in np.range(len(r_x)):
+    for i_y in range(len(r_y)):
+      for i_x in range(len(r_x)):
         fz[len(r_y)-1-i_y, i_x] = np.abs(f(r_x[i_x] + r_y[i_y]*1j))
 
     plot_matrix(fz, r_x, r_y, filename, colormap)
@@ -705,7 +705,7 @@ def plot_n_waveguide(waveguide, r_x):
     
     v = []
     
-    for i_x in np.range(len(r_x)):
+    for i_x in range(len(r_x)):
       v.append((r_x[i_x], np.abs(waveguide.n(Coord(r_x[i_x],0,0)))))
         
     plot_vector(v)
@@ -1069,8 +1069,8 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
     
     f = np.zeros([len(r_y),len(r_x)], float)
     
-    for i_x in np.range(len(r_x)):
-      for i_y in np.range(len(r_y)):
+    for i_x in range(len(r_x)):
+      for i_y in range(len(r_y)):
         f[len(r_y)-1-i_y,i_x] = \
               component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
 
@@ -1081,8 +1081,8 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
         
     n = np.zeros([len(r_y),len(r_x)], float)
         
-    for i_x in np.range(len(r_x)):
-        for i_y in np.range(len(r_y)):
+    for i_x in range(len(r_x)):
+        for i_y in range(len(r_y)):
             n[len(r_y)-1-i_y,i_x] = mode.n(Coord(r_x[i_x], r_y[i_y], 0)).real
 
     pic_n = _create_matrix_plot(n, r_x, r_y, whiteblack)
@@ -1177,7 +1177,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     pic_n = _create_matrix_plot (n, ax2, ax1, whiteblack)
     mov_f = _create_phasor_movie(f, ax2, ax1, ln=ln)
 
-    for Nr in np.range(len(mov_f)):
+    for Nr in range(len(mov_f)):
         mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
 
     _output_movie(mov_f, filename)
@@ -1195,8 +1195,8 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
     
     f = np.zeros([len(r_y),len(r_x)], complex)
 
-    for i_x in np.range(len(r_x)):
-      for i_y in np.range(len(r_y)):
+    for i_x in range(len(r_x)):
+      for i_y in range(len(r_y)):
         f[len(r_y)-1-i_y,i_x] = \
               component(mode.field(Coord(r_x[i_x], r_y[i_y], 0)))
 
@@ -1207,14 +1207,14 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
         
     n = np.zeros([len(r_y),len(r_x)], float)
         
-    for i_x in np.range(len(r_x)):
-        for i_y in np.range(len(r_y)):
+    for i_x in range(len(r_x)):
+        for i_y in range(len(r_y)):
             n[len(r_y)-1-i_y,i_x] = mode.n(Coord(r_x[i_x], r_y[i_y], 0)).real
 
     pic_n = _create_matrix_plot (n, r_x, r_y, whiteblack)
     mov_f = _create_phasor_movie(f, r_x, r_y)
 
-    for Nr in np.range(len(mov_f)):
+    for Nr in range(len(mov_f)):
         mov_f[Nr] = _overlay_pictures(mov_f[Nr], pic_n, contour)
 
     _output_movie(mov_f, filename)   
