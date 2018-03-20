@@ -12,7 +12,7 @@ CAMFR (CAvity Modelling FRamework) is a Python module providing a fast, flexible
 - lasers (like vertical-cavity surface-emitting lasers)
 - light-emitting diodes (like resonant-cavity LEDs)
 
-It is based on a combination of eigenmode expansion and advanced boundary conditions like perfectly matched layers (PML).  
+It is based on a combination of eigenmode expansion (EME) and advanced boundary conditions like perfectly matched layers (PML).  
 
 Using an intuitive python scripting interface one can create and solve for the optical modes/fields in various wavelength-scale structures. Additional math and plotting can then be performed via the SciPy stack. The Eigenmode Expansion (EME) method is especially well-suited to solving for very thin layers, or structures in which the X and Y dimensions are very different, where typical methods like FDTD and FEM have trouble with the vastly differing X/Y discretization.
 
