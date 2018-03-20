@@ -7,7 +7,7 @@ Originally written by [Peter Bienstman at Ghent University, Belgium](http://www.
 
 ## Introduction
 
-CAMFR (CAvity Modelling FRamework) is a fast, flexible, friendly full-vectorial Maxwell solver for electromagnetics simulations. Its main focus is on applications in the field of nanophotonics, like
+CAMFR (CAvity Modelling FRamework) is a Python module providing a fast, flexible, full-vectorial Maxwell solver for electromagnetics simulations. Its main focus is on applications in the field of nanophotonics, like
 - wavelength-scale microstructures (like photonic crystal devices, optical waveguides)
 - lasers (like vertical-cavity surface-emitting lasers)
 - light-emitting diodes (like resonant-cavity LEDs)
