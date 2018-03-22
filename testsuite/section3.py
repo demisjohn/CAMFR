@@ -15,8 +15,8 @@ class section3(unittest.TestCase):
 
         """Section 3"""
 
-        print
-        print "Running section 3..."
+        print('')
+        print("Running section 3...")
         
         set_lambda(1.55)
         set_N(1)
@@ -47,7 +47,7 @@ class section3(unittest.TestCase):
 
         n_eff_0 = s.mode(0).n_eff()
         n_eff_0_OK = 1.5999984535-0.000665487870832j
-        print n_eff_0, "expected", n_eff_0_OK
+        print(n_eff_0, "expected", n_eff_0_OK)
         n_eff_0_pass = abs((n_eff_0 - n_eff_0_OK)/n_eff_0_OK) < eps.testing_eps
 
         free_tmps()

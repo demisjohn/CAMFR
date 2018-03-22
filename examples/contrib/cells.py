@@ -585,6 +585,6 @@ def flip_k(k,xz,a,mode):
     if h1dp<h1d:
         k = 2.*pi/a/ratio-k
 
-    print "RATIO = ",ratio
+    print("RATIO = ",ratio)
         
     return k

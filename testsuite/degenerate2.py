@@ -15,8 +15,8 @@ class degenerate2(unittest.TestCase):
 
         """Degenerate 2"""
 
-        print
-        print "Running degenerate 2..."
+        print('')
+        print("Running degenerate 2...")
 
         set_lambda(1.55)
         set_N(8)
@@ -40,7 +40,7 @@ class degenerate2(unittest.TestCase):
         T = s.T12(0,0)
         T_OK = 0.275422970158+9.09323340151e-05j
 
-        print T, "expected", T_OK
+        print(T, "expected", T_OK)
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         free_tmps()

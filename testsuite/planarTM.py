@@ -16,8 +16,8 @@ class planarTE(unittest.TestCase):
 
         """Planar TM"""
 
-        print
-        print "Running planar TM..."
+        print('')
+        print("Running planar TM...")
 
         set_lambda(1)
         set_N(1)
@@ -42,8 +42,8 @@ class planarTE(unittest.TestCase):
         R_OK = -0.985823303384  +0.167786812667j
         T_OK =  0.00196175699271-0.000165753394309j
 
-        print R, "expected", R_OK
-        print T, "expected", T_OK
+        print(R, "expected", R_OK)
+        print(T, "expected", T_OK)
 
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps

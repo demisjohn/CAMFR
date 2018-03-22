@@ -15,8 +15,8 @@ class dent(unittest.TestCase):
 
         """Dent"""
 
-        print
-        print "Running dent..."
+        print('')
+        print("Running dent...")
 	
 	set_lambda(1.55)
 	set_N(40)
@@ -43,7 +43,7 @@ class dent(unittest.TestCase):
         R = s.R12(0,0)
         R_OK = 0.675552207942+0.392863210495j
 	
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()

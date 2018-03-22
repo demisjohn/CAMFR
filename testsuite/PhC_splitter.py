@@ -16,8 +16,8 @@ class PhC_splitter(unittest.TestCase):
         
         """Photonic crystal splitter"""
 
-        print
-        print "Running photonic crystal splitter..."
+        print('')
+        print("Running photonic crystal splitter...")
 
         set_lambda(1.5)
         set_N(50)
@@ -80,7 +80,7 @@ class PhC_splitter(unittest.TestCase):
         guided_kz = wg.mode(guided).kz()
         guided_kz_OK = 2.88206436787+6.11678736051e-06j
 
-        print guided_kz, "expected", guided_kz_OK
+        print(guided_kz, "expected", guided_kz_OK)
 
         guided_kz_pass \
           = abs((guided_kz - guided_kz_OK) / guided_kz_OK) < eps.testing_eps
@@ -97,7 +97,7 @@ class PhC_splitter(unittest.TestCase):
         R = splitter.R12(0,0)
         R_OK = -0.850178703613-0.01113704677j
 
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
 
         R_pass = abs((R - R_OK)/R_OK) < eps.testing_eps
 
@@ -106,7 +106,7 @@ class PhC_splitter(unittest.TestCase):
         E_field = splitter.field(Coord(a/2.,0,a/2.)).E2()
         E_field_OK = 22.450402472+55.5627710986j
 
-        print E_field, "expected", E_field_OK
+        print(E_field, "expected", E_field_OK)
 
         E_field_pass = abs((E_field-E_field_OK)/E_field_OK) \
                            < 100*eps.testing_eps

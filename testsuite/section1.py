@@ -15,8 +15,8 @@ class section1(unittest.TestCase):
 
         """Section 1"""
 
-        print
-        print "Running section 1..."
+        print('')
+        print("Running section 1...")
         
         set_lambda(1.55)
         set_N(2)
@@ -43,12 +43,12 @@ class section1(unittest.TestCase):
 
         n_eff_0 = s.mode(0).n_eff()
         n_eff_0_OK = 2.20461590777
-        print n_eff_0, "expected", n_eff_0_OK
+        print(n_eff_0, "expected", n_eff_0_OK)
         n_eff_0_pass = abs((n_eff_0 - n_eff_0_OK)/n_eff_0_OK) < eps.testing_eps
 
         n_eff_1 = s.mode(1).n_eff()
         n_eff_1_OK = 1.59844475105
-        print n_eff_1, "expected", n_eff_1_OK
+        print(n_eff_1, "expected", n_eff_1_OK)
         n_eff_1_pass = abs((n_eff_1 - n_eff_1_OK)/n_eff_1_OK) < eps.testing_eps
 
         free_tmps()

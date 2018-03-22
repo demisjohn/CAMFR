@@ -15,8 +15,8 @@ class backward2(unittest.TestCase):
 
         """backward 2"""
 
-        print
-        print "Running backward 2..."
+        print('')
+        print("Running backward 2...")
 
         a = 0.5
     
@@ -39,7 +39,7 @@ class backward2(unittest.TestCase):
     
         n_eff = c.mode(7).n_eff()
         n_eff_OK = -1.45872127197e-05-0.123469672815j
-        print n_eff, "expected", n_eff_OK
+        print(n_eff, "expected", n_eff_OK)
         n_eff_pass = abs((n_eff - n_eff_OK) / n_eff_OK) < eps.testing_eps
         
         set_circ_PML(0)   

@@ -28,13 +28,13 @@ s = Stack(GaAs(0) + 10*(GaAs(d_GaAs) + AlAs(d_AlAs)) + GaAs(0))
 for theta in arange(0, 90, 0.5):
 
   GaAs.set_theta(theta * pi / 180.)
-  print theta,
+  print(theta)
   
   set_polarisation(TE)
   s.calc()
-  print abs(s.R12(0,0))**2 ,
+  print(abs(s.R12(0,0))**2 )
 
   set_polarisation(TM)
   s.calc()
-  print abs(s.R12(0,0))**2
+  print(abs(s.R12(0,0))**2)
   

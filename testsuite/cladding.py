@@ -15,8 +15,8 @@ class cladding(unittest.TestCase):
 
         """cladding"""
 
-        print
-        print "Running cladding..."
+        print('')
+        print("Running cladding...")
         
         set_N(4)
         set_polarisation(TE)
@@ -33,7 +33,7 @@ class cladding(unittest.TestCase):
         E_field = core.mode(0).field(Coord(core.width()-0.01,0,0)).E2()
         E_field_OK = 0.0
       
-        print E_field, "expected", E_field_OK
+        print(E_field, "expected", E_field_OK)
 
         E_field_pass = abs(E_field) < eps.testing_eps
 

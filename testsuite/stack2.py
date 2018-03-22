@@ -15,8 +15,8 @@ class stack2(unittest.TestCase):
         
         """Stack 2"""
 
-        print
-        print "Running stack 2..."
+        print('')
+        print("Running stack 2...")
 
         set_N(10)
         set_lambda(1/.2)
@@ -44,7 +44,7 @@ class stack2(unittest.TestCase):
         R = s.R12(0,0)
         R_OK = -0.0536291599274+0.00109946727753j
         
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()

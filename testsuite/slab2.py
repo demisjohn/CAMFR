@@ -15,8 +15,8 @@ class slab2(unittest.TestCase):
 
         """Slab 2"""
 
-        print
-        print "Running slab 2..."
+        print('')
+        print("Running slab 2...")
         
 	set_N(1)
 
@@ -35,7 +35,7 @@ class slab2(unittest.TestCase):
         f = s.mode(0).field(Coord(0,0,0)).E2()
         f_OK = 24.6737+1.24772e-09j
 
-        print f, "expected", f_OK
+        print(f, "expected", f_OK)
         f_pass = abs((f - f_OK) / f_OK) < eps.testing_eps
 
         free_tmps()

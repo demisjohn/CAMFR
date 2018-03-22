@@ -15,8 +15,8 @@ class precision(unittest.TestCase):
 
         """Precision"""
 
-        print
-        print "Running precision..."
+        print('')
+        print("Running precision...")
         
         set_N(20)
         set_mode_surplus(3.0)
@@ -37,7 +37,7 @@ class precision(unittest.TestCase):
         R = s.R12(0,0)
         R_OK = 0.449374475028+0.415450001922j
 
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()

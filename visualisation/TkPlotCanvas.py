@@ -138,7 +138,7 @@ class HorizontalLine(PolyLine):
     """
 
     def __init__(self, ypos, **attr):
-        print ypos
+        print(ypos)
         apply(PolyLine.__init__, (self, 2*[(0., ypos)]), attr)
 
     def draw(self, canvas, bbox):
@@ -748,7 +748,7 @@ if __name__ == '__main__':
 
     def display(value):
         select(value)
-        print value
+        print(value)
 
     c = PlotCanvas(window, "300", "200", relief=SUNKEN, border=2,
                    zoom = 1, select = display)

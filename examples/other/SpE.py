@@ -52,5 +52,5 @@ for d in arange(0.01, 3.0, 0.05):
     numeric =   half.     field(Coord(0,0,0)).E1().real   \
 	      / half_open.field(Coord(0,0,0)).E1().real 
 
-    print d, exact, numeric
+    print(d, exact, numeric)
 

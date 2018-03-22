@@ -15,8 +15,8 @@ class rods(unittest.TestCase):
         
         """Rods"""
 
-        print
-        print "Running rods..."
+        print('')
+        print("Running rods...")
         
         set_lambda(1.5)
         set_N(100)
@@ -45,13 +45,13 @@ class rods(unittest.TestCase):
         n_eff_98    = rods.mode(98).n_eff()
         n_eff_98_OK = 0.520574469226-8.88879675497j
 
-        print n_eff_98, "expected", n_eff_98_OK
+        print(n_eff_98, "expected", n_eff_98_OK)
         mode98_pass = abs((n_eff_98-n_eff_98_OK)/n_eff_98_OK) < eps.testing_eps
 
         n_eff_99    = rods.mode(99).n_eff()
         n_eff_99_OK = 0.520574469226-8.88879675497j
 
-        print n_eff_99, "expected", n_eff_99_OK
+        print(n_eff_99, "expected", n_eff_99_OK)
         mode99_pass = abs((n_eff_99-n_eff_99_OK)/n_eff_99_OK) < eps.testing_eps
         
         free_tmps()

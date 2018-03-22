@@ -16,8 +16,8 @@ class surface_plasmon(unittest.TestCase):
 
         """Surface plasmon"""
 
-        print
-        print "Running surface plasmon..."
+        print("")
+        print("Running surface plasmon...")
 
         # Initialisation calculation parameters.
         
@@ -59,7 +59,7 @@ class surface_plasmon(unittest.TestCase):
         n_eff_OK   = 1.30342585412
         n_eff_test = sample.mode(1).n_eff().real
         
-        print n_eff_test , "expected", n_eff_OK
+        print(n_eff_test , "expected", n_eff_OK)
         n_eff_pass = abs((n_eff_test-n_eff_OK)/n_eff_OK) < eps.testing_eps
 
         free_tmps()

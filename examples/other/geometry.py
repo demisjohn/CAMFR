@@ -33,4 +33,4 @@ s = Stack(exp)
 
 s.calc()
 
-print s.R12(0,0)
+print( s.R12(0,0) )

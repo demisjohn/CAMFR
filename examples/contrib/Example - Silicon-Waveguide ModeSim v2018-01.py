@@ -102,7 +102,7 @@ fig = s.plot(field=['P','Ex','Ey'], mode=[0,1,2], dx=0.05, dy=0.05)
 #fig.savefig('Silicon_WG_-_Modesolver_example_v1.png')
 
 
-print 'done.'
+print( 'done.' )
 
 
 

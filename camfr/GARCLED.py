@@ -174,7 +174,7 @@ class Source:
     
     if abs(kz2) < 1e-12:
       if warned == False:
-        print kx, ky, "Warning: kz=0: close to cut-off."
+        print(kx, ky, "Warning: kz=0: close to cut-off.")
         warned = True
       kz = 1e-12
 
@@ -284,7 +284,7 @@ def inv_safe(A):
 
   except:
 
-    print "Singularities dectected in matrix inversion."
+    print("Singularities dectected in matrix inversion.")
 
     # A = U * sigma * Vh
 
@@ -476,8 +476,8 @@ def P(cav, sources, kx0, ky0, single_pass_substrate=True, add_all=True,
                   C*sum(P_sub), C*sum(P_out)]
     else:
       if single_pass_substrate == False:
-        print "Warning: fields matrices not yet implemented",
-        print "for multipass substrate. P_out can be inconsistent."
+        print("Warning: fields matrices not yet implemented")
+        print("for multipass substrate. P_out can be inconsistent.")
       results += [C*P_source_top, C*P_source_bot, None, C*P_sub, C*P_out]
   
   return results
@@ -531,8 +531,8 @@ def radiation_profile(cav, source, steps=30,
   if max_k_spanned < max_k_needed:
     Mx_required, My_required = cav.minimum_orders()
     
-    print "Warning: not all of k-space is covered."
-    print "Suggested orders: Mx:", Mx_required, ", My:", My_required 
+    print("Warning: not all of k-space is covered.")
+    print("Suggested orders: Mx:", Mx_required, ", My:", My_required )
 
   # Set up the data structures.
   
@@ -588,7 +588,7 @@ def radiation_profile(cav, source, steps=30,
         # Sanity checks, shouldn't happen.
 
         if (len(i_x) > 1) or (len(i_y) > 1):
-          print "Warning: multiple indices", i_x, i_y
+          print("Warning: multiple indices", i_x, i_y)
 
         #if wg.mode(i).pol() == TE and abs(P_TE[i_x,i_y]) > 1e-12:
           
@@ -715,22 +715,22 @@ class Result:
       eta_sub = res.eta_sub
       eta_out = res.eta_out
   
-      print
-      print "Source orientation:", source.__name__, \
-            '(weight='+str(res.weight)+')'
-      print "Emitted power                                 :",'%.3f'% gen
-      print "Extraction efficiency to substrate            :",'%.3f'% eta_sub 
-      print "Extraction efficiency to bottom outside world :",'%.3f'% eta_out
+      print("")
+      print("Source orientation:", source.__name__, \
+            '(weight='+str(res.weight)+')'  )
+      print("Emitted power                                 :",'%.3f'% gen   )
+      print("Extraction efficiency to substrate            :",'%.3f'% eta_sub   )
+      print("Extraction efficiency to bottom outside world :",'%.3f'% eta_out   )
 
     gen     = self.P_source
     eta_sub = self.eta_sub
     eta_out = self.eta_out
       
-    print
-    print "Source orientation: average"
-    print "Emitted power                                 :",'%.3f' % gen
-    print "Extraction efficiency to substrate            :",'%.3f' % eta_sub 
-    print "Extraction efficiency to bottom outside world :",'%.3f' % eta_out
+    print("")
+    print("Source orientation: average" )
+    print("Emitted power                                 :",'%.3f' % gen    )
+    print("Extraction efficiency to substrate            :",'%.3f' % eta_sub )
+    print("Extraction efficiency to bottom outside world :",'%.3f' % eta_out    )
 
     sys.stdout.flush()
 
@@ -810,8 +810,8 @@ def calc(cav, sources=None, weights=None, steps=30, symmetric=False,
   if max_k_spanned < max_k_needed:
     Mx_required, My_required = cav.minimum_orders()
     
-    print "Warning: not all of k-space is covered."
-    print "Suggested orders: Mx:", Mx_required, ", My:", My_required
+    print("Warning: not all of k-space is covered.")
+    print("Suggested orders: Mx:", Mx_required, ", My:", My_required )
     
   results = {}
 
@@ -877,9 +877,9 @@ def calc(cav, sources=None, weights=None, steps=30, symmetric=False,
                       lambda kx : -sqrt((Ky/2.)**2-kx*2).real,
                       lambda kx :  sqrt((Ky/2.)**2-kx*2).real)[0]
          
-      print
-      print "Source orientation:", source.__name__
-      print "Generated power                              :", '%.3f' % gen
+      print("")
+      print("Source orientation:", source.__name__ )
+      print("Generated power                              :", '%.3f' % gen )
       sys.stdout.flush()
 
       sub = 0.0 # Let's not calculate 'sub' to save time.
@@ -897,9 +897,9 @@ def calc(cav, sources=None, weights=None, steps=30, symmetric=False,
                       lambda ky : -sqrt((Ky/2.)**2-ky*2).real,
                       lambda ky :  sqrt((Ky/2.)**2-ky*2).real)[0]
         
-      print "Outcoupled power                              :",'%.3f'% out
-      print "Extraction efficiency to substrate            :",'%.3f'%(sub/gen)
-      print "Extraction efficiency to bottom outside world :",'%.3f'%(out/gen)
+      print("Outcoupled power                              :",'%.3f'% out )
+      print("Extraction efficiency to substrate            :",'%.3f'%(sub/gen) )
+      print("Extraction efficiency to bottom outside world :",'%.3f'%(out/gen) )
       sys.stdout.flush()
 
       all_gen.append(gen)

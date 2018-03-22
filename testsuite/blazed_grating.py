@@ -16,8 +16,8 @@ class blazed_grating(unittest.TestCase):
         
         """Blazed grating"""
 
-        print
-        print "Running blazed grating..."
+        print('')
+        print("Running blazed grating...")
 
         set_lambda(1.55)
         set_N(30)
@@ -107,8 +107,8 @@ class blazed_grating(unittest.TestCase):
         R_OK = 0.400333359695
         T_OK = 0.204851452350
 
-        print R, "expected", R_OK
-        print T, "expected", T_OK
+        print(R, "expected", R_OK)
+        print(T, "expected", T_OK)
 
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps

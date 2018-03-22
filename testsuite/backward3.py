@@ -18,8 +18,8 @@ class backward3(unittest.TestCase):
 
         """backward 3"""
 
-        print
-        print "Running backward 3..."
+        print('')
+        print("Running backward 3...")
 
         set_lambda(1.64367524538)
         set_N(20)
@@ -48,7 +48,7 @@ class backward3(unittest.TestCase):
     
         R = stack.R12(0,0)
         R_OK = -0.246126984037-0.00532954414873j
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
         
         set_solver(track)

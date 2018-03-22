@@ -41,4 +41,4 @@ s = Stack(inc_wg(a) + s_inf)
 
 s.calc()
 
-print abs(s.R12(0,0))**2
+print( abs(s.R12(0,0))**2 )

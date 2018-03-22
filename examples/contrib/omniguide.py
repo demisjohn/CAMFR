@@ -38,20 +38,20 @@ space = Circ(air(Rcore+Nbi*a+d1) + air(p))
 
 og.calc()
 te01 = 0
-print "Omniguide modes:"
+print("Omniguide modes:")
 for i in arange(0, N(), 1):
-    print og.mode(i).n_eff()
+    print(og.mode(i).n_eff() )
     # Find TE01 mode as having n_eff closest to 1.
     if abs(1 - og.mode(i).n_eff().real) < abs(1 - og.mode(te01).n_eff().real):
         te01 = i
 
 # Excite TE01 mode only.
 
-print " zsep   Transmission"
+print(" zsep   Transmission")
 for zsep in arange(0,4.01,0.2):
     s = Stack(og(0.0) + space(zsep) + og(0.0))
     s.calc()
-    print zsep, abs(s.T12(te01,te01))**2
+    print(zsep, abs(s.T12(te01,te01))**2  )
 
 inc = zeros(N())
 inc[te01] = 1

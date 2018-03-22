@@ -84,7 +84,7 @@ def plot_vector(v):
 def plot_matrix(z, r_x=0, r_y=0, filename=0, colorcode=0):
 
     if filename:
-        print "Saving to file not supported."
+        print("Saving to file not supported.")
     
     matlab.put('z', z)
     if r_x:
@@ -146,7 +146,7 @@ def create_bipolar_color_map():
 def phasormovie(z, r_x=0, r_y=0, filename=0):
 
     if filename:
-        print "Saving to file not supported."
+        print("Saving to file not supported.")
     
     matlab.put('z', z)
     if r_x:
@@ -295,7 +295,7 @@ def plot_n(o, r1, r2=0, filename=0, colormap=whiteblack):
     elif type(o) == Section:
         plot_n_section(o, r1, r2, filename, colormap)    
     else:
-        print "Unsupported argument for plot_n."
+        print("Unsupported argument for plot_n.")
 
 
 ##############################################################################
@@ -373,7 +373,7 @@ def plot_field(o, component, r1, r2=0, filename=0, colormap=0,
     elif type(o) == SectionMode:
         plot_field_section_mode(o, component, r1, r2, filename, colormap)
     else:
-        print "Unsupported argument for plot_field."
+        print("Unsupported argument for plot_field.")
         
 
 
@@ -430,5 +430,5 @@ def animate_field(o, component, r1, r2, filename=0, overlay_n=1, contour=1):
     elif type(o) == SectionMode:
         animate_field_section_mode(o, component, r1, r2, filename)
     else:
-        print "Unsupported argument for animate_field."
+        print("Unsupported argument for animate_field.")
 

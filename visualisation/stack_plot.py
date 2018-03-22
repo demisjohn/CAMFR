@@ -934,14 +934,14 @@ class StackPlot:
             else:
                     camfr_PIL._overlay_pictures(
                     self.pic_f, self.pic_n, 1).save(name)
-            print "file saved as ", name
+            print("file saved as ", name)
 
         elif (saveas=="CAMFRRAWDATA"):
             if not (ext in ['.xls','.XLS']):
                 ext = '.xls'
             name = root + ext
             self._saveMatrix( name, self.mat_f)
-            print "file saved as", name
+            print("file saved as", name)
 
 
         elif (saveas=="CAMFRGIFMOVIE"):
@@ -961,7 +961,7 @@ class StackPlot:
             fp = open(name,"wb")
             gifmaker.makedelta(fp, movie2)
             fp.close()
-            print "file saved as", name
+            print("file saved as", name)
 
         elif (saveas=="CAMFRFRAMESMOVIE"):
             if not(ext in camfr_PIL.formats):
@@ -977,7 +977,7 @@ class StackPlot:
                     camfr_PIL._overlay_pictures(
                     self.movie[Nr], self.pic_n, 1).save(nameNR)
 
-            print "file saved as %i "%len(self.movie),root,"_Nr",ext," frames"
+            print("file saved as %i "%len(self.movie),root,"_Nr",ext," frames")
 
         else:
             tkMessageBox.showwarning(
@@ -995,8 +995,10 @@ class StackPlot:
         File = open(name,"w")
         for row in matrix:
             for column in row:
-                print >> File, column, '\t',
-            print >> File, ''
+                File.writelines( [str(column) + '\t'] )
+                #print >> File, column, '\t',
+            File.writelines( [''] )
+            #print >> File, ''
         File.close()
 
    ###########################################################################

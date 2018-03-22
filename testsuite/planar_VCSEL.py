@@ -15,8 +15,8 @@ class planar_VCSEL(unittest.TestCase):
         
         """planar VCSEL"""
 
-        print
-        print "Running planar VCSEL..."
+        print('')
+        print("Running planar VCSEL...")
 
         set_lambda(.98112)
         set_N(1)
@@ -80,7 +80,7 @@ class planar_VCSEL(unittest.TestCase):
         field = vcsel.field(Coord(0,0,bottom.length())).abs_E()
         field_OK = 31.197347844
         
-        print field, "expected", field_OK
+        print(field, "expected", field_OK)
         
         field_pass = abs((field - field_OK)/field_OK) < eps.testing_eps
 

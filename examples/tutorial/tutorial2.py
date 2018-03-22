@@ -27,4 +27,4 @@ space = Slab(air(4.5))
 for L in arange(0.005, 0.100, 0.005):
     stack = Stack(space(0) + slab(L) + space(0))
     stack.calc()
-    print L, abs(stack.R12(0,0))
+    print( L, abs(stack.R12(0,0)) )

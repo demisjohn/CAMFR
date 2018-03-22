@@ -435,15 +435,15 @@ class Picture(object):
         # Data on screen if requested.                                      
         
         if (verbose == 1): 
-            print "                                                        "               
-            print "IMAGE INFORMATION                                       "
-            print "--------------------------------------------------------"
-            print "Name          : ", self.imageName
-            print "Original size : ", zPixels, xPixels , " (length, height)"
-            print "New size      : ", Zsteps, Xsteps, " (lenght, height)   "
+            print("                                                        "    )
+            print("IMAGE INFORMATION                                       "    )
+            print("--------------------------------------------------------"    )
+            print("Name          : ", self.imageName    )
+            print("Original size : ", zPixels, xPixels , " (length, height)"    )
+            print("New size      : ", Zsteps, Xsteps, " (lenght, height)   "    )
             im.save ('rescaledimage.png', 'png')     
-            print "Image saved as:  rescaledimage.png                      "
-            print "--------------------------------------------------------"
+            print("Image saved as:  rescaledimage.png                      "    )
+            print("--------------------------------------------------------"    )
         
         colors = im.getcolors()            # e.g. 
                                            # colors= [(220, 0),(2330, 255)]: 
@@ -504,21 +504,21 @@ class Picture(object):
         # Print all information.
         
         if (verbose == 1):
-            print "                                                        "        
-            print "MATERIAL INFORMATION                                    "
-            print "--------------------------------------------------------"
-            print self.mat_dict    
-            print "--------------------------------------------------------"
-            print "                                                        "        
-            print "SLAB INFORMATION                                        "
-            print "--------------------------------------------------------"
-            print slabs
-            print "--------------------------------------------------------"
-            print "                                                        "            
-            print "STACK INFORMATION                                       "
-            print "--------------------------------------------------------"            
-            print stack
-            print "--------------------------------------------------------"
+            print("                                                        "    )
+            print("MATERIAL INFORMATION                                    "    )
+            print("--------------------------------------------------------"    )
+            print(self.mat_dict     )
+            print("--------------------------------------------------------"    )
+            print("                                                        "    )
+            print("SLAB INFORMATION                                        "    )
+            print("--------------------------------------------------------"    )
+            print(slabs)
+            print("--------------------------------------------------------"    )
+            print("                                                        "    )
+            print("STACK INFORMATION                                       "    )
+            print("--------------------------------------------------------"    )
+            print(stack)
+            print("--------------------------------------------------------"    )
             
         return self.expr
     
@@ -679,7 +679,7 @@ class Geometry:
         else:
             
             if (x0 > x1) or (y0 > y1):
-                print "Error: Invalid boundaries for to_expression."
+                print("Error: Invalid boundaries for to_expression.")
                 raise IndexError
     
             slabs = []
@@ -798,11 +798,11 @@ class Geometry:
                 s = Slab(e_slab)
     
                 if verbose == True:
-                    print e_slab
+                    print(e_slab)
                     s.calc()
                     pretty_print(s)
                     plot(s)
-                    print "------------"
+                    print("------------")
        
                 slab_cache.append(s)
                 e.add(s(d[i]))
@@ -832,5 +832,5 @@ def pretty_print(s):
         if np.abs(ni) < 1e-6:
             ni = 0
 
-        print i, nr, ni
+        print(i, nr, ni)
 

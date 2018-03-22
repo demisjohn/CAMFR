@@ -37,7 +37,7 @@ s.calc()
 r_x = arange( 1.5, 2.8, 0.05)
 r_z = arange(-1.0, 2.0, 0.05)
 
-print "Doing some plots. Close window to continue to the next one."
+print("Doing some plots. Close window to continue to the next one.")
 
 wg.plot_n(r_x)
 

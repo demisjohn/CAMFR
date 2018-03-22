@@ -15,8 +15,8 @@ class grating3(unittest.TestCase):
 
         """Grating 3"""
 
-        print
-        print "Running grating 3..."
+        print('')
+        print("Running grating 3...")
 
         set_lambda(1.55)
         set_N(40)
@@ -59,7 +59,7 @@ class grating3(unittest.TestCase):
         R = stack.R12(0,0)
         R_OK = 0.103410938939-0.0238576791412j
         
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()

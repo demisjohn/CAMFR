@@ -17,8 +17,8 @@ class SpE(unittest.TestCase):
         
         """Spontaneous emission"""
 
-        print
-        print "Running spontaneous emission..."
+        print('')
+        print("Running spontaneous emission...")
 
         set_N(60)
         set_lambda(1)
@@ -56,7 +56,7 @@ class SpE(unittest.TestCase):
 
         eta_OK = 1.13004085163
 
-        print eta, "expected", eta_OK
+        print(eta, "expected", eta_OK)
 
         eta_pass = abs((eta - eta_OK) / eta_OK) < eps.testing_eps
 

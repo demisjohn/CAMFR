@@ -19,8 +19,8 @@ def calc(L, h, D, orders, wavelength=0.565):
 
   set_fourier_orders(orders, orders)
 
-  print
-  print "wavelength, orders L h:", wavelength, orders, L, h
+  print('')
+  print("wavelength, orders L h:", wavelength, orders, L, h)
 
   # Create materials.
   
@@ -39,9 +39,9 @@ def calc(L, h, D, orders, wavelength=0.565):
 
   for pos in ['1', '2', '3']:
 
-    print
-    print "*** Position", pos, "***"
-    print
+    print('')
+    print("*** Position", pos, "***")
+    print('')
   
     top = Uniform(Alq3,  0.050) + \
           Uniform(Al,    0.150) + \
@@ -74,13 +74,13 @@ def calc(L, h, D, orders, wavelength=0.565):
 
   # Print average over position and source.
 
-  print
-  print "*** Averaged over dipole position and source orientation ***"
-  print
-  print "Averaged extraction efficiency to substrate            :", \
-                                                             average(eta_sub) 
-  print "Averaged extraction efficiency to bottom outside world :", \
-                                                             average(eta_out)
+  print('')
+  print("*** Averaged over dipole position and source orientation ***")
+  print('')
+  print("Averaged extraction efficiency to substrate            :", \
+                                                             average(eta_sub)   )
+  print("Averaged extraction efficiency to bottom outside world :", \
+                                                             average(eta_out)   )
 
 # Loop over period and thickness of the grating.
 

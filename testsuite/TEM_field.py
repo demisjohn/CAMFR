@@ -15,8 +15,8 @@ class TEM_field(unittest.TestCase):
         
         """TEM field"""
 
-        print
-        print "Running TEM field..."
+        print("")
+        print("Running TEM field...")
 
         set_N(1)
         set_polarisation(TM)
@@ -40,9 +40,9 @@ class TEM_field(unittest.TestCase):
                 
         f_OK = 0.0481935271885
 
-        print f1, "expected", f_OK
-        print f2, "expected", f_OK
-        print f3, "expected", f_OK
+        print(f1, "expected", f_OK)
+        print(f2, "expected", f_OK)
+        print(f3, "expected", f_OK)
                 
         f1_pass = abs((f1 - f_OK) / f_OK) < eps.testing_eps
         f2_pass = abs((f2 - f_OK) / f_OK) < eps.testing_eps

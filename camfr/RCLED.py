@@ -270,7 +270,7 @@ def P(cav, source, kt, density='per_solid_angle'):
     P_out        *= 1.0 / k0 / n_sub_ext / safe_sqrt(kz_sub_ext_2)
 
   elif density != 'per_solid_angle':
-    print "Unknown density. Assuming per solid angle."
+    print("Unknown density. Assuming per solid angle.")
   
   return P_source_top.real, P_source_bot.real, \
          abs(P_top.real), abs(P_sub.real), abs(P_out.real)
@@ -440,22 +440,22 @@ class Result:
       eta_sub = res.eta_sub
       eta_out = res.eta_out
   
-      print
-      print "Source orientation:", source.__name__, \
-            '(weight='+str(res.weight)+')'
-      print "Emitted power                                 :",'%.3f'% gen
-      print "Extraction efficiency to substrate            :",'%.3f'% eta_sub 
-      print "Extraction efficiency to bottom outside world :",'%.3f'% eta_out
+      print("")
+      print("Source orientation:", source.__name__, \
+            '(weight='+str(res.weight)+')'   )
+      print("Emitted power                                 :",'%.3f'% gen  )
+      print("Extraction efficiency to substrate            :",'%.3f'% eta_sub   )
+      print("Extraction efficiency to bottom outside world :",'%.3f'% eta_out  )
 
     gen     = self.P_source
     eta_sub = self.eta_sub
     eta_out = self.eta_out
       
-    print
-    print "Source orientation: average"
-    print "Emitted power                                 :",'%.3f' % gen
-    print "Extraction efficiency to substrate            :",'%.3f' % eta_sub 
-    print "Extraction efficiency to bottom outside world :",'%.3f' % eta_out
+    print("")
+    print("Source orientation: average" )
+    print("Emitted power                                 :",'%.3f' % gen  )
+    print("Extraction efficiency to substrate            :",'%.3f' % eta_sub   )
+    print("Extraction efficiency to bottom outside world :",'%.3f' % eta_out  )
 
 
 

@@ -16,8 +16,8 @@ class polariton(unittest.TestCase):
 
         """Polariton"""
 
-        print
-        print "Running polariton..."
+        print('')
+        print("Running polariton...")
 
         set_N(40)
         set_polarisation(TM)
@@ -53,7 +53,7 @@ class polariton(unittest.TestCase):
         kz = s.mode(0).kz()
         kz_OK = 3.80047194128-3.70167318519e-05j
         
-        print kz, "expected", kz_OK
+        print(kz, "expected", kz_OK)
         kz_pass = abs((kz - kz_OK) / kz_OK) < eps.testing_eps
 
         free_tmps()

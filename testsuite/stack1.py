@@ -15,8 +15,8 @@ class stack1(unittest.TestCase):
         
         """Stack1"""
 
-        print
-        print "Running stack1..."
+        print('')
+        print("Running stack1...")
 
         set_N(40)
         set_lambda(1.55)
@@ -43,14 +43,14 @@ class stack1(unittest.TestCase):
         n = s.n(Coord(2.1,0,-1))
         n_OK = 3.5
         
-        print n, "expected", n_OK
+        print(n, "expected", n_OK)
 
         n_pass = abs((n - n_OK) / n_OK) < eps.testing_eps
 
         E = abs(s.field(Coord(2.1,0,-1)).E2())
         E_OK = 11.0402395717
         
-        print E, "expected", E_OK
+        print(E, "expected", E_OK)
         
         E_pass = abs((E - E_OK) / E_OK) < eps.testing_eps
 

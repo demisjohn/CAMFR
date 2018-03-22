@@ -15,8 +15,8 @@ class degenerate(unittest.TestCase):
 
         """Degenerate"""
 
-        print
-        print "Running degenerate..."
+        print('')
+        print("Running degenerate...")
 
         set_N(20)
         set_lambda(1.00)

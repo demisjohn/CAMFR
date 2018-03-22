@@ -32,19 +32,19 @@ slab.calc()
 r_x = arange(1.0, 3.5, 0.01) 
 modenumber = 0
 
-print "Plotting mode distribution"
+print("Plotting mode distribution")
 plot_neff(slab)
 raw_input("Press <enter> to continue")
 
-print "Plotting refractive index profile"
+print("Plotting refractive index profile")
 plot_n(slab, r_x)
 raw_input("Press <enter> to continue")
 
-print "Plotting E field"
+print("Plotting E field")
 plot_field(slab.mode(modenumber), lambda f : f.E2().real, r_x)
 raw_input("Press <enter> to continue")
 
-print "Plotting H field"
+print("Plotting H field")
 plot_field(slab.mode(modenumber), lambda f : f.H2().real, r_x)
 raw_input("Press <enter> to continue")
 

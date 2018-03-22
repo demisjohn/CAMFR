@@ -15,8 +15,8 @@ class field(unittest.TestCase):
         
         """Field"""
 
-        print
-        print "Running field..."
+        print('')
+        print("Running field...")
 
         set_lambda(1.0)
         set_N(40)
@@ -35,7 +35,7 @@ class field(unittest.TestCase):
         f1 = wg.mode(1).field(Coord(0,0,0)).E2()
         f_OK = 5.30053306821e-11-2.14419512113e-11j
 
-        print f1, "expected", f_OK
+        print(f1, "expected", f_OK)
         f1_pass = abs(f1 - f_OK) < eps.testing_eps
         
         inc = zeros(N())
@@ -44,7 +44,7 @@ class field(unittest.TestCase):
 
         f2 = stack.field(Coord(0,0,0)).E2()
 
-        print f2, "expected", f_OK
+        print(f2, "expected", f_OK)
         f2_pass = abs(f2 - f_OK) < eps.testing_eps       
 
         free_tmps()

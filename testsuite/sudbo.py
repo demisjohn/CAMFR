@@ -15,8 +15,8 @@ class sudbo(unittest.TestCase):
         
         """Sudbo"""
 
-        print
-        print "Running Sudbo..."
+        print('')
+        print("Running Sudbo...")
 
         set_lambda(1.0)
         set_N(1)
@@ -40,7 +40,7 @@ class sudbo(unittest.TestCase):
         n_eff = s.mode(0).n_eff()
         n_eff_OK = 1.16243992419
         
-        print n_eff, "expected", n_eff_OK
+        print(n_eff, "expected", n_eff_OK)
         n_eff_pass = abs((n_eff - n_eff_OK)/n_eff_OK) < eps.testing_eps
 
         free_tmps()

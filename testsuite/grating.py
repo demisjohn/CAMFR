@@ -15,8 +15,8 @@ class grating(unittest.TestCase):
 
         """Grating"""
 
-        print
-        print "Running grating..."
+        print('')
+        print("Running grating...")
 
         set_N(10)
         set_lambda(1.5)
@@ -35,7 +35,7 @@ class grating(unittest.TestCase):
         E1 = s1.mode(0).field(Coord(gp/2.,0,0)).E2()
 
         E1_OK = 9.37774761087-2.90162100076e-13j
-        print E1, "expected", E1_OK
+        print(E1, "expected", E1_OK)
         E1_pass = abs((E1 - E1_OK) / E1_OK) < eps.testing_eps
 
         gp = 1.0*get_lambda().real              
@@ -44,7 +44,7 @@ class grating(unittest.TestCase):
         E2 = s2.mode(0).field(Coord(gp/2.,0,0)).E2()
 
         E2_OK = 7.03164255766-6.9718563713e-11j
-        print E2, "expected", E2_OK
+        print(E2, "expected", E2_OK)
         E2_pass = abs((E2 - E2_OK) / E2_OK) < eps.testing_eps
 
         free_tmps()

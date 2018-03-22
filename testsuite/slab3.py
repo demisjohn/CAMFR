@@ -15,8 +15,8 @@ class slab3(unittest.TestCase):
 
         """Slab 3"""
 
-        print
-        print "Running slab 3..."
+        print('')
+        print("Running slab 3...")
         
 	set_N(10)
 
@@ -35,13 +35,13 @@ class slab3(unittest.TestCase):
         n0 = s.mode(0).n_eff()
         n0_OK = 2.96986800836
 
-        print n0, "expected", n0_OK
+        print(n0, "expected", n0_OK)
         n0_pass = abs((n0 - n0_OK) / n0_OK) < eps.testing_eps
 
         n9 = s.mode(9).n_eff()        
         n9_OK = 0.0814435888385-1.84709216839j
  
-        print n9, "expected", n9_OK
+        print(n9, "expected", n9_OK)
         n9_pass = abs((n9 - n9_OK) / n9_OK) < eps.testing_eps
 
         free_tmps()

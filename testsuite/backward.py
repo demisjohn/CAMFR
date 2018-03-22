@@ -15,8 +15,8 @@ class backward(unittest.TestCase):
 
         """backward"""
 
-        print
-        print "Running backward..."
+        print('')
+        print("Running backward...")
 
 
         mat = Material(3.5)
@@ -35,12 +35,12 @@ class backward(unittest.TestCase):
 
         R = s.R12(0,0)
         R_OK = -0.0392923220796+0.0408718742985j
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         T = s.T12(0,0)
 	T_OK = 0.202336029811+0.776634435067j
-        print T, "expected", T_OK
+        print(T, "expected", T_OK)
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         set_backward_modes(0)

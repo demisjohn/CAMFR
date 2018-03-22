@@ -15,8 +15,8 @@ class shift(unittest.TestCase):
 
         """Shift"""
 
-        print
-        print "Running shift..."
+        print('')
+        print("Running shift...")
 
         set_N(2)
         set_polarisation(TE)
@@ -36,7 +36,7 @@ class shift(unittest.TestCase):
 
         T = s.T12(0,0)
         T_OK = -0.141332685373-0.986658604736j
-        print T, "expected", T_OK
+        print(T, "expected", T_OK)
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
         
         free_tmps()

@@ -16,8 +16,8 @@ class metal_coupler(unittest.TestCase):
 
         """TM metal grating coupler"""
 
-        print
-        print "Running TM metal grating coupler..."
+        print('')
+        print("Running TM metal grating coupler...")
 
         # Define calculation parameters
 
@@ -105,7 +105,7 @@ class metal_coupler(unittest.TestCase):
         up_OK   = 0.355387646801
         up_test = up.real
 
-        print up_test , "expected", up_OK
+        print(up_test , "expected", up_OK)
         up_pass = abs((up_test-up_OK)/up_OK) < eps.testing_eps
 
         free_tmps()

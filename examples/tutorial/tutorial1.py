@@ -25,11 +25,11 @@ slab.calc()
 
 # Print out some waveguide characteristics. 
 
-print slab.mode(0).kz()
-print slab.mode(1).n_eff()
-print slab.mode(2).field(Coord(2.25, 0, 0))
-print slab.mode(3).field(Coord(2.25, 0, 0)).E2()
-print slab.mode(4).field(Coord(2.25, 0, 0)).E2().real
+print( slab.mode(0).kz() )
+print( slab.mode(1).n_eff() )
+print( slab.mode(2).field(Coord(2.25, 0, 0)) )
+print( slab.mode(3).field(Coord(2.25, 0, 0)).E2() )
+print( slab.mode(4).field(Coord(2.25, 0, 0)).E2().real )
 
 # Do some interactive plotting.
 

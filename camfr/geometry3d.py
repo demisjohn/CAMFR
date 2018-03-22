@@ -201,7 +201,7 @@ class Geometry3D:
     def to_expression(self, x0, x1, dx, y0, y1, dy, z0, z1, dz, add_flipped=0):
 
         if (x0 > x1) or (y0 > y1) or (z0 > z1):
-            print "Error: Invalid boundaries for to_expression."
+            print("Error: Invalid boundaries for to_expression.")
             raise IndexError
 
         sections = []
@@ -392,4 +392,4 @@ def pretty_print(s):
         if np.abs(ni) < 1e-6:
             ni = 0
 
-        print i, nr, ni
+        print(i, nr, ni)

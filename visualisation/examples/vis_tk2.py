@@ -34,7 +34,7 @@ for W in arange(0.100, 0.200, 0.005):
     stack = Stack(space(0) + slab(0.5) + space(0))
     stack.calc()
 
-    print W
+    print(W)
 
     v.append((W,abs(stack.R12(0,0))))
 

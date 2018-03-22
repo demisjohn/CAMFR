@@ -15,8 +15,8 @@ class wg(unittest.TestCase):
         
         """Waveguide"""
 
-        print
-        print "Running waveguide..."
+        print("")
+        print("Running waveguide...")
 
         set_lambda(1)
         set_N(20)
@@ -33,7 +33,7 @@ class wg(unittest.TestCase):
         n =  wg.mode(0).n_eff()
         n_OK = 2.96617486466+9.44438326765e-17j
 
-        print n, "expected", n_OK
+        print(n, "expected", n_OK)
         n_pass = abs((n - n_OK) / n_OK) < eps.testing_eps
 
         free_tmps()

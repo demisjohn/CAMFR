@@ -18,7 +18,7 @@ from camfrversion import *
 
 # Splash screen.
 
-print
-print "CAMFR", camfr_version,
-print "- Copyright (C) 1998-2007 Peter Bienstman - Ghent University."
-print
+print("")
+print("CAMFR", camfr_version)
+print("- Copyright (C) 1998-2007 Peter Bienstman - Ghent University.")
+print("")

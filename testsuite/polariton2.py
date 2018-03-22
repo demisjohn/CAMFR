@@ -16,8 +16,8 @@ class polariton2(unittest.TestCase):
 
         """Polariton 2"""
 
-        print
-        print "Running polariton 2..."
+        print('')
+        print("Running polariton 2...")
 
         set_N(50)
         set_polarisation(TM)
@@ -53,7 +53,7 @@ class polariton2(unittest.TestCase):
         R = s.R12(0,0)
         R_OK = 0.129865230383-0.18515631071j
         
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         free_tmps()

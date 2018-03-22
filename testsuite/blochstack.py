@@ -17,8 +17,8 @@ class blochstack(unittest.TestCase):
         
         """Bloch stack"""
 
-        print
-        print "Running bloch stack..."
+        print('')
+        print("Running bloch stack...")
 
         set_N(40)
         set_polarisation(TE)
@@ -71,10 +71,10 @@ class blochstack(unittest.TestCase):
         T = s.T12(0,1)
         T_OK = 0.0340145359674+0.154470138754j
 
-        print R, "expected", R_OK
+        print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
-        print T, "expected", T_OK
+        print(T, "expected", T_OK)
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 
         set_lower_wall(slab_E_wall)
