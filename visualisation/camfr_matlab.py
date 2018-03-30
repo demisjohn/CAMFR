@@ -12,8 +12,8 @@ import MLab, pymat
 
 class Matlab:
     def __init__(self):
-	self.H = pymat.open()
-	
+        self.H = pymat.open()
+    
     def __call__(self, s):
         pymat.eval(self.H, s)
 
@@ -21,13 +21,13 @@ class Matlab:
         pymat.eval(self.H, s)
 
     def put(self, name, array):
-	pymat.put(self.H, name, array)
+        pymat.put(self.H, name, array)
 
     def get(self, name):
-	return pymat.get(self.H, name)
+        return pymat.get(self.H, name)
 
     def close(self):
-	pymat.close(self.H)
+        pymat.close(self.H)
 
 matlab = Matlab()
 
@@ -200,8 +200,8 @@ def plot_neff(waveguide):
     x,y = [],[]
     
     for i in range(waveguide.N()):
-	n = waveguide.mode(i).n_eff()
-	x.append(n.real)
+    n = waveguide.mode(i).n_eff()
+    x.append(n.real)
         y.append(n.imag)
 
     scatter_plot(x,y)

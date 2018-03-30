@@ -17,16 +17,16 @@ class dent(unittest.TestCase):
 
         print('')
         print("Running dent...")
-	
-	set_lambda(1.55)
-	set_N(40)
+    
+        set_lambda(1.55)
+        set_N(40)
         set_mode_surplus(2)
 
         core = Material(3.45)
         clad = Material(2)
         air  = Material(1)
 
-	spot_size = 0.001
+        spot_size = 0.001
 
         set_upper_PML(-0.25)
         set_lower_PML(-0.25)
@@ -42,7 +42,7 @@ class dent(unittest.TestCase):
 
         R = s.R12(0,0)
         R_OK = 0.675552207942+0.392863210495j
-	
+    
         print(R, "expected", R_OK)
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 

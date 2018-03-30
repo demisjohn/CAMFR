@@ -12,7 +12,7 @@ import unittest, eps
 
 class w1reson(unittest.TestCase):
     def create_w1_period(self,period,rad,periods,topbuf,matcore,matclad):
-	tussen=sqrt(3)/2 *period
+        tussen=sqrt(3)/2 *period
         tussen2 = sqrt(3)*period
         numodd = periods/2
         numeven = (periods+1)/2
@@ -53,59 +53,59 @@ class w1reson(unittest.TestCase):
 
         set_N(15)
         set_mode_surplus(5)
-	set_solver(series)
-	set_orthogonal(0)
-	set_polarisation(TM)
+        set_solver(series)
+        set_orthogonal(0)
+        set_polarisation(TM)
 
         SOI = Material(2.7)
         Air = Material(1.0)
-	a = 0.47
+        a = 0.47
         r = 0.3*a
-	periods = 2
-	topbuf = -r+a*0.5*sqrt(3)-0.25
+        periods = 2
+        topbuf = -r+a*0.5*sqrt(3)-0.25
 
-	set_lower_wall(slab_E_wall)
+        set_lower_wall(slab_E_wall)
         set_upper_PML(0)
-	set_lower_PML(0)
+        set_lower_PML(0)
 
-	w1 = self.create_w1_period(a,r,periods,topbuf,SOI,Air)
-	w1d = self.create_w1_1def_period(a,r,0.95*r,periods,topbuf,SOI,Air)
+        w1 = self.create_w1_period(a,r,periods,topbuf,SOI,Air)
+        w1d = self.create_w1_1def_period(a,r,0.95*r,periods,topbuf,SOI,Air)
 
-	wgb = BlochStack(w1)
- 	wgb.calc()
-	wg = Stack(wgb(0)+w1*10+w1d+w1*30+w1d+w1*10+wgb(0))
-	wg.calc()
+        wgb = BlochStack(w1)
+        wgb.calc()
+        wg = Stack(wgb(0)+w1*10+w1d+w1*30+w1d+w1*10+wgb(0))
+        wg.calc()
 
-	t = wg.T12(0,0)
-	r = wg.R12(0,0)
-	
+        t = wg.T12(0,0)
+        r = wg.R12(0,0)
+    
         ta = abs(t)**2
-	ra = abs(r)**2
-	tp = atan(t.imag/t.real)
-	rp = atan(r.imag/r.real)
+        ra = abs(r)**2
+        tp = atan(t.imag/t.real)
+        rp = atan(r.imag/r.real)
 
-	ta_OK =  0.235682188665
-	tp_OK = -0.46442242995
-	ra_OK =  0.764317811335
-	rp_OK =  0.291072912404
+        ta_OK =  0.235682188665
+        tp_OK = -0.46442242995
+        ra_OK =  0.764317811335
+        rp_OK =  0.291072912404
 
-	print(ta, "expected", ta_OK)
-	print(tp, "expected", tp_OK)
-	print(ra, "expected", ra_OK)
-	print(rp, "expected", rp_OK)
+        print(ta, "expected", ta_OK)
+        print(tp, "expected", tp_OK)
+        print(ra, "expected", ra_OK)
+        print(rp, "expected", rp_OK)
 
-	ta_pass = abs((ta-ta_OK)/ta_OK) < eps.testing_eps
-	tp_pass = abs((tp-tp_OK)/tp_OK) < eps.testing_eps
-	ra_pass = abs((ra-ra_OK)/ra_OK) < eps.testing_eps
-	rp_pass = abs((rp-rp_OK)/rp_OK) < eps.testing_eps
-	
+        ta_pass = abs((ta-ta_OK)/ta_OK) < eps.testing_eps
+        tp_pass = abs((tp-tp_OK)/tp_OK) < eps.testing_eps
+        ra_pass = abs((ra-ra_OK)/ra_OK) < eps.testing_eps
+        rp_pass = abs((rp-rp_OK)/rp_OK) < eps.testing_eps
+    
         free_tmps()
 
         self.failUnless(ta_pass and tp_pass and ra_pass and rp_pass)
 
         set_solver(track)
-	set_orthogonal(1)
-	set_polarisation(TE)
+        set_orthogonal(1)
+        set_polarisation(TE)
 
 suite = unittest.makeSuite(w1reson, 'test')        
 

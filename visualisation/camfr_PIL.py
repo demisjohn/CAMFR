@@ -81,7 +81,7 @@ def _create_window_and_draw(drawobject):
     window.pack(fill=BOTH, expand=YES)
 
     def display(value):
-	print(value)
+        print(value)
 
     c = PlotCanvas( window, 500, 500, zoom=1, select=display,
                     relief=SUNKEN,border=2)
@@ -669,8 +669,8 @@ def plot_neff(waveguide):
     x,y = [],[]
     
     for i in np.range(waveguide.N()):
-	n = waveguide.mode(i).n_eff()
-	x.append(n.real)
+    n = waveguide.mode(i).n_eff()
+    x.append(n.real)
         y.append(n.imag)
 
     scatter_plot(x,y)
@@ -951,10 +951,10 @@ def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
    if type(r_z)!=np.ndarray or asarray(r_z).shape[0]==1:
         # 2D 
- 	for x in range(len(r_x)):
-		for z in range(len(r_y)):
-			f[x,z] = component(stack.field(Coord(r_x[x],0,r_y[z])))
-			
+    for x in range(len(r_x)):
+        for z in range(len(r_y)):
+            f[x,z] = component(stack.field(Coord(r_x[x],0,r_y[z])))
+            
    elif len(r_x)==1:
     for y in range(len(r_y)):
         for z in range(len(r_z)):
@@ -979,11 +979,11 @@ def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 def _calc_n_stack(n, stack, r_x, r_y, r_z=0):
 
     if type(r_z)!=ndarray or asarray(r_z).shape[0]==1:
-    	# 2D
-	for x in range(len(r_x)):
-		for z in range(len(r_y)):
-			n[x,z] = stack.n(Coord(r_x[x],0,r_y[z])).real
-			
+        # 2D
+    for x in range(len(r_x)):
+        for z in range(len(r_y)):
+            n[x,z] = stack.n(Coord(r_x[x],0,r_y[z])).real
+            
     elif len(r_x)==1:
       for y in range(len(r_y)):
          for z in range(len(r_z)):

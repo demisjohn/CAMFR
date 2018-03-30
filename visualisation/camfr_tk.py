@@ -21,7 +21,7 @@ def _create_window_and_draw(drawobject):
     window.pack(fill=BOTH, expand=YES)
 
     def display(value):
-	print(value)
+        print(value)
 
     c = PlotCanvas(window,500,500,zoom=1,select=display,relief=SUNKEN,border=2)
     c.pack(side=TOP, fill=BOTH, expand=YES)
@@ -309,8 +309,8 @@ def plot_neff(waveguide):
     x,y = [],[]
     
     for i in range(waveguide.N()):
-	n = waveguide.mode(i).n_eff()
-	x.append(n.real)
+    n = waveguide.mode(i).n_eff()
+    x.append(n.real)
         y.append(n.imag)
 
     scatter_plot(x,y)

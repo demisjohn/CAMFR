@@ -39,7 +39,7 @@ class backward(unittest.TestCase):
         R_pass = abs((R - R_OK) / R_OK) < eps.testing_eps
 
         T = s.T12(0,0)
-	T_OK = 0.202336029811+0.776634435067j
+        T_OK = 0.202336029811+0.776634435067j
         print(T, "expected", T_OK)
         T_pass = abs((T - T_OK) / T_OK) < eps.testing_eps
 

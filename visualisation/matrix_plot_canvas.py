@@ -53,8 +53,8 @@ class MatrixPlotCanvas(Frame):
         self.canvas.bind('<Button-2>', self._showValue)
         self.canvas.bind('<ButtonRelease-2>', self._hideValue)
  
-    	self.rubberband = None
-    	self.rectangle  = None
+        self.rubberband = None
+        self.rectangle  = None
 
 
     ##########################################################################

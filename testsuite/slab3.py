@@ -18,7 +18,7 @@ class slab3(unittest.TestCase):
         print('')
         print("Running slab 3...")
         
-	set_N(10)
+        set_N(10)
 
         set_upper_PML(-0.08)
         set_lower_wall(slab_H_wall)
