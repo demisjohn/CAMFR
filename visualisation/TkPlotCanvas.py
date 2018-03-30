@@ -404,7 +404,7 @@ class PlotCanvas(Frame):
             self.canvas.delete(item)
         except TclError:
             font = None
-    return font
+        return font
 
     def _setsize(self):
         self.width = string.atoi(self.canvas.cget('width'))
