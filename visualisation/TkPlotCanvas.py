@@ -69,9 +69,9 @@ class PolyLine(PolyPoints):
     def __init__(self, points, **attr):
         PolyPoints.__init__(self, points, attr)
 
-        _attributes = {'color': 'black',
-                       'width': 1,
-                       'stipple': None}
+    _attributes = {'color': 'black',
+                   'width': 1,
+                   'stipple': None}
 
     def draw(self, canvas, bbox):
         if len(self.points) > 1:
@@ -176,12 +176,12 @@ class PolyMarker(PolyPoints):
 
         PolyPoints.__init__(self, points, attr)
 
-        _attributes = {'color': 'black',
-                       'width': 1,
-                       'fillcolor': 'black',
-                       'size': 2,
-                       'fillstyle': '',  # need to make this a meaningful option.
-                       'marker': 'circle'}
+    _attributes = {'color': 'black',
+                   'width': 1,
+                   'fillcolor': 'black',
+                   'size': 2,
+                   'fillstyle': '',  # need to make this a meaningful option.
+                   'marker': 'circle'}
 
     def draw(self, canvas, bbox):
         color = self.attributes['color']
@@ -398,12 +398,12 @@ class PlotCanvas(Frame):
     def _testFont(self, font):
         if font is not None:
             bg = self.canvas.cget('background')
-        try:
-            item = CanvasText(self.canvas, 0, 0, anchor=NW,
-                      text='0', fill=bg, font=font)
-            self.canvas.delete(item)
-        except TclError:
-            font = None
+            try:
+                item = CanvasText(self.canvas, 0, 0, anchor=NW,
+                          text='0', fill=bg, font=font)
+                self.canvas.delete(item)
+            except TclError:
+                font = None
         return font
 
     def _setsize(self):
@@ -450,17 +450,17 @@ class PlotCanvas(Frame):
                 bb = self._textBoundingBox(y[1])
                 w = bb[2]-bb[0]
                 text_width[0] = max(text_width[0], w)
-                h = 0.5*(bb[3]-bb[1])
-                text_height[0] = h
-                text_height[1] = max(text_height[1], h)
+            h = 0.5*(bb[3]-bb[1])
+            text_height[0] = h
+            text_height[1] = max(text_height[1], h)
         else:
             yticks = None
-            text1 = numpy.array([text_width[0], -text_height[1]])
-            text2 = numpy.array([text_width[1], -text_height[0]])
-            scale = (self.plotbox_size-text1-text2) / (p2-p1)
-            shift = -p1*scale + self.plotbox_origin + text1
-            self.transformation = (scale, shift)
-            self.bbox = (p1, p2)
+        text1 = numpy.array([text_width[0], -text_height[1]])
+        text2 = numpy.array([text_width[1], -text_height[0]])
+        scale = (self.plotbox_size-text1-text2) / (p2-p1)
+        shift = -p1*scale + self.plotbox_origin + text1
+        self.transformation = (scale, shift)
+        self.bbox = (p1, p2)
         self._drawAxes(self.canvas, xaxis, yaxis, p1, p2,
                            scale, shift, xticks, yticks)
         graphics.scaleAndShift(scale, shift)
@@ -516,7 +516,7 @@ class PlotCanvas(Frame):
                              fill = 'black', width = 1)
                 if text:
                     dict['text'] = label
-                apply(CanvasText, (self.canvas, p[0], p[1]), dict)
+                    apply(CanvasText, (self.canvas, p[0], p[1]), dict)
             text = 0
 
         dict['anchor'] = E
@@ -534,7 +534,7 @@ class PlotCanvas(Frame):
                              fill = 'black', width = 1)
                 if text:
                     dict['text'] = label
-                apply(CanvasText, (self.canvas, p[0], p[1]), dict)
+                    apply(CanvasText, (self.canvas, p[0], p[1]), dict)
             text = 0
 
     def _ticks(self, lower, upper):
@@ -550,16 +550,16 @@ class PlotCanvas(Frame):
             e = numpy.fabs(fraction-lf)
             if e < error:
                 error = e
-            factor = f
-            grid = factor * 10.**power
-            if power > 3 or power < -3:
-                format = '%+7.0e'
-            elif power >= 0:
-                digits = max(1, int(power))
-                format = '%' + str(digits)+'.0f'
-            else:
-                digits = -int(power)
-                format = '%'+str(digits+2)+'.'+str(digits)+'f'
+                factor = f
+        grid = factor * 10.**power
+        if power > 3 or power < -3:
+            format = '%+7.0e'
+        elif power >= 0:
+            digits = max(1, int(power))
+            format = '%' + str(digits)+'.0f'
+        else:
+            digits = -int(power)
+            format = '%'+str(digits+2)+'.'+str(digits)+'f'
         ticks = []
         t = -grid*numpy.floor(-lower/grid)
         while t <= upper and len(ticks) < 200:

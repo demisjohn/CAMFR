@@ -34,7 +34,7 @@ Make a link to the gfortran compiler via:
 
 
 Install the CAMFR library by typing 'sudo python2.7 setup.py install' from the CAMFR directory.  The command `python2.7` should run the MacPorts python installation - you can check this via `which python2.7` and make sure the executable is located within the "/opt/..." MacPorts directory.
-This will first build the CAMFR library, and then install it to the MacPorts python2.7 `site-packages` directory.  See below to compile the documentation camfr.pdf prior to installation.
+This will first build the CAMFR library, and then install it to the MacPorts python2.7 `site-packages` directory.  See below to compile the documentation camfr.pdf PRIOR to installation.
 
 Due to a bug in the setup.py script, we lastly must rename the camfr compiled library, via
 	sudo mv   /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib   /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
