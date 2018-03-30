@@ -69,9 +69,9 @@ class PolyLine(PolyPoints):
     def __init__(self, points, **attr):
         PolyPoints.__init__(self, points, attr)
 
-    _attributes = {'color': 'black',
-                   'width': 1,
-                   'stipple': None}
+        _attributes = {'color': 'black',
+                       'width': 1,
+                       'stipple': None}
 
     def draw(self, canvas, bbox):
         if len(self.points) > 1:
@@ -176,21 +176,21 @@ class PolyMarker(PolyPoints):
 
         PolyPoints.__init__(self, points, attr)
 
-    _attributes = {'color': 'black',
-                   'width': 1,
-                   'fillcolor': 'black',
-                   'size': 2,
-                   'fillstyle': '',  # need to make this a meaningful option.
-                   'marker': 'circle'}
+        _attributes = {'color': 'black',
+                       'width': 1,
+                       'fillcolor': 'black',
+                       'size': 2,
+                       'fillstyle': '',  # need to make this a meaningful option.
+                       'marker': 'circle'}
 
     def draw(self, canvas, bbox):
-    color = self.attributes['color']
+        color = self.attributes['color']
         size = self.attributes['size']
         fillcolor = self.attributes['fillcolor']
         marker = self.attributes['marker']
         fillstyle = self.attributes['fillstyle']
 
-    self._drawmarkers(canvas, self.scaled, marker, color, fillstyle,
+        self._drawmarkers(canvas, self.scaled, marker, color, fillstyle,
                           fillcolor, size)
 
     def _drawmarkers(self, c, coords, marker='circle', color='black',
@@ -282,26 +282,26 @@ class PlotGraphics:
         self.objects = objects
 
     def boundingBox(self):
-    p1, p2 = self.objects[0].boundingBox()
-    for o in self.objects[1:]:
-        p1o, p2o = o.boundingBox()
-        p1 = numpy.minimum(p1, p1o)
-        p2 = numpy.maximum(p2, p2o)
-    return p1, p2
+        p1, p2 = self.objects[0].boundingBox()
+        for o in self.objects[1:]:
+            p1o, p2o = o.boundingBox()
+            p1 = numpy.minimum(p1, p1o)
+            p2 = numpy.maximum(p2, p2o)
+        return p1, p2
 
     def scaleAndShift(self, scale=1, shift=0):
-    for o in self.objects:
-        o.scaleAndShift(scale, shift)
+        for o in self.objects:
+            o.scaleAndShift(scale, shift)
 
     def draw(self, canvas, bbox):
-    for o in self.objects:
-        o.draw(canvas, bbox)
+        for o in self.objects:
+            o.draw(canvas, bbox)
 
     def __len__(self):
-    return len(self.objects)
+        return len(self.objects)
 
     def __getitem__(self, item):
-    return self.objects[item]
+        return self.objects[item]
 
     def writeToFile(self, file, separator):
         data = 0
@@ -350,9 +350,9 @@ class PlotCanvas(Frame):
             self.selectfn = attr['select']
             del attr['select']
         apply(Frame.__init__, (self, master), attr)
-    self.canvas = Canvas(self, width=width, height=height,
-                 background=background)
-    self.canvas.pack(fill=BOTH, expand=YES)
+        self.canvas = Canvas(self, width=width, height=height,
+                     background=background)
+        self.canvas.pack(fill=BOTH, expand=YES)
         border_w = self.canvas.winfo_reqwidth() - \
                    string.atoi(self.canvas.cget('width'))
         border_h = self.canvas.winfo_reqheight() - \
@@ -373,11 +373,11 @@ class PlotCanvas(Frame):
         self.popup_menu.add_command(label='Run Xmgrace',
                                     command=self._xmgr)
         self.canvas.bind('<Button-3>', self._popupMenu)
-    self._setsize()
-    self.last_draw = None
-    self.font = self._testFont(font)
-    self.rubberband = None
-    self.rectangle = None
+        self._setsize()
+        self.last_draw = None
+        self.font = self._testFont(font)
+        self.rubberband = None
+        self.rectangle = None
         self.selected_range = None
 
     def reconfigure(self, event):
@@ -396,23 +396,23 @@ class PlotCanvas(Frame):
         apply(self.canvas.bind, args)
 
     def _testFont(self, font):
-    if font is not None:
-        bg = self.canvas.cget('background')
+        if font is not None:
+            bg = self.canvas.cget('background')
         try:
-        item = CanvasText(self.canvas, 0, 0, anchor=NW,
-                  text='0', fill=bg, font=font)
-        self.canvas.delete(item)
+            item = CanvasText(self.canvas, 0, 0, anchor=NW,
+                      text='0', fill=bg, font=font)
+            self.canvas.delete(item)
         except TclError:
-        font = None
+            font = None
     return font
 
     def _setsize(self):
-    self.width = string.atoi(self.canvas.cget('width'))
-    self.height = string.atoi(self.canvas.cget('height'))
-    self.plotbox_size = 0.97*numpy.array([self.width, -self.height])
-    xo = 0.5*(self.width-self.plotbox_size[0])
-    yo = self.height-0.5*(self.height+self.plotbox_size[1])
-    self.plotbox_origin = numpy.array([xo, yo])
+        self.width = string.atoi(self.canvas.cget('width'))
+        self.height = string.atoi(self.canvas.cget('height'))
+        self.plotbox_size = 0.97*numpy.array([self.width, -self.height])
+        xo = 0.5*(self.width-self.plotbox_size[0])
+        yo = self.height-0.5*(self.height+self.plotbox_size[1])
+        self.plotbox_origin = numpy.array([xo, yo])
 
     def draw(self, graphics, xaxis = None, yaxis = None):
         """Draws the graphics object |graphics|, which can be
@@ -425,159 +425,159 @@ class PlotCanvas(Frame):
         that the axis is drawn and the value range is the interval
         specified by the two numbers.
         """
-    self.last_draw = (graphics, xaxis, yaxis)
-    p1, p2 = graphics.boundingBox()
-    xaxis = self._axisInterval(xaxis, p1[0], p2[0])
-    yaxis = self._axisInterval(yaxis, p1[1], p2[1])
-    text_width = [0., 0.]
-    text_height = [0., 0.]
-    if xaxis is not None:
-        p1[0] = xaxis[0]
-        p2[0] = xaxis[1]
-        xticks = self._ticks(xaxis[0], xaxis[1])
-        bb = self._textBoundingBox(xticks[0][1])
-        text_height[1] = bb[3]-bb[1]
-        text_width[0] = 0.5*(bb[2]-bb[0])
-        bb = self._textBoundingBox(xticks[-1][1])
-        text_width[1] = 0.5*(bb[2]-bb[0])
-    else:
-        xticks = None
-    if yaxis is not None:
-        p1[1] = yaxis[0]
-        p2[1] = yaxis[1]
-        yticks = self._ticks(yaxis[0], yaxis[1])
-        for y in yticks:
-        bb = self._textBoundingBox(y[1])
-        w = bb[2]-bb[0]
-        text_width[0] = max(text_width[0], w)
-        h = 0.5*(bb[3]-bb[1])
-        text_height[0] = h
-        text_height[1] = max(text_height[1], h)
-    else:
-        yticks = None
-    text1 = numpy.array([text_width[0], -text_height[1]])
-    text2 = numpy.array([text_width[1], -text_height[0]])
-    scale = (self.plotbox_size-text1-text2) / (p2-p1)
-    shift = -p1*scale + self.plotbox_origin + text1
-        self.transformation = (scale, shift)
-        self.bbox = (p1, p2)
-    self._drawAxes(self.canvas, xaxis, yaxis, p1, p2,
-                       scale, shift, xticks, yticks)
-    graphics.scaleAndShift(scale, shift)
-    graphics.draw(self.canvas, (scale*p1+shift, scale*p2+shift))
+        self.last_draw = (graphics, xaxis, yaxis)
+        p1, p2 = graphics.boundingBox()
+        xaxis = self._axisInterval(xaxis, p1[0], p2[0])
+        yaxis = self._axisInterval(yaxis, p1[1], p2[1])
+        text_width = [0., 0.]
+        text_height = [0., 0.]
+        if xaxis is not None:
+            p1[0] = xaxis[0]
+            p2[0] = xaxis[1]
+            xticks = self._ticks(xaxis[0], xaxis[1])
+            bb = self._textBoundingBox(xticks[0][1])
+            text_height[1] = bb[3]-bb[1]
+            text_width[0] = 0.5*(bb[2]-bb[0])
+            bb = self._textBoundingBox(xticks[-1][1])
+            text_width[1] = 0.5*(bb[2]-bb[0])
+        else:
+            xticks = None
+        if yaxis is not None:
+            p1[1] = yaxis[0]
+            p2[1] = yaxis[1]
+            yticks = self._ticks(yaxis[0], yaxis[1])
+            for y in yticks:
+                bb = self._textBoundingBox(y[1])
+                w = bb[2]-bb[0]
+                text_width[0] = max(text_width[0], w)
+                h = 0.5*(bb[3]-bb[1])
+                text_height[0] = h
+                text_height[1] = max(text_height[1], h)
+        else:
+            yticks = None
+            text1 = numpy.array([text_width[0], -text_height[1]])
+            text2 = numpy.array([text_width[1], -text_height[0]])
+            scale = (self.plotbox_size-text1-text2) / (p2-p1)
+            shift = -p1*scale + self.plotbox_origin + text1
+            self.transformation = (scale, shift)
+            self.bbox = (p1, p2)
+        self._drawAxes(self.canvas, xaxis, yaxis, p1, p2,
+                           scale, shift, xticks, yticks)
+        graphics.scaleAndShift(scale, shift)
+        graphics.draw(self.canvas, (scale*p1+shift, scale*p2+shift))
 
     def _axisInterval(self, spec, lower, upper):
-    if spec is None:
-        return None
-    if spec == 'minimal':
-        if lower == upper:
-        return lower-0.5, upper+0.5
-        else:
-        return lower, upper
-    if spec == 'automatic':
-        range = upper-lower
-        if range == 0.:
-        return lower-0.5, upper+0.5
-        log = numpy.log10(range)
-        power = numpy.floor(log)
-        fraction = log-power
-        if fraction <= 0.05:
-        power = power-1
-        grid = 10.**power
-        lower = lower - lower % grid
-        mod = upper % grid
-        if mod != 0:
-        upper = upper - mod + grid
-        return lower, upper
-    if type(spec) == type(()):
-        lower, upper = spec
-        if lower <= upper:
-        return lower, upper
-        else:
-        return upper, lower
-    raise ValueError, str(spec) + ': illegal axis specification'
+        if spec is None:
+            return None
+        if spec == 'minimal':
+            if lower == upper:
+                return lower-0.5, upper+0.5
+            else:
+                return lower, upper
+        if spec == 'automatic':
+            range = upper-lower
+            if range == 0.:
+                return lower-0.5, upper+0.5
+            log = numpy.log10(range)
+            power = numpy.floor(log)
+            fraction = log-power
+            if fraction <= 0.05:
+                power = power-1
+            grid = 10.**power
+            lower = lower - lower % grid
+            mod = upper % grid
+            if mod != 0:
+                upper = upper - mod + grid
+            return lower, upper
+        if type(spec) == type(()):
+            lower, upper = spec
+            if lower <= upper:
+                return lower, upper
+            else:
+                return upper, lower
+        raise ValueError( str(spec) + ': illegal axis specification' )
 
     def _drawAxes(self, canvas, xaxis, yaxis,
                   bb1, bb2, scale, shift, xticks, yticks):
-    dict = {'anchor': N, 'fill': 'black'}
-    if self.font is not None:
-        dict['font'] = self.font
-    if xaxis is not None:
-        lower, upper = xaxis
-        text = 1
-        for y, d in [(bb1[1], -3), (bb2[1], 3)]:
-        p1 = scale*numpy.array([lower, y])+shift
-        p2 = scale*numpy.array([upper, y])+shift
-        Line(self.canvas, p1[0], p1[1], p2[0], p2[1],
-                     fill = 'black', width = 1)
-        for x, label in xticks:
-            p = scale*numpy.array([x, y])+shift
-            Line(self.canvas, p[0], p[1], p[0], p[1]+d,
-                         fill = 'black', width = 1)
-            if text:
-            dict['text'] = label
-            apply(CanvasText, (self.canvas, p[0], p[1]), dict)
-        text = 0
+        dict = {'anchor': N, 'fill': 'black'}
+        if self.font is not None:
+            dict['font'] = self.font
+        if xaxis is not None:
+            lower, upper = xaxis
+            text = 1
+            for y, d in [(bb1[1], -3), (bb2[1], 3)]:
+                p1 = scale*numpy.array([lower, y])+shift
+                p2 = scale*numpy.array([upper, y])+shift
+                Line(self.canvas, p1[0], p1[1], p2[0], p2[1],
+                             fill = 'black', width = 1)
+            for x, label in xticks:
+                p = scale*numpy.array([x, y])+shift
+                Line(self.canvas, p[0], p[1], p[0], p[1]+d,
+                             fill = 'black', width = 1)
+                if text:
+                    dict['text'] = label
+                apply(CanvasText, (self.canvas, p[0], p[1]), dict)
+            text = 0
 
-    dict['anchor'] = E
-    if yaxis is not None:
-        lower, upper = yaxis
-        text = 1
-        for x, d in [(bb1[0], -3), (bb2[0], 3)]:
-        p1 = scale*numpy.array([x, lower])+shift
-        p2 = scale*numpy.array([x, upper])+shift
-        Line(self.canvas, p1[0], p1[1], p2[0], p2[1],
-                     fill = 'black', width = 1)
-        for y, label in yticks:
-            p = scale*numpy.array([x, y])+shift
-            Line(self.canvas, p[0], p[1], p[0]-d, p[1],
-                         fill = 'black', width = 1)
-            if text:
-            dict['text'] = label
-            apply(CanvasText, (self.canvas, p[0], p[1]), dict)
-        text = 0
+        dict['anchor'] = E
+        if yaxis is not None:
+            lower, upper = yaxis
+            text = 1
+            for x, d in [(bb1[0], -3), (bb2[0], 3)]:
+                p1 = scale*numpy.array([x, lower])+shift
+                p2 = scale*numpy.array([x, upper])+shift
+                Line(self.canvas, p1[0], p1[1], p2[0], p2[1],
+                             fill = 'black', width = 1)
+            for y, label in yticks:
+                p = scale*numpy.array([x, y])+shift
+                Line(self.canvas, p[0], p[1], p[0]-d, p[1],
+                             fill = 'black', width = 1)
+                if text:
+                    dict['text'] = label
+                apply(CanvasText, (self.canvas, p[0], p[1]), dict)
+            text = 0
 
     def _ticks(self, lower, upper):
-    ideal = (upper-lower)/7.
+        ideal = (upper-lower)/7.
         if ideal == 0.:
             ideal = 1./7.
-    log = numpy.log10(ideal)
-    power = numpy.floor(log)
-    fraction = log-power
-    factor = 1.
-    error = fraction
-    for f, lf in self._multiples:
-        e = numpy.fabs(fraction-lf)
-        if e < error:
-        error = e
-        factor = f
-    grid = factor * 10.**power
-        if power > 3 or power < -3:
-            format = '%+7.0e'
-        elif power >= 0:
-            digits = max(1, int(power))
-            format = '%' + str(digits)+'.0f'
-        else:
-            digits = -int(power)
-            format = '%'+str(digits+2)+'.'+str(digits)+'f'
-    ticks = []
-    t = -grid*numpy.floor(-lower/grid)
-    while t <= upper and len(ticks) < 200:
-        ticks.append((t, format % (t,)))
-        t = t + grid
-    return ticks
+        log = numpy.log10(ideal)
+        power = numpy.floor(log)
+        fraction = log-power
+        factor = 1.
+        error = fraction
+        for f, lf in self._multiples:
+            e = numpy.fabs(fraction-lf)
+            if e < error:
+                error = e
+            factor = f
+            grid = factor * 10.**power
+            if power > 3 or power < -3:
+                format = '%+7.0e'
+            elif power >= 0:
+                digits = max(1, int(power))
+                format = '%' + str(digits)+'.0f'
+            else:
+                digits = -int(power)
+                format = '%'+str(digits+2)+'.'+str(digits)+'f'
+        ticks = []
+        t = -grid*numpy.floor(-lower/grid)
+        while t <= upper and len(ticks) < 200:
+            ticks.append((t, format % (t,)))
+            t = t + grid
+        return ticks
 
     _multiples = [(2., numpy.log10(2.)), (5., numpy.log10(5.))]
 
     def _textBoundingBox(self, text):
-    bg = self.canvas.cget('background')
-    dict = {'anchor': NW, 'text': text, 'fill': bg}
-    if self.font is not None:
-        dict['font'] = self.font
-    item = apply(CanvasText, (self.canvas, 0., 0.), dict)
-    bb = self.canvas.bbox(item)
-    self.canvas.delete(item)
-    return bb
+        bg = self.canvas.cget('background')
+        dict = {'anchor': NW, 'text': text, 'fill': bg}
+        if self.font is not None:
+            dict['font'] = self.font
+        item = apply(CanvasText, (self.canvas, 0., 0.), dict)
+        bb = self.canvas.bbox(item)
+        self.canvas.delete(item)
+        return bb
 
     def clear(self):
         "Clears the canvas."
@@ -588,8 +588,8 @@ class PlotCanvas(Frame):
 
     def redraw(self):
         "Redraws the last canvas contents."
-    if self.last_draw is not None:
-        apply(self.draw, self.last_draw)
+        if self.last_draw is not None:
+            apply(self.draw, self.last_draw)
 
     def _mousePressed(self, event):
         self.startx = self.canvas.canvasx(event.x)

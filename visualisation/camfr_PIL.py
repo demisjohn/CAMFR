@@ -669,8 +669,8 @@ def plot_neff(waveguide):
     x,y = [],[]
     
     for i in np.range(waveguide.N()):
-    n = waveguide.mode(i).n_eff()
-    x.append(n.real)
+        n = waveguide.mode(i).n_eff()
+        x.append(n.real)
         y.append(n.imag)
 
     scatter_plot(x,y)
@@ -706,7 +706,7 @@ def plot_n_waveguide(waveguide, r_x):
     v = []
     
     for i_x in np.range(len(r_x)):
-      v.append((r_x[i_x], np.abs(waveguide.n(Coord(r_x[i_x],0,0)))))
+        v.append((r_x[i_x], np.abs(waveguide.n(Coord(r_x[i_x],0,0)))))
         
     plot_vector(v)
 
@@ -980,9 +980,9 @@ def _calc_n_stack(n, stack, r_x, r_y, r_z=0):
 
     if type(r_z)!=ndarray or asarray(r_z).shape[0]==1:
         # 2D
-    for x in range(len(r_x)):
-        for z in range(len(r_y)):
-            n[x,z] = stack.n(Coord(r_x[x],0,r_y[z])).real
+        for x in range(len(r_x)):
+            for z in range(len(r_y)):
+                n[x,z] = stack.n(Coord(r_x[x],0,r_y[z])).real
             
     elif len(r_x)==1:
       for y in range(len(r_y)):
