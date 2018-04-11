@@ -119,6 +119,8 @@ And plot the modes like so:
     
 See the Examples directory for full examples, as some details are missing here.
 
+
+
 ## Installation
 CAMFR currently only supports Python 2.7.
 
@@ -131,5 +133,4 @@ CAMFR scripts can also be run like any typical Python script on the command line
 
 
 ## License and support
-
 All the code is released under the GPL.
