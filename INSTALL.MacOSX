@@ -1,0 +1,49 @@
+COMPILING AND INSTALLING
+
+For the compilation of CAMFR on MacOSX, it is relatively straightforward to use MacPorts to install all dependencies, although with the drawback that the built-in Mac OS installation of Python will be superseded by the MacPorts python installation.
+The following instructions will install a new Python 2.7 interpreter, alongside your built-in MacOS Python installation. Be sure to used the correct python shell when running the CAMFR install script, and note that CAMFR will only be installed to this particular python interpreter unless you manually copy the module into another `site-packages` folder.
+
+First, download & install MacPorts.  Follow the simple instructions here:
+	https://www.macports.org/install.php
+Make sure to also install Xcode (from the App Store or from the apple developer website), agree to the Xcode license and install the Xcode command-line tools, as mentioned on the MacPorts installation page.
+Once MacPorts is installed, run `sudo port selfupdate` in the terminal to update all the sources and port lists.
+
+Install all the required CAMFR dependencies with this command:
+	sudo   port install   boost +no_single -no_static +python27   blitz +gcc5     lapack +gfortran   llvm-3.3   scons   py27-Pillow   py27-spyder
+This requires an internet connection and can take a while to download and build every package.
+
+This will install the following MacPorts packages +variants (and @version used in the tested build):
+	py27-Pillow @3.2.0_0 (replaces PIL)
+	blitz @0.10_4+gcc5
+	boost @1.66.0_0+no_single+no_static+python27
+	lapack @3.7.1_0+gfortran
+	llvm-3.3 @3.3_10
+	scons @3.0.1_0
+	py27-spyder @2.3.8_0 (could replace this with py27-scipy if you don't want the IDE)
+
+The above command will also install the following ports, as dependencies:
+	gcc5 @5.5.0_0 (also installs 64-bit gfortran libraries, unlike XCode's 32-bit versions)
+	py27-scipy @1.0.0_0+gfortran
+	py27-numpy @1.14.1_0+gfortran
+	py27-matplotlib @1.5.1_2+cairo+tkinter
+	blitz @0.10_4+gcc7
+	(among many many others)
+
+Make a link to the gfortran compiler via:
+	sudo   ln -s   /opt/local/bin/gfortran-mp-5   /opt/local/bin/gfortran
+
+
+Install the CAMFR library by typing 'sudo python2.7 setup.py install' from the CAMFR directory.  The command `python2.7` should run the MacPorts python installation - you can check this via `which python2.7` and make sure the executable is located within the "/opt/..." MacPorts directory.
+This will first build the CAMFR library, and then install it to the MacPorts python2.7 `site-packages` directory.  See below to compile the documentation camfr.pdf prior to installation.
+
+Due to a bug in the setup.py script, we lastly must rename the camfr compiled library, via
+	sudo mv   /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib   /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
+
+You'll notice that the camfr docs failed to build & install, unless you have a TeX installation active. This would produce the camfr.pdf documentation file within the camfr module folder.
+To have this build and install as well, you must install TeX, via
+	sudo port install   texinfo (and maybe texlive-basic)
+Then run the docs makefile; 
+	cd camfr/docs; make
+The camfr.pdf file is now available in the docs folder.  You can copy it to a location of your choice, or a subsequent run of `sudo python2.7 setup.py install` will then copy the PDF into the CAMFR module folder in site-packages.
+
+Tested on macOS 10.12, 10.13, on MacBook Pro 2010 and 2017.

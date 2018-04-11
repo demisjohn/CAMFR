@@ -1,5 +1,10 @@
 #! /usr/bin/env python
 
+# To Do:
+#   Must run the following command afterwards:
+#        mv /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib  /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
+
+
 from distutils.core import setup
 from distutils.util import byte_compile
 from distutils.command.build import build

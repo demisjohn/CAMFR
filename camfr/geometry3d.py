@@ -13,6 +13,8 @@
 
 from camfr import *
 from geometry import *
+# geometry.py imports numpy as np
+import numpy as np      # no harm in reimporting a module
 
 ############################################################################
 #
@@ -103,8 +105,8 @@ class Cylinder:
           return Line(Point(self.c.x,self.c.y-self.h/2.0), \
                       Point(self.c.x,self.c.y+self.h/2.0),self.mat) 
         else:
-          return Rectangle(Point(self.c.x-sqrt(D),self.c.y-self.h/2.0), \
-                           Point(self.c.x+sqrt(D),self.c.y+self.h/2.0), \
+          return Rectangle(Point(self.c.x - np.sqrt(D), self.c.y - self.h / 2.0), \
+                           Point(self.c.x + np.sqrt(D), self.c.y + self.h / 2.0), \
                            self.mat)
         
   
@@ -246,14 +248,14 @@ class Geometry3D:
               if ys1 > y1:
                 ys1 = y1
                   
-              def same(y0,y1): return abs(y0-y1) < 1e-6
+              def same(y0,y1): return np.abs(y0-y1) < 1e-6
               
               new_slab = []
               j = 0
               while j< len(slab):
                     if (slab[j][1] < ys0) or same(slab[j][1], ys0) or \
                        (slab[j][0] > ys1) or same(slab[j][0], ys1) or \
-                       (abs(ys0-ys1) < .001*dy):
+                       (np.abs(ys0-ys1) < .001*dy):
                         new_slab.append(slab[j]) # No intersection.
                     else:
                         if not same(slab[j][0], ys0): # Old material pre.
@@ -384,10 +386,10 @@ def pretty_print(s):
         nr = s.mode(i).n_eff().real
         ni = s.mode(i).n_eff().imag
 
-        if abs(nr) < 1e-6:
+        if np.abs(nr) < 1e-6:
             nr = 0
             
-        if abs(ni) < 1e-6:
+        if np.abs(ni) < 1e-6:
             ni = 0
 
         print i, nr, ni

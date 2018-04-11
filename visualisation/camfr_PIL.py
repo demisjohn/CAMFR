@@ -10,7 +10,8 @@
 ##############################################################################
 
 from camfr import *
-from numpy import *
+#from numpy import *
+import numpy as np
 
 # Colormap codes.
 
@@ -62,7 +63,7 @@ p5 = [-0.464, 0.377]
 p6 = [-0.245, 0.344]
 p7 = [ 3.387, 0.344]    
 
-ARROW = array([ p1, p2, p3, p4, p5, p6, p7 ])
+ARROW = np.array([ p1, p2, p3, p4, p5, p6, p7 ])
 
 
 
@@ -148,7 +149,7 @@ def _create_scaled_matrix_plot(colormap, z, r_x=0, r_y=0,
     import Image
     
     def round(x):
-        return int(math.floor(x+.5))
+        return int(np.math.floor(x+.5))
 
     # Determine width and height of a pixel.
 
@@ -201,8 +202,8 @@ def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
     pz*=scale_x
     px*=scale_y
     
-    for x in array(range(width))[::ARROWSIZE]:
-        for y in array(range(height))[::ARROWSIZE]:
+    for x in np.array(range(width))[::ARROWSIZE]:
+        for y in np.array(range(height))[::ARROWSIZE]:
             X = scale_x*x
             Y = scale_y*y
             _create_arrow(draw,(X,Y), pz[y,x], px[y,x])
@@ -226,21 +227,21 @@ def _create_scaled_arrow_plot(px, pz, r_x=0, r_y=0,
 def _scale_function(z, r_x, r_y, min_area, scale):
 
     def round(x):
-        return int(math.floor(x+.5))
+        return int(np.math.floor(x+.5))
         
     height = z.shape[0]
     width  = z.shape[1]
 
-    if type(r_x)!=ndarray or asarray(r_x).shape[0]==1: r_x = range(width)
-    if type(r_y)!=ndarray or asarray(r_y).shape[0]==1: r_y = range(height)
+    if type(r_x)!=np.ndarray or np.asarray(r_x).shape[0]==1: r_x = range(width)
+    if type(r_y)!=np.ndarray or np.asarray(r_y).shape[0]==1: r_y = range(height)
 
     if len(r_x)>1:  d_x = r_x[1] - r_x[0]
     else :          d_x = 1
     if len(r_y)>1:  d_y = r_y[1] - r_y[0]
     else:           d_y = 1
 
-    if (height*width*d_x*d_y < min_area):
-        scale = math.sqrt(min_area/(height*width*d_x*d_y))
+    if (height * width * d_x * d_y  <  min_area):
+        scale = np.math.sqrt(min_area/(height*width*d_x*d_y))
 
     if d_x < d_y:
         scale_x = round(scale*d_x)
@@ -269,13 +270,13 @@ def _scale_function(z, r_x, r_y, min_area, scale):
 
 def _create_arrow(draw, p, dx, dy):
 
-    dq = sqrt(dx**2+dy**2)            # Distance.
+    dq = np.sqrt(dx**2+dy**2)            # Distance.
 
-    if (abs(dx) <= 1e-10): dx = 1e-10  # Don't set arc yet (+/-).
-    arc = arctan(dy/dx)
-    if dx < 0: arc += pi
+    if (np.abs(dx) <= 1e-10): dx = 1e-10  # Don't set arc yet (+/-).
+    arc = np.arctan(dy/dx)
+    if dx < 0: arc += np.pi
 
-    arrow = array(ARROW)
+    arrow = np.array(ARROW)
 
     # Turn the arrow.
     arrow[:,0] += arc
@@ -285,8 +286,8 @@ def _create_arrow(draw, p, dx, dy):
     points = []
     # Calc every point.
     for pt in arrow:
-        dpx = pt[1]*cos(pt[0])
-        dpy = pt[1]*sin(pt[0])
+        dpx = pt[1] * np.cos(pt[0])
+        dpy = pt[1] * np.sin(pt[0])
         points.append((p[0]+dpx,p[1]-dpy))
 
     draw.polygon(points, fill=0x000000)
@@ -315,7 +316,7 @@ def _create_matrix_plot(z_, r_x=0, r_y=0, colorcode=0,
 
     if (zmin < 0) and (0 < zmax) and (not colorcode):
         colormap = create_bipolar_colormap()
-        zmax = ml.max(asarray([-zmin, zmax]))
+        zmax = ml.max(np.asarray([-zmin, zmax]))
         z += zmax
         z *= (len(colormap)-1)/(2*zmax)
     else:
@@ -349,7 +350,7 @@ def _create_arrow_plot(px, pz, r_x=0, r_y=0,
     
     # Scale pz & px
     
-    pmax    = max( ml.max(ml.max(abs(pz))), ml.max(ml.max(abs(px))))
+    pmax    = np.max( ml.max(ml.max(np.abs(pz))), ml.max(ml.max(np.abs(px))))
     if (pmax == 0): cst     = 0
     else:           cst     = ARROWSIZE/pmax
     pz      = pz*cst 
@@ -477,25 +478,25 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
         # the feeling of the image.. so not that correct.
         zcst    = 1e-8
 
-        zmax    = 2*log(ml.max(ml.max(abs(z)))+ zcst)
-        zmin    = log(zcst)                 # Around -23.
+        zmax    = 2 * np.log(ml.max(ml.max(np.abs(z)))+ zcst)
+        zmin    = np.log(zcst)                 # Around -23.
         z_scale = (len(colormap)-1)/(zmax-zmin)
         
         # Calculate each frame.
         
         for Nr in range(0,frames):
             pic = _create_scaled_matrix_plot(colormap,
-                        ((log(z.real**2 + zcst) - zmin)*z_scale),
+                        ((np.log(z.real**2 + zcst) - zmin)*z_scale),
                         r_x, r_y, min_area = min_area, scale = scale)
             movie.append(pic)
-            z *= exp(2j*pi/frames)
+            z *= np.exp(2j*pi/frames)
             
     else:
         colormap = create_bipolar_colormap()
         
         # Scale factors for z.
 
-        zmax    = ml.max(ml.max(abs(z)))
+        zmax    = ml.max(ml.max(np.abs(z)))
         if (zmax == 0):
             # in this case, z=0, the middle of the color palet
             #(z+zmax)*z_scale) should be = len(colormap)/2
@@ -512,7 +513,7 @@ def _create_phasor_movie(z_, r_x=0, r_y=0, min_area=100000, scale=1, ln=0):
                   colormap,((z+zmax)*z_scale).real,r_x,r_y,
                             min_area = min_area, scale = scale)
             movie.append(pic)
-            z *= exp(2j*pi/frames)
+            z *= np.exp(2j*np.pi/frames)
 
     return movie
 
@@ -634,8 +635,8 @@ def create_black_white_colormap():
 def _create_color_range(c1=(0,0,0), c2=(255,255,255), ad_last = 0 ):
 
     # Calc max range.
-    diff    = array(c2)-array(c1)  
-    colors  = float(max(abs(diff)))
+    diff    = np.array(c2)-array(c1)  
+    colors  = float(np.max(np.abs(diff)))
 
     # Dred,dgreen,dblue.
     dc = diff / colors
@@ -684,11 +685,11 @@ def plot_neff(waveguide):
 
 def plot_f(f, r_x, r_y, filename=0, colormap=palet):
     
-    fz = zeros([len(r_y),len(r_x)], float)
+    fz = np.zeros([len(r_y),len(r_x)], float)
 
     for i_y in range(len(r_y)):
       for i_x in range(len(r_x)):
-        fz[len(r_y)-1-i_y, i_x] = abs(f(r_x[i_x] + r_y[i_y]*1j))
+        fz[len(r_y)-1-i_y, i_x] = np.abs(f(r_x[i_x] + r_y[i_y]*1j))
 
     plot_matrix(fz, r_x, r_y, filename, colormap)
 
@@ -705,7 +706,7 @@ def plot_n_waveguide(waveguide, r_x):
     v = []
     
     for i_x in range(len(r_x)):
-      v.append((r_x[i_x], abs(waveguide.n(Coord(r_x[i_x],0,0)))))
+      v.append((r_x[i_x], np.abs(waveguide.n(Coord(r_x[i_x],0,0)))))
         
     plot_vector(v)
 
@@ -749,7 +750,7 @@ def plot_n_stack(stack, r_x, r_z, r_y=0, filename=0, colormap=whiteblack):
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections."
 
-    n = zeros([len(ax1),len(ax2)],float)
+    n = np.zeros([len(ax1),len(ax2)],float)
     if rzrange:
      _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -786,9 +787,9 @@ def plot_arrow_stack(stack, r_x, r_z, r_y = 0, filename=0):
       rzrange = True
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
-    px   = zeros([len(r_x),len(r_z)], float)
-    py   = zeros([len(r_y),len(r_z)], float)
-    pz   = zeros([len(r_x),len(r_z)], float)
+    px   = np.zeros([len(r_x),len(r_z)], float)
+    py   = np.zeros([len(r_y),len(r_z)], float)
+    pz   = np.zeros([len(r_x),len(r_z)], float)
     if rzrange:
       _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -810,7 +811,7 @@ def plot_arrow_stack(stack, r_x, r_z, r_y = 0, filename=0):
 
 def plot_n_section(stack, r_x, r_y, filename, colormap):
     
-    n = zeros([len(r_y),len(r_x)], float)
+    n = np.zeros([len(r_y),len(r_x)], float)
     _calc_n_stack(n, stack, array(r_x)[::-1], r_y)
 
     plot_matrix(n, r_x, r_y, filename, colormap)    
@@ -825,10 +826,10 @@ def plot_n_section(stack, r_x, r_y, filename, colormap):
 
 def plot_n(o, r1, r2=0, r3=0, filename=0, colormap=whiteblack):
 
-    if type(r2)!=ndarray or asarray(r2).shape[0]==1:
+    if type(r2)!=np.ndarray or np.asarray(r2).shape[0]==1:
         plot_n_waveguide(o, r1)
     elif type(o) == Stack or type(o) == BlochStack or type(o) == Cavity:
-        if type(r3)!=ndarray or asarray(r3).shape[0]==1:
+        if type(r3)!=np.ndarray or np.asarray(r3).shape[0]==1:
           plot_n_stack(o, r1, r2, 0.0, filename, colormap)
         else:
           plot_n_stack(o, r1, r3, r2, filename, colormap)
@@ -895,7 +896,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
 
-    f = zeros([len(ax1),len(ax2)], float)
+    f = np.zeros([len(ax1),len(ax2)], float)
     if rzrange:
       _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
     else:
@@ -906,7 +907,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     # Overlay index/arrow profile.
     
     if overlay_n:
-        n = zeros([len(ax1),len(ax2)], float)
+        n = np.zeros([len(ax1),len(ax2)], float)
         if rzrange:
           _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
         else:
@@ -914,9 +915,9 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
         pic_n = _create_matrix_plot(n, ax2, ax1, whiteblack)
 
     if arrow:
-        px   = zeros([len(r_x),len(r_z)], float)
-        py   = zeros([len(r_y),len(r_z)], float)
-        pz   = zeros([len(r_x),len(r_z)], float)
+        px   = np.zeros([len(r_x),len(r_z)], float)
+        py   = np.zeros([len(r_y),len(r_z)], float)
+        pz   = np.zeros([len(r_x),len(r_z)], float)
         if rzrange:
           _calc_arrow_stack(px, py, pz, stack, r_x[::-1], r_y[::-1], r_z)
         else:
@@ -948,7 +949,7 @@ def plot_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 
 def _calc_field_stack(f, stack, r_x, r_y, component, r_z=0):
 
-   if type(r_z)!=ndarray or asarray(r_z).shape[0]==1:
+   if type(r_z)!=np.ndarray or asarray(r_z).shape[0]==1:
         # 2D 
  	for x in range(len(r_x)):
 		for z in range(len(r_y)):
@@ -1011,16 +1012,16 @@ def _calc_arrow_stack(px, pz, stack, r_x, r_z):
     
     global ARROWSIZE
     if get_polarisation() == TM:
-        for x in array(range(len(r_x)))[::ARROWSIZE]:
-            for z in array(range(len(r_z)))[::ARROWSIZE]:
+        for x in np.array(range(len(r_x)))[::ARROWSIZE]:
+            for z in np.array(range(len(r_z)))[::ARROWSIZE]:
                 f       = stack.field(Coord(r_x[x], 0, r_z[z]))
                 h2      = f.H2().conjugate()
                 px[x,z] = (-f.Ez() * h2).real
                 pz[x,z] = ( f.E1() * h2).real
 
     elif get_polarisation() == TE:
-        for x in array(range(len(r_x)))[::ARROWSIZE]:
-            for z in array(range(len(r_z)))[::ARROWSIZE]:
+        for x in np.array(range(len(r_x)))[::ARROWSIZE]:
+            for z in np.array(range(len(r_z)))[::ARROWSIZE]:
                 f       = stack.field(Coord(r_x[x], 0, r_z[z]))
                 e2      = f.E2()
                 px[x,z] = ( e2 * f.Hz().conjugate()).real
@@ -1028,24 +1029,24 @@ def _calc_arrow_stack(px, pz, stack, r_x, r_z):
 
     elif get_polarisation() == TE_TM: # 3D stack
         if len(r_x)==1:
-          for y in array(range(len(r_y)))[::ARROWSIZE]:
-             for z in array(range(len(r_z)))[::ARROWSIZE]:
+          for y in np.array(range(len(r_y)))[::ARROWSIZE]:
+             for z in np.array(range(len(r_z)))[::ARROWSIZE]:
                 f = stack.field(Coord(x,r_y[y], r_z[z]))
                 py[y,z] = (f.H1().conjugate()*f.Ez() \
                            -f.E1()*f.Hz().conjugate()).real
                 pz[y,z] = (f.E1()*f.H2().conjugate() \
                            -f.H1().conjugate()*f.E2()).real
         elif len(r_y)==1:
-          for x in array(range(len(r_x)))[::ARROWSIZE]:
-             for z in array(range(len(r_z)))[::ARROWSIZE]:
+          for x in np.array(range(len(r_x)))[::ARROWSIZE]:
+             for z in np.array(range(len(r_z)))[::ARROWSIZE]:
                 f = stack.field(Coord(r_x[x],y, r_z[z]))
                 px[x,z] = (f.E2()*f.Hz().conjugate() \
                            -f.H2().conjugate()*f.Ez()).real
                 pz[x,z] = (f.E1()*f.H2().conjugate() \
                            -f.H1().conjugate()*f.E2()).real
         else:
-          for x in array(range(len(r_x)))[::ARROWSIZE]:
-             for y in array(range(len(r_y)))[::ARROWSIZE]:
+          for x in np.array(range(len(r_x)))[::ARROWSIZE]:
+             for y in np.array(range(len(r_y)))[::ARROWSIZE]:
                 f = stack.field(Coord(r_x[x],r_y[y], z))
                 px[y,x] = (f.E2()*f.Hz().conjugate() \
                            -f.H2().conjugate()*f.Ez()).real
@@ -1066,7 +1067,7 @@ def _calc_arrow_stack(px, pz, stack, r_x, r_z):
 def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
                             overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], float)
+    f = np.zeros([len(r_y),len(r_x)], float)
     
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -1078,7 +1079,7 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 
     # Overlay index profile.
         
-    n = zeros([len(r_y),len(r_x)], float)
+    n = np.zeros([len(r_y),len(r_x)], float)
         
     for i_x in range(len(r_x)):
         for i_y in range(len(r_y)):
@@ -1100,10 +1101,10 @@ def plot_field_section_mode(mode, component, r_x, r_y, filename, colormap,
 def plot_field(o, component, r1, r2=0, r3=0, filename=0,
                colormap=0, overlay_n=1, contour=1, arrow=0):
 
-    if type(r2)!=ndarray or asarray(r2).shape[0]==1:
+    if type(r2)!=np.ndarray or np.asarray(r2).shape[0]==1:
         plot_field_waveguide(o, component, r1)
     elif type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-        if type(r3)!=ndarray or asarray(r3).shape[0]==1: # 2D stack.
+        if type(r3)!=np.ndarray or np.asarray(r3).shape[0]==1: # 2D stack.
           plot_field_stack(o, component, r1, r2, 0, filename, colormap,
                          overlay_n,contour,arrow)
         else:
@@ -1157,7 +1158,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
     if rxrange and ryrange and rzrange:
       print "Error: plot_n_stack can only make cross sections"
 
-    f = zeros([len(ax1),len(ax2)], complex)
+    f = np.zeros([len(ax1),len(ax2)], complex)
     if rzrange:
       _calc_field_stack(f, stack, r_x[::-1], r_y[::-1], component, r_z)
     else:
@@ -1167,7 +1168,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 
     # Overlay index profile.
 
-    n = zeros([len(ax1),len(ax2)], float)
+    n = np.zeros([len(ax1),len(ax2)], float)
     if rzrange:
       _calc_n_stack(n, stack, r_x[::-1], r_y[::-1], r_z)
     else:
@@ -1192,7 +1193,7 @@ def animate_field_stack(stack, component, r_x, r_z, r_y = 0, filename=0,
 def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
                                overlay_n=1, contour=1):
     
-    f = zeros([len(r_y),len(r_x)], complex)
+    f = np.zeros([len(r_y),len(r_x)], complex)
 
     for i_x in range(len(r_x)):
       for i_y in range(len(r_y)):
@@ -1204,7 +1205,7 @@ def animate_field_section_mode(mode, component, r_x, r_y, filename=0,
 
     # Overlay index profile.
         
-    n = zeros([len(r_y),len(r_x)], float)
+    n = np.zeros([len(r_y),len(r_x)], float)
         
     for i_x in range(len(r_x)):
         for i_y in range(len(r_y)):
@@ -1230,7 +1231,7 @@ def animate_field(o, component, r1, r2, r3=0, filename=0, overlay_n=1,
                   contour=1, ln=0):
 
     if type(o) == Stack or type(o) == BlochMode or type(o) == Cavity:
-      if type(r3)!=ndarray: # 2D
+      if type(r3)!=np.ndarray: # 2D
          animate_field_stack(o,component,r1,r2,0.0,filename,
                             overlay_n,contour,ln)
       else:

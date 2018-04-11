@@ -2,17 +2,18 @@
 
 from __future__ import division
 
-from numpy import *
+import numpy as np
 
 import os
 if not os.environ.get('NO_CAMFR_GRAPHICS'):
     from pylab import *
 
 from _camfr import *
-from camfr_PIL import *
-from geometry import *
-from geometry3d import *
+from camfr_PIL import *     # converted numpy* to np.*
+from geometry import *      # converted numpy* to np.*
+from geometry3d import *    # converted numpy* to np.*
 from material import *
+from section_matplotlib import *    # matplotlib functions for Section objects
 from camfrversion import *
 
 # Splash screen.
