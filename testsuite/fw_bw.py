@@ -32,7 +32,7 @@ class fw_bw(unittest.TestCase):
 
         s = Stack(s1(0)+s2(1)+s1(0))
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         s.set_inc_field(inc)
         

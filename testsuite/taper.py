@@ -68,8 +68,8 @@ class taper(unittest.TestCase):
             
         s_inf = InfStack(e_inf)
 
-        rx = arange(0.0, (x_periods+1)*a, a/10.)
-        rz = arange(0.0, s.length(),      a/10.)
+        rx = np.arange(0.0, (x_periods+1)*a, a/10.)
+        rz = np.arange(0.0, s.length(),      a/10.)
 
         taper = Stack(e + s_inf)
       
@@ -79,7 +79,7 @@ class taper(unittest.TestCase):
 
         taper.calc()
 
-        inc=zeros(N())
+        inc=np.zeros(N())
         inc[0]=1
         taper.set_inc_field(inc)
 

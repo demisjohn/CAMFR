@@ -36,7 +36,7 @@ class stack1(unittest.TestCase):
 
         s = Stack(wg(0) + gap(1) + wg(0))
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         s.set_inc_field(inc)
 

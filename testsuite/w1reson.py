@@ -14,8 +14,8 @@ class w1reson(unittest.TestCase):
     def create_w1_period(self,period,rad,periods,topbuf,matcore,matclad):
         tussen=sqrt(3)/2 *period
         tussen2 = sqrt(3)*period
-        numodd = periods/2
-        numeven = (periods+1)/2
+        numodd = int(periods/2)
+        numeven = int((periods+1)/2)
         propstart,propend,propprec = 0,2*rad+period/2,period/5
         transstart,transend,transprec = 0,tussen*periods+rad+topbuf,period/5
         gi = Geometry(matcore)
@@ -29,8 +29,8 @@ class w1reson(unittest.TestCase):
     def create_w1_1def_period(self,period,rad,defrad,periods,topbuf,matcore,matclad):
         tussen=sqrt(3)/2 *period
         tussen2 = sqrt(3)*period
-        numodd = periods/2
-        numeven = (periods+1)/2
+        numodd = int(periods/2)
+        numeven = int((periods+1)/2)
         propstart,propend,propprec = 0,2*rad+period/2,period/30
         transstart,transend,transprec = 0,tussen*periods+rad+topbuf,period/30
         gi = Geometry(matcore)
