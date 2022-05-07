@@ -43,7 +43,7 @@ class precision(unittest.TestCase):
         free_tmps()
         set_precision(100)
  
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(precision, 'test')
 

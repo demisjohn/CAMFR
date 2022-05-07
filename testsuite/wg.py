@@ -41,7 +41,7 @@ class wg(unittest.TestCase):
         set_upper_PML(0)
         set_lower_PML(0)
        
-        self.failUnless(n_pass)
+        self.assertTrue(n_pass)
 
 suite = unittest.makeSuite(wg, 'test')        
 

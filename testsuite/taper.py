@@ -95,7 +95,7 @@ class taper(unittest.TestCase):
 
         set_upper_PML(0)
        
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(taper, 'test')        
 

@@ -81,7 +81,7 @@ class blochstack(unittest.TestCase):
 
         set_upper_PML(0)
        
-        self.failUnless(R_pass and T_pass)
+        self.assertTrue(R_pass and T_pass)
 
         free_tmps()
 

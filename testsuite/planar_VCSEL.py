@@ -86,7 +86,7 @@ class planar_VCSEL(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(field_pass)
+        self.assertTrue(field_pass)
 
 suite = unittest.makeSuite(planar_VCSEL, 'test')        
 

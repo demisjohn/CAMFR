@@ -101,7 +101,7 @@ class w1reson(unittest.TestCase):
     
         free_tmps()
 
-        self.failUnless(ta_pass and tp_pass and ra_pass and rp_pass)
+        self.assertTrue(ta_pass and tp_pass and ra_pass and rp_pass)
 
         set_solver(track)
         set_orthogonal(1)

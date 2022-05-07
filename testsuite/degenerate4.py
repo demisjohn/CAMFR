@@ -45,7 +45,7 @@ class degenerate4(unittest.TestCase):
 
         free_tmps()
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(degenerate4, 'test')
 

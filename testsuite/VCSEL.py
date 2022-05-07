@@ -95,7 +95,7 @@ class VCSEL(unittest.TestCase):
 
         set_circ_PML(0)
 
-        self.failUnless(wavelength_pass and gain_pass)
+        self.assertTrue(wavelength_pass and gain_pass)
 
 suite = unittest.makeSuite(VCSEL, 'test')        
 

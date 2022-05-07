@@ -1,0 +1,64 @@
+# This Python script contains all the machine dependent settings
+# needed during the build process.
+
+# installation on python 3 with brew
+# brew install scons
+# brew install blitz
+# brew install lapack
+# brew install boost-python3
+# brew install texlive
+
+# define python version with pyenv and define virtualenv with venv
+
+#
+# is building on ARM mac book pro Monterey 12.1
+
+# Demis D. John, 2018-02-27, demis@ucsb.edu
+############################################
+
+# Compilers to be used.
+
+cc  = "clang"
+cxx = "clang++"
+f77 = "gfortran"
+
+link = cxx
+link_flags = " -undefined dynamic_lookup -dynamic -stdlib=libc++ -o camfr/_camfr.so -stdlib=libc++"  #-dynamic -single_module -undefined dynamic_lookup"
+# Compiler flags.
+#
+# Note: for the Fortran name definition you can define one of the following
+#       preprocessor macros:
+#
+#           FORTRAN_SYMBOLS_WITHOUT_TRAILING_UNDERSCORES
+#           FORTRAN_SYMBOLS_WITH_SINGLE_TRAILING_UNDERSCORE
+#           FORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORES
+
+base_flags = " -DFORTRAN_SYMBOLS_WITH_DOUBLE_TRAILING_UNDERSCORE -DNDEBUG"
+
+flags_noopt = base_flags
+
+fflags = base_flags + " -O2 -pipe -fomit-frame-pointer -funroll-loops -fstrict-aliasing -g -fPIC -stdlib=libc++"
+flags = fflags + " -ftemplate-depth-60"
+
+# Include directories.
+#   MacPorts directories, MacPorts python2.7
+include_dirs = ["/opt/local/include",
+                "/opt/homebrew/Cellar//boost/1.78.0_1/include/",
+                "/opt/homebrew/Cellar/blitz/1.0.2/include/",
+                "~/.pyenv/versions/3.9.11/include/python3.9", "venv/lib/python3.9/site-packages"]
+
+library_dirs = [ "/opt/homebrew/Cellar//boost/1.78.0_1/lib", "/opt/homebrew/Cellar/boost-python3/1.78.0/lib",
+                 "/opt/homebrew/Cellar/blitz/1.0.2/lib","/opt//homebrew/Cellar/gcc/11.3.0/lib/gcc/11/"
+              ]
+
+# Library names.
+libs = ["libboost_python39", "libblitz", "liblapack","libblas","gfortran"]
+
+
+# Command to strip library of excess symbols:
+dllsuffix = ".so"
+strip_command = ""#"strip --strip-unneeded camfr/_camfr" + dllsuffix
+
+# Extra files to copy into installation directory.
+#   This PDF should be Built first or the command will fail.
+extra_files = [("doc", ["docs/camfr.pdf"])]

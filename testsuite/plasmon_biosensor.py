@@ -74,7 +74,7 @@ class plasmon_biosensor(unittest.TestCase):
         set_lower_PML(0)
         set_orthogonal(True)
 
-        self.failUnless(T_pass)
+        self.assertTrue(T_pass)
 
 suite = unittest.makeSuite(plasmon_biosensor, 'test')
 

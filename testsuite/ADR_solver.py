@@ -44,7 +44,7 @@ class ADR_solver(unittest.TestCase):
         free_tmps()
         set_solver(track)
 
-        self.failUnless(mode0_pass)
+        self.assertTrue(mode0_pass)
 
 suite = unittest.makeSuite(ADR_solver, 'test')        
 

@@ -110,7 +110,7 @@ class metal_coupler(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(up_pass)
+        self.assertTrue(up_pass)
 
 suite = unittest.makeSuite(metal_coupler, 'test')
 

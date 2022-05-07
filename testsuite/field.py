@@ -52,7 +52,7 @@ class field(unittest.TestCase):
         set_upper_PML(0)
         set_lower_PML(0)
         
-        self.failUnless(f1_pass and f2_pass)
+        self.assertTrue(f1_pass and f2_pass)
 
 suite = unittest.makeSuite(field, 'test')        
 

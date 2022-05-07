@@ -43,7 +43,7 @@ class degenerate3(unittest.TestCase):
 
         set_unstable_exp_threshold(1e-12)
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(degenerate3, 'test')
 

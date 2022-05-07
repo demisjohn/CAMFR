@@ -45,7 +45,7 @@ class backward2(unittest.TestCase):
         set_circ_PML(0)   
         set_backward_modes(0)
            
-        self.failUnless(n_eff_pass)
+        self.assertTrue(n_eff_pass)
 
 suite = unittest.makeSuite(backward2, 'test')
 

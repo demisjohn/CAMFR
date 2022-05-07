@@ -71,7 +71,7 @@ class expressions(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(1)
+        self.assertTrue(1)
 
 suite = unittest.makeSuite(expressions, 'test')        
 

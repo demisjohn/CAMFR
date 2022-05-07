@@ -47,7 +47,7 @@ class gaussian(unittest.TestCase):
         set_lower_PML(0)
         set_upper_PML(0)
            
-        self.failUnless(T_pass)
+        self.assertTrue(T_pass)
 
 suite = unittest.makeSuite(gaussian, 'test')
 

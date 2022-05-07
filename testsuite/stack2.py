@@ -52,7 +52,7 @@ class stack2(unittest.TestCase):
         set_lower_wall(slab_E_wall)
         set_upper_PML(0)
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(stack2, 'test')        
 

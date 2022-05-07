@@ -56,7 +56,7 @@ class stack1(unittest.TestCase):
 
         free_tmps()
         
-        self.failUnless(n_pass and E_pass)
+        self.assertTrue(n_pass and E_pass)
 
 suite = unittest.makeSuite(stack1, 'test')        
 

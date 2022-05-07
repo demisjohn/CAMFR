@@ -48,7 +48,7 @@ class degenerate2(unittest.TestCase):
         set_unstable_exp_threshold(1e-12)
         set_field_calc_heuristic(identical)
         
-        self.failUnless(T_pass)
+        self.assertTrue(T_pass)
 
 suite = unittest.makeSuite(degenerate2, 'test')
 

@@ -101,7 +101,7 @@ class metal_splitter(unittest.TestCase):
         set_lower_wall(slab_E_wall)
         set_upper_PML(0)
 
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(metal_splitter, 'test')        
 

@@ -56,7 +56,7 @@ class section1(unittest.TestCase):
         set_lower_wall(slab_E_wall)
         set_upper_wall(slab_E_wall)
         
-        self.failUnless(n_eff_0_pass and n_eff_1_pass)
+        self.assertTrue(n_eff_0_pass and n_eff_1_pass)
 
 suite = unittest.makeSuite(section1, 'test')
 

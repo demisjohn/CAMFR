@@ -55,7 +55,7 @@ class fw_bw(unittest.TestCase):
         set_upper_PML(0)
         set_lower_PML(0)
            
-        self.failUnless(f_pass and b_pass)
+        self.assertTrue(f_pass and b_pass)
 
 suite = unittest.makeSuite(fw_bw, 'test')
 

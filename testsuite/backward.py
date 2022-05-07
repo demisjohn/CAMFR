@@ -45,7 +45,7 @@ class backward(unittest.TestCase):
 
         set_backward_modes(0)
            
-        self.failUnless(R_pass and T_pass)
+        self.assertTrue(R_pass and T_pass)
 
 suite = unittest.makeSuite(backward, 'test')
 

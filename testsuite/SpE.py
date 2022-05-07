@@ -64,7 +64,7 @@ class SpE(unittest.TestCase):
 
         set_circ_PML(0)
        
-        self.failUnless(eta_pass)
+        self.assertTrue(eta_pass)
 
 suite = unittest.makeSuite(SpE, 'test')        
 

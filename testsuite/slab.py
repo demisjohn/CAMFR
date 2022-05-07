@@ -43,7 +43,7 @@ class slab(unittest.TestCase):
         set_lower_PML(0)
         set_polarisation(TE)
            
-        self.failUnless(n_pass)
+        self.assertTrue(n_pass)
 
 suite = unittest.makeSuite(slab, 'test')
 
