@@ -80,7 +80,7 @@ class metal_coupler(unittest.TestCase):
 
         guided  = 0
         campmax = 0
-        for k in np.arange(0,nom,1):
+        for k in range(0,nom,1):
             camp = abs(waveguide.mode(k).field(Coord(d_sub+dclad+\
                                             guide_thickness/2,0,0)).E1())
             if campmax < camp:
@@ -89,7 +89,7 @@ class metal_coupler(unittest.TestCase):
 
         # Set input for calculating the fields.
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[guided] = 1
         stack.set_inc_field(inc)
 

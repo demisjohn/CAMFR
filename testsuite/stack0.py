@@ -30,7 +30,7 @@ class stack0(unittest.TestCase):
         
         s = Stack(AlGaAs(0) + air(1) + AlGaAs(0))
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         s.set_inc_field(inc)
 
