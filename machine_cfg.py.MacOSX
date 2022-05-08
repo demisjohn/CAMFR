@@ -15,11 +15,6 @@
 #
 # All ports built for x86_64 as per MacPorts default on recent 64-bit machines
 
-# Known bugs:
-#   Currently installs a _camfr.dylib file into the module folder.  This needs to be renamed to _camfr.so for Python to use it.
-#   Command to rename the file before using CAMFR in python (triple-click to select):
-#       mv /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib  /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
-
 # Demis D. John, 2018-02-27, demis@ucsb.edu
 ############################################
 
@@ -30,7 +25,7 @@ cxx = "/usr/bin/g++"
 f77 = "/usr/local/gfortran/bin/gfortran"
 
 link = cxx
-link_flags = " -undefined dynamic_lookup -dynamic"  #-dynamic -single_module -undefined dynamic_lookup"
+link_flags = " -undefined dynamic_lookup -dynamic -o camfr/_camfr.so"  #-dynamic -single_module -undefined dynamic_lookup"
 # Compiler flags.
 #
 # Note: for the Fortran name definition you can define one of the following
