@@ -38,7 +38,7 @@ class field(unittest.TestCase):
         print(f1, "expected", f_OK)
         f1_pass = abs(f1 - f_OK) < eps.testing_eps
         
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[1] = 1
         stack.set_inc_field(inc)
 
@@ -52,7 +52,7 @@ class field(unittest.TestCase):
         set_upper_PML(0)
         set_lower_PML(0)
         
-        self.failUnless(f1_pass and f2_pass)
+        self.assertTrue(f1_pass and f2_pass)
 
 suite = unittest.makeSuite(field, 'test')        
 

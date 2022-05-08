@@ -44,7 +44,7 @@ class shift(unittest.TestCase):
         set_upper_wall(slab_E_wall)
         set_lower_wall(slab_E_wall)
            
-        self.failUnless(T_pass)
+        self.assertTrue(T_pass)
 
 suite = unittest.makeSuite(shift, 'test')
 

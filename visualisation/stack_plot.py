@@ -9,7 +9,7 @@
 
 from camfr import *
 from numpy import *
-from Tkinter import *
+from tkinter import *
 
 # win bug?? of toch ergens code die ik mis
 import camfr_PIL

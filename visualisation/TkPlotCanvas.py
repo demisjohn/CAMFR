@@ -7,8 +7,8 @@
 # Last revision: 2002-5-14
 #
 
-from Tkinter import *
-from Canvas import Line, CanvasText
+from tkinter import *
+#from Canvas import Line, CanvasText
 import string, numpy
 
 """This module provides a plot widget for Tk user interfaces.

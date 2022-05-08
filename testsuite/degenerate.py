@@ -52,7 +52,7 @@ class degenerate(unittest.TestCase):
 
         free_tmps()
            
-        self.failUnless(OK)
+        self.assertTrue(OK)
 
 suite = unittest.makeSuite(degenerate, 'test')
 

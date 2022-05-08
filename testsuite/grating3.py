@@ -68,7 +68,7 @@ class grating3(unittest.TestCase):
         set_upper_PML(0)
         set_degenerate(1)
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(grating3, 'test')
 

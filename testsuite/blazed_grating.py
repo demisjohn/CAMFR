@@ -118,7 +118,7 @@ class blazed_grating(unittest.TestCase):
         set_lower_PML(0)
         set_upper_PML(0)
 
-        self.failUnless(R_pass and T_pass)
+        self.assertTrue(R_pass and T_pass)
 
 suite = unittest.makeSuite(blazed_grating, 'test')        
 

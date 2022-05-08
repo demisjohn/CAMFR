@@ -134,7 +134,7 @@ class Rectangle:
 
     def __init__(self, p1, p2, mat):
         p = [p1, p2]
-        p.sort(sort_point)
+        p.sort(key=lambda p: p.x)
         self.p1, self.p2 = p
         self.mat = mat
         self.type = "Rectangle"
@@ -210,7 +210,7 @@ class Triangle:
 
     def __init__(self, p1, p2, p3, mat):
         self.p = [p1, p2, p3]
-        self.p.sort(sort_point)
+        self.p.sort(key=lambda p: p.x)
         self.p1, self.p2, self.p3 = self.p
         self.mat = mat
         self.type = "Triangle"

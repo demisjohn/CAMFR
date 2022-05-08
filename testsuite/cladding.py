@@ -39,7 +39,7 @@ class cladding(unittest.TestCase):
 
         free_tmps()
       
-        self.failUnless( E_field_pass )
+        self.assertTrue( E_field_pass )
 
 suite = unittest.makeSuite(cladding, 'test')        
 

@@ -52,7 +52,7 @@ class grating(unittest.TestCase):
         set_upper_wall(slab_E_wall)
         set_lower_wall(slab_E_wall)
            
-        self.failUnless(E1_pass and E2_pass)
+        self.assertTrue(E1_pass and E2_pass)
 
 suite = unittest.makeSuite(grating, 'test')
 

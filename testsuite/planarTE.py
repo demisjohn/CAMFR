@@ -50,7 +50,7 @@ class planarTE(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(R_pass and T_pass)
+        self.assertTrue(R_pass and T_pass)
 
 suite = unittest.makeSuite(planarTE, 'test')        
 

@@ -45,7 +45,7 @@ class sudbo(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(n_eff_pass)
+        self.assertTrue(n_eff_pass)
 
 suite = unittest.makeSuite(sudbo, 'test')        
 

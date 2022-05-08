@@ -59,7 +59,7 @@ class polariton(unittest.TestCase):
         free_tmps()
         set_polarisation(TE)
            
-        self.failUnless(kz_pass)
+        self.assertTrue(kz_pass)
 
 suite = unittest.makeSuite(polariton, 'test')
 

@@ -123,7 +123,7 @@ def __Section_plot(self, field="Ex", mode=0, dx=0.100, dy=0.100, annotations=Tru
     # create the complementary array of CAMFR fields
     try:
         cfield = [fieldopts[a] for a in    [b.lower() for b in field]  ]
-    except KeyError, k:
+    except KeyError as k:
         raise ValueError(  "Unrecognized value %s found for the `field` argument. " % k  + "The following options are valid: %s"  % fieldopts.keys()  )
     #end try(fieldopts)
     

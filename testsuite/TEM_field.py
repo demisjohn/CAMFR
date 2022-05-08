@@ -52,7 +52,7 @@ class TEM_field(unittest.TestCase):
 
         set_polarisation(TE)
        
-        self.failUnless(f1_pass and f2_pass and f3_pass)
+        self.assertTrue(f1_pass and f2_pass and f3_pass)
 
 suite = unittest.makeSuite(TEM_field, 'test')        
 

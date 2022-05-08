@@ -63,7 +63,7 @@ class polariton2(unittest.TestCase):
         set_mode_surplus(1.5)
         set_keep_all_1D_estimates(0)
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(polariton2, 'test')
 

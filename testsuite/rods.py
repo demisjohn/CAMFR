@@ -59,7 +59,7 @@ class rods(unittest.TestCase):
         set_upper_PML(0)
         set_lower_PML(0)
 
-        self.failUnless(mode98_pass and mode99_pass)
+        self.assertTrue(mode98_pass and mode99_pass)
 
 suite = unittest.makeSuite(rods, 'test')        
 

@@ -30,7 +30,7 @@ class stack0(unittest.TestCase):
         
         s = Stack(AlGaAs(0) + air(1) + AlGaAs(0))
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         s.set_inc_field(inc)
 
@@ -45,7 +45,7 @@ class stack0(unittest.TestCase):
 
         free_tmps()
         
-        self.failUnless(E_pass)
+        self.assertTrue(E_pass)
 
 suite = unittest.makeSuite(stack0, 'test')        
 

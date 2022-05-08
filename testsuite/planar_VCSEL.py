@@ -72,8 +72,8 @@ class planar_VCSEL(unittest.TestCase):
 
         vcsel = Stack(bottom + cavity + top)
 
-        incL = zeros(N())
-        incR = zeros(N())
+        incL = np.zeros(N())
+        incR = np.zeros(N())
         incR[0] = 1
         vcsel.set_inc_field(incL,incR)
 
@@ -86,7 +86,7 @@ class planar_VCSEL(unittest.TestCase):
 
         free_tmps()
 
-        self.failUnless(field_pass)
+        self.assertTrue(field_pass)
 
 suite = unittest.makeSuite(planar_VCSEL, 'test')        
 

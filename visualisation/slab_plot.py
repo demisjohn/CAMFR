@@ -9,7 +9,7 @@
 
 from camfr import *
 from numpy import *
-from Tkinter import *
+from tkinter import *
 from TkPlotCanvas import *
 
 

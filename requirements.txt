@@ -1,0 +1,9 @@
+Image==1.5.33
+ImageFilter==0.1.0
+matplotlib==3.5.2
+MLab==1.1.4
+Numeric==24.2
+numpy==1.22.3
+Pillow==9.1.0
+pymat==0.0.2
+scipy==1.8.0

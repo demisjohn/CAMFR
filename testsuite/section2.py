@@ -52,7 +52,7 @@ class section2(unittest.TestCase):
         set_left_wall (E_wall)
         set_right_wall(E_wall)
         
-        self.failUnless(n_eff_0_pass)
+        self.assertTrue(n_eff_0_pass)
 
 suite = unittest.makeSuite(section2, 'test')
 

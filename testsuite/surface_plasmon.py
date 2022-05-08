@@ -69,7 +69,7 @@ class surface_plasmon(unittest.TestCase):
         set_mode_surplus(1.5)
         set_low_index_core(False)
 
-        self.failUnless(n_eff_pass)
+        self.assertTrue(n_eff_pass)
 
 suite = unittest.makeSuite(surface_plasmon, 'test')
 

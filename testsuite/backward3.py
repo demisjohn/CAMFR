@@ -59,7 +59,7 @@ class backward3(unittest.TestCase):
         set_lower_wall(slab_E_wall)
         set_orthogonal(True)
         
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(backward3, 'test')
 

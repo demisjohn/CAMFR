@@ -45,7 +45,7 @@ class coupled(unittest.TestCase):
 
         free_tmps()
            
-        self.failUnless(n_eff_0_pass and n_eff_1_pass)
+        self.assertTrue(n_eff_0_pass and n_eff_1_pass)
 
 suite = unittest.makeSuite(coupled, 'test')
 

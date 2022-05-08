@@ -1,10 +1,5 @@
 #! /usr/bin/env python
 
-# To Do:
-#   Must run the following command afterwards:
-#        mv /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.dylib  /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/camfr/_camfr.so
-
-
 from distutils.core import setup
 from distutils.util import byte_compile
 from distutils.command.build import build
@@ -37,18 +32,8 @@ class camfr_build(build):
 class camfr_install_data(install_data):
   def run(self):
 
-    # Byte-compile Python files.
-
     scripts = []
-          
-    for i in self.data_files:
-      for j in i[1]:
-        if j[-2:] == "py":
-          scripts.append(j)
-          i[1].append(j+'c')
-
-    byte_compile(scripts)
-      
+                
     # Change install dir to library dir.
     
     install_cmd = self.get_finalized_command('install')
@@ -78,6 +63,7 @@ setup(name         = "camfr",
                              "camfr/material.py",
                              "camfr/RCLED.py",
                              "camfr/GARCLED.py",
+                             "camfr/matplotlib_section.py",
                              "visualisation/camfr_PIL.py",
                              "visualisation/camfr_matlab.py",
                              "visualisation/camfr_tk.py",

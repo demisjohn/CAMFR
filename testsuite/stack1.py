@@ -36,7 +36,7 @@ class stack1(unittest.TestCase):
 
         s = Stack(wg(0) + gap(1) + wg(0))
 
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         s.set_inc_field(inc)
 
@@ -56,7 +56,7 @@ class stack1(unittest.TestCase):
 
         free_tmps()
         
-        self.failUnless(n_pass and E_pass)
+        self.assertTrue(n_pass and E_pass)
 
 suite = unittest.makeSuite(stack1, 'test')        
 

@@ -79,15 +79,15 @@ class metal_splitter(unittest.TestCase):
 
         splitter.calc()
         
-        plot(cen)
-        plot(arm)
-        plot(ver)
+        #plot(cen)
+        #plot(arm)
+        #plot(ver)
         
-        inc = zeros(N())
+        inc = np.zeros(N())
         inc[0] = 1
         splitter.set_inc_field(inc)
 
-        plot(splitter)
+        #plot(splitter)
 
         R = splitter.R12(0,0)
         R_OK = 0.844654989543+0.499289083195j
@@ -101,7 +101,7 @@ class metal_splitter(unittest.TestCase):
         set_lower_wall(slab_E_wall)
         set_upper_PML(0)
 
-        self.failUnless(R_pass)
+        self.assertTrue(R_pass)
 
 suite = unittest.makeSuite(metal_splitter, 'test')        
 
