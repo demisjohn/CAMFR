@@ -109,7 +109,10 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
   }
   
   // Create chunks.
-  
+
+  // CHECK: we can have e.get_size()==1 here -> access to e.get_term(i+1) will be out of bound
+  // I tried to set max boundary to get_size()-1 - but the absence of chunk seems to create problems
+  // downstream
   for (unsigned int i=0; i<e.get_size(); i++)
   {
     Term* t1 = e.get_term(i);

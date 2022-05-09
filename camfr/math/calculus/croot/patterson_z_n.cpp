@@ -43,6 +43,7 @@ vector<Complex> patterson_z_n(ComplexFunction& f,
   {
     vector<Complex> result;
 
+    // TODO: - missing abs_error definition
     for (unsigned int i=0; i<=M; i++)
       result.push_back(0.0);
     
@@ -268,6 +269,7 @@ vector<Complex> patterson_quad_z_n_sub
   bool converged = true;
 
   for (unsigned int i=0; i<abs_error.size(); i++)
+    // CHECK - we need to have result_estimate size >= abs_error size
     if ( abs(abs_error[i]) > abs(result_estimate[i] * eps) )
       converged = false;
 
@@ -276,11 +278,13 @@ vector<Complex> patterson_quad_z_n_sub
 
   // Do adaptive subdivision of interval.
 
+  // CHECK: M result size can be < M - so we need to call following functions with updated M otherwise it will
+  // crash when estimating abs_error
   vector<Complex> result1
-    = patterson_quad_z_n_sub(f, a, (a+b)/2., M,eps,mu,result_estimate,max_k);
+    = patterson_quad_z_n_sub(f, a, (a+b)/2., result.size()-1,eps,mu,result_estimate,max_k);
 
   vector<Complex> result2
-    = patterson_quad_z_n_sub(f, (a+b)/2., b, M,eps,mu,result_estimate,max_k);
+    = patterson_quad_z_n_sub(f, (a+b)/2., b, result.size()-1,eps,mu,result_estimate,max_k);
 
   unsigned int new_M
     = (result1.size()>result2.size()) ? result2.size() : result1.size();
@@ -314,12 +318,14 @@ vector<Complex> patterson_quad_z_n(ComplexFunction& f,
     return result;
 
   // Do adaptive subdivision of interval
-  
+
+  // CHECK: M result size can be < M - so we need to call following functions with updated M otherwise it will
+  // crash when estimating abs_error
   vector<Complex> result1
-    = patterson_quad_z_n_sub(f, a, (a+b)/2., M, eps, mu, result, max_k);
+    = patterson_quad_z_n_sub(f, a, (a+b)/2., result.size()-1, eps, mu, result, max_k);
 
   vector<Complex> result2
-    = patterson_quad_z_n_sub(f, (a+b)/2., b, M, eps, mu, result, max_k);
+    = patterson_quad_z_n_sub(f, (a+b)/2., b, result.size()-1, eps, mu, result, max_k);
 
   unsigned int new_M
     = (result1.size()>result2.size()) ? result2.size() : result1.size();
