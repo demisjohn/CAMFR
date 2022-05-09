@@ -269,7 +269,6 @@ vector<Complex> patterson_quad_z_n_sub
   bool converged = true;
 
   for (unsigned int i=0; i<abs_error.size(); i++)
-    // CHECK - we need to have result_estimate size >= abs_error size
     if ( abs(abs_error[i]) > abs(result_estimate[i] * eps) )
       converged = false;
 
@@ -278,8 +277,6 @@ vector<Complex> patterson_quad_z_n_sub
 
   // Do adaptive subdivision of interval.
 
-  // CHECK: M result size can be < M - so we need to call following functions with updated M otherwise it will
-  // crash when estimating abs_error
   vector<Complex> result1
     = patterson_quad_z_n_sub(f, a, (a+b)/2., result.size()-1,eps,mu,result_estimate,max_k);
 
@@ -319,8 +316,6 @@ vector<Complex> patterson_quad_z_n(ComplexFunction& f,
 
   // Do adaptive subdivision of interval
 
-  // CHECK: M result size can be < M - so we need to call following functions with updated M otherwise it will
-  // crash when estimating abs_error
   vector<Complex> result1
     = patterson_quad_z_n_sub(f, a, (a+b)/2., result.size()-1, eps, mu, result, max_k);
 

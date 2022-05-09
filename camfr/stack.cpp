@@ -119,7 +119,7 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
 
     // No waveguide.
     
-    if (t1->get_type() != WAVEGUIDE)
+    if (t1->get_type() != WAVEGUIDE) {
       if (t2 && (t2->get_type() == WAVEGUIDE) )
       {
         Complex d = t2->get_d();
@@ -141,7 +141,8 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
       }
       else
         chunks.push_back(Chunk(t1->get_sc(), 0.0));
-    
+    }
+
     // Waveguide.
 
     if (t1->get_type() == WAVEGUIDE)
