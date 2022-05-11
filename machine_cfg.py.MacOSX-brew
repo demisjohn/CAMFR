@@ -8,7 +8,13 @@
 # brew install boost-python3
 # brew install texlive
 
+# make sure to have tcl-tk installed (brew install tcl-tk) before installing python (important because CAMFR has some built-in dependencies with tkinter)
 # define python version with pyenv and define virtualenv with venv
+
+# finally update the variable PATHTOPYENVPYTHONVERSION/.pyenv..., with path to your pyenv python version (for Python.h include) and .venv version (for numpy includes) /PATHTOVENV/venv/lib/python3.9/...
+
+# check compilation with "make"
+# then you can install with pip install .
 
 #
 # is building on ARM mac book pro Monterey 12.1
@@ -45,7 +51,7 @@ flags = fflags + " -ftemplate-depth-60"
 include_dirs = ["/opt/local/include",
                 "/opt/homebrew/Cellar//boost/1.78.0_1/include/",
                 "/opt/homebrew/Cellar/blitz/1.0.2/include/",
-                "~/.pyenv/versions/3.9.11/include/python3.9", "venv/lib/python3.9/site-packages"]
+                "/PATHTOPYENVPYTHONVERSION/.pyenv/versions/3.9.11/include/python3.9", "/PATHTOVENV/venv/lib/python3.9/site-packages"]
 
 library_dirs = [ "/opt/homebrew/Cellar//boost/1.78.0_1/lib", "/opt/homebrew/Cellar/boost-python3/1.78.0/lib",
                  "/opt/homebrew/Cellar/blitz/1.0.2/lib","/opt//homebrew/Cellar/gcc/11.3.0/lib/gcc/11/"
