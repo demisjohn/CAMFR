@@ -109,16 +109,18 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
   }
   
   // Create chunks.
-  
+
   for (unsigned int i=0; i<e.get_size(); i++)
   {
     Term* t1 = e.get_term(i);
-    Term* t2 = e.get_term(i+1);
+    Term* t2 = 0;
+    if (i+1 < e.get_size())
+        t2 = e.get_term(i+1);
 
     // No waveguide.
     
-    if (t1->get_type() != WAVEGUIDE)
-      if ( (i+1 < e.get_size()) && (t2->get_type() == WAVEGUIDE) )
+    if (t1->get_type() != WAVEGUIDE) {
+      if (t2 && (t2->get_type() == WAVEGUIDE) )
       {
         Complex d = t2->get_d();
 
@@ -139,7 +141,8 @@ StackImpl::StackImpl(const Expression& e_, unsigned int no_of_periods_)
       }
       else
         chunks.push_back(Chunk(t1->get_sc(), 0.0));
-    
+    }
+
     // Waveguide.
 
     if (t1->get_type() == WAVEGUIDE)

@@ -1489,7 +1489,7 @@ void Slab_M::build_modeset(vector<Complex>& kt)
 
     if (i == 0)
     {
-      if (real(materials[i]->eps_mu()) > real(materials[i+1]->eps_mu()))
+      if (materials.size()>1 && real(materials[i]->eps_mu()) > real(materials[i+1]->eps_mu()))
         is_core = true;
     }
     else if (i == materials.size()-1)

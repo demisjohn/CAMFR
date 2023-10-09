@@ -1,5 +1,33 @@
 COMPILING AND INSTALLING
 
+The following instructions apply for use of package installer `homebrew`. Legacy instructions below were also showing
+use of MacPorts for older version of python and it has not been tested
+
+# Installation with `homebrew`
+
+Install brew (https://docs.brew.sh/Installation) and Xcode ((from the App Store or from the apple developer website), agree to the Xcode license and install the Xcode command-line tools.
+
+Install the following brew package:
+$ brew install texlive
+$ brew install boost boost-python3
+$ brew install gcc lapack blitz scons
+
+Use pyenv (https://github.com/pyenv/pyenv) to install your favorite python 3 version.
+
+install CAMFR python requirements:
+
+$ pip install requirements.txt
+
+$ cp machine_cfg.py.MacOSX-brew machine_cfg.py
+
+check paths in machine_cfg.py - and run installation
+
+$ pip install .
+
+# Installation with MacPorts - and python 2.7
+
+(this won't work on Apple M1 where python 2.7 is deprecated)
+
 For the compilation of CAMFR on MacOSX, it is relatively straightforward to use MacPorts to install all dependencies, although with the drawback that the built-in Mac OS installation of Python will be superseded by the MacPorts python installation.
 The following instructions will install a new Python 2.7 interpreter, alongside your built-in MacOS Python installation. Be sure to used the correct python shell when running the CAMFR install script, and note that CAMFR will only be installed to this particular python interpreter unless you manually copy the module into another `site-packages` folder.
 

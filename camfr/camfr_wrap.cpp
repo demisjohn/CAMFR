@@ -365,11 +365,12 @@ inline void free_tmp_interfaces(Waveguide& w)
 struct cVector_to_python
 {
   static PyObject* convert(const cVector& c)
-  {    
-    int dim[1]; dim[0] = c.rows();
+  {
+    npy_intp dim[1];
+    dim[0] = c.rows();
 
-    PyArrayObject* result 
-      = (PyArrayObject*) PyArray_FromDims(1, dim, PyArray_CDOUBLE);
+    PyArrayObject* result
+      = (PyArrayObject*) PyArray_SimpleNew(1, dim, PyArray_CDOUBLE);
 
     for (int i=0; i<c.rows(); i++)
         *(Complex*)(result->data + i*result->strides[0]) = c(i+1);
@@ -427,10 +428,10 @@ struct cMatrix_to_python
 {
   static PyObject* convert(const cMatrix& c)
   {
-    int dim[2]; dim[0] = c.rows(); dim[1] = c.columns();
+    npy_intp dim[2]; dim[0] = c.rows(); dim[1] = c.columns();
   
     PyArrayObject* result 
-      = (PyArrayObject*) PyArray_FromDims(2, dim, PyArray_CDOUBLE);
+      = (PyArrayObject*) PyArray_SimpleNew(2, dim, PyArray_CDOUBLE);
     
     for (int i=0; i<c.rows(); i++)
       for (int j=0; j<c.columns(); j++)

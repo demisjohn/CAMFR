@@ -55,13 +55,14 @@ vector<Complex> polyroot(const vector<Complex>& coef)
     py_error("Warning: polyroot solver did not converge.");
 
   delete [] coef_r; delete [] coef_i;
-  delete [] root_r, delete [] root_i;
 
   // Return results.
 
   vector<Complex> results;
   for (unsigned int i=0; i<N; i++)
     results.push_back(Complex(root_r[i],root_i[i]));
+
+  delete [] root_r, delete [] root_i;
 
   return results;
 }

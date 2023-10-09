@@ -171,11 +171,12 @@ struct modesorter_BDM
       const double ra2 = real(a->get_kz() * a->get_kz());
       const double rb2 = real(b->get_kz() * b->get_kz());
       
-      if ( (ra2 < 0) && (rb2 < 0) )
+      if ( (ra2 < 0) && (rb2 < 0) ) {
         if ( (a->pol != TE) && (a->pol != TM) )
           return ( ra2 < rb2 );
         else
           return ( ra2 > rb2 );
+      }
 
       if ( (ra2 > 0) && (rb2 > 0) )
         return ( ra2 > rb2 );

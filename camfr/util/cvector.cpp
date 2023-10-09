@@ -25,8 +25,13 @@ vector<Complex> operator+(const vector<Complex>& a,
 {  
   vector<Complex> result;
 
-  for (unsigned int i=0; i<a.size(); i++)
-    result.push_back(a[i]+b[i]);
+  for (unsigned int i=0; i<std::max(a.size(), b.size()); i++)
+    if (i<a.size() && i<b.size())
+        result.push_back(a[i]+b[i]);
+    else if (i<a.size())
+        result.push_back(a[i]);
+    else
+        result.push_back(b[i]);
 
   return result; 
 }
@@ -51,10 +56,14 @@ vector<Complex> operator-(const vector<Complex>& a,
 {  
   vector<Complex> result;
 
-  for (unsigned int i=0; i<a.size(); i++)
-    result.push_back(a[i]-b[i]);
-
-  return result; 
+  for (unsigned int i=0; i<std::max(a.size(), b.size()); i++)
+    if (i<a.size() && i<b.size())
+        result.push_back(a[i]-b[i]);
+    else if (i<a.size())
+        result.push_back(a[i]);
+    else
+        result.push_back(-b[i]);
+  return result;
 }
 
 vector<Complex>& operator-=(      vector<Complex>& a,

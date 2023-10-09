@@ -64,7 +64,7 @@ vector<Complex> roots_contour(const Contour& contour,
   // Check if all G's are zero.
 
   bool all_zeros = true;
-  for (unsigned int i=0; i<=2*N-1; i++)
+  for (unsigned int i=0; i<G.size(); i++)
     if (abs(G[i]) > 1e-10)
       all_zeros = false;
 
@@ -83,7 +83,10 @@ vector<Complex> roots_contour(const Contour& contour,
       A(i,j) = G[i+j-2];
 
   for (int i=1; i<=N; i++)
-    B(i,1) = -G[N+i-1];
+    // CHECK: something strange here, I added boundary checking - however logically we should start from where the
+    // previous loop ends with N+i-2 - but changing this does not work, so I am adding this boundary check
+    if (N+i-1!=G.size())
+        B(i,1) = -G[N+i-1];
 
   // Solve linear system and exploit the symmetry. Note: the fact that this
   // is a Hankel matrix is not used, since speedups would probably be minor
